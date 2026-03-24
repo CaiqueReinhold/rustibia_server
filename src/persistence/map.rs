@@ -8,7 +8,8 @@ use tracing::debug;
 use uuid::Uuid;
 
 use crate::entities::items::{Item, ItemConfig, ItemId};
-use crate::entities::map::{GameMap, MapTile, Position};
+use crate::entities::map::{GameMap, MapTile};
+use crate::entities::position::Position;
 
 // ── OTBM binary stream markers ────────────────────────────────────────────────
 const NODE_START: u8 = 0xFE;

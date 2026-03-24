@@ -1,69 +1,12 @@
+use slotmap::SlotMap;
 use smallvec::SmallVec;
-use std::ops::Add;
-use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
 use thiserror::Error;
 
 use crate::constants::MAX_VISIBLE_ITEMS;
 use crate::entities::agent::{Agent, AgentKey};
-use crate::entities::items::Item;
-use crate::messages::Direction;
-
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
-pub struct Position {
-    pub x: u32,
-    pub y: u32,
-    pub z: u32,
-}
-
-impl Add<Direction> for Position {
-    type Output = Position;
-
-    fn add(self, rhs: Direction) -> Self::Output {
-        match rhs {
-            Direction::North => Self {
-                x: self.x,
-                y: self.y - 1,
-                z: self.z,
-            },
-            Direction::South => Self {
-                x: self.x,
-                y: self.y + 1,
-                z: self.z,
-            },
-            Direction::East => Self {
-                x: self.x + 1,
-                y: self.y,
-                z: self.z,
-            },
-            Direction::West => Self {
-                x: self.x - 1,
-                y: self.y,
-                z: self.z,
-            },
-            Direction::NorthEast => Self {
-                x: self.x + 1,
-                y: self.y - 1,
-                z: self.z,
-            },
-            Direction::NorthWest => Self {
-                x: self.x - 1,
-                y: self.y - 1,
-                z: self.z,
-            },
-            Direction::SouthEast => Self {
-                x: self.x + 1,
-                y: self.y + 1,
-                z: self.z,
-            },
-            Direction::SouthWest => Self {
-                x: self.x - 1,
-                y: self.y + 1,
-                z: self.z,
-            },
-        }
-    }
-}
+use crate::entities::items::{Item, ItemFlag};
+use crate::entities::position::Position;
 
 #[derive(Debug, Clone)]
 pub struct MapTile {
@@ -82,6 +25,8 @@ pub enum MapError {
 #[derive(Debug, Clone)]
 pub struct GameMap {
     tiles: HashMap<Position, MapTile>,
+    agents: SlotMap<AgentKey, Agent>,
+    agent_positions: HashMap<AgentKey, Position>,
 }
 
 impl MapTile {
@@ -101,6 +46,8 @@ impl GameMap {
     pub fn new() -> Self {
         GameMap {
             tiles: HashMap::new(),
+            agents: SlotMap::with_key(),
+            agent_positions: HashMap::new(),
         }
     }
 
@@ -115,71 +62,102 @@ impl GameMap {
         Err(MapError::TileDoesNotExist)
     }
 
-    pub fn add_actor(&mut self, pos: &Position, handle: AgentKey) -> Result<(), MapError> {
-        let tile = self.get_tile_mut(pos)?;
-        tile.agents.push(handle);
+    fn get_tile(&self, pos: &Position) -> Result<&MapTile, MapError> {
+        if let Some(tile) = self.tiles.get(pos) {
+            return Ok(tile);
+        }
+        Err(MapError::TileDoesNotExist)
+    }
+
+    /// Insert an agent at `pos`. Maintains tile agent list and reverse index atomically.
+    pub fn insert_agent(&mut self, agent: Agent, pos: &Position) -> Result<AgentKey, MapError> {
+        // Validate tile exists before inserting the agent.
+        if !self.tiles.contains_key(pos) {
+            return Err(MapError::TileDoesNotExist);
+        }
+        let key = self.agents.insert(agent);
+        self.tiles.get_mut(pos).unwrap().agents.push(key);
+        self.agent_positions.insert(key, pos.clone());
+        Ok(key)
+    }
+
+    /// Remove an agent entirely. Returns the `Agent` on success.
+    pub fn remove_agent(&mut self, key: AgentKey) -> Option<Agent> {
+        if let Some(pos) = self.agent_positions.remove(&key) {
+            if let Some(tile) = self.tiles.get_mut(&pos) {
+                if let Some(idx) = tile.agents.iter().position(|k| *k == key) {
+                    tile.agents.remove(idx);
+                }
+            }
+        }
+        self.agents.remove(key)
+    }
+
+    /// Move an agent to `new_pos`. Maintains tile lists and reverse index atomically.
+    pub fn move_agent(&mut self, key: AgentKey, new_pos: &Position) -> Result<(), MapError> {
+        let old_pos = self
+            .agent_positions
+            .get(&key)
+            .cloned()
+            .ok_or(MapError::EntityNotInPosition)?;
+        let old_tile = self.get_tile_mut(&old_pos)?;
+        if let Some(idx) = old_tile.agents.iter().position(|k| *k == key) {
+            old_tile.agents.remove(idx);
+        }
+        let new_tile = self.get_tile_mut(new_pos)?;
+        new_tile.agents.push(key);
+        self.agent_positions.insert(key, new_pos.clone());
         Ok(())
     }
 
-    pub fn remove_actor(&mut self, pos: &Position, handle: AgentKey) -> Result<(), MapError> {
-        let tile = self.get_tile_mut(pos)?;
-        let index = tile
-            .agents
-            .iter()
-            .enumerate()
-            .find(|(_, act)| **act == handle)
-            .map(|(i, _)| i);
-        if let Some(index) = index {
-            tile.agents.remove(index);
-            return Ok(());
-        }
-        Err(MapError::EntityNotInPosition)
+    pub fn agent_position(&self, key: AgentKey) -> Option<&Position> {
+        self.agent_positions.get(&key)
     }
 
-    pub fn can_move(&self, _pos: &Position, _actor: &Agent) -> bool {
+    pub fn get_agent(&self, key: AgentKey) -> Option<&Agent> {
+        self.agents.get(key)
+    }
+
+    pub fn get_agent_mut(&mut self, key: AgentKey) -> Option<&mut Agent> {
+        self.agents.get_mut(key)
+    }
+
+    pub fn can_move(&self, pos: &Position, _key: AgentKey) -> bool {
+        let tile = self.get_tile(pos);
+        if tile.is_err() {
+            return false;
+        }
+        let tile = tile.unwrap();
+
+        let has_ground = tile
+            .items
+            .iter()
+            .any(|i| i.config.has_flag(ItemFlag::Ground));
+        if !has_ground {
+            return false;
+        }
+        let unpass = tile
+            .items
+            .iter()
+            .any(|i| i.config.has_flag(ItemFlag::Unpass));
+        if unpass {
+            return false;
+        }
+
+        // TODO: check agent colision
+
         true
     }
 
     pub fn tile_speed(&self, _pos: &Position) -> u8 {
         0
     }
-}
 
-pub struct SharedGameMap {
-    inner: Arc<RwLock<GameMap>>,
-}
-
-pub struct DoubleBufferedMap {
-    maps: [Arc<RwLock<GameMap>>; 2],
-    index: usize,
-}
-
-impl DoubleBufferedMap {
-    pub fn new(map: GameMap) -> Self {
-        Self {
-            maps: [
-                Arc::new(RwLock::new(map.clone())),
-                Arc::new(RwLock::new(map)),
-            ],
-            index: 0,
-        }
-    }
-
-    pub fn write(&mut self) -> RwLockWriteGuard<'_, GameMap> {
-        self.maps[self.index].write().unwrap()
-    }
-
-    pub fn read(&self) -> RwLockReadGuard<'_, GameMap> {
-        self.maps[self.index].read().unwrap()
-    }
-
-    pub fn as_shared(&self) -> SharedGameMap {
-        let inner = self.maps[self.index - 1].clone();
-        SharedGameMap { inner }
-    }
-
-    pub fn swap(&mut self) {
-        let _unused = self.maps[1 - self.index].write().unwrap();
-        self.index = 1 - self.index;
+    pub fn get_visible_items(
+        &self,
+        pos: &Position,
+    ) -> Result<impl Iterator<Item = &Item>, MapError> {
+        let tile = self.get_tile(pos)?;
+        Ok(tile.items.iter().take(MAX_VISIBLE_ITEMS))
     }
 }

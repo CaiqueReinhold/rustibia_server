@@ -1,5 +1,5 @@
-use slotmap::SlotMap;
 use std::collections::binary_heap::BinaryHeap;
+use std::sync::Arc;
 use std::time::Duration;
 use tokio::time;
 use tokio::{
@@ -8,12 +8,14 @@ use tokio::{
 };
 use tracing::{debug, error, info, warn};
 
+use arc_swap::ArcSwap;
+
 use super::{session::SessionCommand, ActorHandle};
 use crate::config::CONFIG;
-use crate::entities::agent::{Agent, AgentKey};
-use crate::entities::map::{DoubleBufferedMap, GameMap, Position};
+use crate::entities::agent::AgentKey;
+use crate::entities::map::GameMap;
 use crate::entities::player::Player;
-use crate::messages::Direction;
+use crate::entities::position::{Direction, Position};
 
 pub type Tick = u64;
 
@@ -40,9 +42,10 @@ pub enum BroadcastMessage {
         agent_key: AgentKey,
         position: Position,
     },
-    PlayerMoved {
+    AgentMoved {
         agent_key: AgentKey,
         direction: Direction,
+        from_pos: Position,
     },
 }
 
@@ -82,8 +85,8 @@ pub struct WorldActor {
     rx: mpsc::Receiver<WorldCommand>,
     btx: broadcast::Sender<BroadcastMessage>,
     command_queue: BinaryHeap<ScheduledCommand>,
-    map: DoubleBufferedMap,
-    agents: SlotMap<AgentKey, Agent>,
+    map: GameMap,
+    shared_map: Arc<ArcSwap<GameMap>>,
     tick: Tick,
     tick_duration: Duration,
 }
@@ -91,6 +94,7 @@ pub struct WorldActor {
 impl WorldActor {
     pub fn start(
         map: GameMap,
+        shared_map: Arc<ArcSwap<GameMap>>,
     ) -> (
         ActorHandle<WorldCommand>,
         broadcast::Receiver<BroadcastMessage>,
@@ -102,8 +106,8 @@ impl WorldActor {
             rx,
             btx,
             command_queue: BinaryHeap::with_capacity(CONFIG.max_queue_size),
-            map: DoubleBufferedMap::new(map),
-            agents: SlotMap::with_key(),
+            map,
+            shared_map,
             tick: 0,
             tick_duration: CONFIG.tick_duration,
         };
@@ -118,7 +122,7 @@ impl WorldActor {
 
         info!("Starting world loop");
         loop {
-            info!("World: receiving messages");
+            debug!("World: receiving messages");
             loop {
                 select! {
                     _ = ticker.tick() => {
@@ -131,9 +135,16 @@ impl WorldActor {
             }
 
             let tick_start = time::Instant::now();
-            self.map.swap();
             self.tick += 1;
-            info!("World: starting tick {}", self.tick);
+            debug!("World: starting tick {}", self.tick);
+
+            if !self.command_queue.is_empty() {
+                info!(
+                    "Starting tick {} with {} commands",
+                    self.tick,
+                    self.command_queue.len()
+                );
+            }
 
             let mut broadcast_messages: Vec<BroadcastMessage> = Vec::new();
 
@@ -147,8 +158,16 @@ impl WorldActor {
                 }
             }
 
+            self.shared_map.store(Arc::new(self.map.clone()));
+            for msg in broadcast_messages {
+                info!("World broadcast: {:?}", msg);
+                if let Err(e) = self.btx.send(msg) {
+                    debug!("No broadcast receivers: {e}");
+                }
+            }
+
             let elapsed = tick_start.elapsed();
-            info!("Tick {} took {} ms", self.tick, elapsed.as_millis());
+            debug!("Tick {} took {} ms", self.tick, elapsed.as_millis());
             if elapsed > self.tick_duration {
                 warn!(
                     "Tick {} overran budget by {:?}",
@@ -164,7 +183,7 @@ impl WorldActor {
         command: WorldCommand,
         broadcast: &mut Vec<BroadcastMessage>,
     ) {
-        debug!("{:?}", command);
+        info!("{:?}", command);
         let msg = match command {
             WorldCommand::SpawnPlayer { player, session } => {
                 self.spawn_player(player, session).await
@@ -189,47 +208,37 @@ impl WorldActor {
         player: Player,
         session: ActorHandle<SessionCommand>,
     ) -> Option<BroadcastMessage> {
-        let mut position = player.position.clone();
         let origin = player.origin.clone();
+        let position = player.position.clone();
 
-        let agent = Agent::from_player(player);
-        let agent_key = self.agents.insert(agent);
-        let agent = self.agents.get_mut(agent_key).unwrap();
-        agent.handle = Some(agent_key);
+        let agent_key = self
+            .map
+            .insert_agent(
+                crate::entities::agent::Agent::from_player(player.clone()),
+                &position,
+            )
+            .or_else(|_| {
+                self.map
+                    .insert_agent(crate::entities::agent::Agent::from_player(player), &origin)
+            })
+            .ok()?;
 
-        let mut failed_to_spawn = false;
-        {
-            let mut map = self.map.write();
-            if map.add_actor(&position, agent_key).is_err() {
-                if map.add_actor(&origin, agent_key).is_err() {
-                    failed_to_spawn = true;
-                }
-                position = origin;
-            }
-        }
-        if failed_to_spawn {
-            let actor = self.agents.remove(agent_key).unwrap().handle;
-            error!("Player failed to spawn");
-            if let Err(e) = session.send(SessionCommand::PlayerSpawnResult(None)).await {
-                error!("Session for player {:?} closed: {e}", actor);
-            }
-            return None;
-        }
+        self.map.get_agent_mut(agent_key).unwrap().handle = Some(agent_key);
 
-        agent.set_position(position.clone());
+        let spawn_pos = self.map.agent_position(agent_key)?.clone();
 
         if session
             .send(SessionCommand::PlayerSpawnResult(Some(agent_key)))
             .await
             .is_err()
         {
-            self.agents.remove(agent_key);
+            self.map.remove_agent(agent_key);
             return None;
-        };
+        }
 
         Some(BroadcastMessage::PlayerSpawned {
             agent_key,
-            position,
+            position: spawn_pos,
         })
     }
 
@@ -239,51 +248,49 @@ impl WorldActor {
         agent_key: AgentKey,
         session: ActorHandle<SessionCommand>,
     ) -> Option<BroadcastMessage> {
-        let agent = self.agents.get_mut(agent_key);
-        if agent.is_none() {
-            warn!("Message from actor not spawned");
-            let _ = session.send(SessionCommand::Close).await;
+        if self.map.get_agent(agent_key).is_none() {
+            error!("Message from actor not spawned");
             return None;
         }
-        let agent = agent.unwrap();
+
+        let agent = match self.map.get_agent_mut(agent_key) {
+            Some(a) => a,
+            None => return None,
+        };
 
         if agent.next_walk_tick > self.tick {
             return None;
         }
 
-        let new_position = agent.position().clone() + direction.clone();
-        let can_move: bool;
-        let tile_speed: u8;
-        {
-            let map = self.map.read();
-            can_move = map.can_move(&new_position, agent);
-            tile_speed = map.tile_speed(&new_position);
-        }
+        let current_pos = self.map.agent_position(agent_key)?.clone();
+        let new_pos = current_pos.clone() + direction.clone();
+        let can_move = self.map.can_move(&new_pos, agent_key);
+        let tile_speed = self.map.tile_speed(&new_pos);
+        let walk_ticks = self
+            .map
+            .get_agent(agent_key)?
+            .calculate_walk_ticks(tile_speed, direction.is_diagonal());
+        self.map.get_agent_mut(agent_key)?.next_walk_tick = self.tick + walk_ticks;
 
         if !can_move {
-            if session
-                .send(SessionCommand::PlayerPosition(agent.position().clone()))
-                .await
-                .is_err()
-            {
-                warn!("Session closed");
-            }
+            let _ = session
+                .send(SessionCommand::PlayerPosition(current_pos))
+                .await;
             return None;
         }
 
-        let walk_ticks = agent.calculate_walk_ticks(tile_speed);
-        agent.next_walk_tick = self.tick + walk_ticks;
-
+        let new_pos = current_pos.clone() + direction.clone();
         self.command_queue.push(ScheduledCommand {
             at_tick: self.tick + walk_ticks,
             command: WorldCommand::WalkFinished {
-                new_position,
+                new_position: new_pos,
                 actor: agent_key,
             },
         });
-        Some(BroadcastMessage::PlayerMoved {
+        Some(BroadcastMessage::AgentMoved {
             agent_key,
             direction,
+            from_pos: current_pos,
         })
     }
 
@@ -292,19 +299,13 @@ impl WorldActor {
         new_position: Position,
         agent_key: AgentKey,
     ) -> Option<BroadcastMessage> {
-        let actor = self.agents.get_mut(agent_key);
-        if actor.is_none() {
-            error!("Walk finsihed but actor is missing {:?}", agent_key);
+        if self.map.get_agent(agent_key).is_none() {
+            error!("WalkFinished but agent {:?} is missing", agent_key);
             return None;
         }
-        let actor = actor.unwrap();
-
-        {
-            let mut map = self.map.write();
-            let _ = map.remove_actor(actor.position(), agent_key);
-            let _ = map.add_actor(&new_position, agent_key);
+        if let Err(e) = self.map.move_agent(agent_key, &new_position) {
+            error!("move_agent failed: {:?}", e);
         }
-        actor.set_position(new_position);
         None
     }
 }

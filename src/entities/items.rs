@@ -52,6 +52,10 @@ impl ItemConfig {
             attributes,
         }
     }
+
+    pub fn has_flag(&self, flag: ItemFlag) -> bool {
+        self.flags.contains(&flag)
+    }
 }
 
 #[derive(Debug, Clone)]

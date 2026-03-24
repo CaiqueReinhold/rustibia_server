@@ -78,7 +78,7 @@ impl ConnectionActor {
         loop {
             debug!(session = self.session_id, "Connection waiting for messages");
             let result = select! {
-                cmd = self.reader.next() => self.handle_client_command(cmd).await,
+                msg = self.reader.next() => self.handle_client_message(msg).await,
                 cmd = self.rx.recv() => self.handle_connection_command(cmd).await
             };
             if let Err(e) = result {
@@ -89,7 +89,7 @@ impl ConnectionActor {
         info!(session = self.session_id, "Connection finished");
     }
 
-    async fn handle_client_command(
+    async fn handle_client_message(
         &self,
         message: Option<Result<ClientMessage, MessageDecodeError>>,
     ) -> Result<(), ConnectionError> {
@@ -114,10 +114,10 @@ impl ConnectionActor {
         command: Option<ConnectionCommand>,
     ) -> Result<(), ConnectionError> {
         let cmd = command.ok_or(ConnectionError::ConnectionClosed)?;
-        info!(
-            session = self.session_id,
-            "Connection received command: {:?}", cmd
-        );
+        // info!(
+        //     session = self.session_id,
+        //     "Connection received command: {:?}", cmd
+        // );
         match cmd {
             ConnectionCommand::Close => {
                 return Err(ConnectionError::ConnectionClosed);

@@ -2,9 +2,10 @@ use std::collections::HashMap;
 
 use crate::entities::items::Item;
 
-use super::map::Position;
+use super::position::Position;
 
 pub type PlayerId = u32;
+pub type OutfitId = u16;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum InventorySlot {
@@ -44,4 +45,5 @@ pub struct Player {
     pub mana: Pool,
     pub experience: Pool,
     pub base_speed: u32,
+    pub outfit: OutfitId,
 }

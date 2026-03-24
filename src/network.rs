@@ -1,5 +1,5 @@
 use std::net::SocketAddr;
-use tracing::{error, warn};
+use tracing::{error, info, warn};
 
 use anyhow::Result;
 use tokio::{
@@ -26,7 +26,8 @@ impl Listener {
     pub async fn listen(&self, context: Context) {
         loop {
             match self.inner.accept().await {
-                Ok((stream, _)) => {
+                Ok((stream, addr)) => {
+                    info!("new connection from {:?}", addr);
                     if let Err(e) = Self::accept_connection(stream, &context).await {
                         error!("accept_connection failed: {e}")
                     }
@@ -47,10 +48,11 @@ impl Listener {
             context.world.clone(),
             context.player_repo.clone(),
             context.broadcast_receiver.resubscribe(),
-        )
-        .await?;
+            context.shared_map.clone(),
+        );
         let connection = ConnectionActor::start(sesion_id, stream, session);
         if let Err(conn) = conn_tx.send(connection) {
+            info!("failed to open connection");
             conn.send(ConnectionCommand::Close).await?;
         }
         Ok(())

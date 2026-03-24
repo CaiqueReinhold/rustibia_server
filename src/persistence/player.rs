@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use thiserror::Error;
 
 use crate::entities::{
-    map::Position,
     player::{Player, PlayerId, Pool, Skill},
+    position::Position,
 };
 
 #[derive(Error, Debug)]
@@ -60,6 +60,7 @@ impl PlayerRepository {
                     maximum: 100,
                 },
                 base_speed: 80,
+                outfit: 133,
             })
         } else {
             Err(PlayerRepositoryError::NotFound)

@@ -5,32 +5,26 @@ use tokio_util::{
 };
 
 use crate::{
-    constants::{MAX_VISIBLE_ITEMS, PLAYER_VIEWPORT_HEIGHT, PLAYER_VIEWPORT_WIDTH},
-    entities::items::ItemId,
-    entities::map::Position,
+    constants::{MAX_VISIBLE_ITEMS, VIEWPORT_SIZE},
+    entities::{
+        items::ItemId,
+        player::{OutfitId, Pool},
+        position::{Direction, Position},
+    },
 };
 
 pub type ItemStack = [Option<(ItemId, u8)>; MAX_VISIBLE_ITEMS];
 
-#[derive(Clone, Debug)]
-pub enum Direction {
-    North,
-    East,
-    West,
-    South,
-    NorthEast,
-    SouthEast,
-    NorthWest,
-    SouthWest,
-}
-
 // client
+const MSG_PING: u8 = 0x00;
 const MSG_LOGIN: u8 = 0x01;
 const MSG_MOVE_PLAYER: u8 = 0x02;
-const MSG_MOVE_ITEM: u8 = 0x03;
+const MSG_GET_PLAYER_POS: u8 = 0x03;
+const MSG_MOVE_ITEM: u8 = 0x04;
 
 #[derive(Clone, Debug)]
 pub enum ClientMessage {
+    Ping,
     Login {
         character_id: u32,
         auth_token: String,
@@ -38,6 +32,7 @@ pub enum ClientMessage {
     MovePlayer {
         direction: Direction,
     },
+    GetPlayerPosition,
     MoveItem {
         from: Position,
         item_id: ItemId,
@@ -48,26 +43,52 @@ pub enum ClientMessage {
 }
 
 // server
-const MSG_DESCRIBE_MAP: u8 = 0x01;
-const MSG_TILE_CHANGED: u8 = 0x02;
-const MSG_PLAYER_WALK: u8 = 0x03;
-const MSG_PLAYER_POS: u8 = 0x04;
+const MSG_PONG: u8 = 0x00;
+const MSG_LOGIN_ERROR: u8 = 0x01;
+const MSG_DESCRIBE_MAP: u8 = 0x02;
+const MSG_TILE_CHANGED: u8 = 0x03;
+const MSG_PLAYER_WALK_ACK: u8 = 0x04;
+const MSG_PLAYER_POS: u8 = 0x05;
+const MSG_DESCRIBE_PLAYER: u8 = 0x06;
+const MSG_MOVE_ITEM_ACK: u8 = 0x07;
+const MSG_MOVE_ITEM_DENIED: u8 = 0x08;
+
+#[derive(Clone, Debug)]
+pub enum TextMessageType {
+    ActionDenied,
+}
 
 #[derive(Clone, Debug)]
 pub enum ServerMessage {
+    Pong,
+    LoginError,
+    DescribePlayer {
+        position: Position,
+        name: String,
+        level: u32,
+        life: Pool,
+        mana: Pool,
+        outfit: OutfitId,
+    },
     DescribeMap {
-        tiles: Box<[ItemStack; PLAYER_VIEWPORT_HEIGHT * PLAYER_VIEWPORT_WIDTH]>,
+        tiles: Box<[ItemStack; VIEWPORT_SIZE]>,
     },
     TileChanged {
         position: Position,
         items: Box<ItemStack>,
     },
-    PlayerWalk {
-        direction: Direction,
+    PlayerWalkAck {
+        position: Position,
         tiles: Box<[ItemStack]>,
     },
     PlayerPosition {
         position: Position,
+    },
+    MoveItemAck,
+    MoveItemDenied,
+    TextMessage {
+        text: String,
+        message_type: TextMessageType,
     },
 }
 
@@ -99,6 +120,7 @@ impl Decoder for GameMessageCodec {
         buf.advance(2);
 
         match buf.get_u8() {
+            MSG_PING => Ok(Some(ClientMessage::Ping)),
             MSG_LOGIN => {
                 let character_id = buf.get_u32_le();
                 let token_len = payload_len - 1 - 4; // subtract msg type byte and character_id
@@ -113,6 +135,7 @@ impl Decoder for GameMessageCodec {
                 let direction = decode_direction(buf.get_u8())?;
                 Ok(Some(ClientMessage::MovePlayer { direction }))
             }
+            MSG_GET_PLAYER_POS => Ok(Some(ClientMessage::GetPlayerPosition)),
             MSG_MOVE_ITEM => {
                 let from = decode_position(buf);
                 let item_id = buf.get_u16_le();
@@ -168,6 +191,28 @@ impl Encoder<ServerMessage> for GameMessageCodec {
         dst.put_u16_le(0); // placeholder for payload length
 
         match item {
+            ServerMessage::Pong => dst.put_u8(MSG_PONG),
+            ServerMessage::LoginError => dst.put_u8(MSG_LOGIN_ERROR),
+            ServerMessage::DescribePlayer {
+                position,
+                name,
+                level,
+                life,
+                mana,
+                outfit,
+            } => {
+                dst.put_u8(MSG_DESCRIBE_PLAYER);
+                encode_position(position, dst);
+                let name_bytes = name.as_bytes();
+                dst.put_u16_le(name_bytes.len() as u16);
+                dst.put_slice(name_bytes);
+                dst.put_u32_le(level);
+                dst.put_u32_le(life.current);
+                dst.put_u32_le(life.maximum);
+                dst.put_u32_le(mana.current);
+                dst.put_u32_le(mana.maximum);
+                dst.put_u16_le(outfit);
+            }
             ServerMessage::DescribeMap { tiles } => {
                 dst.put_u8(MSG_DESCRIBE_MAP);
                 for tile in tiles.iter() {
@@ -181,9 +226,9 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u32_le(position.z);
                 encode_tile(items.as_ref(), dst);
             }
-            ServerMessage::PlayerWalk { direction, tiles } => {
-                dst.put_u8(MSG_PLAYER_WALK);
-                encode_direction(&direction, dst);
+            ServerMessage::PlayerWalkAck { position, tiles } => {
+                dst.put_u8(MSG_PLAYER_WALK_ACK);
+                encode_position(position, dst);
                 for t in tiles.iter() {
                     encode_tile(t, dst);
                 }
@@ -191,6 +236,18 @@ impl Encoder<ServerMessage> for GameMessageCodec {
             ServerMessage::PlayerPosition { position } => {
                 dst.put_u8(MSG_PLAYER_POS);
                 encode_position(position, dst);
+            }
+            ServerMessage::MoveItemAck => {
+                dst.put_u8(MSG_MOVE_ITEM_ACK);
+            }
+            ServerMessage::MoveItemDenied => {
+                dst.put_u8(MSG_MOVE_ITEM_DENIED);
+            }
+            ServerMessage::TextMessage { text, message_type } => {
+                let text_bytes = text.as_bytes();
+                dst.put_u16_le(text_bytes.len() as u16);
+                dst.put_slice(text_bytes);
+                dst.put_u8(encode_text_message_type(message_type));
             }
         }
 
@@ -232,4 +289,10 @@ fn encode_tile(items: &[Option<(ItemId, u8)>], dst: &mut BytesMut) {
         }
     }
     dst.put_u16_le(0xFFFF);
+}
+
+fn encode_text_message_type(text_type: TextMessageType) -> u8 {
+    match text_type {
+        TextMessageType::ActionDenied => 0x01,
+    }
 }

@@ -1,6 +1,8 @@
 use tokio::sync::mpsc;
 
 mod connection;
+mod map_query;
+mod player_query;
 mod session;
 mod world;
 

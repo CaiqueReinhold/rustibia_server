@@ -1,7 +1,11 @@
 use slotmap::new_key_type;
 
 use super::player::Player;
-use crate::{actors::Tick, entities::map::Position};
+use crate::{
+    actors::Tick,
+    config,
+    constants::{SPEED_PARAM_A, SPEED_PARAM_B, SPEED_PARAM_C},
+};
 
 #[derive(Clone, Debug)]
 enum AgentInner {
@@ -15,33 +19,39 @@ new_key_type! { pub struct AgentKey; }
 pub struct Agent {
     pub handle: Option<AgentKey>,
     pub next_walk_tick: Tick,
+    pub speed: u32,
     inner: AgentInner,
 }
 
 impl Agent {
+    pub fn get_player(&self) -> Option<&Player> {
+        match &self.inner {
+            AgentInner::Player(p) => Some(p),
+            AgentInner::Creature => None,
+        }
+    }
+
     pub fn from_player(player: Player) -> Self {
+        let speed = player.base_speed;
         Self {
             handle: None,
             inner: AgentInner::Player(player),
             next_walk_tick: 0,
+            speed,
         }
     }
 
-    pub fn position(&self) -> &Position {
-        match &self.inner {
-            AgentInner::Player(player) => &player.position,
-            AgentInner::Creature => todo!(),
-        }
-    }
+    pub fn calculate_walk_ticks(&self, tile_friction: u8, diagonal: bool) -> Tick {
+        let move_speed = (SPEED_PARAM_A * ((self.speed as f32) + SPEED_PARAM_B).ln()
+            + SPEED_PARAM_C)
+            .round()
+            .max(1.0);
 
-    pub fn set_position(&mut self, pos: Position) {
-        match &mut self.inner {
-            AgentInner::Player(player) => player.position = pos,
-            AgentInner::Creature => todo!(),
+        let mut tile_speed = (1000.0 * (tile_friction as f32) / move_speed).floor();
+        if diagonal {
+            tile_speed *= 2.0;
         }
-    }
 
-    pub fn calculate_walk_ticks(&self, _tile_speed: u8) -> Tick {
-        todo!()
+        (tile_speed / (config::CONFIG.tick_duration.as_millis() as f32)).ceil() as Tick
     }
 }
