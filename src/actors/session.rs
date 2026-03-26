@@ -12,9 +12,11 @@ use tracing::info;
 use super::{connection::ConnectionCommand, world::WorldCommand, ActorHandle};
 use crate::actors::map_query::get_map_desc_on_viewport;
 use crate::actors::map_query::get_map_expansion;
+use crate::actors::map_query::get_tile;
 use crate::actors::player_query::get_player_desc;
 use crate::actors::BroadcastMessage;
 use crate::config::CONFIG;
+use crate::entities::items::ItemFlag;
 use arc_swap::ArcSwap;
 
 use crate::entities::{
@@ -32,6 +34,8 @@ pub enum SessionError {
     FailedToInitialize,
     #[error("Message type unknown or out of order")]
     WrongMessageType,
+    #[error("Player is not spawned")]
+    NotSpawned,
 }
 
 #[derive(Clone, Debug)]
@@ -108,6 +112,10 @@ impl SessionActor {
     }
 
     async fn route_command(&mut self, cmd: SessionCommand) -> Result<()> {
+        info!(
+            session = self.session_id,
+            "Session eceived command: {:?}", cmd
+        );
         match cmd {
             SessionCommand::Login {
                 character_id,
@@ -140,7 +148,6 @@ impl SessionActor {
     }
 
     async fn spawn_result(&mut self, handle: Option<AgentKey>) -> Result<()> {
-        info!("Session received spawn result: {:?}", handle);
         if handle.is_none() {
             let _ = self.connection.send(ConnectionCommand::Close).await;
             return Err(SessionError::FailedToInitialize.into());
@@ -220,13 +227,81 @@ impl SessionActor {
 
     async fn handle_move_item(
         &self,
-        _from: Position,
-        _item_id: ItemId,
-        _amount: u8,
-        _stack_index: u16,
-        _to: Position,
+        from: Position,
+        item_id: ItemId,
+        amount: u8,
+        stack_index: u16,
+        to: Position,
     ) -> Result<()> {
-        todo!()
+        let map = self.shared_map.load();
+
+        let player_pos = map
+            .agent_position(self.player_key.unwrap())
+            .ok_or(SessionError::NotSpawned)?;
+
+        info!("{:?} {:?}", player_pos, from);
+        if !player_pos.is_adjacent(&from) {
+            info!("not adjacent");
+            self.connection
+                .send(ConnectionCommand::SendPlayerMessage(
+                    ServerMessage::MoveItemDenied,
+                ))
+                .await?;
+            return Ok(());
+        }
+
+        let item = if from.is_container_coord() || from.is_inventory_coord() {
+            // validate is take
+            // validate item exists in the position
+            None
+        } else {
+            let item = map.get_item_at(&from, stack_index as usize);
+            item.filter(|it| {
+                !(it.config.has_flag(ItemFlag::Unmove)
+                    || it.item_id != item_id
+                    || it.amount < amount)
+            })
+        };
+        let Some(item) = item else {
+            self.connection
+                .send(ConnectionCommand::SendPlayerMessage(
+                    ServerMessage::MoveItemDenied,
+                ))
+                .await?;
+            return Ok(());
+        };
+
+        let denied = if to.is_container_coord() || to.is_inventory_coord() {
+            // validate container is full
+            // validate item fits in inventory slot
+            // validate item requirement for slot
+            !item.config.has_flag(ItemFlag::Take)
+        } else {
+            !map.can_drop_item(&to)
+            // check if target position can be reached (check viewport + unsight flag)
+        };
+
+        if denied {
+            self.connection
+                .send(ConnectionCommand::SendPlayerMessage(
+                    ServerMessage::MoveItemDenied,
+                ))
+                .await?;
+            return Ok(());
+        }
+
+        self.world
+            .send(WorldCommand::MoveItem {
+                agent: self.player_key.unwrap(),
+                from,
+                item_id,
+                amount,
+                stack_index,
+                to,
+            })
+            .await?;
+
+        Ok(())
     }
 
     async fn send_position(&self, position: Position) -> Result<()> {
@@ -239,6 +314,10 @@ impl SessionActor {
     }
 
     async fn route_broadcast(&self, msg: BroadcastMessage) -> Result<()> {
+        info!(
+            session = self.session_id,
+            "Session received broadcast: {:?}", msg
+        );
         match msg {
             BroadcastMessage::AgentMoved {
                 agent_key,
@@ -249,6 +328,11 @@ impl SessionActor {
                 agent_key,
                 position,
             } => self.player_spawned(agent_key, position).await,
+            BroadcastMessage::MoveAck { agent_key } => self.move_item_result(agent_key, true).await,
+            BroadcastMessage::MoveDenied { agent_key } => {
+                self.move_item_result(agent_key, false).await
+            }
+            BroadcastMessage::TileChanged { position } => self.tile_changed(position).await,
         }
     }
 
@@ -301,5 +385,45 @@ impl SessionActor {
         } else {
             Ok(())
         }
+    }
+
+    async fn move_item_result(&self, agent_key: AgentKey, success: bool) -> Result<()> {
+        if self.player_key == Some(agent_key) {
+            if success {
+                self.connection
+                    .send(ConnectionCommand::SendPlayerMessage(
+                        ServerMessage::MoveItemAck,
+                    ))
+                    .await?;
+            } else {
+                self.connection
+                    .send(ConnectionCommand::SendPlayerMessage(
+                        ServerMessage::MoveItemDenied,
+                    ))
+                    .await?;
+            }
+        }
+        Ok(())
+    }
+
+    async fn tile_changed(&self, position: Position) -> Result<()> {
+        let map = self.shared_map.load();
+        let player_pos = map
+            .agent_position(self.player_key.unwrap())
+            .ok_or(SessionError::NotSpawned)?;
+
+        if player_pos.in_viewport(&position) {
+            let tile = get_tile(&map, &position);
+            self.connection
+                .send(ConnectionCommand::SendPlayerMessage(
+                    ServerMessage::TileChanged {
+                        position,
+                        items: tile,
+                    },
+                ))
+                .await?;
+        }
+
+        Ok(())
     }
 }

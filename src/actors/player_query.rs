@@ -15,5 +15,6 @@ pub fn get_player_desc(map: &GameMap, key: AgentKey) -> Option<ServerMessage> {
         life: player.life.clone(),
         mana: player.mana.clone(),
         outfit: player.outfit,
+        speed: player.base_speed,
     })
 }

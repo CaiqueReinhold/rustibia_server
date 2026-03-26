@@ -65,10 +65,11 @@ pub enum ServerMessage {
     DescribePlayer {
         position: Position,
         name: String,
-        level: u32,
+        level: u16,
         life: Pool,
         mana: Pool,
         outfit: OutfitId,
+        speed: u16,
     },
     DescribeMap {
         tiles: Box<[ItemStack; VIEWPORT_SIZE]>,
@@ -200,18 +201,20 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 life,
                 mana,
                 outfit,
+                speed,
             } => {
                 dst.put_u8(MSG_DESCRIBE_PLAYER);
                 encode_position(position, dst);
                 let name_bytes = name.as_bytes();
                 dst.put_u16_le(name_bytes.len() as u16);
                 dst.put_slice(name_bytes);
-                dst.put_u32_le(level);
+                dst.put_u16_le(level);
                 dst.put_u32_le(life.current);
                 dst.put_u32_le(life.maximum);
                 dst.put_u32_le(mana.current);
                 dst.put_u32_le(mana.maximum);
                 dst.put_u16_le(outfit);
+                dst.put_u16_le(speed);
             }
             ServerMessage::DescribeMap { tiles } => {
                 dst.put_u8(MSG_DESCRIBE_MAP);

@@ -5,7 +5,7 @@ use thiserror::Error;
 
 use crate::constants::MAX_VISIBLE_ITEMS;
 use crate::entities::agent::{Agent, AgentKey};
-use crate::entities::items::{Item, ItemFlag};
+use crate::entities::items::{Item, ItemAttribute, ItemFlag, ItemId};
 use crate::entities::position::Position;
 
 #[derive(Debug, Clone)]
@@ -149,8 +149,17 @@ impl GameMap {
         true
     }
 
-    pub fn tile_speed(&self, _pos: &Position) -> u8 {
-        0
+    pub fn tile_friction(&self, pos: &Position) -> Option<u32> {
+        let Ok(tile) = self.get_tile(pos) else {
+            return None;
+        };
+        let friction = tile.items.iter().find_map(|i| {
+            i.config.get_attributes().find_map(|attr| match attr {
+                ItemAttribute::TileFriction(f) => Some(*f),
+                _ => None,
+            })
+        });
+        friction
     }
 
     pub fn get_visible_items(
@@ -159,5 +168,66 @@ impl GameMap {
     ) -> Result<impl Iterator<Item = &Item>, MapError> {
         let tile = self.get_tile(pos)?;
         Ok(tile.items.iter().take(MAX_VISIBLE_ITEMS))
+    }
+
+    pub fn get_item_at(&self, pos: &Position, index: usize) -> Option<&Item> {
+        let Ok(tile) = self.get_tile(pos) else {
+            return None;
+        };
+        tile.items.get(index)
+    }
+
+    pub fn can_drop_item(&self, pos: &Position) -> bool {
+        let Ok(tile) = self.get_tile(pos) else {
+            return false;
+        };
+        tile.items
+            .iter()
+            .any(|i| i.config.has_flag(ItemFlag::FullBank))
+            && !tile
+                .items
+                .iter()
+                .any(|i| i.config.has_flag(ItemFlag::Bottom))
+    }
+
+    pub fn remove_item(
+        &mut self,
+        pos: &Position,
+        index: usize,
+        amount: u8,
+        item_id: ItemId,
+    ) -> Option<Item> {
+        let Ok(tile) = self.get_tile_mut(pos) else {
+            return None;
+        };
+        let item_amount = {
+            let item = tile.items.get(index)?;
+            if item.item_id != item_id {
+                return None;
+            }
+            item.amount
+        };
+        if item_amount > amount {
+            let item = tile.items.get_mut(index).unwrap();
+            item.amount -= amount;
+            let new_item = Item {
+                guid: uuid::Uuid::now_v7().to_string(),
+                config: item.config.clone(),
+                item_id: item.item_id,
+                amount,
+                content: None,
+            };
+            return Some(new_item);
+        } else if item_amount == amount {
+            let item = tile.items.remove(index);
+            return Some(item);
+        }
+        None
+    }
+
+    pub fn drop_item(&mut self, pos: &Position, item: Item) -> Result<(), MapError> {
+        let tile = self.get_tile_mut(pos)?;
+        tile.items.push(item);
+        Ok(())
     }
 }

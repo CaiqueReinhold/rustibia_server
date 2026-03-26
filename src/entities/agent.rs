@@ -19,7 +19,7 @@ new_key_type! { pub struct AgentKey; }
 pub struct Agent {
     pub handle: Option<AgentKey>,
     pub next_walk_tick: Tick,
-    pub speed: u32,
+    pub speed: u16,
     inner: AgentInner,
 }
 
@@ -41,7 +41,7 @@ impl Agent {
         }
     }
 
-    pub fn calculate_walk_ticks(&self, tile_friction: u8, diagonal: bool) -> Tick {
+    pub fn calculate_walk_ticks(&self, tile_friction: u32, diagonal: bool) -> Tick {
         let move_speed = (SPEED_PARAM_A * ((self.speed as f32) + SPEED_PARAM_B).ln()
             + SPEED_PARAM_C)
             .round()

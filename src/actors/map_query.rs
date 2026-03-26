@@ -101,3 +101,13 @@ fn iter_expansion(pos: &Position, direction: &Direction) -> Box<dyn Iterator<Ite
         }
     }
 }
+
+pub fn get_tile(map: &GameMap, position: &Position) -> Box<ItemStack> {
+    let mut stack: Box<ItemStack> = Box::new([None; MAX_VISIBLE_ITEMS]);
+    if let Ok(items) = map.get_visible_items(position) {
+        for (i, item) in items.enumerate() {
+            stack[i] = Some((item.item_id, item.amount));
+        }
+    }
+    stack
+}

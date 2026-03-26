@@ -7,7 +7,7 @@ use thiserror::Error;
 use tracing::debug;
 use uuid::Uuid;
 
-use crate::entities::items::{Item, ItemConfig, ItemId};
+use crate::entities::items::{Item, ItemConfig, ItemFlag, ItemId};
 use crate::entities::map::{GameMap, MapTile};
 use crate::entities::position::Position;
 
@@ -336,6 +336,11 @@ fn parse_tile(
 fn make_item(item_id: ItemId, amount: u8, content: Vec<Item>, items: &Items) -> Item {
     debug!("item {}", item_id);
     let config = items.get(&item_id).cloned().unwrap();
+    let content = if config.has_flag(ItemFlag::Container) {
+        Some(content)
+    } else {
+        None
+    };
     Item {
         config,
         guid: Uuid::now_v7().to_string(),

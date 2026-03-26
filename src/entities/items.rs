@@ -10,6 +10,10 @@ pub enum ItemFlag {
     Unmove,
     Unpass,
     Take,
+    FullBank,
+    Bottom,
+    Cumulative,
+    Container,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -56,13 +60,17 @@ impl ItemConfig {
     pub fn has_flag(&self, flag: ItemFlag) -> bool {
         self.flags.contains(&flag)
     }
+
+    pub fn get_attributes(&self) -> impl Iterator<Item = &ItemAttribute> {
+        self.attributes.iter()
+    }
 }
 
 #[derive(Debug, Clone)]
 pub struct Item {
-    pub config: Arc<ItemConfig>,
     pub guid: String,
+    pub config: Arc<ItemConfig>,
     pub item_id: ItemId,
     pub amount: u8,
-    pub content: Vec<Item>,
+    pub content: Option<Vec<Item>>,
 }

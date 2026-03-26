@@ -45,6 +45,10 @@ fn parse_flag(s: &str) -> Option<ItemFlag> {
         "unmove" => Some(ItemFlag::Unmove),
         "unpass" => Some(ItemFlag::Unpass),
         "take" => Some(ItemFlag::Take),
+        "cumulative" => Some(ItemFlag::Cumulative),
+        "fullbank" => Some(ItemFlag::FullBank),
+        "bottom" => Some(ItemFlag::Bottom),
+        "container" => Some(ItemFlag::Container),
         _ => None,
     }
 }
@@ -81,6 +85,7 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
             match key {
                 "capacity" => Some(ItemAttribute::Capacity(n)),
                 "weight" => Some(ItemAttribute::Weigth(n)),
+                "tile_friction" => Some(ItemAttribute::TileFriction(n)),
                 _ => None,
             }
         }
