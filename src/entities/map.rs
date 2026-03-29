@@ -5,7 +5,7 @@ use thiserror::Error;
 
 use crate::constants::MAX_VISIBLE_ITEMS;
 use crate::entities::agent::{Agent, AgentKey};
-use crate::entities::items::{Item, ItemAttribute, ItemFlag, ItemId};
+use crate::entities::items::{Item, ItemAttribute, ItemFlag, ItemGuid, ItemId};
 use crate::entities::position::Position;
 
 #[derive(Debug, Clone)]
@@ -211,7 +211,7 @@ impl GameMap {
             let item = tile.items.get_mut(index).unwrap();
             item.amount -= amount;
             let new_item = Item {
-                guid: uuid::Uuid::now_v7().to_string(),
+                guid: ItemGuid::new(),
                 config: item.config.clone(),
                 item_id: item.item_id,
                 amount,
@@ -229,5 +229,13 @@ impl GameMap {
         let tile = self.get_tile_mut(pos)?;
         tile.items.push(item);
         Ok(())
+    }
+
+    pub fn get_item_by_id(&self, pos: &Position, guid: &ItemGuid) -> Option<&Item> {
+        let Ok(tile) = self.get_tile(pos) else {
+            return None;
+        };
+
+        tile.items.iter().find(|i| i.guid == *guid)
     }
 }

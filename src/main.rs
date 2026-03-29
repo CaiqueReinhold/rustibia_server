@@ -9,6 +9,7 @@ mod actors;
 mod config;
 mod constants;
 mod entities;
+mod local_id;
 mod messages;
 mod network;
 mod persistence;

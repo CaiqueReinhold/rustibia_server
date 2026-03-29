@@ -8,15 +8,23 @@ use tokio::sync::mpsc;
 use tokio::sync::oneshot;
 use tracing::error;
 use tracing::info;
+use tracing::warn;
 
 use super::{connection::ConnectionCommand, world::WorldCommand, ActorHandle};
+use crate::actors::map_query::find_item_in_reach;
 use crate::actors::map_query::get_map_desc_on_viewport;
 use crate::actors::map_query::get_map_expansion;
 use crate::actors::map_query::get_tile;
+use crate::actors::map_query::retrieve_item;
 use crate::actors::player_query::get_player_desc;
 use crate::actors::BroadcastMessage;
 use crate::config::CONFIG;
+use crate::entities::items::ContainerId;
+use crate::entities::items::ItemAttribute;
 use crate::entities::items::ItemFlag;
+use crate::entities::items::ItemGuid;
+use crate::local_id::LocalIdMap;
+use crate::messages::TextMessageType;
 use arc_swap::ArcSwap;
 
 use crate::entities::{
@@ -60,6 +68,7 @@ pub struct SessionActor {
     player_key: Option<AgentKey>,
     player_repo: Arc<PlayerRepository>,
     shared_map: Arc<ArcSwap<GameMap>>,
+    containers: LocalIdMap<ItemGuid>,
 }
 
 impl SessionActor {
@@ -90,6 +99,7 @@ impl SessionActor {
                 player_repo,
                 brx: receiver,
                 shared_map,
+                containers: LocalIdMap::new(),
             };
             actor.run().await;
         });
@@ -157,6 +167,22 @@ impl SessionActor {
         Ok(())
     }
 
+    async fn send_position(&self, position: Position) -> Result<()> {
+        self.connection
+            .send(ConnectionCommand::SendPlayerMessage(
+                ServerMessage::PlayerPosition { position },
+            ))
+            .await?;
+        Ok(())
+    }
+
+    async fn pong(&self) -> Result<()> {
+        self.connection
+            .send(ConnectionCommand::SendPlayerMessage(ServerMessage::Pong))
+            .await?;
+        Ok(())
+    }
+
     async fn handle_client_message(&self, command: ClientMessage) -> Result<()> {
         if self.player_key.is_none() {
             return Err(SessionError::WrongMessageType.into());
@@ -176,14 +202,12 @@ impl SessionActor {
                 self.handle_move_item(from, item_id, amount, stack_index, to)
                     .await
             }
+            ClientMessage::UseItem {
+                position,
+                item_id,
+                stack_index,
+            } => self.handle_use_item(position, item_id, stack_index).await,
         }
-    }
-
-    async fn pong(&self) -> Result<()> {
-        self.connection
-            .send(ConnectionCommand::SendPlayerMessage(ServerMessage::Pong))
-            .await?;
-        Ok(())
     }
 
     async fn handle_move_player(&self, direction: Direction) -> Result<()> {
@@ -239,9 +263,7 @@ impl SessionActor {
             .agent_position(self.player_key.unwrap())
             .ok_or(SessionError::NotSpawned)?;
 
-        info!("{:?} {:?}", player_pos, from);
         if !player_pos.is_adjacent(&from) {
-            info!("not adjacent");
             self.connection
                 .send(ConnectionCommand::SendPlayerMessage(
                     ServerMessage::MoveItemDenied,
@@ -250,18 +272,7 @@ impl SessionActor {
             return Ok(());
         }
 
-        let item = if from.is_container_coord() || from.is_inventory_coord() {
-            // validate is take
-            // validate item exists in the position
-            None
-        } else {
-            let item = map.get_item_at(&from, stack_index as usize);
-            item.filter(|it| {
-                !(it.config.has_flag(ItemFlag::Unmove)
-                    || it.item_id != item_id
-                    || it.amount < amount)
-            })
-        };
+        let item = retrieve_item(&map, &from, item_id, stack_index);
         let Some(item) = item else {
             self.connection
                 .send(ConnectionCommand::SendPlayerMessage(
@@ -271,14 +282,23 @@ impl SessionActor {
             return Ok(());
         };
 
+        if item.amount < amount || item.config.has_flag(ItemFlag::Unmove) {
+            self.connection
+                .send(ConnectionCommand::SendPlayerMessage(
+                    ServerMessage::MoveItemDenied,
+                ))
+                .await?;
+            return Ok(());
+        }
+
         let denied = if to.is_container_coord() || to.is_inventory_coord() {
             // validate container is full
             // validate item fits in inventory slot
             // validate item requirement for slot
             !item.config.has_flag(ItemFlag::Take)
         } else {
-            !map.can_drop_item(&to)
-            // check if target position can be reached (check viewport + unsight flag)
+            !map.can_drop_item(&to) && player_pos.in_viewport(&to)
+            // check if target position can be reached (unsight flag)
         };
 
         if denied {
@@ -304,16 +324,67 @@ impl SessionActor {
         Ok(())
     }
 
-    async fn send_position(&self, position: Position) -> Result<()> {
-        self.connection
-            .send(ConnectionCommand::SendPlayerMessage(
-                ServerMessage::PlayerPosition { position },
-            ))
+    async fn handle_use_item(
+        &self,
+        position: Position,
+        item_id: ItemId,
+        stack_index: u16,
+    ) -> Result<()> {
+        let map = self.shared_map.load();
+
+        let player_pos = map
+            .agent_position(self.player_key.unwrap())
+            .ok_or(SessionError::NotSpawned)?;
+
+        let send_error_ack = async || {
+            self.connection
+                .send(ConnectionCommand::SendPlayerMessage(
+                    ServerMessage::TextMessage {
+                        text: "Item cannot be used".to_string(),
+                        message_type: TextMessageType::ActionDenied,
+                    },
+                ))
+                .await
+                .and(
+                    self.connection
+                        .send(ConnectionCommand::SendPlayerMessage(
+                            ServerMessage::UseItemAck,
+                        ))
+                        .await,
+                )
+        };
+
+        if !player_pos.is_adjacent(&position) {
+            info!("not adjacent");
+            send_error_ack().await?;
+            return Ok(());
+        }
+
+        let item = retrieve_item(&map, &position, item_id, stack_index);
+        let Some(item) = item else {
+            info!("cant retrieve item");
+            send_error_ack().await?;
+            return Ok(());
+        };
+
+        if !item.config.has_flag(ItemFlag::Usable) {
+            info!("item not usable");
+            send_error_ack().await?;
+            return Ok(());
+        }
+
+        self.world
+            .send(WorldCommand::UseItem {
+                agent: self.player_key.unwrap(),
+                guid: item.guid.clone(),
+                position,
+            })
             .await?;
+
         Ok(())
     }
 
-    async fn route_broadcast(&self, msg: BroadcastMessage) -> Result<()> {
+    async fn route_broadcast(&mut self, msg: BroadcastMessage) -> Result<()> {
         info!(
             session = self.session_id,
             "Session received broadcast: {:?}", msg
@@ -333,6 +404,14 @@ impl SessionActor {
                 self.move_item_result(agent_key, false).await
             }
             BroadcastMessage::TileChanged { position } => self.tile_changed(position).await,
+            BroadcastMessage::UseItemAck { agent_key, success } => {
+                self.use_item_ack(agent_key, success).await
+            }
+            BroadcastMessage::OpenContainer {
+                agent_key,
+                guid,
+                position,
+            } => self.open_container(agent_key, guid, position).await,
         }
     }
 
@@ -363,13 +442,27 @@ impl SessionActor {
         }
     }
 
+    fn drop_unreachble_containers(&mut self) {
+        let map = self.shared_map.load();
+        let mut remove: Vec<ContainerId> = Vec::new();
+        for guid in self.containers.iter_global() {
+            if find_item_in_reach(&map, guid, self.player_key.unwrap()).is_none() {
+                remove.push(self.containers.get_local(guid).unwrap());
+            }
+        }
+        for id in remove {
+            self.containers.remove_by_local(id);
+        }
+    }
+
     async fn agent_moved(
-        &self,
+        &mut self,
         agent_key: AgentKey,
         direction: Direction,
         from_pos: Position,
     ) -> Result<()> {
         if self.player_key == Some(agent_key) {
+            self.drop_unreachble_containers();
             let map = self.shared_map.load();
             let tiles = get_map_expansion(&map, &from_pos, &direction);
             let to_pos = from_pos + direction;
@@ -381,6 +474,7 @@ impl SessionActor {
                     },
                 ))
                 .await?;
+
             Ok(())
         } else {
             Ok(())
@@ -406,7 +500,8 @@ impl SessionActor {
         Ok(())
     }
 
-    async fn tile_changed(&self, position: Position) -> Result<()> {
+    async fn tile_changed(&mut self, position: Position) -> Result<()> {
+        self.drop_unreachble_containers();
         let map = self.shared_map.load();
         let player_pos = map
             .agent_position(self.player_key.unwrap())
@@ -423,6 +518,93 @@ impl SessionActor {
                 ))
                 .await?;
         }
+
+        Ok(())
+    }
+
+    async fn use_item_ack(&self, agent_key: AgentKey, success: bool) -> Result<()> {
+        if self.player_key == Some(agent_key) {
+            if !success {
+                self.connection
+                    .send(ConnectionCommand::SendPlayerMessage(
+                        ServerMessage::TextMessage {
+                            text: "Cannot use this".to_string(),
+                            message_type: TextMessageType::ActionDenied,
+                        },
+                    ))
+                    .await?;
+            }
+            self.connection
+                .send(ConnectionCommand::SendPlayerMessage(
+                    ServerMessage::UseItemAck,
+                ))
+                .await?;
+        }
+        Ok(())
+    }
+
+    async fn open_container(
+        &mut self,
+        agent_key: AgentKey,
+        guid: ItemGuid,
+        position: Position,
+    ) -> Result<()> {
+        if self.player_key != Some(agent_key) {
+            return Ok(());
+        }
+
+        let map = self.shared_map.load();
+        let item = if position.is_container_coord() {
+            let parent_container = position.y as ContainerId;
+            let Some(parent_guid) = self.containers.get_global(parent_container) else {
+                return Ok(());
+            };
+            let Some(parent) = find_item_in_reach(&map, parent_guid, self.player_key.unwrap())
+            else {
+                return Ok(());
+            };
+            let Some(ref content) = parent.content else {
+                warn!("container {parent_guid} has content vector none");
+                return Ok(());
+            };
+            content.iter().find(|i| i.guid == guid)
+        } else {
+            find_item_in_reach(&map, &guid, self.player_key.unwrap())
+        };
+
+        let Some(item) = item else {
+            return Ok(());
+        };
+
+        let Some(capacity) = item.config.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::Capacity(c) => Some(c),
+            _ => None,
+        }) else {
+            return Ok(());
+        };
+        let capacity = *capacity;
+        let Some(ref content) = item.content else {
+            return Ok(());
+        };
+
+        let title = item.get_name().to_owned();
+        let items = content
+            .iter()
+            .map(|i| Some((i.item_id, i.amount)))
+            .collect::<Vec<Option<(ItemId, u8)>>>()
+            .into_boxed_slice();
+        let container_id = self.containers.get_or_insert(guid.clone());
+
+        self.connection
+            .send(ConnectionCommand::SendPlayerMessage(
+                ServerMessage::OpenContainer {
+                    container_id,
+                    capacity,
+                    title,
+                    items,
+                },
+            ))
+            .await?;
 
         Ok(())
     }

@@ -1,6 +1,8 @@
 use crate::{
     constants::{MAX_VISIBLE_ITEMS, PLAYER_VIEWPORT_HEIGHT, PLAYER_VIEWPORT_WIDTH, VIEWPORT_SIZE},
     entities::{
+        agent::AgentKey,
+        items::{Item, ItemGuid, ItemId},
         map::GameMap,
         position::{Direction, Position},
     },
@@ -110,4 +112,47 @@ pub fn get_tile(map: &GameMap, position: &Position) -> Box<ItemStack> {
         }
     }
     stack
+}
+
+pub fn retrieve_item<'a>(
+    map: &'a GameMap,
+    position: &'a Position,
+    item_id: ItemId,
+    stack_index: u16,
+) -> Option<&'a Item> {
+    if position.is_container_coord() || position.is_inventory_coord() {
+        // validate is take
+        // validate item exists in the position
+        None
+    } else {
+        let item = map.get_item_at(position, stack_index as usize);
+        item.filter(|it| it.item_id == item_id)
+    }
+}
+
+fn iter_adjacent(pos: &Position) -> impl Iterator<Item = Position> {
+    let x_start = pos.x.saturating_sub(1);
+    let x_end = pos.x + 1;
+    let y_start = pos.y.saturating_sub(1);
+    let y_end = pos.y + 1;
+    let z = pos.z;
+
+    (y_start..=y_end).flat_map(move |y| (x_start..=x_end).map(move |x| Position { x, y, z }))
+}
+
+pub fn find_item_in_reach<'a>(
+    map: &'a GameMap,
+    guid: &'a ItemGuid,
+    agent_key: AgentKey,
+) -> Option<&'a Item> {
+    let player_pos = map.agent_position(agent_key)?;
+    for pos in iter_adjacent(player_pos) {
+        if let Some(item) = map.get_item_by_id(&pos, guid) {
+            return Some(item);
+        }
+    }
+
+    // TODO: check for player inventory
+
+    None
 }

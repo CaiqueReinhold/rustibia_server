@@ -126,6 +126,7 @@ impl ConnectionActor {
                 return Err(ConnectionError::WrongMessageType);
             }
             ConnectionCommand::SendPlayerMessage(msg) => {
+                info!(session = self.session_id, "Sending player msg: {:?}", msg);
                 if self.writer.send(msg).await.is_err() {
                     return Err(ConnectionError::ServerError);
                 }

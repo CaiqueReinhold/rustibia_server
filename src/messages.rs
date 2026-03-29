@@ -7,7 +7,7 @@ use tokio_util::{
 use crate::{
     constants::{MAX_VISIBLE_ITEMS, VIEWPORT_SIZE},
     entities::{
-        items::ItemId,
+        items::{ContainerId, ItemId},
         player::{OutfitId, Pool},
         position::{Direction, Position},
     },
@@ -16,11 +16,12 @@ use crate::{
 pub type ItemStack = [Option<(ItemId, u8)>; MAX_VISIBLE_ITEMS];
 
 // client
-const MSG_PING: u8 = 0x00;
-const MSG_LOGIN: u8 = 0x01;
-const MSG_MOVE_PLAYER: u8 = 0x02;
-const MSG_GET_PLAYER_POS: u8 = 0x03;
-const MSG_MOVE_ITEM: u8 = 0x04;
+const MSG_PING: u8 = 0;
+const MSG_LOGIN: u8 = 1;
+const MSG_MOVE_PLAYER: u8 = 2;
+const MSG_GET_PLAYER_POS: u8 = 3;
+const MSG_MOVE_ITEM: u8 = 4;
+const MSG_USE_ITEM: u8 = 5;
 
 #[derive(Clone, Debug)]
 pub enum ClientMessage {
@@ -40,18 +41,27 @@ pub enum ClientMessage {
         stack_index: u16,
         to: Position,
     },
+    UseItem {
+        position: Position,
+        item_id: ItemId,
+        stack_index: u16,
+    },
 }
 
 // server
-const MSG_PONG: u8 = 0x00;
-const MSG_LOGIN_ERROR: u8 = 0x01;
-const MSG_DESCRIBE_MAP: u8 = 0x02;
-const MSG_TILE_CHANGED: u8 = 0x03;
-const MSG_PLAYER_WALK_ACK: u8 = 0x04;
-const MSG_PLAYER_POS: u8 = 0x05;
-const MSG_DESCRIBE_PLAYER: u8 = 0x06;
-const MSG_MOVE_ITEM_ACK: u8 = 0x07;
-const MSG_MOVE_ITEM_DENIED: u8 = 0x08;
+const MSG_PONG: u8 = 0;
+const MSG_LOGIN_ERROR: u8 = 1;
+const MSG_DESCRIBE_MAP: u8 = 2;
+const MSG_TILE_CHANGED: u8 = 3;
+const MSG_PLAYER_WALK_ACK: u8 = 4;
+const MSG_PLAYER_POS: u8 = 5;
+const MSG_DESCRIBE_PLAYER: u8 = 6;
+const MSG_MOVE_ITEM_ACK: u8 = 7;
+const MSG_MOVE_ITEM_DENIED: u8 = 8;
+const MSG_TEXT_MESSAGE: u8 = 9;
+const MSG_USE_ITEM_ACK: u8 = 10;
+const MSG_OPEN_CONTAINER: u8 = 11;
+const MSG_UPDATE_CONTAINER: u8 = 12;
 
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
@@ -90,6 +100,17 @@ pub enum ServerMessage {
     TextMessage {
         text: String,
         message_type: TextMessageType,
+    },
+    UseItemAck,
+    OpenContainer {
+        container_id: ContainerId,
+        capacity: u8,
+        title: String,
+        items: Box<[Option<(ItemId, u8)>]>,
+    },
+    UpdateContainer {
+        container_id: ContainerId,
+        items: Box<[Option<(ItemId, u8)>]>,
     },
 }
 
@@ -151,6 +172,11 @@ impl Decoder for GameMessageCodec {
                     to,
                 }))
             }
+            MSG_USE_ITEM => Ok(Some(ClientMessage::UseItem {
+                position: decode_position(buf),
+                item_id: buf.get_u16_le(),
+                stack_index: buf.get_u16_le(),
+            })),
             _ => Err(MessageDecodeError::WrongSequence),
         }
     }
@@ -247,10 +273,34 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u8(MSG_MOVE_ITEM_DENIED);
             }
             ServerMessage::TextMessage { text, message_type } => {
+                dst.put_u8(MSG_TEXT_MESSAGE);
                 let text_bytes = text.as_bytes();
                 dst.put_u16_le(text_bytes.len() as u16);
                 dst.put_slice(text_bytes);
                 dst.put_u8(encode_text_message_type(message_type));
+            }
+            ServerMessage::UseItemAck => dst.put_u8(MSG_USE_ITEM_ACK),
+            ServerMessage::OpenContainer {
+                container_id,
+                capacity,
+                title,
+                items,
+            } => {
+                dst.put_u8(MSG_OPEN_CONTAINER);
+                dst.put_u16_le(container_id);
+                dst.put_u8(capacity);
+                let title_bytes = title.as_bytes();
+                dst.put_u8(title_bytes.len() as u8);
+                dst.put_slice(title_bytes);
+                encode_tile(&items, dst);
+            }
+            ServerMessage::UpdateContainer {
+                container_id,
+                items,
+            } => {
+                dst.put_u8(MSG_UPDATE_CONTAINER);
+                dst.put_u16_le(container_id);
+                encode_tile(&items, dst);
             }
         }
 

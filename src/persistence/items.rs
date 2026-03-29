@@ -49,6 +49,7 @@ fn parse_flag(s: &str) -> Option<ItemFlag> {
         "fullbank" => Some(ItemFlag::FullBank),
         "bottom" => Some(ItemFlag::Bottom),
         "container" => Some(ItemFlag::Container),
+        "usable" => Some(ItemFlag::Usable),
         _ => None,
     }
 }
@@ -83,7 +84,7 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
         _ => {
             let n = value.as_u64()? as u32;
             match key {
-                "capacity" => Some(ItemAttribute::Capacity(n)),
+                "capacity" => Some(ItemAttribute::Capacity(n as u8)),
                 "weight" => Some(ItemAttribute::Weigth(n)),
                 "tile_friction" => Some(ItemAttribute::TileFriction(n)),
                 _ => None,

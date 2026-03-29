@@ -14,7 +14,7 @@ use tracing::{debug, info, warn};
 use super::{session::SessionCommand, ActorHandle};
 use crate::config::CONFIG;
 use crate::entities::agent::{Agent, AgentKey};
-use crate::entities::items::ItemId;
+use crate::entities::items::{ItemFlag, ItemGuid, ItemId};
 use crate::entities::map::GameMap;
 use crate::entities::player::Player;
 use crate::entities::position::{Direction, Position};
@@ -44,6 +44,11 @@ pub enum WorldCommand {
         stack_index: u16,
         to: Position,
     },
+    UseItem {
+        agent: AgentKey,
+        guid: ItemGuid,
+        position: Position,
+    },
 }
 
 #[derive(Clone, Debug)]
@@ -65,6 +70,15 @@ pub enum BroadcastMessage {
     },
     MoveAck {
         agent_key: AgentKey,
+    },
+    OpenContainer {
+        agent_key: AgentKey,
+        guid: ItemGuid,
+        position: Position,
+    },
+    UseItemAck {
+        agent_key: AgentKey,
+        success: bool,
     },
 }
 
@@ -226,6 +240,11 @@ impl WorldActor {
                 self.move_item(agent, from, item_id, amount, stack_index, to)
                     .await
             }
+            WorldCommand::UseItem {
+                agent,
+                guid,
+                position,
+            } => self.use_item(agent, guid, position).await,
         };
         if let Err(e) = result {
             warn!("Error on apply command: {e}");
@@ -310,7 +329,6 @@ impl WorldActor {
             .get_agent(agent_key)
             .unwrap()
             .calculate_walk_ticks(tile_friction, direction.is_diagonal());
-        info!("walk ticks: {walk_ticks}");
         self.map.get_agent_mut(agent_key).unwrap().next_walk_tick = self.tick + walk_ticks;
 
         let new_pos = current_pos.clone() + direction.clone();
@@ -409,6 +427,36 @@ impl WorldActor {
         self.add_broadcast(BroadcastMessage::MoveAck { agent_key: agent });
         self.add_broadcast(source_change);
         self.add_broadcast(tartget_change);
+
+        Ok(())
+    }
+
+    async fn use_item(
+        &mut self,
+        agent_key: AgentKey,
+        guid: ItemGuid,
+        position: Position,
+    ) -> Result<()> {
+        let item = self.map.get_item_by_id(&position, &guid);
+        let Some(item) = item else {
+            self.add_broadcast(BroadcastMessage::UseItemAck {
+                agent_key,
+                success: false,
+            });
+            return Ok(());
+        };
+
+        if item.config.has_flag(ItemFlag::Container) {
+            self.add_broadcast(BroadcastMessage::UseItemAck {
+                agent_key,
+                success: true,
+            });
+            self.add_broadcast(BroadcastMessage::OpenContainer {
+                agent_key,
+                guid,
+                position,
+            });
+        }
 
         Ok(())
     }
