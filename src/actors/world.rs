@@ -14,10 +14,10 @@ use tracing::{debug, info, warn};
 use super::{session::SessionCommand, ActorHandle};
 use crate::config::CONFIG;
 use crate::entities::agent::{Agent, AgentKey};
-use crate::entities::items::{ItemFlag, ItemGuid, ItemId};
+use crate::entities::items::{ItemFlag, ItemGuid};
 use crate::entities::map::GameMap;
 use crate::entities::player::Player;
-use crate::entities::position::{Direction, Position};
+use crate::entities::position::{Direction, ItemPlacement, Position};
 
 pub type Tick = u64;
 
@@ -30,24 +30,19 @@ pub enum WorldCommand {
     Walk {
         direction: Direction,
         actor: AgentKey,
-        session: ActorHandle<SessionCommand>,
-    },
-    WalkFinished {
-        new_position: Position,
-        actor: AgentKey,
     },
     MoveItem {
         agent: AgentKey,
-        from: Position,
-        item_id: ItemId,
+        from: ItemPlacement,
+        item_guid: ItemGuid,
         amount: u8,
-        stack_index: u16,
-        to: Position,
+        to: ItemPlacement,
+        target_container: Option<ItemGuid>,
     },
     UseItem {
         agent: AgentKey,
         guid: ItemGuid,
-        position: Position,
+        placement: ItemPlacement,
     },
 }
 
@@ -60,7 +55,7 @@ pub enum BroadcastMessage {
     AgentMoved {
         agent_key: AgentKey,
         direction: Direction,
-        from_pos: Position,
+        to_position: Position,
     },
     TileChanged {
         position: Position,
@@ -74,11 +69,18 @@ pub enum BroadcastMessage {
     OpenContainer {
         agent_key: AgentKey,
         guid: ItemGuid,
-        position: Position,
+        placement: ItemPlacement,
     },
     UseItemAck {
         agent_key: AgentKey,
         success: bool,
+    },
+    UpdateContainer {
+        guid: ItemGuid,
+        placement: ItemPlacement,
+    },
+    PlayerWalkDenied {
+        agent_key: AgentKey,
     },
 }
 
@@ -220,31 +222,23 @@ impl WorldActor {
             WorldCommand::SpawnPlayer { player, session } => {
                 self.spawn_player(player, session).await
             }
-            WorldCommand::Walk {
-                direction,
-                actor,
-                session,
-            } => self.walk(direction, actor, session).await,
-            WorldCommand::WalkFinished {
-                new_position,
-                actor,
-            } => self.walk_finished(new_position, actor).await,
+            WorldCommand::Walk { direction, actor } => self.walk(direction, actor).await,
             WorldCommand::MoveItem {
                 agent,
                 from,
-                item_id,
+                item_guid,
                 amount,
-                stack_index,
                 to,
+                target_container,
             } => {
-                self.move_item(agent, from, item_id, amount, stack_index, to)
+                self.move_item(agent, from, item_guid, amount, to, target_container)
                     .await
             }
             WorldCommand::UseItem {
                 agent,
                 guid,
-                position,
-            } => self.use_item(agent, guid, position).await,
+                placement,
+            } => self.use_item(agent, guid, placement).await,
         };
         if let Err(e) = result {
             warn!("Error on apply command: {e}");
@@ -288,12 +282,7 @@ impl WorldActor {
         Ok(())
     }
 
-    async fn walk(
-        &mut self,
-        direction: Direction,
-        agent_key: AgentKey,
-        session: ActorHandle<SessionCommand>,
-    ) -> Result<()> {
+    async fn walk(&mut self, direction: Direction, agent_key: AgentKey) -> Result<()> {
         let agent = self
             .map
             .get_agent(agent_key)
@@ -303,24 +292,18 @@ impl WorldActor {
         };
 
         if agent.next_walk_tick > self.tick {
-            let _ = session
-                .send(SessionCommand::PlayerPosition(current_pos))
-                .await;
+            self.add_broadcast(BroadcastMessage::PlayerWalkDenied { agent_key });
             return Ok(());
         }
 
-        let new_pos = current_pos.clone() + direction.clone();
+        let new_pos = current_pos.clone() + direction;
         let can_move = self.map.can_move(&new_pos, agent_key);
         if !can_move {
-            let _ = session
-                .send(SessionCommand::PlayerPosition(current_pos))
-                .await;
+            self.add_broadcast(BroadcastMessage::PlayerWalkDenied { agent_key });
             return Ok(());
         }
         let Some(tile_friction) = self.map.tile_friction(&new_pos) else {
-            let _ = session
-                .send(SessionCommand::PlayerPosition(current_pos))
-                .await;
+            self.add_broadcast(BroadcastMessage::PlayerWalkDenied { agent_key });
             return Ok(());
         };
 
@@ -331,95 +314,112 @@ impl WorldActor {
             .calculate_walk_ticks(tile_friction, direction.is_diagonal());
         self.map.get_agent_mut(agent_key).unwrap().next_walk_tick = self.tick + walk_ticks;
 
-        let new_pos = current_pos.clone() + direction.clone();
-        self.command_queue.push(ScheduledCommand {
-            at_tick: self.tick + walk_ticks,
-            command: WorldCommand::WalkFinished {
-                new_position: new_pos,
-                actor: agent_key,
-            },
-        });
+        self.map.move_agent(agent_key, &new_pos)?;
         self.add_broadcast(BroadcastMessage::AgentMoved {
             agent_key,
             direction,
-            from_pos: current_pos,
+            to_position: new_pos,
         });
-        Ok(())
-    }
-
-    async fn walk_finished(&mut self, new_position: Position, agent_key: AgentKey) -> Result<()> {
-        self.map.move_agent(agent_key, &new_position)?;
         Ok(())
     }
 
     async fn move_item(
         &mut self,
         agent: AgentKey,
-        from: Position,
-        item_id: ItemId,
+        from: ItemPlacement,
+        item_guid: ItemGuid,
         amount: u8,
-        stack_index: u16,
-        to: Position,
+        to: ItemPlacement,
+        target_container: Option<ItemGuid>,
     ) -> Result<()> {
-        if self
+        let player_pos = self
             .map
             .agent_position(agent)
-            .filter(|pos| pos.is_adjacent(&from))
-            .is_none()
-        {
-            self.add_broadcast(BroadcastMessage::MoveDenied { agent_key: agent });
-            return Ok(());
+            .ok_or(anyhow::anyhow!("agent {:?} position not found", agent))?;
+
+        match &from {
+            ItemPlacement::Map(pos) => {
+                if !player_pos.is_adjacent(pos) {
+                    self.add_broadcast(BroadcastMessage::MoveDenied { agent_key: agent });
+                    return Ok(());
+                }
+            }
+            ItemPlacement::Inventory(_) => {
+                todo!("Implement inventory move validation");
+            }
         }
 
-        let source = if from.is_container_coord() {
-            // remove from container
-            // issue container changed
-            None
-        } else if from.is_inventory_coord() {
-            // remove from slot
-            // issue change to session
-            None
-        } else {
-            let it = self
-                .map
-                .remove_item(&from, stack_index as usize, amount, item_id);
+        let source = self.map.remove_item(&from, item_guid, amount).map(|it| {
+            (
+                match &from {
+                    ItemPlacement::Map(pos) => {
+                        if let Some((parent, _)) = &it.1 {
+                            BroadcastMessage::UpdateContainer {
+                                guid: parent.clone(),
+                                placement: from.clone(),
+                            }
+                        } else {
+                            BroadcastMessage::TileChanged {
+                                position: pos.clone(),
+                            }
+                        }
+                    }
+                    ItemPlacement::Inventory(_) => {
+                        todo!("Implement inventory move broadcast");
+                    }
+                },
+                it,
+            )
+        });
 
-            it.map(|it| {
-                (
-                    it,
-                    BroadcastMessage::TileChanged {
-                        position: from.clone(),
-                    },
-                )
-            })
-        };
-
-        let Some((item, source_change)) = source else {
+        let Some((source_change, (item, parent))) = source else {
             self.add_broadcast(BroadcastMessage::MoveDenied { agent_key: agent });
             return Ok(());
         };
 
-        // keept else with if inside for better readability
-        // just else clearly states this block handled map position
-        #[allow(clippy::collapsible_else_if)]
-        let target_change = if to.is_container_coord() {
-            // add to container
-            // issue container changed
-            None
-        } else if to.is_inventory_coord() {
-            // add to slot
-            // update player stats based on item
-            // issue slot changed
-            None
-        } else {
-            if self.map.drop_item(&to, item).is_err() {
-                None
-            } else {
-                Some(BroadcastMessage::TileChanged { position: to })
+        let target_change = match &to {
+            ItemPlacement::Map(pos) => {
+                if let Some(target_container) = target_container.as_ref() {
+                    if self
+                        .map
+                        .add_to_container(pos, item.clone(), target_container, 0)
+                        .is_err()
+                    {
+                        None
+                    } else {
+                        Some(BroadcastMessage::UpdateContainer {
+                            guid: target_container.clone(),
+                            placement: to.clone(),
+                        })
+                    }
+                } else if self.map.drop_item(pos, item.clone()).is_ok() {
+                    Some(BroadcastMessage::TileChanged {
+                        position: pos.clone(),
+                    })
+                } else {
+                    None
+                }
+            }
+            ItemPlacement::Inventory(_) => {
+                todo!("Implement inventory move");
             }
         };
 
         let Some(tartget_change) = target_change else {
+            // Try to put the item back in the source if the target failed
+            match &from {
+                ItemPlacement::Map(pos) => {
+                    if let Some((container_guid, slot)) = parent {
+                        let _ = self.map.add_to_container(pos, item, &container_guid, slot);
+                    } else {
+                        let _ = self.map.drop_item(pos, item);
+                    }
+                }
+                ItemPlacement::Inventory(_) => {
+                    todo!("Implement inventory move rollback");
+                }
+            }
+
             self.add_broadcast(BroadcastMessage::MoveDenied { agent_key: agent });
             return Ok(());
         };
@@ -435,9 +435,28 @@ impl WorldActor {
         &mut self,
         agent_key: AgentKey,
         guid: ItemGuid,
-        position: Position,
+        placement: ItemPlacement,
     ) -> Result<()> {
-        let item = self.map.get_item_by_id(&position, &guid);
+        let item = match &placement {
+            ItemPlacement::Map(item_pos) => {
+                if self
+                    .map
+                    .agent_position(agent_key)
+                    .filter(|player_pos| player_pos.is_adjacent(item_pos))
+                    .is_none()
+                {
+                    self.add_broadcast(BroadcastMessage::UseItemAck {
+                        agent_key,
+                        success: false,
+                    });
+                    return Ok(());
+                }
+                self.map.get_item_by_id(item_pos, &guid)
+            }
+            ItemPlacement::Inventory(_) => {
+                todo!("handle inventory item use");
+            }
+        };
         let Some(item) = item else {
             self.add_broadcast(BroadcastMessage::UseItemAck {
                 agent_key,
@@ -454,7 +473,7 @@ impl WorldActor {
             self.add_broadcast(BroadcastMessage::OpenContainer {
                 agent_key,
                 guid,
-                position,
+                placement,
             });
         }
 

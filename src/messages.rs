@@ -22,6 +22,8 @@ const MSG_MOVE_PLAYER: u8 = 2;
 const MSG_GET_PLAYER_POS: u8 = 3;
 const MSG_MOVE_ITEM: u8 = 4;
 const MSG_USE_ITEM: u8 = 5;
+const MSG_CLOSE_CONTAINER: u8 = 6;
+const MSG_OPEN_PARENT_CONTAINER: u8 = 7;
 
 #[derive(Clone, Debug)]
 pub enum ClientMessage {
@@ -46,6 +48,12 @@ pub enum ClientMessage {
         item_id: ItemId,
         stack_index: u16,
     },
+    CloseContainer {
+        container_id: ContainerId,
+    },
+    OpenParentContainer {
+        container_id: ContainerId,
+    },
 }
 
 // server
@@ -62,6 +70,8 @@ const MSG_TEXT_MESSAGE: u8 = 9;
 const MSG_USE_ITEM_ACK: u8 = 10;
 const MSG_OPEN_CONTAINER: u8 = 11;
 const MSG_UPDATE_CONTAINER: u8 = 12;
+const MSG_CONTAINER_CLOSED: u8 = 13;
+const MSG_PLAYER_WALK_DENIED: u8 = 14;
 
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
@@ -105,6 +115,7 @@ pub enum ServerMessage {
     OpenContainer {
         container_id: ContainerId,
         capacity: u8,
+        has_parent: bool,
         title: String,
         items: Box<[Option<(ItemId, u8)>]>,
     },
@@ -112,6 +123,10 @@ pub enum ServerMessage {
         container_id: ContainerId,
         items: Box<[Option<(ItemId, u8)>]>,
     },
+    ContainerClosed {
+        container_id: ContainerId,
+    },
+    PlayerWalkDenied,
 }
 
 #[derive(Error, Debug)]
@@ -176,6 +191,12 @@ impl Decoder for GameMessageCodec {
                 position: decode_position(buf),
                 item_id: buf.get_u16_le(),
                 stack_index: buf.get_u16_le(),
+            })),
+            MSG_CLOSE_CONTAINER => Ok(Some(ClientMessage::CloseContainer {
+                container_id: buf.get_u16_le(),
+            })),
+            MSG_OPEN_PARENT_CONTAINER => Ok(Some(ClientMessage::OpenParentContainer {
+                container_id: buf.get_u16_le(),
             })),
             _ => Err(MessageDecodeError::WrongSequence),
         }
@@ -283,12 +304,14 @@ impl Encoder<ServerMessage> for GameMessageCodec {
             ServerMessage::OpenContainer {
                 container_id,
                 capacity,
+                has_parent,
                 title,
                 items,
             } => {
                 dst.put_u8(MSG_OPEN_CONTAINER);
                 dst.put_u16_le(container_id);
                 dst.put_u8(capacity);
+                dst.put_u8(if has_parent { 1 } else { 0 });
                 let title_bytes = title.as_bytes();
                 dst.put_u8(title_bytes.len() as u8);
                 dst.put_slice(title_bytes);
@@ -302,6 +325,11 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u16_le(container_id);
                 encode_tile(&items, dst);
             }
+            ServerMessage::ContainerClosed { container_id } => {
+                dst.put_u8(MSG_CONTAINER_CLOSED);
+                dst.put_u16_le(container_id);
+            }
+            ServerMessage::PlayerWalkDenied => dst.put_u8(MSG_PLAYER_WALK_DENIED),
         }
 
         let payload_len = (dst.len() - len_offset - 2) as u16;

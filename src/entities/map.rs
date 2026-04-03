@@ -5,8 +5,8 @@ use thiserror::Error;
 
 use crate::constants::MAX_VISIBLE_ITEMS;
 use crate::entities::agent::{Agent, AgentKey};
-use crate::entities::items::{Item, ItemAttribute, ItemFlag, ItemGuid, ItemId};
-use crate::entities::position::Position;
+use crate::entities::items::{Item, ItemAttribute, ItemFlag, ItemGuid};
+use crate::entities::position::{ItemPlacement, Position};
 
 #[derive(Debug, Clone)]
 pub struct MapTile {
@@ -192,35 +192,82 @@ impl GameMap {
 
     pub fn remove_item(
         &mut self,
-        pos: &Position,
-        index: usize,
+        from: &ItemPlacement,
+        guid: ItemGuid,
         amount: u8,
-        item_id: ItemId,
-    ) -> Option<Item> {
-        let Ok(tile) = self.get_tile_mut(pos) else {
+    ) -> Option<(Item, Option<(ItemGuid, usize)>)> {
+        let ItemPlacement::Map(pos) = from else {
             return None;
         };
-        let item_amount = {
-            let item = tile.items.get(index)?;
-            if item.item_id != item_id {
-                return None;
+        let tile = self.get_tile_mut(pos).ok()?;
+
+        if let Some(idx) = tile.items.iter().position(|i| i.guid == guid) {
+            let current_amount = tile.items[idx].amount;
+            if current_amount > amount {
+                let item = &mut tile.items[idx];
+                item.amount -= amount;
+                return Some((
+                    Item {
+                        guid: ItemGuid::new(),
+                        config: item.config.clone(),
+                        item_id: item.item_id,
+                        amount,
+                        content: None,
+                    },
+                    None,
+                ));
+            } else if current_amount == amount {
+                return Some((tile.items.remove(idx), None));
             }
-            item.amount
-        };
-        if item_amount > amount {
-            let item = tile.items.get_mut(index).unwrap();
-            item.amount -= amount;
-            let new_item = Item {
-                guid: ItemGuid::new(),
-                config: item.config.clone(),
-                item_id: item.item_id,
-                amount,
-                content: None,
-            };
-            return Some(new_item);
-        } else if item_amount == amount {
-            let item = tile.items.remove(index);
-            return Some(item);
+            return None;
+        }
+
+        // Recurse into containers sitting on the tile.
+        for item in tile.items.iter_mut() {
+            if let Some(content) = &mut item.content {
+                let found = Self::remove_from_container(&item.guid, content, &guid, amount);
+                if found.is_some() {
+                    return found;
+                }
+            }
+        }
+        None
+    }
+
+    fn remove_from_container(
+        parent_guid: &ItemGuid,
+        items: &mut Vec<Item>,
+        guid: &ItemGuid,
+        amount: u8,
+    ) -> Option<(Item, Option<(ItemGuid, usize)>)> {
+        if let Some(idx) = items.iter().position(|i| i.guid == *guid) {
+            let current_amount = items[idx].amount;
+            if current_amount > amount {
+                let item = &mut items[idx];
+                item.amount -= amount;
+                return Some((
+                    Item {
+                        guid: ItemGuid::new(),
+                        config: item.config.clone(),
+                        item_id: item.item_id,
+                        amount,
+                        content: None,
+                    },
+                    Some((item.guid.clone(), idx)),
+                ));
+            } else if current_amount == amount {
+                return Some((items.remove(idx), Some((parent_guid.clone(), idx))));
+            }
+            return None;
+        }
+
+        for item in items.iter_mut() {
+            if let Some(content) = &mut item.content {
+                let found = Self::remove_from_container(&item.guid, content, guid, amount);
+                if found.is_some() {
+                    return found;
+                }
+            }
         }
         None
     }
@@ -231,11 +278,80 @@ impl GameMap {
         Ok(())
     }
 
+    pub fn add_to_container(
+        &mut self,
+        pos: &Position,
+        item: Item,
+        target_container: &ItemGuid,
+        slot: usize,
+    ) -> Result<(), MapError> {
+        let tile = self.get_tile_mut(pos)?;
+        for existing_item in &mut tile.items {
+            if let Some(container) = Self::find_container_mut(existing_item, target_container) {
+                if let Some(content) = &mut container.content {
+                    content.insert(slot, item);
+                    return Ok(());
+                }
+            }
+        }
+        Err(MapError::EntityNotInPosition)
+    }
+
+    fn find_container_mut<'a>(item: &'a mut Item, target: &ItemGuid) -> Option<&'a mut Item> {
+        if item.guid == *target {
+            return Some(item);
+        }
+        if let Some(content) = &mut item.content {
+            for inner in content {
+                if let Some(found) = Self::find_container_mut(inner, target) {
+                    return Some(found);
+                }
+            }
+        }
+        None
+    }
+
+    pub fn get_parent_container(&self, pos: &Position, guid: &ItemGuid) -> Option<&ItemGuid> {
+        let Ok(tile) = self.get_tile(pos) else {
+            return None;
+        };
+
+        for it in tile.items.iter() {
+            if let Some((parent_guid, _)) = Self::find_by_id_inner(it, guid, None) {
+                return parent_guid;
+            }
+        }
+        None
+    }
+
     pub fn get_item_by_id(&self, pos: &Position, guid: &ItemGuid) -> Option<&Item> {
         let Ok(tile) = self.get_tile(pos) else {
             return None;
         };
 
-        tile.items.iter().find(|i| i.guid == *guid)
+        for it in tile.items.iter() {
+            if let Some((_, item)) = Self::find_by_id_inner(it, guid, None) {
+                return Some(item);
+            }
+        }
+        None
+    }
+
+    fn find_by_id_inner<'a>(
+        item: &'a Item,
+        guid: &ItemGuid,
+        parent_guid: Option<&'a ItemGuid>,
+    ) -> Option<(Option<&'a ItemGuid>, &'a Item)> {
+        if item.guid == *guid {
+            return Some((parent_guid, item));
+        }
+        if let Some(content) = &item.content {
+            for inner in content {
+                if let Some(found) = Self::find_by_id_inner(inner, guid, Some(&item.guid)) {
+                    return Some(found);
+                }
+            }
+        }
+        None
     }
 }

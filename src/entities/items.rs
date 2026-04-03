@@ -95,4 +95,15 @@ impl Item {
     pub fn get_name(&self) -> &str {
         &self.config.name
     }
+
+    pub fn is_full(&self) -> bool {
+        self.config
+            .get_attributes()
+            .find_map(|attr| match attr {
+                ItemAttribute::Capacity(cap) => Some(*cap as usize),
+                _ => None,
+            })
+            .map(|cap| self.content.as_ref().map_or(0, |content| content.len()) >= cap)
+            .unwrap_or(false)
+    }
 }

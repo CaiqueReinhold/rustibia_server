@@ -1,7 +1,10 @@
-use std::ops::Add;
+use std::ops::{Add, Sub};
 
-use crate::constants::{
-    CONTAINER_COORD_FLAG, INVENTORY_COORD_FLAG, PLAYER_VIEWPORT_HEIGHT, PLAYER_VIEWPORT_WIDTH,
+use crate::{
+    constants::{
+        CONTAINER_COORD_FLAG, INVENTORY_COORD_FLAG, PLAYER_VIEWPORT_HEIGHT, PLAYER_VIEWPORT_WIDTH,
+    },
+    entities::player::InventorySlot,
 };
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
@@ -89,7 +92,56 @@ impl Add<Direction> for Position {
     }
 }
 
-#[derive(Clone, Debug)]
+impl Sub<Direction> for Position {
+    type Output = Position;
+
+    fn sub(self, rhs: Direction) -> Self::Output {
+        match rhs {
+            Direction::North => Self {
+                x: self.x,
+                y: self.y + 1,
+                z: self.z,
+            },
+            Direction::South => Self {
+                x: self.x,
+                y: self.y - 1,
+                z: self.z,
+            },
+            Direction::East => Self {
+                x: self.x - 1,
+                y: self.y,
+                z: self.z,
+            },
+            Direction::West => Self {
+                x: self.x + 1,
+                y: self.y,
+                z: self.z,
+            },
+            Direction::NorthEast => Self {
+                x: self.x - 1,
+                y: self.y + 1,
+                z: self.z,
+            },
+            Direction::NorthWest => Self {
+                x: self.x + 1,
+                y: self.y + 1,
+                z: self.z,
+            },
+            Direction::SouthEast => Self {
+                x: self.x - 1,
+                y: self.y - 1,
+                z: self.z,
+            },
+            Direction::SouthWest => Self {
+                x: self.x + 1,
+                y: self.y - 1,
+                z: self.z,
+            },
+        }
+    }
+}
+
+#[derive(Clone, Debug, Copy)]
 pub enum Direction {
     North,
     East,
@@ -111,4 +163,10 @@ impl Direction {
                 | Direction::SouthWest
         )
     }
+}
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
+pub enum ItemPlacement {
+    Map(Position),            // position and stack position
+    Inventory(InventorySlot), // slot and guid
 }

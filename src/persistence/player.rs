@@ -59,7 +59,7 @@ impl PlayerRepository {
                     current: 100,
                     maximum: 100,
                 },
-                base_speed: 80,
+                base_speed: 120,
                 outfit: 133,
             })
         } else {

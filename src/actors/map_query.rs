@@ -1,11 +1,14 @@
+use tracing::info;
+
 use crate::{
     constants::{MAX_VISIBLE_ITEMS, PLAYER_VIEWPORT_HEIGHT, PLAYER_VIEWPORT_WIDTH, VIEWPORT_SIZE},
     entities::{
         agent::AgentKey,
-        items::{Item, ItemGuid, ItemId},
+        items::{ContainerId, Item, ItemGuid, ItemId},
         map::GameMap,
-        position::{Direction, Position},
+        position::{Direction, ItemPlacement, Position},
     },
+    local_id::LocalIdMap,
     messages::ItemStack,
 };
 
@@ -119,14 +122,30 @@ pub fn retrieve_item<'a>(
     position: &'a Position,
     item_id: ItemId,
     stack_index: u16,
-) -> Option<&'a Item> {
-    if position.is_container_coord() || position.is_inventory_coord() {
-        // validate is take
-        // validate item exists in the position
-        None
+    containers: &'a LocalIdMap<ItemGuid>,
+    agent_key: AgentKey,
+) -> Option<(&'a Item, ItemPlacement)> {
+    if position.is_container_coord() {
+        let container_id = position.y as ContainerId;
+        let guid = containers.get_global(container_id)?;
+        let (container, placement) = find_item_in_reach(map, guid, agent_key)?;
+        let slot = position.z as usize;
+        let item = container.content.as_ref()?.get(slot);
+        item.filter(|it| it.item_id == item_id)
+            .map(|item| (item, placement))
+    } else if position.is_inventory_coord() {
+        todo!("Implement inventory retrieval");
     } else {
+        info!("retrieving from map at position {:?}", position);
+        info!(
+            "looking for item_id {} at stack index {}",
+            item_id, stack_index
+        );
+        let items = map.get_visible_items(position).ok()?;
+        info!("items at position: {:?}", items.collect::<Vec<&Item>>());
         let item = map.get_item_at(position, stack_index as usize);
         item.filter(|it| it.item_id == item_id)
+            .map(|item| (item, ItemPlacement::Map(position.clone())))
     }
 }
 
@@ -144,15 +163,29 @@ pub fn find_item_in_reach<'a>(
     map: &'a GameMap,
     guid: &'a ItemGuid,
     agent_key: AgentKey,
-) -> Option<&'a Item> {
+) -> Option<(&'a Item, ItemPlacement)> {
     let player_pos = map.agent_position(agent_key)?;
     for pos in iter_adjacent(player_pos) {
         if let Some(item) = map.get_item_by_id(&pos, guid) {
-            return Some(item);
+            return Some((item, ItemPlacement::Map(pos)));
         }
     }
 
     // TODO: check for player inventory
 
+    None
+}
+
+pub fn find_parent_container<'a>(
+    map: &'a GameMap,
+    guid: &'a ItemGuid,
+    agent_key: AgentKey,
+) -> Option<(&'a ItemGuid, ItemPlacement)> {
+    let player_pos = map.agent_position(agent_key)?;
+    for pos in iter_adjacent(player_pos) {
+        if let Some(parent_guid) = map.get_parent_container(&pos, guid) {
+            return Some((parent_guid, ItemPlacement::Map(pos)));
+        }
+    }
     None
 }

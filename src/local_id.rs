@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+#[derive(Debug)]
 /// Maps arbitrary global IDs (e.g. item GUIDs, agent keys) to small reusable
 /// local IDs scoped to a session. Local IDs are u8 values recycled when freed.
 pub struct LocalIdMap<G> {
@@ -18,7 +19,7 @@ where
             global_to_local: HashMap::new(),
             local_to_global: HashMap::new(),
             free_list: Vec::new(),
-            next_id: 0,
+            next_id: 1,
         }
     }
 
