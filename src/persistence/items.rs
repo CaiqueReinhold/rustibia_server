@@ -76,7 +76,7 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
             let n = value.as_u64()? as u32;
             match key {
                 "capacity" => Some(ItemAttribute::Capacity(n as u8)),
-                "weight" => Some(ItemAttribute::Weigth(n)),
+                "weight" => Some(ItemAttribute::Weight(n)),
                 "tile_friction" => Some(ItemAttribute::TileFriction(n)),
                 _ => None,
             }

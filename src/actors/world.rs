@@ -9,7 +9,7 @@ use tokio::{
     select,
     sync::{broadcast, mpsc},
 };
-use tracing::{debug, info, warn};
+use tracing::{debug, error, info, warn};
 
 use super::{session::SessionCommand, ActorHandle};
 use crate::config::CONFIG;
@@ -62,6 +62,7 @@ pub enum BroadcastMessage {
     },
     MoveDenied {
         agent_key: AgentKey,
+        message: String,
     },
     MoveAck {
         agent_key: AgentKey,
@@ -85,6 +86,9 @@ pub enum BroadcastMessage {
     UpdateInventorySlot {
         agent_key: AgentKey,
         slot: InventorySlot,
+    },
+    UpdatePlayerCapacity {
+        agent_key: AgentKey,
     },
 }
 
@@ -344,99 +348,143 @@ impl WorldActor {
 
         if let ItemPlacement::Map(pos) = &from {
             if !player_pos.is_adjacent(pos) {
-                self.add_broadcast(BroadcastMessage::MoveDenied { agent_key: agent });
+                self.add_broadcast(BroadcastMessage::MoveDenied {
+                    agent_key: agent,
+                    message: "Item not in reach".to_string(),
+                });
                 return Ok(());
             }
         }
 
-        let source = self.map.remove_item(&from, item_guid, amount).map(|it| {
-            if let Some((parent, _)) = &it.1 {
-                (
-                    BroadcastMessage::UpdateContainer {
-                        guid: parent.clone(),
-                        placement: from.clone(),
-                    },
-                    it,
-                )
-            } else {
-                match &from {
-                    ItemPlacement::Map(pos) => (
-                        BroadcastMessage::TileChanged {
-                            position: pos.clone(),
-                        },
-                        it,
-                    ),
-                    ItemPlacement::Inventory(slot, agent_key) => (
+        // --- Remove from source ---
+        let source = match &from {
+            ItemPlacement::Map(pos) => {
+                self.map
+                    .remove_item_from_tile(pos, item_guid, amount)
+                    .map(|it| {
+                        let change = if let Some((parent, _)) = &it.1 {
+                            BroadcastMessage::UpdateContainer {
+                                guid: parent.clone(),
+                                placement: from.clone(),
+                            }
+                        } else {
+                            BroadcastMessage::TileChanged {
+                                position: pos.clone(),
+                            }
+                        };
+                        (change, it)
+                    })
+            }
+            ItemPlacement::Inventory(slot, agent_key) => self
+                .map
+                .get_player_mut(agent)
+                .and_then(|player| player.inventory.remove(*slot, &item_guid, amount))
+                .map(|it| {
+                    let change = if let Some((parent, _)) = &it.1 {
+                        BroadcastMessage::UpdateContainer {
+                            guid: parent.clone(),
+                            placement: from.clone(),
+                        }
+                    } else {
                         BroadcastMessage::UpdateInventorySlot {
                             agent_key: *agent_key,
                             slot: *slot,
-                        },
-                        it,
-                    ),
-                }
-            }
-        });
+                        }
+                    };
+                    (change, it)
+                }),
+        };
 
         let Some((source_change, (item, parent))) = source else {
-            self.add_broadcast(BroadcastMessage::MoveDenied { agent_key: agent });
+            self.add_broadcast(BroadcastMessage::MoveDenied {
+                agent_key: agent,
+                message: "Can't move this".to_string(),
+            });
             return Ok(());
         };
 
-        let target_change = if let Some(target_container) = target_container.as_ref() {
-            if self
-                .map
-                .add_to_container(&to, target_container, 0, item.clone())
-                .is_ok()
-            {
-                Some(BroadcastMessage::UpdateContainer {
-                    guid: target_container.clone(),
-                    placement: to.clone(),
-                })
-            } else {
-                None
-            }
-        } else {
-            match &to {
-                ItemPlacement::Map(pos) => {
-                    if self.map.drop_item(pos, item.clone()).is_ok() {
-                        Some(BroadcastMessage::TileChanged {
+        // --- Add to target ---
+        // parent container info as Option<(&guid, slot)> — used for displacing and rollback
+        let parent_ref = parent.as_ref().map(|(guid, slot)| (guid, *slot));
+
+        let target_change = match &to {
+            ItemPlacement::Map(pos) => {
+                let container = target_container.as_ref().map(|g| (g, 0usize));
+                if self.map.place_item(pos, container, item.clone()).is_ok() {
+                    Some(if let Some(guid) = target_container.as_ref() {
+                        BroadcastMessage::UpdateContainer {
+                            guid: guid.clone(),
+                            placement: to.clone(),
+                        }
+                    } else {
+                        BroadcastMessage::TileChanged {
                             position: pos.clone(),
+                        }
+                    })
+                } else {
+                    None
+                }
+            }
+            ItemPlacement::Inventory(slot, _) => {
+                let can_carry = self
+                    .map
+                    .get_player(agent)
+                    .map(|player| player.can_carry(item.total_weight()))
+                    .unwrap_or(false);
+                if !can_carry {
+                    self.add_broadcast(BroadcastMessage::MoveDenied {
+                        agent_key: agent,
+                        message: "Not enough capacity".to_string(),
+                    });
+                    return Ok(());
+                }
+
+                if let Some(target_container) = target_container.as_ref() {
+                    // Moving into a container within the inventory slot
+                    let result = self.map.get_player_mut(agent).map(|player| {
+                        player
+                            .inventory
+                            .insert(*slot, Some((target_container, 0)), item.clone())
+                    });
+                    if let Some(result) = result {
+                        if let Err(e) = result {
+                            self.add_broadcast(BroadcastMessage::MoveDenied {
+                                agent_key: agent,
+                                message: e.to_string(),
+                            });
+                            return Ok(());
+                        }
+                        Some(BroadcastMessage::UpdateContainer {
+                            guid: target_container.clone(),
+                            placement: to.clone(),
                         })
                     } else {
                         None
                     }
-                }
-                ItemPlacement::Inventory(slot, _) => {
+                } else {
+                    // Moving directly into an equipment slot
                     let current_item = self
                         .map
-                        .get_agent_mut(agent)
-                        .and_then(|ag| ag.get_player_mut())
-                        .and_then(|player| player.inventory.remove(slot));
+                        .get_player_mut(agent)
+                        .and_then(|player| player.inventory.take_slot(slot));
 
-                    // first, remove the item occupying the slot and place it in the source position
+                    // Displace any item currently in the slot back to the source
+                    // (inventory-to-inventory swaps are rejected upstream, so from is always Map)
                     if let Some(current_item) = current_item {
-                        if let Some((container_guid, container_slot)) = &parent {
+                        if let ItemPlacement::Map(pos) = &from {
                             if self
                                 .map
-                                .add_to_container(
-                                    &from,
-                                    container_guid,
-                                    *container_slot,
-                                    current_item.clone(),
-                                )
+                                .place_item(pos, parent_ref, current_item.clone())
                                 .is_err()
                             {
-                                // if it can't fit the container, place on the ground at the player pos
-                                let pos = self.map.agent_position(agent).cloned();
-                                if let Some(pos) = pos {
-                                    let _ = self.map.drop_item(&pos, current_item);
+                                let fallback = self.map.agent_position(agent).cloned();
+                                if let Some(fallback) = fallback {
+                                    if self.map.place_item(&fallback, None, current_item).is_err() {
+                                        error!("Failed to displace item on move. Agent: {:?}, Item: {:?}", agent, item);
+                                    }
                                 }
                             }
-                        } else if let ItemPlacement::Map(pos) = &from {
-                            let _ = self.map.drop_item(pos, current_item);
                         }
-                        // no need to cover ItemPlacement::Iventory as it would be rejected early
-                        // on slot type validation
                     }
 
                     // if item is two handed, also remove shield and add it to first available container
@@ -447,13 +495,9 @@ impl WorldActor {
                         // TODO
                     }
 
-                    // lastly, insert item in container
-                    let player = self
-                        .map
-                        .get_agent_mut(agent)
-                        .and_then(|ag| ag.get_player_mut());
+                    let player = self.map.get_player_mut(agent);
                     if let Some(player) = player {
-                        player.inventory.insert(*slot, item.clone());
+                        let _ = player.inventory.insert(*slot, None, item.clone());
                         Some(BroadcastMessage::UpdateInventorySlot {
                             agent_key: agent,
                             slot: *slot,
@@ -466,29 +510,32 @@ impl WorldActor {
         };
 
         let Some(tartget_change) = target_change else {
-            // Try to put the item back in the source if the target failed
-            if let Some((container_guid, slot)) = &parent {
-                let _ = self
-                    .map
-                    .add_to_container(&from, container_guid, *slot, item);
-            } else {
-                match &from {
-                    ItemPlacement::Map(pos) => {
-                        let _ = self.map.drop_item(pos, item);
-                    }
-                    ItemPlacement::Inventory(slot, _) => {
-                        self.map
-                            .get_agent_mut(agent)
-                            .and_then(|a| a.get_player_mut())
-                            .and_then(|player| player.inventory.insert(*slot, item));
+            // Restore item to its exact source position on failure
+            match &from {
+                ItemPlacement::Map(pos) => {
+                    let _ = self.map.place_item(pos, parent_ref, item);
+                }
+                ItemPlacement::Inventory(slot, _) => {
+                    if let Some(player) = self.map.get_player_mut(agent) {
+                        let _ = player.inventory.insert(*slot, parent_ref, item);
                     }
                 }
             }
 
-            self.add_broadcast(BroadcastMessage::MoveDenied { agent_key: agent });
+            self.add_broadcast(BroadcastMessage::MoveDenied {
+                agent_key: agent,
+                message: "Can't move this".to_string(),
+            });
             return Ok(());
         };
 
+        let player = self.map.get_player_mut(agent);
+        if let Some(player) = player {
+            if player.capacity.current != player.inventory.carried_weight {
+                player.capacity.current = player.inventory.carried_weight;
+                self.add_broadcast(BroadcastMessage::UpdatePlayerCapacity { agent_key: agent });
+            }
+        }
         self.add_broadcast(BroadcastMessage::MoveAck { agent_key: agent });
         self.add_broadcast(source_change);
         self.add_broadcast(tartget_change);
@@ -520,8 +567,7 @@ impl WorldActor {
             }
             ItemPlacement::Inventory(slot, inv_agent_key) => self
                 .map
-                .get_agent(*inv_agent_key)
-                .and_then(|agent| agent.get_player())
+                .get_player(*inv_agent_key)
                 .and_then(|player| player.inventory.get(slot))
                 .filter(|item| item.guid == guid),
         };

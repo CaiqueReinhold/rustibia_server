@@ -41,7 +41,7 @@ pub enum FloorChangeDirection {
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub enum ItemAttribute {
     Capacity(u8),
-    Weigth(u32),
+    Weight(u32),
     FloorChange(FloorChangeDirection),
     Inventory(InventorySlot),
     TileFriction(u32),
@@ -105,5 +105,37 @@ impl Item {
             })
             .map(|cap| self.content.as_ref().map_or(0, |content| content.len()) >= cap)
             .unwrap_or(false)
+    }
+
+    pub fn container_capacity(&self) -> Option<u8> {
+        self.config.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::Capacity(c) => Some(*c),
+            _ => None,
+        })
+    }
+
+    pub fn total_weight(&self) -> u32 {
+        let own = self.config.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::Weight(w) => Some(*w),
+            _ => None,
+        }).unwrap_or(0) * self.amount as u32;
+        let inner = self.content.as_ref().map_or(0, |items| {
+            items.iter().map(|i| i.total_weight()).sum()
+        });
+        own + inner
+    }
+
+    pub fn find_by_guid(&self, guid: &ItemGuid) -> Option<&Item> {
+        if self.guid == *guid {
+            return Some(self);
+        }
+        self.content.as_ref()?.iter().find_map(|i| i.find_by_guid(guid))
+    }
+
+    pub fn find_by_guid_mut(&mut self, guid: &ItemGuid) -> Option<&mut Item> {
+        if self.guid == *guid {
+            return Some(self);
+        }
+        self.content.as_mut()?.iter_mut().find_map(|i| i.find_by_guid_mut(guid))
     }
 }

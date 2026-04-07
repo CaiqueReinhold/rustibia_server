@@ -1,5 +1,3 @@
-use tracing::info;
-
 use crate::{
     entities::{
         agent::{Agent, AgentKey},
@@ -12,13 +10,9 @@ use crate::{
 };
 
 pub fn get_player_desc(map: &GameMap, key: AgentKey) -> Option<ServerMessage> {
-    info!("start");
     let agent = map.get_agent(key)?;
-    info!("agent");
     let position = map.agent_position(key)?;
-    info!("position");
     let exp = agent.get_skill(SkillType::Level)?;
-    info!("exp");
     let player = agent.get_player()?;
 
     let slot_item = |slot: InventorySlot| player.inventory.get(&slot).map(|it| it.item_id);
@@ -50,29 +44,5 @@ pub fn find_item_in_slot<'a>(
     guid: &'a ItemGuid,
 ) -> Option<&'a Item> {
     let player = agent.get_player()?;
-    let item = player.inventory.get(&slot)?;
-    if item.guid == *guid {
-        return Some(item);
-    } else if let Some(content) = &item.content {
-        return find_item_recursive(guid, content);
-    }
-    None
-}
-
-fn find_item_recursive<'a>(guid: &'a ItemGuid, content: &'a Vec<Item>) -> Option<&'a Item> {
-    for item in content {
-        if item.guid == *guid {
-            return Some(item);
-        }
-    }
-
-    for item in content {
-        if let Some(content) = &item.content {
-            let found = find_item_recursive(guid, content);
-            if found.is_some() {
-                return found;
-            }
-        }
-    }
-    None
+    player.inventory.get(&slot)?.find_by_guid(guid)
 }

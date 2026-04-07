@@ -5,8 +5,9 @@ use thiserror::Error;
 
 use crate::constants::MAX_VISIBLE_ITEMS;
 use crate::entities::agent::{Agent, AgentKey};
+use crate::entities::player::Player;
 use crate::entities::items::{Item, ItemAttribute, ItemFlag, ItemGuid};
-use crate::entities::position::{ItemPlacement, Position};
+use crate::entities::position::Position;
 
 #[derive(Debug, Clone)]
 pub struct MapTile {
@@ -124,6 +125,14 @@ impl GameMap {
         self.agents.get_mut(key)
     }
 
+    pub fn get_player(&self, key: AgentKey) -> Option<&Player> {
+        self.agents.get(key)?.get_player()
+    }
+
+    pub fn get_player_mut(&mut self, key: AgentKey) -> Option<&mut Player> {
+        self.agents.get_mut(key)?.get_player_mut()
+    }
+
     pub fn can_move(&self, pos: &Position, _key: AgentKey) -> bool {
         let tile = self.get_tile(pos);
         if tile.is_err() {
@@ -192,72 +201,43 @@ impl GameMap {
                 .any(|i| i.config.has_flag(ItemFlag::Bottom))
     }
 
-    pub fn remove_item(
+    pub fn remove_item_from_tile(
         &mut self,
-        placement: &ItemPlacement,
+        pos: &Position,
         guid: ItemGuid,
         amount: u8,
     ) -> Option<(Item, Option<(ItemGuid, usize)>)> {
-        match placement {
-            ItemPlacement::Map(pos) => {
-                let tile = self.get_tile_mut(pos).ok()?;
+        let tile = self.get_tile_mut(pos).ok()?;
 
-                if let Some(idx) = tile.items.iter().position(|i| i.guid == guid) {
-                    let current_amount = tile.items[idx].amount;
-                    if current_amount > amount {
-                        let item = &mut tile.items[idx];
-                        item.amount -= amount;
-                        return Some((
-                            Item {
-                                guid: ItemGuid::new(),
-                                config: item.config.clone(),
-                                item_id: item.item_id,
-                                amount,
-                                content: None,
-                            },
-                            None,
-                        ));
-                    } else if current_amount == amount {
-                        return Some((tile.items.remove(idx), None));
-                    }
-                    return None;
-                }
+        if let Some(idx) = tile.items.iter().position(|i| i.guid == guid) {
+            let current_amount = tile.items[idx].amount;
+            if current_amount > amount {
+                let item = &mut tile.items[idx];
+                item.amount -= amount;
+                return Some((
+                    Item {
+                        guid: ItemGuid::new(),
+                        config: item.config.clone(),
+                        item_id: item.item_id,
+                        amount,
+                        content: None,
+                    },
+                    None,
+                ));
+            } else if current_amount == amount {
+                return Some((tile.items.remove(idx), None));
+            }
+            return None;
+        }
 
-                for item in tile.items.iter_mut() {
-                    if let Some(content) = &mut item.content {
-                        let found = Self::remove_from_container(&item.guid, content, &guid, amount);
-                        if found.is_some() {
-                            return found;
-                        }
-                    }
+        for item in tile.items.iter_mut() {
+            if let Some(content) = &mut item.content {
+                let found = Self::remove_from_container(&item.guid, content, &guid, amount);
+                if found.is_some() {
+                    return found;
                 }
             }
-            ItemPlacement::Inventory(slot, agent_key) => {
-                let agent = self.get_agent_mut(*agent_key)?;
-                let player = agent.get_player_mut()?;
-                if let Some(item) = player.inventory.get_mut(slot) {
-                    if item.guid == guid {
-                        if item.amount > amount {
-                            item.amount -= amount;
-                            return Some((
-                                Item {
-                                    guid: ItemGuid::new(),
-                                    config: item.config.clone(),
-                                    item_id: item.item_id,
-                                    amount,
-                                    content: None,
-                                },
-                                None,
-                            ));
-                        } else if item.amount == amount {
-                            return Some((player.inventory.remove(slot).unwrap(), None));
-                        }
-                    } else if let Some(content) = &mut item.content {
-                        return Self::remove_from_container(&item.guid, content, &guid, amount);
-                    }
-                }
-            }
-        };
+        }
         None
     }
 
@@ -299,90 +279,40 @@ impl GameMap {
         None
     }
 
-    pub fn drop_item(&mut self, pos: &Position, item: Item) -> Result<(), MapError> {
-        let tile = self.get_tile_mut(pos)?;
-        tile.items.push(item);
-        Ok(())
-    }
-
-    pub fn add_to_container(
+    /// Place `item` at `pos`.
+    ///
+    /// - `container`: if `None`, pushes directly onto the tile.
+    /// - `container`: if `Some((guid, slot))`, finds that container on the tile
+    ///   and inserts the item at `slot` within it.
+    pub fn place_item(
         &mut self,
-        placement: &ItemPlacement,
-        target_container: &ItemGuid,
-        container_slot: usize,
+        pos: &Position,
+        container: Option<(&ItemGuid, usize)>,
         item: Item,
     ) -> Result<(), MapError> {
-        match placement {
-            ItemPlacement::Map(pos) => {
+        match container {
+            None => {
+                let tile = self.get_tile_mut(pos)?;
+                tile.items.push(item);
+                Ok(())
+            }
+            Some((target, slot)) => {
                 let tile = self.get_tile_mut(pos)?;
                 for existing_item in &mut tile.items {
-                    if let Some(container) =
-                        Self::find_container_mut(existing_item, target_container)
-                    {
-                        if let Some(content) = &mut container.content {
-                            let cap = container
-                                .config
-                                .get_attributes()
-                                .find_map(|attr| match attr {
-                                    ItemAttribute::Capacity(c) => Some(*c),
-                                    _ => None,
-                                })
-                                .unwrap();
+                    if let Some(c) = existing_item.find_by_guid_mut(target) {
+                        let cap = c.container_capacity().unwrap();
+                        if let Some(content) = &mut c.content {
                             if content.len() >= cap as usize {
                                 return Err(MapError::ContainerIsFull);
                             }
-                            content.insert(container_slot, item);
+                            content.insert(slot, item);
                             return Ok(());
                         }
                     }
                 }
-            }
-            ItemPlacement::Inventory(inventory_slot, agent_key) => {
-                let Some(agent) = self.get_agent_mut(*agent_key) else {
-                    return Err(MapError::EntityNotInPosition);
-                };
-                let Some(player) = agent.get_player_mut() else {
-                    return Err(MapError::EntityNotInPosition);
-                };
-                let Some(slot_item) = player.inventory.get_mut(inventory_slot) else {
-                    return Err(MapError::EntityNotInPosition);
-                };
-                let Some(container) = Self::find_container_mut(slot_item, target_container) else {
-                    return Err(MapError::EntityNotInPosition);
-                };
-                if let Some(content) = &mut container.content {
-                    let cap = container
-                        .config
-                        .get_attributes()
-                        .find_map(|attr| match attr {
-                            ItemAttribute::Capacity(c) => Some(*c),
-                            _ => None,
-                        })
-                        .unwrap();
-                    if content.len() >= cap as usize {
-                        return Err(MapError::ContainerIsFull);
-                    }
-                    content.insert(container_slot, item);
-                    return Ok(());
-                }
+                Err(MapError::EntityNotInPosition)
             }
         }
-
-        Err(MapError::EntityNotInPosition)
-    }
-
-    fn find_container_mut<'a>(item: &'a mut Item, target: &ItemGuid) -> Option<&'a mut Item> {
-        if item.guid == *target {
-            return Some(item);
-        }
-        if let Some(content) = &mut item.content {
-            for inner in content {
-                if let Some(found) = Self::find_container_mut(inner, target) {
-                    return Some(found);
-                }
-            }
-        }
-        None
     }
 
     pub fn get_parent_container(&self, pos: &Position, guid: &ItemGuid) -> Option<&ItemGuid> {
@@ -402,13 +332,7 @@ impl GameMap {
         let Ok(tile) = self.get_tile(pos) else {
             return None;
         };
-
-        for it in tile.items.iter() {
-            if let Some((_, item)) = Self::find_by_id_inner(it, guid, None) {
-                return Some(item);
-            }
-        }
-        None
+        tile.items.iter().find_map(|it| it.find_by_guid(guid))
     }
 
     fn find_by_id_inner<'a>(

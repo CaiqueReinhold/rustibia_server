@@ -1,6 +1,4 @@
-use std::collections::HashMap;
-
-use crate::entities::{agent::Pool, items::Item};
+use crate::entities::{agent::Pool, inventory::Inventory};
 
 use super::position::Position;
 
@@ -62,5 +60,12 @@ pub struct Player {
     pub position: Position,
     pub origin: Position,
     pub mana: Pool,
-    pub inventory: HashMap<InventorySlot, Item>,
+    pub capacity: Pool,
+    pub inventory: Inventory,
+}
+
+impl Player {
+    pub fn can_carry(&self, additional_weight: u32) -> bool {
+        self.capacity.current + additional_weight <= self.capacity.maximum
+    }
 }

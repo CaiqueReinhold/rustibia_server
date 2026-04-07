@@ -1,4 +1,5 @@
 pub mod agent;
+pub mod inventory;
 pub mod items;
 pub mod map;
 pub mod player;

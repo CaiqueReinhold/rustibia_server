@@ -134,8 +134,7 @@ pub fn retrieve_item<'a>(
         item.filter(|it| it.item_id == item_id)
             .map(|item| (item, placement))
     } else if position.is_inventory_coord() {
-        let agent = map.get_agent(agent_key)?;
-        let player = agent.get_player()?;
+        let player = map.get_player(agent_key)?;
         let slot = InventorySlot::from_id(position.y)?;
         player
             .inventory

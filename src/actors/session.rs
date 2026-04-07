@@ -514,9 +514,11 @@ impl SessionActor {
                 agent_key,
                 position,
             } => self.player_spawned(agent_key, position).await,
-            BroadcastMessage::MoveAck { agent_key } => self.move_item_result(agent_key, true).await,
-            BroadcastMessage::MoveDenied { agent_key } => {
-                self.move_item_result(agent_key, false).await
+            BroadcastMessage::MoveAck { agent_key } => {
+                self.move_item_result(agent_key, true, None).await
+            }
+            BroadcastMessage::MoveDenied { agent_key, message } => {
+                self.move_item_result(agent_key, false, Some(message)).await
             }
             BroadcastMessage::TileChanged { position } => self.tile_changed(position).await,
             BroadcastMessage::UseItemAck { agent_key, success } => {
@@ -533,6 +535,9 @@ impl SessionActor {
             BroadcastMessage::PlayerWalkDenied { agent_key } => self.walk_denied(agent_key).await,
             BroadcastMessage::UpdateInventorySlot { agent_key, slot } => {
                 self.update_inventory_slot(agent_key, slot).await
+            }
+            BroadcastMessage::UpdatePlayerCapacity { agent_key } => {
+                self.update_player_capacity(agent_key).await
             }
         }
     }
@@ -620,7 +625,12 @@ impl SessionActor {
         Ok(())
     }
 
-    async fn move_item_result(&self, agent_key: AgentKey, success: bool) -> Result<()> {
+    async fn move_item_result(
+        &self,
+        agent_key: AgentKey,
+        success: bool,
+        message: Option<String>,
+    ) -> Result<()> {
         if self.player_key == Some(agent_key) {
             if success {
                 self.connection
@@ -629,6 +639,16 @@ impl SessionActor {
                     ))
                     .await?;
             } else {
+                if let Some(message) = message {
+                    self.connection
+                        .send(ConnectionCommand::SendPlayerMessage(
+                            ServerMessage::TextMessage {
+                                text: message,
+                                message_type: TextMessageType::ActionDenied,
+                            },
+                        ))
+                        .await?;
+                }
                 self.connection
                     .send(ConnectionCommand::SendPlayerMessage(
                         ServerMessage::MoveItemDenied,
@@ -812,6 +832,23 @@ impl SessionActor {
                     ServerMessage::IventorySlotUpdated { slot, item_id },
                 ))
                 .await?;
+        }
+        Ok(())
+    }
+
+    async fn update_player_capacity(&self, agent_key: AgentKey) -> Result<()> {
+        if self.player_key == Some(agent_key) {
+            let map = self.shared_map.load();
+            if let Some(cap) = map
+                .get_player(agent_key)
+                .map(|player| player.capacity.clone())
+            {
+                self.connection
+                    .send(ConnectionCommand::SendPlayerMessage(
+                        ServerMessage::PlayerCapacityUpdated { cap: cap.current },
+                    ))
+                    .await?;
+            }
         }
         Ok(())
     }

@@ -23,6 +23,7 @@ pub struct PlayerSnapshot {
     pub name: String,
     pub life: Pool,
     pub mana: Pool,
+    pub capacity: Pool,
     pub outfit: (OutfitId, OutfitColors),
     pub skills: HashMap<SkillType, SkillValue>,
     pub inventory: HashMap<InventorySlot, Item>,
@@ -57,6 +58,10 @@ impl PlayerRepository {
                 mana: Pool {
                     current: 100,
                     maximum: 100,
+                },
+                capacity: Pool {
+                    current: 0,
+                    maximum: 40000,
                 },
                 outfit: (133, (1, 2, 3, 4)),
                 inventory: HashMap::new(),

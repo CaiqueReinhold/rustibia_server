@@ -74,6 +74,7 @@ const MSG_UPDATE_CONTAINER: u8 = 12;
 const MSG_CONTAINER_CLOSED: u8 = 13;
 const MSG_PLAYER_WALK_DENIED: u8 = 14;
 const MSG_INVETORY_SLOT_UPDATED: u8 = 15;
+const MSG_PLAYER_CAPACITY_UPDATED: u8 = 16;
 
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
@@ -142,6 +143,9 @@ pub enum ServerMessage {
     IventorySlotUpdated {
         slot: InventorySlot,
         item_id: Option<ItemId>,
+    },
+    PlayerCapacityUpdated {
+        cap: u32,
     },
 }
 
@@ -374,6 +378,10 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u8(MSG_INVETORY_SLOT_UPDATED);
                 dst.put_u8(slot.as_id() as u8);
                 encode_optional_item(item_id, dst);
+            }
+            ServerMessage::PlayerCapacityUpdated { cap } => {
+                dst.put_u8(MSG_PLAYER_CAPACITY_UPDATED);
+                dst.put_u32_le(cap);
             }
         }
 

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use slotmap::new_key_type;
 
-use super::player::Player;
+use super::{inventory::Inventory, player::Player};
 use crate::{
     actors::world::Tick,
     config,
@@ -62,7 +62,8 @@ impl Agent {
                 position: player.position,
                 origin: player.origin,
                 mana: player.mana,
-                inventory: player.inventory,
+                capacity: player.capacity,
+                inventory: Inventory::from_snapshot(player.inventory),
             }),
             name: player.name,
             life: player.life,
