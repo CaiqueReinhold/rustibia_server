@@ -7,8 +7,9 @@ use tokio_util::{
 use crate::{
     constants::{MAX_VISIBLE_ITEMS, VIEWPORT_SIZE},
     entities::{
+        agent::{OutfitColors, OutfitId, Pool},
         items::{ContainerId, ItemId},
-        player::{OutfitId, Pool},
+        player::InventorySlot,
         position::{Direction, Position},
     },
 };
@@ -72,6 +73,7 @@ const MSG_OPEN_CONTAINER: u8 = 11;
 const MSG_UPDATE_CONTAINER: u8 = 12;
 const MSG_CONTAINER_CLOSED: u8 = 13;
 const MSG_PLAYER_WALK_DENIED: u8 = 14;
+const MSG_INVETORY_SLOT_UPDATED: u8 = 15;
 
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
@@ -88,8 +90,18 @@ pub enum ServerMessage {
         level: u16,
         life: Pool,
         mana: Pool,
-        outfit: OutfitId,
+        outfit: (OutfitId, OutfitColors),
         speed: u16,
+        inventory_head: Option<ItemId>,
+        inventory_amulet: Option<ItemId>,
+        inventory_backpack: Option<ItemId>,
+        inventory_chest: Option<ItemId>,
+        inventory_right_hand: Option<ItemId>,
+        inventory_left_hand: Option<ItemId>,
+        inventory_legs: Option<ItemId>,
+        inventory_feet: Option<ItemId>,
+        inventory_ring: Option<ItemId>,
+        inventory_trinket: Option<ItemId>,
     },
     DescribeMap {
         tiles: Box<[ItemStack; VIEWPORT_SIZE]>,
@@ -127,6 +139,10 @@ pub enum ServerMessage {
         container_id: ContainerId,
     },
     PlayerWalkDenied,
+    IventorySlotUpdated {
+        slot: InventorySlot,
+        item_id: Option<ItemId>,
+    },
 }
 
 #[derive(Error, Debug)]
@@ -249,6 +265,16 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 mana,
                 outfit,
                 speed,
+                inventory_head,
+                inventory_amulet,
+                inventory_backpack,
+                inventory_chest,
+                inventory_right_hand,
+                inventory_left_hand,
+                inventory_legs,
+                inventory_feet,
+                inventory_ring,
+                inventory_trinket,
             } => {
                 dst.put_u8(MSG_DESCRIBE_PLAYER);
                 encode_position(position, dst);
@@ -260,8 +286,22 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u32_le(life.maximum);
                 dst.put_u32_le(mana.current);
                 dst.put_u32_le(mana.maximum);
-                dst.put_u16_le(outfit);
+                dst.put_u16_le(outfit.0);
+                dst.put_u8(outfit.1 .0);
+                dst.put_u8(outfit.1 .1);
+                dst.put_u8(outfit.1 .2);
+                dst.put_u8(outfit.1 .3);
                 dst.put_u16_le(speed);
+                encode_optional_item(inventory_head, dst);
+                encode_optional_item(inventory_amulet, dst);
+                encode_optional_item(inventory_backpack, dst);
+                encode_optional_item(inventory_chest, dst);
+                encode_optional_item(inventory_right_hand, dst);
+                encode_optional_item(inventory_left_hand, dst);
+                encode_optional_item(inventory_legs, dst);
+                encode_optional_item(inventory_feet, dst);
+                encode_optional_item(inventory_ring, dst);
+                encode_optional_item(inventory_trinket, dst);
             }
             ServerMessage::DescribeMap { tiles } => {
                 dst.put_u8(MSG_DESCRIBE_MAP);
@@ -330,6 +370,11 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u16_le(container_id);
             }
             ServerMessage::PlayerWalkDenied => dst.put_u8(MSG_PLAYER_WALK_DENIED),
+            ServerMessage::IventorySlotUpdated { slot, item_id } => {
+                dst.put_u8(MSG_INVETORY_SLOT_UPDATED);
+                dst.put_u8(slot.as_id() as u8);
+                encode_optional_item(item_id, dst);
+            }
         }
 
         let payload_len = (dst.len() - len_offset - 2) as u16;
@@ -375,5 +420,13 @@ fn encode_tile(items: &[Option<(ItemId, u8)>], dst: &mut BytesMut) {
 fn encode_text_message_type(text_type: TextMessageType) -> u8 {
     match text_type {
         TextMessageType::ActionDenied => 0x01,
+    }
+}
+
+fn encode_optional_item(item_id: Option<ItemId>, dst: &mut BytesMut) {
+    if let Some(item_id) = item_id {
+        dst.put_u16_le(item_id);
+    } else {
+        dst.put_u16_le(0xFFFF);
     }
 }

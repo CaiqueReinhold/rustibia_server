@@ -1686,6 +1686,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ring
   350:
     name: case of rust bugs
     article: a
@@ -2161,6 +2162,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ring
   407:
     name: grass
     flags:
@@ -3873,6 +3875,7 @@ items:
     - take
     attributes:
       weight: 1800
+      slot: legs
   646:
     name: elvenhair rope
     article: an
@@ -3934,6 +3937,7 @@ items:
     - take
     attributes:
       weight: 800
+      slot: backpack
   654:
     name: costume bag
     article: a
@@ -3950,6 +3954,7 @@ items:
     - take
     attributes:
       weight: 800
+      slot: backpack
   656:
     name: dead cyclops
     article: a
@@ -3987,6 +3992,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   661:
     name: fiery relic sword
     article: a
@@ -3995,6 +4001,7 @@ items:
     - take
     attributes:
       weight: 4800
+      slot: hand
   662:
     name: fiery mystic blade
     article: a
@@ -4003,6 +4010,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: hand
   663:
     name: fiery blacksteel sword
     article: a
@@ -4011,6 +4019,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   664:
     name: fiery dragon slayer
     article: a
@@ -4027,6 +4036,7 @@ items:
     - take
     attributes:
       weight: 5100
+      slot: hand
   666:
     name: fiery knight axe
     article: a
@@ -4035,6 +4045,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   667:
     name: fiery heroic axe
     article: a
@@ -4043,6 +4054,7 @@ items:
     - take
     attributes:
       weight: 6100
+      slot: hand
   668:
     name: fiery headchopper
     article: a
@@ -4051,6 +4063,7 @@ items:
     - take
     attributes:
       weight: 4500
+      slot: hand
   669:
     name: fiery war axe
     article: a
@@ -4067,6 +4080,7 @@ items:
     - take
     attributes:
       weight: 5800
+      slot: hand
   671:
     name: fiery crystal mace
     article: a
@@ -4075,6 +4089,7 @@ items:
     - take
     attributes:
       weight: 8000
+      slot: hand
   672:
     name: fiery cranial basher
     article: a
@@ -4083,6 +4098,7 @@ items:
     - take
     attributes:
       weight: 7800
+      slot: hand
   673:
     name: fiery orcish maul
     article: a
@@ -4143,6 +4159,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   680:
     name: icy relic sword
     article: an
@@ -4151,6 +4168,7 @@ items:
     - take
     attributes:
       weight: 4800
+      slot: hand
   681:
     name: icy mystic blade
     article: an
@@ -4159,6 +4177,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: hand
   682:
     name: icy blacksteel sword
     article: an
@@ -4167,6 +4186,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   683:
     name: icy dragon slayer
     article: an
@@ -4183,6 +4203,7 @@ items:
     - take
     attributes:
       weight: 5100
+      slot: hand
   685:
     name: icy knight axe
     article: an
@@ -4191,6 +4212,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   686:
     name: icy heroic axe
     article: an
@@ -4199,6 +4221,7 @@ items:
     - take
     attributes:
       weight: 6100
+      slot: hand
   687:
     name: icy headchopper
     article: an
@@ -4207,6 +4230,7 @@ items:
     - take
     attributes:
       weight: 4500
+      slot: hand
   688:
     name: icy war axe
     article: an
@@ -4223,6 +4247,7 @@ items:
     - take
     attributes:
       weight: 5800
+      slot: hand
   690:
     name: icy crystal mace
     article: an
@@ -4231,6 +4256,7 @@ items:
     - take
     attributes:
       weight: 8000
+      slot: hand
   691:
     name: icy cranial basher
     article: an
@@ -4239,6 +4265,7 @@ items:
     - take
     attributes:
       weight: 7800
+      slot: hand
   692:
     name: icy orcish maul
     article: an
@@ -4697,6 +4724,7 @@ items:
     - take
     attributes:
       weight: 70
+      slot: ammo
   762:
     name: shiver arrow
     article: a
@@ -4705,6 +4733,7 @@ items:
     - take
     attributes:
       weight: 70
+      slot: ammo
   763:
     name: flaming arrow
     article: a
@@ -4713,6 +4742,7 @@ items:
     - take
     attributes:
       weight: 70
+      slot: ammo
   764:
     name: straw mat
     article: a
@@ -4796,6 +4826,7 @@ items:
     - take
     attributes:
       weight: 70
+      slot: ammo
   775:
     name: mystic flame
     article: a
@@ -4825,6 +4856,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   780:
     name: earth relic sword
     article: an
@@ -4833,6 +4865,7 @@ items:
     - take
     attributes:
       weight: 4800
+      slot: hand
   781:
     name: earth mystic blade
     article: an
@@ -4841,6 +4874,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: hand
   782:
     name: earth blacksteel sword
     article: an
@@ -4849,6 +4883,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   783:
     name: earth dragon slayer
     article: an
@@ -4865,6 +4900,7 @@ items:
     - take
     attributes:
       weight: 5100
+      slot: hand
   785:
     name: earth knight axe
     article: an
@@ -4873,6 +4909,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   786:
     name: earth heroic axe
     article: an
@@ -4881,6 +4918,7 @@ items:
     - take
     attributes:
       weight: 6100
+      slot: hand
   787:
     name: earth headchopper
     article: an
@@ -4889,6 +4927,7 @@ items:
     - take
     attributes:
       weight: 4500
+      slot: hand
   788:
     name: earth war axe
     article: an
@@ -4905,6 +4944,7 @@ items:
     - take
     attributes:
       weight: 5800
+      slot: hand
   790:
     name: earth crystal mace
     article: an
@@ -4913,6 +4953,7 @@ items:
     - take
     attributes:
       weight: 8000
+      slot: hand
   791:
     name: earth cranial basher
     article: an
@@ -4921,6 +4962,7 @@ items:
     - take
     attributes:
       weight: 7800
+      slot: hand
   792:
     name: earth orcish maul
     article: an
@@ -4945,6 +4987,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   795:
     name: energy relic sword
     article: an
@@ -4953,6 +4996,7 @@ items:
     - take
     attributes:
       weight: 4800
+      slot: hand
   796:
     name: energy mystic blade
     article: an
@@ -4961,6 +5005,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: hand
   797:
     name: energy blacksteel sword
     article: an
@@ -4969,6 +5014,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   798:
     name: energy dragon slayer
     article: an
@@ -5001,6 +5047,7 @@ items:
     - take
     attributes:
       weight: 5100
+      slot: hand
   802:
     name: energy knight axe
     article: an
@@ -5009,6 +5056,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   803:
     name: energy heroic axe
     article: an
@@ -5017,6 +5065,7 @@ items:
     - take
     attributes:
       weight: 6100
+      slot: hand
   804:
     name: energy headchopper
     article: an
@@ -5025,6 +5074,7 @@ items:
     - take
     attributes:
       weight: 4500
+      slot: hand
   805:
     name: energy war axe
     article: an
@@ -5041,6 +5091,7 @@ items:
     - take
     attributes:
       weight: 5800
+      slot: hand
   807:
     name: energy crystal mace
     article: an
@@ -5049,6 +5100,7 @@ items:
     - take
     attributes:
       weight: 8000
+      slot: hand
   808:
     name: energy cranial basher
     article: an
@@ -5057,6 +5109,7 @@ items:
     - take
     attributes:
       weight: 7800
+      slot: hand
   809:
     name: energy orcish maul
     article: an
@@ -5080,18 +5133,21 @@ items:
     - take
     attributes:
       weight: 2250
+      slot: armor
   812:
     name: terra legs
     flags:
     - take
     attributes:
       weight: 1900
+      slot: legs
   813:
     name: terra boots
     flags:
     - take
     attributes:
       weight: 750
+      slot: feet
   814:
     name: terra amulet
     article: a
@@ -5099,6 +5155,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: necklace
   815:
     name: glacier amulet
     article: a
@@ -5106,6 +5163,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: necklace
   816:
     name: lightning pendant
     article: a
@@ -5114,6 +5172,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: necklace
   817:
     name: magma amulet
     article: a
@@ -5121,36 +5180,42 @@ items:
     - take
     attributes:
       weight: 500
+      slot: necklace
   818:
     name: magma boots
     flags:
     - take
     attributes:
       weight: 750
+      slot: feet
   819:
     name: glacier shoes
     flags:
     - take
     attributes:
       weight: 750
+      slot: feet
   820:
     name: lightning boots
     flags:
     - take
     attributes:
       weight: 750
+      slot: feet
   821:
     name: magma legs
     flags:
     - take
     attributes:
       weight: 1900
+      slot: legs
   822:
     name: lightning legs
     flags:
     - take
     attributes:
       weight: 1900
+      slot: legs
   823:
     name: glacier kilt
     article: a
@@ -5158,6 +5223,7 @@ items:
     - take
     attributes:
       weight: 1900
+      slot: legs
   824:
     name: glacier robe
     article: a
@@ -5165,6 +5231,7 @@ items:
     - take
     attributes:
       weight: 2250
+      slot: armor
   825:
     name: lightning robe
     article: a
@@ -5172,6 +5239,7 @@ items:
     - take
     attributes:
       weight: 2250
+      slot: armor
   826:
     name: magma coat
     article: a
@@ -5179,6 +5247,7 @@ items:
     - take
     attributes:
       weight: 2250
+      slot: armor
   827:
     name: magma monocle
     article: a
@@ -5186,6 +5255,7 @@ items:
     - take
     attributes:
       weight: 1000
+      slot: head
   828:
     name: lightning headband
     article: a
@@ -5193,6 +5263,7 @@ items:
     - take
     attributes:
       weight: 1000
+      slot: head
   829:
     name: glacier mask
     article: a
@@ -5200,6 +5271,7 @@ items:
     - take
     attributes:
       weight: 1000
+      slot: head
   830:
     name: terra hood
     article: a
@@ -5207,6 +5279,7 @@ items:
     - take
     attributes:
       weight: 1000
+      slot: head
   831:
     name: green bed kit
     article: a
@@ -5417,6 +5490,7 @@ items:
     - take
     attributes:
       weight: 3600
+      slot: hand
   861:
     name: dead troll
     article: a
@@ -5532,6 +5606,7 @@ items:
     - take
     attributes:
       weight: 700
+      slot: head
   876:
     name: ant trail
     article: an
@@ -5666,6 +5741,7 @@ items:
     - take
     attributes:
       weight: 1000
+      slot: head
   895:
     name: jester staff
     article: a
@@ -5740,6 +5816,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ring
   905:
     name: wooden floor
     flags:
@@ -5763,6 +5840,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ring
   908:
     name: shapeshifter ring
     article: a
@@ -5770,6 +5848,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ring
   909:
     name: dead dragon hatchling
     article: a
@@ -11516,6 +11595,7 @@ items:
     - take
     attributes:
       weight: 360
+      slot: hand
   1782:
     name: stone
     article: a
@@ -18089,6 +18169,7 @@ items:
     attributes:
       weight: 800
       capacity: 8
+      slot: backpack
   2854:
     name: backpack
     article: a
@@ -18099,6 +18180,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   2855:
     name: basket
     article: a
@@ -18129,6 +18211,7 @@ items:
     attributes:
       weight: 800
       capacity: 8
+      slot: backpack
   2858:
     name: yellow bag
     article: a
@@ -18139,6 +18222,7 @@ items:
     attributes:
       weight: 800
       capacity: 8
+      slot: backpack
   2859:
     name: red bag
     article: a
@@ -18149,6 +18233,7 @@ items:
     attributes:
       weight: 800
       capacity: 8
+      slot: backpack
   2860:
     name: purple bag
     article: a
@@ -18159,6 +18244,7 @@ items:
     attributes:
       weight: 800
       capacity: 8
+      slot: backpack
   2861:
     name: blue bag
     article: a
@@ -18169,6 +18255,7 @@ items:
     attributes:
       weight: 800
       capacity: 8
+      slot: backpack
   2862:
     name: grey bag
     article: a
@@ -18179,6 +18266,7 @@ items:
     attributes:
       weight: 800
       capacity: 8
+      slot: backpack
   2863:
     name: golden bag
     article: a
@@ -18189,6 +18277,7 @@ items:
     attributes:
       weight: 800
       capacity: 8
+      slot: backpack
   2864:
     name: camouflage bag
     article: a
@@ -18199,6 +18288,7 @@ items:
     attributes:
       weight: 800
       capacity: 8
+      slot: backpack
   2865:
     name: green backpack
     article: a
@@ -18209,6 +18299,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   2866:
     name: yellow backpack
     article: a
@@ -18219,6 +18310,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   2867:
     name: red backpack
     article: a
@@ -18229,6 +18321,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   2868:
     name: purple backpack
     article: a
@@ -18239,6 +18332,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   2869:
     name: blue backpack
     article: a
@@ -18249,6 +18343,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   2870:
     name: grey backpack
     article: a
@@ -18259,6 +18354,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   2871:
     name: golden backpack
     article: a
@@ -18269,6 +18365,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   2872:
     name: camouflage backpack
     article: a
@@ -18279,6 +18376,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   2873:
     name: bucket
     article: a
@@ -19121,6 +19219,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: hand
   2993:
     name: teddy bear
     article: a
@@ -19200,6 +19299,7 @@ items:
     - take
     attributes:
       weight: 40
+      slot: ring
   3005:
     name: elven brooch
     article: an
@@ -19214,6 +19314,7 @@ items:
     - take
     attributes:
       weight: 40
+      slot: ring
   3007:
     name: crystal ring
     article: a
@@ -19221,6 +19322,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   3008:
     name: crystal necklace
     article: a
@@ -19228,6 +19330,7 @@ items:
     - take
     attributes:
       weight: 490
+      slot: necklace
   3009:
     name: bronze necklace
     article: a
@@ -19235,6 +19338,7 @@ items:
     - take
     attributes:
       weight: 410
+      slot: necklace
   3010:
     name: emerald bangle
     article: an
@@ -19250,6 +19354,7 @@ items:
     - take
     attributes:
       weight: 1900
+      slot: head
   3012:
     name: wolf tooth chain
     article: a
@@ -19257,6 +19362,7 @@ items:
     - take
     attributes:
       weight: 330
+      slot: necklace
   3013:
     name: golden amulet
     article: a
@@ -19264,6 +19370,7 @@ items:
     - take
     attributes:
       weight: 830
+      slot: necklace
   3014:
     name: star amulet
     article: a
@@ -19271,6 +19378,7 @@ items:
     - take
     attributes:
       weight: 610
+      slot: necklace
   3015:
     name: silver necklace
     article: a
@@ -19278,6 +19386,7 @@ items:
     - take
     attributes:
       weight: 480
+      slot: necklace
   3016:
     name: ruby necklace
     article: a
@@ -19285,6 +19394,7 @@ items:
     - take
     attributes:
       weight: 570
+      slot: necklace
   3017:
     name: silver brooch
     article: a
@@ -19300,6 +19410,7 @@ items:
     - take
     attributes:
       weight: 770
+      slot: necklace
   3019:
     name: demonbone amulet
     article: a
@@ -19307,6 +19418,7 @@ items:
     - take
     attributes:
       weight: 690
+      slot: necklace
   3020:
     name: some golden fruits
     flags:
@@ -19321,6 +19433,7 @@ items:
     - take
     attributes:
       weight: 680
+      slot: necklace
   3022:
     name: ancient tiara
     article: an
@@ -19328,6 +19441,7 @@ items:
     - take
     attributes:
       weight: 820
+      slot: head
   3023:
     name: holy scarab
     article: a
@@ -19351,6 +19465,7 @@ items:
     - take
     attributes:
       weight: 840
+      slot: necklace
   3026:
     name: white pearl
     article: a
@@ -19517,6 +19632,7 @@ items:
     - take
     attributes:
       weight: 290
+      slot: necklace
   3046:
     name: magic light wand
     article: a
@@ -19540,6 +19656,7 @@ items:
     - take
     attributes:
       weight: 100
+      slot: ring
   3049:
     name: stealth ring
     article: a
@@ -19547,6 +19664,7 @@ items:
     - take
     attributes:
       weight: 100
+      slot: ring
   3050:
     name: power ring
     article: a
@@ -19554,6 +19672,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ring
   3051:
     name: energy ring
     article: an
@@ -19561,6 +19680,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ring
   3052:
     name: life ring
     article: a
@@ -19568,6 +19688,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ring
   3053:
     name: time ring
     article: a
@@ -19575,6 +19696,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   3054:
     name: silver amulet
     article: a
@@ -19582,6 +19704,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: necklace
   3055:
     name: platinum amulet
     article: a
@@ -19589,6 +19712,7 @@ items:
     - take
     attributes:
       weight: 600
+      slot: necklace
   3056:
     name: bronze amulet
     article: a
@@ -19596,6 +19720,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: necklace
   3057:
     name: amulet of loss
     article: an
@@ -19603,6 +19728,7 @@ items:
     - take
     attributes:
       weight: 420
+      slot: necklace
   3058:
     name: strange symbol
     article: a
@@ -19620,6 +19746,7 @@ items:
     - take
     attributes:
       weight: 1800
+      slot: shield
   3060:
     name: orb
     article: an
@@ -19652,6 +19779,7 @@ items:
     - take
     attributes:
       weight: 100
+      slot: ring
   3064:
     name: orb of nature
     article: the
@@ -19664,6 +19792,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: hand
   3066:
     name: snakebite rod
     article: a
@@ -19671,6 +19800,7 @@ items:
     - take
     attributes:
       weight: 1900
+      slot: hand
   3067:
     name: hailstorm rod
     article: a
@@ -19678,6 +19808,7 @@ items:
     - take
     attributes:
       weight: 2700
+      slot: hand
   3068:
     name: crystal wand
     article: a
@@ -19693,6 +19824,7 @@ items:
     - take
     attributes:
       weight: 2300
+      slot: hand
   3070:
     name: moonlight rod
     article: a
@@ -19700,6 +19832,7 @@ items:
     - take
     attributes:
       weight: 2100
+      slot: hand
   3071:
     name: wand of inferno
     article: a
@@ -19707,6 +19840,7 @@ items:
     - take
     attributes:
       weight: 2700
+      slot: hand
   3072:
     name: wand of decay
     article: a
@@ -19714,6 +19848,7 @@ items:
     - take
     attributes:
       weight: 2300
+      slot: hand
   3073:
     name: wand of cosmic energy
     article: a
@@ -19721,6 +19856,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: hand
   3074:
     name: wand of vortex
     article: a
@@ -19728,6 +19864,7 @@ items:
     - take
     attributes:
       weight: 1900
+      slot: hand
   3075:
     name: wand of dragonbreath
     article: a
@@ -19735,6 +19872,7 @@ items:
     - take
     attributes:
       weight: 2300
+      slot: hand
   3076:
     name: crystal ball
     article: a
@@ -19767,6 +19905,7 @@ items:
     - take
     attributes:
       weight: 750
+      slot: feet
   3080:
     name: broken amulet
     article: a
@@ -19774,6 +19913,7 @@ items:
     - take
     attributes:
       weight: 420
+      slot: necklace
   3081:
     name: stone skin amulet
     article: a
@@ -19781,6 +19921,7 @@ items:
     - take
     attributes:
       weight: 700
+      slot: necklace
   3082:
     name: elven amulet
     article: an
@@ -19788,6 +19929,7 @@ items:
     - take
     attributes:
       weight: 270
+      slot: necklace
   3083:
     name: garlic necklace
     article: a
@@ -19795,6 +19937,7 @@ items:
     - take
     attributes:
       weight: 380
+      slot: necklace
   3084:
     name: protection amulet
     article: a
@@ -19802,6 +19945,7 @@ items:
     - take
     attributes:
       weight: 550
+      slot: necklace
   3085:
     name: dragon necklace
     article: a
@@ -19809,6 +19953,7 @@ items:
     - take
     attributes:
       weight: 630
+      slot: necklace
   3086:
     name: stealth ring
     article: a
@@ -19816,6 +19961,7 @@ items:
     - take
     attributes:
       weight: 100
+      slot: ring
   3087:
     name: power ring
     article: a
@@ -19823,6 +19969,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ring
   3088:
     name: energy ring
     article: an
@@ -19830,6 +19977,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ring
   3089:
     name: life ring
     article: a
@@ -19837,6 +19985,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ring
   3090:
     name: time ring
     article: a
@@ -19844,6 +19993,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   3091:
     name: sword ring
     article: a
@@ -19851,6 +20001,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   3092:
     name: axe ring
     article: an
@@ -19858,6 +20009,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   3093:
     name: club ring
     article: a
@@ -19865,6 +20017,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   3094:
     name: sword ring
     article: a
@@ -19872,6 +20025,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   3095:
     name: axe ring
     article: an
@@ -19879,6 +20033,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   3096:
     name: club ring
     article: a
@@ -19886,6 +20041,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   3097:
     name: dwarven ring
     article: a
@@ -19893,6 +20049,7 @@ items:
     - take
     attributes:
       weight: 110
+      slot: ring
   3098:
     name: ring of healing
     article: a
@@ -19900,6 +20057,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ring
   3099:
     name: dwarven ring
     article: a
@@ -19907,6 +20065,7 @@ items:
     - take
     attributes:
       weight: 110
+      slot: ring
   3100:
     name: ring of healing
     article: a
@@ -19914,6 +20073,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ring
   3101:
     name: spellbook
     article: a
@@ -19929,6 +20089,7 @@ items:
     - take
     attributes:
       weight: 420
+      slot: necklace
   3103:
     name: cornucopia
     article: a
@@ -20788,6 +20949,7 @@ items:
     - take
     attributes:
       weight: 6800
+      slot: hand
   3209:
     name: voodoo doll
     article: a
@@ -20802,6 +20964,7 @@ items:
     - take
     attributes:
       weight: 700
+      slot: head
   3211:
     name: witchesbroom
     article: a
@@ -20920,6 +21083,7 @@ items:
     - take
     attributes:
       weight: 1800
+      slot: head
   3227:
     name: helmet piece
     article: a
@@ -20942,6 +21106,7 @@ items:
     - take
     attributes:
       weight: 2760
+      slot: head
   3230:
     name: full helmet of the ancients
     article: a
@@ -20949,6 +21114,7 @@ items:
     - take
     attributes:
       weight: 2760
+      slot: head
   3231:
     name: gemmed lamp
     article: a
@@ -21050,6 +21216,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   3245:
     name: ring of wishes
     article: a
@@ -21057,12 +21224,14 @@ items:
     - take
     attributes:
       weight: 50
+      slot: ring
   3246:
     name: boots of waterwalking
     flags:
     - take
     attributes:
       weight: 770
+      slot: feet
   3247:
     name: djinn's lamp
     article: a
@@ -21116,6 +21285,7 @@ items:
     attributes:
       weight: 1500
       capacity: 24
+      slot: backpack
   3254:
     name: roc feather
     article: a
@@ -21211,6 +21381,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: hand
   3265:
     name: two handed sword
     article: a
@@ -21235,6 +21406,7 @@ items:
     - take
     attributes:
       weight: 950
+      slot: hand
   3268:
     name: hand axe
     article: a
@@ -21243,6 +21415,7 @@ items:
     - take
     attributes:
       weight: 1800
+      slot: hand
   3269:
     name: halberd
     article: a
@@ -21259,6 +21432,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: hand
   3271:
     name: spike sword
     article: a
@@ -21267,6 +21441,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   3272:
     name: rapier
     article: a
@@ -21275,6 +21450,7 @@ items:
     - take
     attributes:
       weight: 1500
+      slot: hand
   3273:
     name: sabre
     article: a
@@ -21283,6 +21459,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: hand
   3274:
     name: axe
     article: an
@@ -21291,6 +21468,7 @@ items:
     - take
     attributes:
       weight: 4000
+      slot: hand
   3275:
     name: double axe
     article: a
@@ -21307,6 +21485,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: hand
   3277:
     name: spear
     article: a
@@ -21315,6 +21494,7 @@ items:
     - take
     attributes:
       weight: 2000
+      slot: hand
   3278:
     name: magic longsword
     article: a
@@ -21339,6 +21519,7 @@ items:
     - take
     attributes:
       weight: 2300
+      slot: hand
   3281:
     name: giant sword
     article: a
@@ -21355,6 +21536,7 @@ items:
     - take
     attributes:
       weight: 5400
+      slot: hand
   3283:
     name: carlin sword
     article: a
@@ -21363,6 +21545,7 @@ items:
     - take
     attributes:
       weight: 4000
+      slot: hand
   3284:
     name: ice rapier
     article: an
@@ -21371,6 +21554,7 @@ items:
     - take
     attributes:
       weight: 1500
+      slot: hand
   3285:
     name: longsword
     article: a
@@ -21379,6 +21563,7 @@ items:
     - take
     attributes:
       weight: 4200
+      slot: hand
   3286:
     name: mace
     article: a
@@ -21387,6 +21572,7 @@ items:
     - take
     attributes:
       weight: 3800
+      slot: hand
   3287:
     name: throwing star
     article: a
@@ -21395,6 +21581,7 @@ items:
     - take
     attributes:
       weight: 200
+      slot: hand
   3288:
     name: magic sword
     article: a
@@ -21403,6 +21590,7 @@ items:
     - take
     attributes:
       weight: 4200
+      slot: hand
   3289:
     name: staff
     article: a
@@ -21419,6 +21607,7 @@ items:
     - take
     attributes:
       weight: 1020
+      slot: hand
   3291:
     name: knife
     article: a
@@ -21427,6 +21616,7 @@ items:
     - take
     attributes:
       weight: 420
+      slot: hand
   3292:
     name: combat knife
     article: a
@@ -21435,6 +21625,7 @@ items:
     - take
     attributes:
       weight: 870
+      slot: hand
   3293:
     name: sickle
     article: a
@@ -21443,6 +21634,7 @@ items:
     - take
     attributes:
       weight: 1050
+      slot: hand
   3294:
     name: short sword
     article: a
@@ -21451,6 +21643,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: hand
   3295:
     name: bright sword
     article: a
@@ -21459,6 +21652,7 @@ items:
     - take
     attributes:
       weight: 2900
+      slot: hand
   3296:
     name: warlord sword
     article: a
@@ -21475,6 +21669,7 @@ items:
     - take
     attributes:
       weight: 4100
+      slot: hand
   3298:
     name: throwing knife
     article: a
@@ -21483,6 +21678,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: hand
   3299:
     name: poison dagger
     article: a
@@ -21491,6 +21687,7 @@ items:
     - take
     attributes:
       weight: 880
+      slot: hand
   3300:
     name: katana
     article: a
@@ -21499,6 +21696,7 @@ items:
     - take
     attributes:
       weight: 3100
+      slot: hand
   3301:
     name: broadsword
     article: a
@@ -21531,6 +21729,7 @@ items:
     - take
     attributes:
       weight: 2100
+      slot: hand
   3305:
     name: battle hammer
     article: a
@@ -21539,6 +21738,7 @@ items:
     - take
     attributes:
       weight: 6800
+      slot: hand
   3306:
     name: golden sickle
     article: a
@@ -21547,6 +21747,7 @@ items:
     - take
     attributes:
       weight: 1950
+      slot: hand
   3307:
     name: scimitar
     article: a
@@ -21555,6 +21756,7 @@ items:
     - take
     attributes:
       weight: 2900
+      slot: hand
   3308:
     name: machete
     article: a
@@ -21563,6 +21765,7 @@ items:
     - take
     attributes:
       weight: 1650
+      slot: hand
   3309:
     name: thunder hammer
     article: a
@@ -21571,6 +21774,7 @@ items:
     - take
     attributes:
       weight: 12500
+      slot: hand
   3310:
     name: iron hammer
     article: an
@@ -21579,6 +21783,7 @@ items:
     - take
     attributes:
       weight: 6600
+      slot: hand
   3311:
     name: clerical mace
     article: a
@@ -21587,6 +21792,7 @@ items:
     - take
     attributes:
       weight: 5800
+      slot: hand
   3312:
     name: silver mace
     article: a
@@ -21595,6 +21801,7 @@ items:
     - take
     attributes:
       weight: 6700
+      slot: hand
   3313:
     name: obsidian lance
     article: an
@@ -21627,6 +21834,7 @@ items:
     - take
     attributes:
       weight: 4500
+      slot: hand
   3317:
     name: barbarian axe
     article: a
@@ -21635,6 +21843,7 @@ items:
     - take
     attributes:
       weight: 5100
+      slot: hand
   3318:
     name: knight axe
     article: a
@@ -21643,6 +21852,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   3319:
     name: stonecutter axe
     article: a
@@ -21659,6 +21869,7 @@ items:
     - take
     attributes:
       weight: 4000
+      slot: hand
   3321:
     name: enchanted staff
     article: an
@@ -21667,6 +21878,7 @@ items:
     - take
     attributes:
       weight: 3800
+      slot: hand
   3322:
     name: dragon hammer
     article: a
@@ -21675,6 +21887,7 @@ items:
     - take
     attributes:
       weight: 9700
+      slot: hand
   3323:
     name: dwarven axe
     article: a
@@ -21683,6 +21896,7 @@ items:
     - take
     attributes:
       weight: 8200
+      slot: hand
   3324:
     name: skull staff
     article: a
@@ -21691,6 +21905,7 @@ items:
     - take
     attributes:
       weight: 1700
+      slot: hand
   3325:
     name: light mace
     article: a
@@ -21699,6 +21914,7 @@ items:
     - take
     attributes:
       weight: 4100
+      slot: hand
   3326:
     name: epee
     article: an
@@ -21707,6 +21923,7 @@ items:
     - take
     attributes:
       weight: 1450
+      slot: hand
   3327:
     name: daramian mace
     article: a
@@ -21715,6 +21932,7 @@ items:
     - take
     attributes:
       weight: 6800
+      slot: hand
   3328:
     name: daramian waraxe
     article: a
@@ -21731,6 +21949,7 @@ items:
     - take
     attributes:
       weight: 4100
+      slot: hand
   3330:
     name: heavy machete
     article: a
@@ -21739,6 +21958,7 @@ items:
     - take
     attributes:
       weight: 1840
+      slot: hand
   3331:
     name: ravager's axe
     article: a
@@ -21763,6 +21983,7 @@ items:
     - take
     attributes:
       weight: 8000
+      slot: hand
   3334:
     name: pharaoh sword
     article: a
@@ -21771,6 +21992,7 @@ items:
     - take
     attributes:
       weight: 5200
+      slot: hand
   3335:
     name: twin axe
     article: a
@@ -21787,6 +22009,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: hand
   3337:
     name: bone club
     article: a
@@ -21795,6 +22018,7 @@ items:
     - take
     attributes:
       weight: 3900
+      slot: hand
   3338:
     name: bone sword
     article: a
@@ -21803,6 +22027,7 @@ items:
     - take
     attributes:
       weight: 1900
+      slot: hand
   3339:
     name: djinn blade
     article: a
@@ -21811,6 +22036,7 @@ items:
     - take
     attributes:
       weight: 2450
+      slot: hand
   3340:
     name: heavy mace
     article: a
@@ -21827,6 +22053,7 @@ items:
     - take
     attributes:
       weight: 4000
+      slot: hand
   3342:
     name: war axe
     article: a
@@ -21843,6 +22070,7 @@ items:
     - take
     attributes:
       weight: 4100
+      slot: hand
   3344:
     name: beastslayer axe
     article: a
@@ -21851,6 +22079,7 @@ items:
     - take
     attributes:
       weight: 6150
+      slot: hand
   3345:
     name: templar scytheblade
     article: a
@@ -21859,6 +22088,7 @@ items:
     - take
     attributes:
       weight: 2900
+      slot: hand
   3346:
     name: ripper lance
     article: a
@@ -21875,6 +22105,7 @@ items:
     - take
     attributes:
       weight: 2200
+      slot: hand
   3348:
     name: banana staff
     article: a
@@ -21883,6 +22114,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   3349:
     name: crossbow
     article: a
@@ -21904,6 +22136,7 @@ items:
     - take
     attributes:
       weight: 4600
+      slot: head
   3352:
     name: chain helmet
     article: a
@@ -21911,6 +22144,7 @@ items:
     - take
     attributes:
       weight: 4200
+      slot: head
   3353:
     name: iron helmet
     article: an
@@ -21918,6 +22152,7 @@ items:
     - take
     attributes:
       weight: 3000
+      slot: head
   3354:
     name: brass helmet
     article: a
@@ -21925,6 +22160,7 @@ items:
     - take
     attributes:
       weight: 2700
+      slot: head
   3355:
     name: leather helmet
     article: a
@@ -21932,6 +22168,7 @@ items:
     - take
     attributes:
       weight: 2200
+      slot: head
   3356:
     name: devil helmet
     article: a
@@ -21939,6 +22176,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: head
   3357:
     name: plate armor
     article: a
@@ -21946,6 +22184,7 @@ items:
     - take
     attributes:
       weight: 12000
+      slot: armor
   3358:
     name: chain armor
     article: a
@@ -21953,6 +22192,7 @@ items:
     - take
     attributes:
       weight: 10000
+      slot: armor
   3359:
     name: brass armor
     article: a
@@ -21960,6 +22200,7 @@ items:
     - take
     attributes:
       weight: 8000
+      slot: armor
   3360:
     name: golden armor
     article: a
@@ -21967,6 +22208,7 @@ items:
     - take
     attributes:
       weight: 8000
+      slot: armor
   3361:
     name: leather armor
     article: a
@@ -21974,24 +22216,28 @@ items:
     - take
     attributes:
       weight: 6000
+      slot: armor
   3362:
     name: studded legs
     flags:
     - take
     attributes:
       weight: 2600
+      slot: legs
   3363:
     name: dragon scale legs
     flags:
     - take
     attributes:
       weight: 4800
+      slot: legs
   3364:
     name: golden legs
     flags:
     - take
     attributes:
       weight: 5600
+      slot: legs
   3365:
     name: golden helmet
     article: a
@@ -21999,6 +22245,7 @@ items:
     - take
     attributes:
       weight: 3200
+      slot: head
   3366:
     name: magic plate armor
     article: a
@@ -22006,6 +22253,7 @@ items:
     - take
     attributes:
       weight: 8500
+      slot: armor
   3367:
     name: viking helmet
     article: a
@@ -22013,6 +22261,7 @@ items:
     - take
     attributes:
       weight: 3900
+      slot: head
   3368:
     name: winged helmet
     article: a
@@ -22020,6 +22269,7 @@ items:
     - take
     attributes:
       weight: 1200
+      slot: head
   3369:
     name: warrior helmet
     article: a
@@ -22027,6 +22277,7 @@ items:
     - take
     attributes:
       weight: 6800
+      slot: head
   3370:
     name: knight armor
     article: a
@@ -22034,18 +22285,21 @@ items:
     - take
     attributes:
       weight: 12000
+      slot: armor
   3371:
     name: knight legs
     flags:
     - take
     attributes:
       weight: 7000
+      slot: legs
   3372:
     name: brass legs
     flags:
     - take
     attributes:
       weight: 3800
+      slot: legs
   3373:
     name: strange helmet
     article: a
@@ -22053,6 +22307,7 @@ items:
     - take
     attributes:
       weight: 4600
+      slot: head
   3374:
     name: legion helmet
     article: a
@@ -22060,6 +22315,7 @@ items:
     - take
     attributes:
       weight: 3100
+      slot: head
   3375:
     name: soldier helmet
     article: a
@@ -22067,6 +22323,7 @@ items:
     - take
     attributes:
       weight: 3200
+      slot: head
   3376:
     name: studded helmet
     article: a
@@ -22074,6 +22331,7 @@ items:
     - take
     attributes:
       weight: 2450
+      slot: head
   3377:
     name: scale armor
     article: a
@@ -22081,6 +22339,7 @@ items:
     - take
     attributes:
       weight: 10500
+      slot: armor
   3378:
     name: studded armor
     article: a
@@ -22088,6 +22347,7 @@ items:
     - take
     attributes:
       weight: 7100
+      slot: armor
   3379:
     name: doublet
     article: a
@@ -22095,6 +22355,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: armor
   3380:
     name: noble armor
     article: a
@@ -22102,6 +22363,7 @@ items:
     - take
     attributes:
       weight: 12000
+      slot: armor
   3381:
     name: crown armor
     article: a
@@ -22109,12 +22371,14 @@ items:
     - take
     attributes:
       weight: 9900
+      slot: armor
   3382:
     name: crown legs
     flags:
     - take
     attributes:
       weight: 6500
+      slot: legs
   3383:
     name: dark armor
     article: a
@@ -22122,6 +22386,7 @@ items:
     - take
     attributes:
       weight: 12000
+      slot: armor
   3384:
     name: dark helmet
     article: a
@@ -22129,6 +22394,7 @@ items:
     - take
     attributes:
       weight: 4600
+      slot: head
   3385:
     name: crown helmet
     article: a
@@ -22136,6 +22402,7 @@ items:
     - take
     attributes:
       weight: 2950
+      slot: head
   3386:
     name: dragon scale mail
     article: a
@@ -22143,6 +22410,7 @@ items:
     - take
     attributes:
       weight: 11400
+      slot: armor
   3387:
     name: demon helmet
     article: a
@@ -22150,6 +22418,7 @@ items:
     - take
     attributes:
       weight: 2950
+      slot: head
   3388:
     name: demon armor
     article: a
@@ -22157,12 +22426,14 @@ items:
     - take
     attributes:
       weight: 8000
+      slot: armor
   3389:
     name: demon legs
     flags:
     - take
     attributes:
       weight: 7000
+      slot: legs
   3390:
     name: horned helmet
     article: a
@@ -22170,6 +22441,7 @@ items:
     - take
     attributes:
       weight: 5100
+      slot: head
   3391:
     name: crusader helmet
     article: a
@@ -22177,6 +22449,7 @@ items:
     - take
     attributes:
       weight: 5200
+      slot: head
   3392:
     name: royal helmet
     article: a
@@ -22184,6 +22457,7 @@ items:
     - take
     attributes:
       weight: 4800
+      slot: head
   3393:
     name: amazon helmet
     article: an
@@ -22191,6 +22465,7 @@ items:
     - take
     attributes:
       weight: 2950
+      slot: head
   3394:
     name: amazon armor
     article: an
@@ -22198,6 +22473,7 @@ items:
     - take
     attributes:
       weight: 4500
+      slot: armor
   3395:
     name: ceremonial mask
     article: a
@@ -22206,6 +22482,7 @@ items:
     - take
     attributes:
       weight: 4000
+      slot: head
   3396:
     name: dwarven helmet
     article: a
@@ -22213,6 +22490,7 @@ items:
     - take
     attributes:
       weight: 4200
+      slot: head
   3397:
     name: dwarven armor
     article: a
@@ -22220,12 +22498,14 @@ items:
     - take
     attributes:
       weight: 13000
+      slot: armor
   3398:
     name: dwarven legs
     flags:
     - take
     attributes:
       weight: 4900
+      slot: legs
   3399:
     name: elven mail
     article: an
@@ -22233,6 +22513,7 @@ items:
     - take
     attributes:
       weight: 9000
+      slot: armor
   3400:
     name: dragon scale helmet
     article: a
@@ -22240,12 +22521,14 @@ items:
     - take
     attributes:
       weight: 3250
+      slot: head
   3401:
     name: elven legs
     flags:
     - take
     attributes:
       weight: 3300
+      slot: legs
   3402:
     name: native armor
     article: a
@@ -22253,6 +22536,7 @@ items:
     - take
     attributes:
       weight: 8000
+      slot: armor
   3403:
     name: tribal mask
     article: a
@@ -22260,6 +22544,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: head
   3404:
     name: leopard armor
     article: a
@@ -22267,6 +22552,7 @@ items:
     - take
     attributes:
       weight: 9500
+      slot: armor
   3405:
     name: horseman helmet
     article: a
@@ -22274,6 +22560,7 @@ items:
     - take
     attributes:
       weight: 4200
+      slot: head
   3406:
     name: feather headdress
     article: a
@@ -22281,6 +22568,7 @@ items:
     - take
     attributes:
       weight: 2100
+      slot: head
   3407:
     name: charmer's tiara
     article: a
@@ -22288,6 +22576,7 @@ items:
     - take
     attributes:
       weight: 2200
+      slot: head
   3408:
     name: bonelord helmet
     article: a
@@ -22295,6 +22584,7 @@ items:
     - take
     attributes:
       weight: 4600
+      slot: head
   3409:
     name: steel shield
     article: a
@@ -22302,6 +22592,7 @@ items:
     - take
     attributes:
       weight: 6900
+      slot: shield
   3410:
     name: plate shield
     article: a
@@ -22309,6 +22600,7 @@ items:
     - take
     attributes:
       weight: 6500
+      slot: shield
   3411:
     name: brass shield
     article: a
@@ -22316,6 +22608,7 @@ items:
     - take
     attributes:
       weight: 6000
+      slot: shield
   3412:
     name: wooden shield
     article: a
@@ -22323,6 +22616,7 @@ items:
     - take
     attributes:
       weight: 4000
+      slot: shield
   3413:
     name: battle shield
     article: a
@@ -22330,6 +22624,7 @@ items:
     - take
     attributes:
       weight: 6200
+      slot: shield
   3414:
     name: mastermind shield
     article: a
@@ -22337,6 +22632,7 @@ items:
     - take
     attributes:
       weight: 5700
+      slot: shield
   3415:
     name: guardian shield
     article: a
@@ -22344,6 +22640,7 @@ items:
     - take
     attributes:
       weight: 5500
+      slot: shield
   3416:
     name: dragon shield
     article: a
@@ -22351,6 +22648,7 @@ items:
     - take
     attributes:
       weight: 6000
+      slot: shield
   3417:
     name: shield of honour
     article: a
@@ -22358,6 +22656,7 @@ items:
     - take
     attributes:
       weight: 5400
+      slot: shield
   3418:
     name: bonelord shield
     article: a
@@ -22365,6 +22664,7 @@ items:
     - take
     attributes:
       weight: 4700
+      slot: shield
   3419:
     name: crown shield
     article: a
@@ -22372,6 +22672,7 @@ items:
     - take
     attributes:
       weight: 6200
+      slot: shield
   3420:
     name: demon shield
     article: a
@@ -22379,6 +22680,7 @@ items:
     - take
     attributes:
       weight: 2600
+      slot: shield
   3421:
     name: dark shield
     article: a
@@ -22386,6 +22688,7 @@ items:
     - take
     attributes:
       weight: 5200
+      slot: shield
   3422:
     name: great shield
     article: a
@@ -22393,6 +22696,7 @@ items:
     - take
     attributes:
       weight: 8400
+      slot: shield
   3423:
     name: blessed shield
     article: a
@@ -22400,6 +22704,7 @@ items:
     - take
     attributes:
       weight: 6800
+      slot: shield
   3424:
     name: ornamented shield
     article: an
@@ -22407,6 +22712,7 @@ items:
     - take
     attributes:
       weight: 6700
+      slot: shield
   3425:
     name: dwarven shield
     article: a
@@ -22414,6 +22720,7 @@ items:
     - take
     attributes:
       weight: 5500
+      slot: shield
   3426:
     name: studded shield
     article: a
@@ -22421,6 +22728,7 @@ items:
     - take
     attributes:
       weight: 5800
+      slot: shield
   3427:
     name: rose shield
     article: a
@@ -22428,6 +22736,7 @@ items:
     - take
     attributes:
       weight: 5200
+      slot: shield
   3428:
     name: tower shield
     article: a
@@ -22435,6 +22744,7 @@ items:
     - take
     attributes:
       weight: 8200
+      slot: shield
   3429:
     name: black shield
     article: a
@@ -22442,6 +22752,7 @@ items:
     - take
     attributes:
       weight: 4200
+      slot: shield
   3430:
     name: copper shield
     article: a
@@ -22449,6 +22760,7 @@ items:
     - take
     attributes:
       weight: 6300
+      slot: shield
   3431:
     name: viking shield
     article: a
@@ -22456,6 +22768,7 @@ items:
     - take
     attributes:
       weight: 6600
+      slot: shield
   3432:
     name: ancient shield
     article: an
@@ -22463,6 +22776,7 @@ items:
     - take
     attributes:
       weight: 6100
+      slot: shield
   3433:
     name: griffin shield
     article: a
@@ -22470,6 +22784,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: shield
   3434:
     name: vampire shield
     article: a
@@ -22477,6 +22792,7 @@ items:
     - take
     attributes:
       weight: 3800
+      slot: shield
   3435:
     name: castle shield
     article: a
@@ -22484,6 +22800,7 @@ items:
     - take
     attributes:
       weight: 4900
+      slot: shield
   3436:
     name: medusa shield
     article: a
@@ -22491,6 +22808,7 @@ items:
     - take
     attributes:
       weight: 5800
+      slot: shield
   3437:
     name: amazon shield
     article: an
@@ -22498,6 +22816,7 @@ items:
     - take
     attributes:
       weight: 6200
+      slot: shield
   3438:
     name: eagle shield
     article: an
@@ -22505,6 +22824,7 @@ items:
     - take
     attributes:
       weight: 6200
+      slot: shield
   3439:
     name: phoenix shield
     article: a
@@ -22512,6 +22832,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: shield
   3440:
     name: scarab shield
     article: a
@@ -22519,6 +22840,7 @@ items:
     - take
     attributes:
       weight: 4700
+      slot: shield
   3441:
     name: bone shield
     article: a
@@ -22526,6 +22848,7 @@ items:
     - take
     attributes:
       weight: 5500
+      slot: shield
   3442:
     name: tempest shield
     article: a
@@ -22533,6 +22856,7 @@ items:
     - take
     attributes:
       weight: 5100
+      slot: shield
   3443:
     name: tusk shield
     article: a
@@ -22540,6 +22864,7 @@ items:
     - take
     attributes:
       weight: 6900
+      slot: shield
   3444:
     name: sentinel shield
     article: a
@@ -22547,6 +22872,7 @@ items:
     - take
     attributes:
       weight: 4900
+      slot: shield
   3445:
     name: salamander shield
     article: a
@@ -22554,6 +22880,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: shield
   3446:
     name: bolt
     article: a
@@ -22562,6 +22889,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ammo
   3447:
     name: arrow
     article: an
@@ -22570,6 +22898,7 @@ items:
     - take
     attributes:
       weight: 70
+      slot: ammo
   3448:
     name: poison arrow
     article: a
@@ -22594,6 +22923,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ammo
   3451:
     name: pitchfork
     article: a
@@ -23305,66 +23635,77 @@ items:
     - take
     attributes:
       weight: 800
+      slot: feet
   3550:
     name: patched boots
     flags:
     - take
     attributes:
       weight: 1000
+      slot: feet
   3551:
     name: sandals
     flags:
     - take
     attributes:
       weight: 600
+      slot: feet
   3552:
     name: leather boots
     flags:
     - take
     attributes:
       weight: 900
+      slot: feet
   3553:
     name: bunnyslippers
     flags:
     - take
     attributes:
       weight: 600
+      slot: feet
   3554:
     name: steel boots
     flags:
     - take
     attributes:
       weight: 2900
+      slot: feet
   3555:
     name: golden boots
     flags:
     - take
     attributes:
       weight: 3100
+      slot: feet
   3556:
     name: crocodile boots
     flags:
     - take
     attributes:
       weight: 900
+      slot: feet
   3557:
     name: plate legs
     flags:
     - take
     attributes:
       weight: 5000
+      slot: legs
   3558:
     name: chain legs
     flags:
     - take
     attributes:
       weight: 3500
+      slot: legs
   3559:
     name: leather legs
     flags:
     - take
     attributes:
       weight: 1800
+      slot: legs
   3560:
     name: bast skirt
     article: a
@@ -23372,6 +23713,7 @@ items:
     - take
     attributes:
       weight: 350
+      slot: legs
   3561:
     name: jacket
     article: a
@@ -23379,6 +23721,7 @@ items:
     - take
     attributes:
       weight: 2400
+      slot: armor
   3562:
     name: coat
     article: a
@@ -23386,6 +23729,7 @@ items:
     - take
     attributes:
       weight: 2700
+      slot: armor
   3563:
     name: green tunic
     article: a
@@ -23393,6 +23737,7 @@ items:
     - take
     attributes:
       weight: 930
+      slot: armor
   3564:
     name: red tunic
     article: a
@@ -23400,6 +23745,7 @@ items:
     - take
     attributes:
       weight: 1400
+      slot: armor
   3565:
     name: cape
     article: a
@@ -23407,6 +23753,7 @@ items:
     - take
     attributes:
       weight: 3200
+      slot: armor
   3566:
     name: red robe
     article: a
@@ -23414,6 +23761,7 @@ items:
     - take
     attributes:
       weight: 2600
+      slot: armor
   3567:
     name: blue robe
     article: a
@@ -23421,6 +23769,7 @@ items:
     - take
     attributes:
       weight: 2200
+      slot: armor
   3568:
     name: simple dress
     article: a
@@ -23428,6 +23777,7 @@ items:
     - take
     attributes:
       weight: 1000
+      slot: armor
   3569:
     name: white dress
     article: a
@@ -23435,6 +23785,7 @@ items:
     - take
     attributes:
       weight: 2400
+      slot: armor
   3570:
     name: ball gown
     article: a
@@ -23442,6 +23793,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: armor
   3571:
     name: ranger's cloak
     article: a
@@ -23449,6 +23801,7 @@ items:
     - take
     attributes:
       weight: 4800
+      slot: armor
   3572:
     name: scarf
     article: a
@@ -23456,6 +23809,7 @@ items:
     - take
     attributes:
       weight: 200
+      slot: necklace
   3573:
     name: magician hat
     article: a
@@ -23463,6 +23817,7 @@ items:
     - take
     attributes:
       weight: 750
+      slot: head
   3574:
     name: mystic turban
     article: a
@@ -23470,6 +23825,7 @@ items:
     - take
     attributes:
       weight: 850
+      slot: head
   3575:
     name: wood cape
     article: a
@@ -23477,6 +23833,7 @@ items:
     - take
     attributes:
       weight: 1100
+      slot: head
   3576:
     name: post officer's hat
     article: a
@@ -23484,6 +23841,7 @@ items:
     - take
     attributes:
       weight: 700
+      slot: head
   3577:
     name: meat
     flags:
@@ -26511,6 +26869,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: feet
   4034:
     name: slain ghoul
     article: a
@@ -31575,6 +31934,7 @@ items:
     - take
     attributes:
       weight: 1000
+      slot: armor
   4837:
     name: icicle
     article: an
@@ -35609,12 +35969,14 @@ items:
     - take
     attributes:
       weight: 21000
+      slot: head
   5461:
     name: pirate boots
     flags:
     - take
     attributes:
       weight: 800
+      slot: feet
   5462:
     name: sugar cane
     article: a
@@ -37426,6 +37788,7 @@ items:
     - take
     attributes:
       weight: 4200
+      slot: head
   5743:
     name: wooden floor
     flags:
@@ -37838,6 +38201,7 @@ items:
     attributes:
       weight: 1700
       capacity: 22
+      slot: backpack
   5802:
     name: message in a bottle
     article: a
@@ -38449,6 +38813,7 @@ items:
     - take
     attributes:
       weight: 850
+      slot: head
   5904:
     name: magic sulphur
     article: a
@@ -38553,12 +38918,14 @@ items:
     - take
     attributes:
       weight: 850
+      slot: head
   5918:
     name: pirate knee breeches
     flags:
     - take
     attributes:
       weight: 1200
+      slot: legs
   5919:
     name: dragon claw
     article: a
@@ -38616,6 +38983,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   5927:
     name: pirate bag
     article: a
@@ -38626,6 +38994,7 @@ items:
     attributes:
       weight: 800
       capacity: 8
+      slot: backpack
   5928:
     name: empty goldfish bowl
     article: an
@@ -38788,6 +39157,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   5950:
     name: beach bag
     article: a
@@ -38798,6 +39168,7 @@ items:
     attributes:
       weight: 800
       capacity: 8
+      slot: backpack
   5951:
     name: fish tail
     article: a
@@ -40049,6 +40420,7 @@ items:
     - take
     attributes:
       weight: 2000
+      slot: armor
   6096:
     name: pirate hat
     article: a
@@ -40056,6 +40428,7 @@ items:
     - take
     attributes:
       weight: 1250
+      slot: head
   6097:
     name: hook
     article: a
@@ -40094,6 +40467,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: hand
   6102:
     name: Deadeye Devious' eye patch
     flags:
@@ -40237,6 +40611,7 @@ items:
     - take
     attributes:
       weight: 5800
+      slot: shield
   6121:
     name: note pinned on the wall
     article: a
@@ -40320,6 +40695,7 @@ items:
     - take
     attributes:
       weight: 5200
+      slot: shield
   6132:
     name: tree wall
     article: a
@@ -41323,6 +41699,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ring
   6300:
     name: death ring
     article: a
@@ -41330,6 +41707,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ring
   6301:
     name: dead wyvern
     article: a
@@ -41929,6 +42307,7 @@ items:
     - take
     attributes:
       weight: 3200
+      slot: shield
   6391:
     name: hawser
     article: a
@@ -42171,6 +42550,7 @@ items:
     - take
     attributes:
       weight: 3200
+      slot: shield
   6433:
     name: blue tapestry
     article: a
@@ -42846,6 +43226,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ammo
   6529:
     name: pair of soft boots
     article: a
@@ -42853,6 +43234,7 @@ items:
     - take
     attributes:
       weight: 800
+      slot: feet
   6530:
     name: worn soft boots
     flags:
@@ -42866,6 +43248,7 @@ items:
     - take
     attributes:
       weight: 750
+      slot: head
   6532:
     name: dead defiler
     article: a
@@ -43202,6 +43585,7 @@ items:
     - take
     attributes:
       weight: 750
+      slot: head
   6579:
     name: doll
     article: a
@@ -47888,6 +48272,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   7343:
     name: fur bag
     article: a
@@ -47898,6 +48283,7 @@ items:
     attributes:
       weight: 800
       capacity: 8
+      slot: backpack
   7344:
     name: slain crystal spider
     article: a
@@ -48043,6 +48429,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ammo
   7364:
     name: sniper arrow
     article: a
@@ -48051,6 +48438,7 @@ items:
     - take
     attributes:
       weight: 70
+      slot: ammo
   7365:
     name: onyx arrow
     article: an
@@ -48059,6 +48447,7 @@ items:
     - take
     attributes:
       weight: 70
+      slot: ammo
   7366:
     name: viper star
     article: a
@@ -48067,6 +48456,7 @@ items:
     - take
     attributes:
       weight: 200
+      slot: hand
   7367:
     name: enchanted spear
     article: an
@@ -48075,6 +48465,7 @@ items:
     - take
     attributes:
       weight: 2000
+      slot: hand
   7368:
     name: assassin star
     article: an
@@ -48083,6 +48474,7 @@ items:
     - take
     attributes:
       weight: 200
+      slot: hand
   7369:
     name: golden goblet
     article: a
@@ -48166,6 +48558,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: hand
   7379:
     name: brutetamer's staff
     article: a
@@ -48190,6 +48583,7 @@ items:
     - take
     attributes:
       weight: 4500
+      slot: hand
   7382:
     name: demonrage sword
     article: a
@@ -48206,6 +48600,7 @@ items:
     - take
     attributes:
       weight: 4800
+      slot: hand
   7384:
     name: mystic blade
     article: a
@@ -48214,6 +48609,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: hand
   7385:
     name: crimson sword
     article: a
@@ -48222,6 +48618,7 @@ items:
     - take
     attributes:
       weight: 3600
+      slot: hand
   7386:
     name: mercenary sword
     article: a
@@ -48238,6 +48635,7 @@ items:
     - take
     attributes:
       weight: 1500
+      slot: hand
   7388:
     name: vile axe
     article: a
@@ -48246,6 +48644,7 @@ items:
     - take
     attributes:
       weight: 5200
+      slot: hand
   7389:
     name: heroic axe
     article: a
@@ -48254,6 +48653,7 @@ items:
     - take
     attributes:
       weight: 6100
+      slot: hand
   7390:
     name: justice seeker
     article: the
@@ -48262,6 +48662,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   7391:
     name: thaian sword
     article: a
@@ -48365,6 +48766,7 @@ items:
     - take
     attributes:
       weight: 1700
+      slot: hand
   7405:
     name: havoc blade
     article: a
@@ -48397,6 +48799,7 @@ items:
     - take
     attributes:
       weight: 2000
+      slot: hand
   7409:
     name: northern star
     article: a
@@ -48405,6 +48808,7 @@ items:
     - take
     attributes:
       weight: 4200
+      slot: hand
   7410:
     name: queen's sceptre
     article: a
@@ -48413,6 +48817,7 @@ items:
     - take
     attributes:
       weight: 2300
+      slot: hand
   7411:
     name: ornamented axe
     article: an
@@ -48421,6 +48826,7 @@ items:
     - take
     attributes:
       weight: 6150
+      slot: hand
   7412:
     name: butcher's axe
     article: a
@@ -48429,6 +48835,7 @@ items:
     - take
     attributes:
       weight: 6300
+      slot: hand
   7413:
     name: titan axe
     article: a
@@ -48453,6 +48860,7 @@ items:
     - take
     attributes:
       weight: 7800
+      slot: hand
   7416:
     name: bloody edge
     article: a
@@ -48461,6 +48869,7 @@ items:
     - take
     attributes:
       weight: 5200
+      slot: hand
   7417:
     name: runed sword
     article: a
@@ -48469,6 +48878,7 @@ items:
     - take
     attributes:
       weight: 4600
+      slot: hand
   7418:
     name: nightmare blade
     article: a
@@ -48477,6 +48887,7 @@ items:
     - take
     attributes:
       weight: 4600
+      slot: hand
   7419:
     name: dreaded cleaver
     article: a
@@ -48485,6 +48896,7 @@ items:
     - take
     attributes:
       weight: 3800
+      slot: hand
   7420:
     name: reaper's axe
     article: a
@@ -48493,6 +48905,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   7421:
     name: onyx flail
     article: an
@@ -48501,6 +48914,7 @@ items:
     - take
     attributes:
       weight: 2600
+      slot: hand
   7422:
     name: jade hammer
     article: a
@@ -48509,6 +48923,7 @@ items:
     - take
     attributes:
       weight: 3200
+      slot: hand
   7423:
     name: skullcrusher
     article: a
@@ -48565,6 +48980,7 @@ items:
     - take
     attributes:
       weight: 3900
+      slot: hand
   7430:
     name: dragonbone staff
     article: a
@@ -48573,6 +48989,7 @@ items:
     - take
     attributes:
       weight: 1800
+      slot: hand
   7431:
     name: demonbone
     article: a
@@ -48581,6 +48998,7 @@ items:
     - take
     attributes:
       weight: 18000
+      slot: hand
   7432:
     name: furry club
     article: a
@@ -48589,6 +49007,7 @@ items:
     - take
     attributes:
       weight: 4200
+      slot: hand
   7433:
     name: ravenwing
     article: a
@@ -48597,6 +49016,7 @@ items:
     - take
     attributes:
       weight: 5500
+      slot: hand
   7434:
     name: royal axe
     article: a
@@ -48605,6 +49025,7 @@ items:
     - take
     attributes:
       weight: 9200
+      slot: hand
   7435:
     name: impaler
     article: an
@@ -48613,6 +49034,7 @@ items:
     - take
     attributes:
       weight: 8200
+      slot: hand
   7436:
     name: angelic axe
     article: an
@@ -48629,6 +49051,7 @@ items:
     - take
     attributes:
       weight: 2100
+      slot: hand
   7438:
     name: elvish bow
     article: an
@@ -48740,6 +49163,7 @@ items:
     - take
     attributes:
       weight: 4100
+      slot: hand
   7452:
     name: spiked squelcher
     article: a
@@ -48772,6 +49196,7 @@ items:
     - take
     attributes:
       weight: 5500
+      slot: hand
   7456:
     name: noble axe
     article: a
@@ -48780,12 +49205,14 @@ items:
     - take
     attributes:
       weight: 3800
+      slot: hand
   7457:
     name: fur boots
     flags:
     - take
     attributes:
       weight: 1200
+      slot: feet
   7458:
     name: fur cap
     article: a
@@ -48793,6 +49220,7 @@ items:
     - take
     attributes:
       weight: 1800
+      slot: head
   7459:
     name: pair of earmuffs
     article: a
@@ -48800,6 +49228,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: head
   7460:
     name: norse shield
     article: a
@@ -48807,6 +49236,7 @@ items:
     - take
     attributes:
       weight: 4100
+      slot: shield
   7461:
     name: krimhorn helmet
     article: a
@@ -48814,6 +49244,7 @@ items:
     - take
     attributes:
       weight: 5100
+      slot: head
   7462:
     name: ragnir helmet
     article: a
@@ -48821,6 +49252,7 @@ items:
     - take
     attributes:
       weight: 3100
+      slot: head
   7463:
     name: mammoth fur cape
     article: a
@@ -48828,12 +49260,14 @@ items:
     - take
     attributes:
       weight: 2000
+      slot: armor
   7464:
     name: mammoth fur shorts
     flags:
     - take
     attributes:
       weight: 150
+      slot: legs
   7465:
     name: searing fire
     article: a
@@ -49183,6 +49617,7 @@ items:
     - take
     attributes:
       weight: 550
+      slot: necklace
   7533:
     name: nomad parchment
     article: a
@@ -50612,6 +51047,7 @@ items:
     - take
     attributes:
       weight: 630
+      slot: necklace
   7755:
     name: hole
     article: a
@@ -50754,6 +51190,7 @@ items:
     - take
     attributes:
       weight: 4100
+      slot: hand
   7774:
     name: jagged sword
     article: a
@@ -50762,6 +51199,7 @@ items:
     - take
     attributes:
       weight: 2900
+      slot: hand
   7775:
     name: wheel
     article: a
@@ -52183,6 +52621,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: armor
   7992:
     name: mage hat
     article: a
@@ -52190,6 +52629,7 @@ items:
     - take
     attributes:
       weight: 900
+      slot: head
   7993:
     name: witchhunter's coat
     article: a
@@ -52197,6 +52637,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: armor
   7994:
     name: toolbox
     article: a
@@ -52488,6 +52929,7 @@ items:
     - take
     attributes:
       weight: 2900
+      slot: armor
   8038:
     name: robe of the ice queen
     article: a
@@ -52495,6 +52937,7 @@ items:
     - take
     attributes:
       weight: 2950
+      slot: armor
   8039:
     name: dragon robe
     article: a
@@ -52502,6 +52945,7 @@ items:
     - take
     attributes:
       weight: 2850
+      slot: armor
   8040:
     name: velvet mantle
     article: a
@@ -52509,6 +52953,7 @@ items:
     - take
     attributes:
       weight: 2850
+      slot: armor
   8041:
     name: greenwood coat
     article: a
@@ -52516,6 +52961,7 @@ items:
     - take
     attributes:
       weight: 2850
+      slot: armor
   8042:
     name: spirit cloak
     article: a
@@ -52523,6 +52969,7 @@ items:
     - take
     attributes:
       weight: 2650
+      slot: armor
   8043:
     name: focus cape
     article: a
@@ -52530,6 +52977,7 @@ items:
     - take
     attributes:
       weight: 2100
+      slot: armor
   8044:
     name: belted cape
     article: a
@@ -52537,6 +52985,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: armor
   8045:
     name: hibiscus dress
     article: a
@@ -52544,6 +52993,7 @@ items:
     - take
     attributes:
       weight: 1900
+      slot: armor
   8046:
     name: summer dress
     article: a
@@ -52551,6 +53001,7 @@ items:
     - take
     attributes:
       weight: 1000
+      slot: armor
   8047:
     name: tunic
     article: a
@@ -52558,6 +53009,7 @@ items:
     - take
     attributes:
       weight: 1500
+      slot: armor
   8048:
     name: girl's dress
     article: a
@@ -52565,6 +53017,7 @@ items:
     - take
     attributes:
       weight: 1300
+      slot: armor
   8049:
     name: lavos armor
     article: a
@@ -52572,6 +53025,7 @@ items:
     - take
     attributes:
       weight: 8500
+      slot: armor
   8050:
     name: crystalline armor
     article: a
@@ -52579,6 +53033,7 @@ items:
     - take
     attributes:
       weight: 8450
+      slot: armor
   8051:
     name: voltage armor
     article: a
@@ -52586,6 +53041,7 @@ items:
     - take
     attributes:
       weight: 8450
+      slot: armor
   8052:
     name: swamplair armor
     article: a
@@ -52593,6 +53049,7 @@ items:
     - take
     attributes:
       weight: 8450
+      slot: armor
   8053:
     name: fireborn giant armor
     article: a
@@ -52600,6 +53057,7 @@ items:
     - take
     attributes:
       weight: 12000
+      slot: armor
   8054:
     name: earthborn titan armor
     article: an
@@ -52607,6 +53065,7 @@ items:
     - take
     attributes:
       weight: 12000
+      slot: armor
   8055:
     name: windborn colossus armor
     article: a
@@ -52614,6 +53073,7 @@ items:
     - take
     attributes:
       weight: 12000
+      slot: armor
   8056:
     name: oceanborn leviathan armor
     article: an
@@ -52621,6 +53081,7 @@ items:
     - take
     attributes:
       weight: 10000
+      slot: armor
   8057:
     name: divine plate
     article: a
@@ -52628,6 +53089,7 @@ items:
     - take
     attributes:
       weight: 7500
+      slot: armor
   8058:
     name: molten plate
     article: a
@@ -52635,6 +53097,7 @@ items:
     - take
     attributes:
       weight: 7500
+      slot: armor
   8059:
     name: frozen plate
     article: a
@@ -52642,6 +53105,7 @@ items:
     - take
     attributes:
       weight: 7500
+      slot: armor
   8060:
     name: master archer's armor
     article: a
@@ -52649,6 +53113,7 @@ items:
     - take
     attributes:
       weight: 6900
+      slot: armor
   8061:
     name: skullcracker armor
     article: a
@@ -52656,6 +53121,7 @@ items:
     - take
     attributes:
       weight: 11000
+      slot: armor
   8062:
     name: robe of the underworld
     article: a
@@ -52663,6 +53129,7 @@ items:
     - take
     attributes:
       weight: 3100
+      slot: armor
   8063:
     name: paladin armor
     article: a
@@ -52670,6 +53137,7 @@ items:
     - take
     attributes:
       weight: 6500
+      slot: armor
   8064:
     name: ethno coat
     article: an
@@ -52677,6 +53145,7 @@ items:
     - take
     attributes:
       weight: 2550
+      slot: armor
   8066:
     name: mysterious machine
     article: a
@@ -52729,6 +53198,7 @@ items:
     - take
     attributes:
       weight: 1950
+      slot: shield
   8073:
     name: spellbook of warding
     article: a
@@ -52737,6 +53207,7 @@ items:
     - take
     attributes:
       weight: 2100
+      slot: shield
   8074:
     name: spellbook of mind control
     article: a
@@ -52745,6 +53216,7 @@ items:
     - take
     attributes:
       weight: 2450
+      slot: shield
   8075:
     name: spellbook of lost souls
     article: a
@@ -52753,6 +53225,7 @@ items:
     - take
     attributes:
       weight: 2560
+      slot: shield
   8076:
     name: spellscroll of prophecies
     article: a
@@ -52761,6 +53234,7 @@ items:
     - take
     attributes:
       weight: 2650
+      slot: shield
   8077:
     name: rainbow shield
     article: a
@@ -52768,6 +53242,7 @@ items:
     - take
     attributes:
       weight: 6900
+      slot: shield
   8078:
     name: fiery rainbow shield
     article: a
@@ -52775,6 +53250,7 @@ items:
     - take
     attributes:
       weight: 6900
+      slot: shield
   8079:
     name: icy rainbow shield
     article: an
@@ -52782,6 +53258,7 @@ items:
     - take
     attributes:
       weight: 6900
+      slot: shield
   8080:
     name: sparking rainbow shield
     article: a
@@ -52789,6 +53266,7 @@ items:
     - take
     attributes:
       weight: 6900
+      slot: shield
   8081:
     name: terran rainbow shield
     article: a
@@ -52796,6 +53274,7 @@ items:
     - take
     attributes:
       weight: 6900
+      slot: shield
   8082:
     name: underworld rod
     article: an
@@ -52803,6 +53282,7 @@ items:
     - take
     attributes:
       weight: 2900
+      slot: hand
   8083:
     name: northwind rod
     article: a
@@ -52810,6 +53290,7 @@ items:
     - take
     attributes:
       weight: 2900
+      slot: hand
   8084:
     name: springsprout rod
     article: a
@@ -52817,6 +53298,7 @@ items:
     - take
     attributes:
       weight: 2700
+      slot: hand
   8085:
     name: earth
     flags:
@@ -52865,6 +53347,7 @@ items:
     - take
     attributes:
       weight: 2850
+      slot: shield
   8091:
     name: spell rune
     article: a
@@ -52879,6 +53362,7 @@ items:
     - take
     attributes:
       weight: 2550
+      slot: hand
   8093:
     name: wand of draconia
     article: a
@@ -52886,6 +53370,7 @@ items:
     - take
     attributes:
       weight: 2700
+      slot: hand
   8094:
     name: wand of voodoo
     article: a
@@ -52893,12 +53378,14 @@ items:
     - take
     attributes:
       weight: 2850
+      slot: hand
   8095:
     name: ranger legs
     flags:
     - take
     attributes:
       weight: 3500
+      slot: legs
   8096:
     name: hellforged axe
     article: a
@@ -52907,6 +53394,7 @@ items:
     - take
     attributes:
       weight: 8800
+      slot: hand
   8097:
     name: solar axe
     article: a
@@ -52915,6 +53403,7 @@ items:
     - take
     attributes:
       weight: 11000
+      slot: hand
   8098:
     name: demonwing axe
     article: a
@@ -52931,6 +53420,7 @@ items:
     - take
     attributes:
       weight: 9900
+      slot: hand
   8100:
     name: obsidian truncheon
     article: an
@@ -52939,6 +53429,7 @@ items:
     - take
     attributes:
       weight: 6500
+      slot: hand
   8101:
     name: stomper
     article: the
@@ -52955,6 +53446,7 @@ items:
     - take
     attributes:
       weight: 4100
+      slot: hand
   8103:
     name: epiphany
     article: the
@@ -52963,6 +53455,7 @@ items:
     - take
     attributes:
       weight: 4500
+      slot: hand
   8104:
     name: calamity
     article: the
@@ -57727,6 +58220,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   8861:
     name: brocade bag
     article: a
@@ -57737,6 +58231,7 @@ items:
     attributes:
       weight: 800
       capacity: 8
+      slot: backpack
   8862:
     name: yalahari armor
     article: a
@@ -57744,6 +58239,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: armor
   8863:
     name: yalahari leg piece
     article: a
@@ -57751,6 +58247,7 @@ items:
     - take
     attributes:
       weight: 6500
+      slot: legs
   8864:
     name: yalahari mask
     article: a
@@ -57758,6 +58255,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: head
   8865:
     name: crystal column
     article: a
@@ -58739,6 +59237,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: head
   9014:
     name: leaf legs
     article: a
@@ -58746,6 +59245,7 @@ items:
     - take
     attributes:
       weight: 1200
+      slot: legs
   9015:
     name: flower dress
     article: a
@@ -58753,6 +59253,7 @@ items:
     - take
     attributes:
       weight: 1900
+      slot: armor
   9016:
     name: flask of rust remover
     article: a
@@ -58769,6 +59270,7 @@ items:
     - take
     attributes:
       weight: 600
+      slot: feet
   9018:
     name: firewalker boots
     article: a
@@ -58776,6 +59278,7 @@ items:
     - take
     attributes:
       weight: 950
+      slot: feet
   9019:
     name: firewalker boots
     article: a
@@ -58783,6 +59286,7 @@ items:
     - take
     attributes:
       weight: 950
+      slot: feet
   9020:
     name: worn firewalker boots
     flags:
@@ -59394,6 +59898,7 @@ items:
     - take
     attributes:
       weight: 600
+      slot: head
   9104:
     name: football
     article: a
@@ -59694,6 +60199,7 @@ items:
     attributes:
       weight: 800
       capacity: 8
+      slot: backpack
   9152:
     name: v-belt
     article: a
@@ -60145,6 +60651,7 @@ items:
     - take
     attributes:
       weight: 1240
+      slot: necklace
   9216:
     name: silver medal
     article: a
@@ -60153,6 +60660,7 @@ items:
     - take
     attributes:
       weight: 1220
+      slot: necklace
   9217:
     name: bronze medal
     article: a
@@ -60161,6 +60669,7 @@ items:
     - take
     attributes:
       weight: 1200
+      slot: necklace
   9218:
     name: badge of glory
     article: a
@@ -60193,6 +60702,7 @@ items:
     - take
     attributes:
       weight: 900
+      slot: head
   9222:
     name: royal medal
     article: a
@@ -60717,6 +61227,7 @@ items:
     - take
     attributes:
       weight: 700
+      slot: necklace
   9302:
     name: sacred tree amulet
     article: a
@@ -60724,6 +61235,7 @@ items:
     - take
     attributes:
       weight: 700
+      slot: necklace
   9303:
     name: leviathan's amulet
     article: a
@@ -60731,6 +61243,7 @@ items:
     - take
     attributes:
       weight: 700
+      slot: necklace
   9304:
     name: shockwave amulet
     article: a
@@ -60738,6 +61251,7 @@ items:
     - take
     attributes:
       weight: 700
+      slot: necklace
   9306:
     name: mechanical fishing rod
     article: a
@@ -61188,12 +61702,14 @@ items:
     - take
     attributes:
       weight: 500
+      slot: shield
   9373:
     name: glutton's mace
     flags:
     - take
     attributes:
       weight: 1300
+      slot: hand
   9374:
     name: odd hat
     article: an
@@ -61201,6 +61717,7 @@ items:
     - take
     attributes:
       weight: 700
+      slot: head
   9375:
     name: pointed rabbitslayer
     article: a
@@ -61208,6 +61725,7 @@ items:
     - take
     attributes:
       weight: 160
+      slot: hand
   9376:
     name: stale bread of ancientness
     article: a
@@ -61215,6 +61733,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: hand
   9377:
     name: shield of the white knight
     article: a
@@ -61222,6 +61741,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: shield
   9378:
     name: musician's bow
     article: a
@@ -61236,6 +61756,7 @@ items:
     - take
     attributes:
       weight: 800
+      slot: armor
   9380:
     name: shield of care
     article: a
@@ -61243,6 +61764,7 @@ items:
     - take
     attributes:
       weight: 1700
+      slot: shield
   9381:
     name: helmet of ultimate terror
     article: a
@@ -61250,6 +61772,7 @@ items:
     - take
     attributes:
       weight: 1250
+      slot: head
   9382:
     name: helmet of nature
     article: a
@@ -61257,12 +61780,14 @@ items:
     - take
     attributes:
       weight: 1100
+      slot: head
   9383:
     name: trousers of the ancients
     flags:
     - take
     attributes:
       weight: 30
+      slot: legs
   9384:
     name: scythe of the reaper
     article: a
@@ -61277,6 +61802,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: hand
   9386:
     name: farmer's avenger
     article: a
@@ -61291,6 +61817,7 @@ items:
     - take
     attributes:
       weight: 200
+      slot: hand
   9388:
     name: holy icon
     article: a
@@ -61327,6 +61854,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: ring
   9393:
     name: claw of 'The Noxious Spawn'
     article: a
@@ -61341,6 +61869,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: ring
   9395:
     name: claw of 'The Noxious Spawn'
     article: a
@@ -61356,6 +61885,7 @@ items:
     - take
     attributes:
       weight: 4200
+      slot: hand
   9397:
     name: claw of 'The Noxious Spawn'
     article: a
@@ -61377,6 +61907,7 @@ items:
     - take
     attributes:
       weight: 4600
+      slot: head
   9400:
     name: rain coat
     article: the
@@ -61385,6 +61916,7 @@ items:
     - take
     attributes:
       weight: 3200
+      slot: armor
   9401:
     name: shield Nevermourn
     article: the
@@ -61393,6 +61925,7 @@ items:
     - take
     attributes:
       weight: 5200
+      slot: shield
   9402:
     name: dead Doctor Perhaps
     article: the
@@ -61664,6 +62197,7 @@ items:
     - take
     attributes:
       weight: 3200
+      slot: armor
   9447:
     name: shield Nevermourn
     article: the
@@ -61672,6 +62206,7 @@ items:
     - take
     attributes:
       weight: 5200
+      slot: shield
   9448:
     name: goddess statue
     article: a
@@ -62454,6 +62989,7 @@ items:
     - take
     attributes:
       weight: 40
+      slot: ring
   9586:
     name: wedding outfit box
     article: a
@@ -62510,6 +63046,7 @@ items:
     - take
     attributes:
       weight: 40
+      slot: ring
   9594:
     name: sneaky stabber of eliteness
     article: a
@@ -62568,6 +63105,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   9602:
     name: orange backpack
     article: an
@@ -62578,6 +63116,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   9603:
     name: orange bag
     article: an
@@ -62588,6 +63127,7 @@ items:
     attributes:
       weight: 800
       capacity: 8
+      slot: backpack
   9604:
     name: moon backpack
     article: a
@@ -62598,6 +63138,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   9605:
     name: crown backpack
     article: a
@@ -62608,6 +63149,7 @@ items:
     attributes:
       weight: 1700
       capacity: 20
+      slot: backpack
   9606:
     name: egg of The Many
     article: an
@@ -62951,6 +63493,7 @@ items:
     - take
     attributes:
       weight: 780
+      slot: head
   9654:
     name: war crystal
     article: a
@@ -66252,12 +66795,14 @@ items:
     - take
     attributes:
       weight: 1850
+      slot: feet
   10201:
     name: dragon scale boots
     flags:
     - take
     attributes:
       weight: 1850
+      slot: feet
   10202:
     name: heart backpack
     article: a
@@ -66268,6 +66813,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   10205:
     name: pile of bones
     article: a
@@ -67085,6 +67631,7 @@ items:
     - take
     attributes:
       weight: 2250
+      slot: feet
   10324:
     name: expedition backpack
     article: an
@@ -67095,6 +67642,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   10325:
     name: expedition bag
     article: an
@@ -67105,6 +67653,7 @@ items:
     attributes:
       weight: 800
       capacity: 8
+      slot: backpack
   10326:
     name: dragon backpack
     article: a
@@ -67115,6 +67664,7 @@ items:
     attributes:
       weight: 1700
       capacity: 20
+      slot: backpack
   10327:
     name: minotaur backpack
     article: a
@@ -67125,6 +67675,7 @@ items:
     attributes:
       weight: 1850
       capacity: 20
+      slot: backpack
   10328:
     name: bunch of ripe rice
     article: a
@@ -67280,6 +67831,7 @@ items:
     attributes:
       weight: 1650
       capacity: 20
+      slot: backpack
   10347:
     name: dragon tapestry
     article: a
@@ -67526,6 +68078,7 @@ items:
     - take
     attributes:
       weight: 9550
+      slot: armor
   10385:
     name: Zaoan helmet
     article: a
@@ -67533,6 +68086,7 @@ items:
     - take
     attributes:
       weight: 6600
+      slot: head
   10386:
     name: Zaoan shoes
     article: a
@@ -67540,6 +68094,7 @@ items:
     - take
     attributes:
       weight: 700
+      slot: feet
   10387:
     name: Zaoan legs
     article: a
@@ -67547,6 +68102,7 @@ items:
     - take
     attributes:
       weight: 6600
+      slot: legs
   10388:
     name: drakinata
     article: a
@@ -67571,6 +68127,7 @@ items:
     - take
     attributes:
       weight: 4900
+      slot: hand
   10391:
     name: drachaku
     article: a
@@ -67729,6 +68286,7 @@ items:
     - take
     attributes:
       weight: 540
+      slot: necklace
   10413:
     name: zaogun flag
     article: a
@@ -67915,6 +68473,7 @@ items:
     - take
     attributes:
       weight: 2350
+      slot: armor
   10439:
     name: Zaoan robe
     article: a
@@ -67922,6 +68481,7 @@ items:
     - take
     attributes:
       weight: 2450
+      slot: armor
   10440:
     name: dead sandcrawler
     flags:
@@ -68014,6 +68574,7 @@ items:
     - take
     attributes:
       weight: 900
+      slot: head
   10452:
     name: terramite shell
     article: a
@@ -68060,6 +68621,7 @@ items:
     - take
     attributes:
       weight: 820
+      slot: necklace
   10458:
     name: dead lancer beetle
     article: a
@@ -68166,6 +68728,7 @@ items:
     - take
     attributes:
       weight: 150
+      slot: necklace
   10477:
     name: dragon goblet
     article: a
@@ -72774,6 +73337,7 @@ items:
     - take
     attributes:
       weight: 840
+      slot: necklace
   11469:
     name: hunter's quiver
     article: a
@@ -73284,6 +73848,7 @@ items:
     - take
     attributes:
       weight: 250
+      slot: feet
   11543:
     name: fish tail
     article: a
@@ -73291,6 +73856,7 @@ items:
     - take
     attributes:
       weight: 250
+      slot: feet
   11544:
     name: faded last will
     article: an
@@ -74017,6 +74583,7 @@ items:
     - take
     attributes:
       weight: 12000
+      slot: armor
   11652:
     name: broken key ring
     article: a
@@ -74183,6 +74750,7 @@ items:
     - take
     attributes:
       weight: 850
+      slot: head
   11675:
     name: dissolved souleater
     article: a
@@ -74273,6 +74841,7 @@ items:
     - take
     attributes:
       weight: 13000
+      slot: armor
   11687:
     name: royal scale robe
     article: a
@@ -74280,6 +74849,7 @@ items:
     - take
     attributes:
       weight: 4500
+      slot: armor
   11688:
     name: shield of corruption
     article: a
@@ -74287,6 +74857,7 @@ items:
     - take
     attributes:
       weight: 4900
+      slot: shield
   11689:
     name: elite draken helmet
     article: an
@@ -74294,6 +74865,7 @@ items:
     - take
     attributes:
       weight: 4300
+      slot: head
   11690:
     name: trashed draken boots
     flags:
@@ -74308,6 +74880,7 @@ items:
     - take
     attributes:
       weight: 2800
+      slot: shield
   11692:
     name: snake god's sceptre
     article: a
@@ -74316,6 +74889,7 @@ items:
     - take
     attributes:
       weight: 12000
+      slot: hand
   11693:
     name: blade of corruption
     article: a
@@ -74324,6 +74898,7 @@ items:
     - take
     attributes:
       weight: 6400
+      slot: hand
   11694:
     name: snake god trophy
     article: a
@@ -74362,6 +74937,7 @@ items:
     attributes:
       weight: 0
       capacity: 60
+      slot: backpack
   11699:
     name: botany almanach
     article: an
@@ -74377,6 +74953,7 @@ items:
     - take
     attributes:
       weight: 1800
+      slot: head
   11701:
     name: old cape
     article: an
@@ -74384,6 +74961,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: armor
   11702:
     name: brimstone fangs
     article: a
@@ -79570,6 +80148,7 @@ items:
     - take
     attributes:
       weight: 300
+      slot: necklace
   12543:
     name: golden hyaena pendant
     article: a
@@ -79577,6 +80156,7 @@ items:
     - take
     attributes:
       weight: 350
+      slot: necklace
   12544:
     name: white deer antlers
     flags:
@@ -79919,6 +80499,7 @@ items:
     - take
     attributes:
       weight: 1000
+      slot: head
   12600:
     name: coal
     flags:
@@ -79949,6 +80530,7 @@ items:
     - take
     attributes:
       weight: 2800
+      slot: hand
   12604:
     name: rubbish
     flags:
@@ -80318,6 +80900,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ring
   12670:
     name: star ring
     article: a
@@ -80325,6 +80908,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ring
   12671:
     name: sack of herbs
     flags:
@@ -80346,6 +80930,7 @@ items:
     - take
     attributes:
       weight: 2000
+      slot: hand
   12674:
     name: fleshy bone
     flags:
@@ -80554,6 +81139,7 @@ items:
     - take
     attributes:
       weight: 5200
+      slot: hand
   12732:
     name: shimmer rod
     article: a
@@ -80561,6 +81147,7 @@ items:
     - take
     attributes:
       weight: 3100
+      slot: hand
   12733:
     name: shimmer bow
     article: a
@@ -80595,6 +81182,7 @@ items:
     - take
     attributes:
       weight: 60
+      slot: ring
   12739:
     name: unknown item
     flags:
@@ -80615,6 +81203,7 @@ items:
     - take
     attributes:
       weight: 3100
+      slot: hand
   12742:
     name: yielowax
     flags:
@@ -87518,6 +88107,7 @@ items:
     - take
     attributes:
       weight: 509
+      slot: necklace
   13991:
     name: deepling axe
     article: a
@@ -87526,6 +88116,7 @@ items:
     - take
     attributes:
       weight: 9100
+      slot: hand
   13992:
     name: sandfish
     article: a
@@ -87542,6 +88133,7 @@ items:
     - take
     attributes:
       weight: 15600
+      slot: armor
   13994:
     name: depth lorica
     article: a
@@ -87549,6 +88141,7 @@ items:
     - take
     attributes:
       weight: 14500
+      slot: armor
   13995:
     name: depth galea
     article: a
@@ -87556,6 +88149,7 @@ items:
     - take
     attributes:
       weight: 4600
+      slot: head
   13996:
     name: depth ocrea
     article: a
@@ -87563,6 +88157,7 @@ items:
     - take
     attributes:
       weight: 4800
+      slot: legs
   13997:
     name: depth calcei
     article: a
@@ -87570,6 +88165,7 @@ items:
     - take
     attributes:
       weight: 3700
+      slot: feet
   13998:
     name: depth scutum
     article: a
@@ -87577,6 +88173,7 @@ items:
     - take
     attributes:
       weight: 3000
+      slot: shield
   13999:
     name: ornate legs
     article: an
@@ -87584,6 +88181,7 @@ items:
     - take
     attributes:
       weight: 7700
+      slot: legs
   14000:
     name: ornate shield
     article: an
@@ -87591,6 +88189,7 @@ items:
     - take
     attributes:
       weight: 7100
+      slot: shield
   14001:
     name: ornate mace
     article: an
@@ -87599,6 +88198,7 @@ items:
     - take
     attributes:
       weight: 14900
+      slot: hand
   14002:
     name: trophy of Obujos
     article: a
@@ -87870,6 +88470,7 @@ items:
     - take
     attributes:
       weight: 8800
+      slot: hand
   14041:
     name: deepling ridge
     article: a
@@ -87885,6 +88486,7 @@ items:
     - take
     attributes:
       weight: 7500
+      slot: shield
   14043:
     name: guardian axe
     article: a
@@ -88149,6 +88751,7 @@ items:
     - take
     attributes:
       weight: 2000
+      slot: armor
   14087:
     name: grasshopper legs
     article: a
@@ -88156,6 +88759,7 @@ items:
     - take
     attributes:
       weight: 3200
+      slot: legs
   14088:
     name: carapace shield
     article: a
@@ -88163,6 +88767,7 @@ items:
     - take
     attributes:
       weight: 5500
+      slot: shield
   14089:
     name: hive scythe
     article: a
@@ -88171,6 +88776,7 @@ items:
     - take
     attributes:
       weight: 7500
+      slot: hand
   14090:
     name: dead poodle
     article: a
@@ -89067,6 +89673,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   14249:
     name: buggy backpack
     article: a
@@ -89077,6 +89684,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   14250:
     name: deepling squelcher
     article: a
@@ -89085,6 +89693,7 @@ items:
     - take
     attributes:
       weight: 8900
+      slot: hand
   14251:
     name: tarsal arrow
     article: a
@@ -89093,6 +89702,7 @@ items:
     - take
     attributes:
       weight: 70
+      slot: ammo
   14252:
     name: vortex bolt
     article: a
@@ -89101,6 +89711,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ammo
   14253:
     name: swarmer drum
     article: a
@@ -89165,6 +89776,7 @@ items:
     attributes:
       weight: 1500
       capacity: 15
+      slot: backpack
   14675:
     name: tapestry of honour
     article: a
@@ -89505,6 +90117,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: shield
   14770:
     name: crystal floor
     flags:
@@ -94412,6 +95025,7 @@ items:
     - take
     attributes:
       weight: 75
+      slot: ammo
   15794:
     name: fresh mushroom beer
     article: a
@@ -96218,6 +96832,7 @@ items:
     - take
     attributes:
       weight: 3700
+      slot: hand
   16097:
     name: glowing mushroom
     article: a
@@ -96244,6 +96859,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   16100:
     name: crystal backpack
     article: a
@@ -96254,6 +96870,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   16101:
     name: muck remover
     article: a
@@ -96288,6 +96905,7 @@ items:
     - take
     attributes:
       weight: 900
+      slot: head
   16105:
     name: gill coat
     article: a
@@ -96295,6 +96913,7 @@ items:
     - take
     attributes:
       weight: 1900
+      slot: armor
   16106:
     name: gill legs
     article: a
@@ -96302,6 +96921,7 @@ items:
     - take
     attributes:
       weight: 2800
+      slot: legs
   16107:
     name: spellbook of vigilance
     article: a
@@ -96310,6 +96930,7 @@ items:
     - take
     attributes:
       weight: 2700
+      slot: shield
   16108:
     name: gill necklace
     article: a
@@ -96317,6 +96938,7 @@ items:
     - take
     attributes:
       weight: 410
+      slot: necklace
   16109:
     name: prismatic helmet
     article: a
@@ -96324,6 +96946,7 @@ items:
     - take
     attributes:
       weight: 5600
+      slot: head
   16110:
     name: prismatic armor
     article: a
@@ -96331,18 +96954,21 @@ items:
     - take
     attributes:
       weight: 7900
+      slot: armor
   16111:
     name: prismatic legs
     flags:
     - take
     attributes:
       weight: 7100
+      slot: legs
   16112:
     name: prismatic boots
     flags:
     - take
     attributes:
       weight: 1800
+      slot: feet
   16113:
     name: prismatic necklace
     article: a
@@ -96350,6 +96976,7 @@ items:
     - take
     attributes:
       weight: 650
+      slot: necklace
   16114:
     name: prismatic ring
     article: a
@@ -96357,6 +96984,7 @@ items:
     - take
     attributes:
       weight: 105
+      slot: ring
   16115:
     name: wand of everblazing
     article: a
@@ -96364,6 +96992,7 @@ items:
     - take
     attributes:
       weight: 3700
+      slot: hand
   16116:
     name: prismatic shield
     article: a
@@ -96371,6 +97000,7 @@ items:
     - take
     attributes:
       weight: 7200
+      slot: shield
   16117:
     name: muck rod
     article: a
@@ -96378,6 +97008,7 @@ items:
     - take
     attributes:
       weight: 3700
+      slot: hand
   16118:
     name: glacial rod
     article: a
@@ -96385,6 +97016,7 @@ items:
     - take
     attributes:
       weight: 3700
+      slot: hand
   16119:
     name: blue crystal shard
     article: a
@@ -96570,6 +97202,7 @@ items:
     - take
     attributes:
       weight: 85
+      slot: ammo
   16142:
     name: drill bolt
     article: a
@@ -96578,6 +97211,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ammo
   16143:
     name: envenomed arrow
     article: an
@@ -96586,6 +97220,7 @@ items:
     - take
     attributes:
       weight: 70
+      slot: ammo
   16144:
     name: dead dragonling
     article: a
@@ -96676,6 +97311,7 @@ items:
     - take
     attributes:
       weight: 4800
+      slot: hand
   16161:
     name: crystalline axe
     article: a
@@ -96684,6 +97320,7 @@ items:
     - take
     attributes:
       weight: 7600
+      slot: hand
   16162:
     name: mycological mace
     article: a
@@ -96692,6 +97329,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   16163:
     name: crystal crossbow
     article: a
@@ -96789,6 +97427,7 @@ items:
     - take
     attributes:
       weight: 4500
+      slot: hand
   16176:
     name: dead crystal golem
     article: a
@@ -97198,6 +97837,7 @@ items:
     - take
     attributes:
       weight: 105
+      slot: ring
   16265:
     name: stairs
     flags:
@@ -99884,6 +100524,7 @@ items:
     - take
     attributes:
       weight: 2000
+      slot: hand
   17110:
     name: mean paladin spear
     article: a
@@ -99892,6 +100533,7 @@ items:
     - take
     attributes:
       weight: 1000
+      slot: hand
   17111:
     name: sorcerer and druid staff
     article: a
@@ -99899,6 +100541,7 @@ items:
     - take
     attributes:
       weight: 1900
+      slot: hand
   17112:
     name: sorc and druid attack rune
     article: a
@@ -104029,6 +104672,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: shield
   17812:
     name: ratana
     article: a
@@ -104037,6 +104681,7 @@ items:
     - take
     attributes:
       weight: 3300
+      slot: hand
   17813:
     name: life preserver
     article: a
@@ -104045,6 +104690,7 @@ items:
     - take
     attributes:
       weight: 4600
+      slot: hand
   17814:
     name: swamp lichen
     flags:
@@ -104122,6 +104768,7 @@ items:
     - take
     attributes:
       weight: 3100
+      slot: hand
   17825:
     name: rat god doll
     article: a
@@ -104161,6 +104808,7 @@ items:
     - take
     attributes:
       weight: 7500
+      slot: armor
   17830:
     name: bonecarving knife
     article: a
@@ -104242,6 +104890,7 @@ items:
     - take
     attributes:
       weight: 2900
+      slot: armor
   17847:
     name: wimp tooth chain
     article: a
@@ -104288,6 +104937,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: head
   17853:
     name: lost bracers
     flags:
@@ -104342,6 +104992,7 @@ items:
     - take
     attributes:
       weight: 3900
+      slot: hand
   17860:
     name: low stone wall
     article: a
@@ -110292,6 +110943,7 @@ items:
     - take
     attributes:
       weight: 10
+      slot: ring
   18936:
     name: Vampire Count's medal
     article: the
@@ -111714,6 +112366,7 @@ items:
     - take
     attributes:
       weight: 520
+      slot: necklace
   19154:
     name: Mexcalibur
     article: the
@@ -111764,6 +112417,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   19160:
     name: Omrabas' talking skull
     flags:
@@ -112643,6 +113297,7 @@ items:
     - take
     attributes:
       weight: 550
+      slot: necklace
   19358:
     name: albino plate
     article: an
@@ -112650,6 +113305,7 @@ items:
     - take
     attributes:
       weight: 8400
+      slot: armor
   19359:
     name: horn
     article: a
@@ -112657,6 +113313,7 @@ items:
     - take
     attributes:
       weight: 120
+      slot: ring
   19361:
     name: sun mirror
     article: a
@@ -112678,6 +113335,7 @@ items:
     - take
     attributes:
       weight: 4900
+      slot: shield
   19365:
     name: trapped lightning
     article: a
@@ -112691,6 +113349,7 @@ items:
     - take
     attributes:
       weight: 1500
+      slot: legs
   19369:
     name: eye of the storm
     article: an
@@ -112712,6 +113371,7 @@ items:
     - take
     attributes:
       weight: 5800
+      slot: armor
   19373:
     name: haunted mirror piece
     article: a
@@ -112719,12 +113379,14 @@ items:
     - take
     attributes:
       weight: 2800
+      slot: shield
   19374:
     name: vampire silk slippers
     flags:
     - take
     attributes:
       weight: 1150
+      slot: feet
   19375:
     name: slimy growth
     article: a
@@ -112826,6 +113488,7 @@ items:
     - take
     attributes:
       weight: 3400
+      slot: armor
   19392:
     name: aligned opticording sphere
     article: an
@@ -116581,6 +117244,7 @@ items:
     - take
     attributes:
       weight: 1300
+      slot: shield
   20051:
     name: traces of an ancient dream
     article: a
@@ -116687,6 +117351,7 @@ items:
     - take
     attributes:
       weight: 6300
+      slot: hand
   20065:
     name: umbral blade
     article: an
@@ -116695,6 +117360,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   20066:
     name: umbral masterblade
     article: an
@@ -116703,6 +117369,7 @@ items:
     - take
     attributes:
       weight: 5500
+      slot: hand
   20067:
     name: crude umbral slayer
     article: a
@@ -116735,6 +117402,7 @@ items:
     - take
     attributes:
       weight: 9000
+      slot: hand
   20071:
     name: umbral axe
     article: an
@@ -116743,6 +117411,7 @@ items:
     - take
     attributes:
       weight: 8500
+      slot: hand
   20072:
     name: umbral master axe
     article: an
@@ -116751,6 +117420,7 @@ items:
     - take
     attributes:
       weight: 8000
+      slot: hand
   20073:
     name: crude umbral chopper
     article: a
@@ -116783,6 +117453,7 @@ items:
     - take
     attributes:
       weight: 9000
+      slot: hand
   20077:
     name: umbral mace
     article: an
@@ -116791,6 +117462,7 @@ items:
     - take
     attributes:
       weight: 8500
+      slot: hand
   20078:
     name: umbral master mace
     article: an
@@ -116799,6 +117471,7 @@ items:
     - take
     attributes:
       weight: 8000
+      slot: hand
   20079:
     name: crude umbral hammer
     article: a
@@ -116873,6 +117546,7 @@ items:
     - take
     attributes:
       weight: 4000
+      slot: shield
   20089:
     name: umbral spellbook
     article: an
@@ -116881,6 +117555,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: shield
   20090:
     name: umbral master spellbook
     article: an
@@ -116889,6 +117564,7 @@ items:
     - take
     attributes:
       weight: 3000
+      slot: shield
   20091:
     name: bed chamber
     article: a
@@ -117242,6 +117918,7 @@ items:
     - take
     attributes:
       weight: 1300
+      slot: shield
   20141:
     name: pendulum
     article: a
@@ -117519,6 +118196,7 @@ items:
     - take
     attributes:
       weight: 0
+      slot: ring
   20183:
     name: sight of surrender's eye
     article: a
@@ -117535,6 +118213,7 @@ items:
     - take
     attributes:
       weight: 1400
+      slot: head
   20185:
     name: broken pottery
     article: a
@@ -117722,6 +118401,7 @@ items:
     - take
     attributes:
       weight: 60
+      slot: ring
   20210:
     name: filled cup
     article: a
@@ -118648,6 +119328,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   20350:
     name: cake tapestry
     article: a
@@ -123494,6 +124175,7 @@ items:
     - take
     attributes:
       weight: 2600
+      slot: hand
   21159:
     name: floating crate of turnips
     article: a
@@ -123519,6 +124201,7 @@ items:
     - take
     attributes:
       weight: 2900
+      slot: armor
   21165:
     name: rubber cap
     article: a
@@ -123526,6 +124209,7 @@ items:
     - take
     attributes:
       weight: 800
+      slot: head
   21166:
     name: mooh'tah plate
     article: a
@@ -123533,6 +124217,7 @@ items:
     - take
     attributes:
       weight: 12500
+      slot: armor
   21167:
     name: heat core
     article: a
@@ -123540,18 +124225,21 @@ items:
     - take
     attributes:
       weight: 5500
+      slot: armor
   21168:
     name: alloy legs
     flags:
     - take
     attributes:
       weight: 4500
+      slot: legs
   21169:
     name: metal spats
     flags:
     - take
     attributes:
       weight: 1800
+      slot: feet
   21170:
     name: gearwheel chain
     article: a
@@ -123559,6 +124247,7 @@ items:
     - take
     attributes:
       weight: 1000
+      slot: necklace
   21171:
     name: metal bat
     article: a
@@ -123567,6 +124256,7 @@ items:
     - take
     attributes:
       weight: 5100
+      slot: hand
   21172:
     name: glooth whip
     article: a
@@ -123575,6 +124265,7 @@ items:
     - take
     attributes:
       weight: 3200
+      slot: hand
   21173:
     name: moohtant cudgel
     article: a
@@ -123591,6 +124282,7 @@ items:
     - take
     attributes:
       weight: 6500
+      slot: hand
   21175:
     name: mino shield
     article: a
@@ -123598,6 +124290,7 @@ items:
     - take
     attributes:
       weight: 6500
+      slot: shield
   21176:
     name: execowtioner axe
     article: an
@@ -123614,6 +124307,7 @@ items:
     - take
     attributes:
       weight: 2800
+      slot: hand
   21178:
     name: glooth club
     article: a
@@ -123653,6 +124347,7 @@ items:
     - take
     attributes:
       weight: 220
+      slot: necklace
   21184:
     name: cup of cowcoa
     article: a
@@ -124357,6 +125052,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   21293:
     name: note pinned on the wall
     article: a
@@ -124381,6 +125077,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   21296:
     name: broken opticorder forge
     flags:
@@ -124686,6 +125383,7 @@ items:
     - take
     attributes:
       weight: 1500
+      slot: hand
   21350:
     name: chiller
     article: the
@@ -124693,6 +125391,7 @@ items:
     - take
     attributes:
       weight: 1500
+      slot: hand
   21351:
     name: light stone shower rune
     article: a
@@ -124875,6 +125574,7 @@ items:
     - take
     attributes:
       weight: 1400
+      slot: shield
   21401:
     name: broken wooden shield
     article: a
@@ -124882,6 +125582,7 @@ items:
     - take
     attributes:
       weight: 4000
+      slot: shield
   21402:
     name: Old Nasty
     article: a
@@ -124941,6 +125642,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   21412:
     name: dead explorer
     article: a
@@ -125131,6 +125833,7 @@ items:
     - take
     attributes:
       weight: 200
+      slot: necklace
   21440:
     name: stone tile with a socket
     article: a
@@ -125178,6 +125881,7 @@ items:
     - take
     attributes:
       weight: 1800
+      slot: backpack
   21446:
     name: dead woodling
     article: a
@@ -125324,6 +126028,7 @@ items:
     - take
     attributes:
       weight: 60
+      slot: ammo
   21471:
     name: dead sacred snake
     article: a
@@ -126806,6 +127511,7 @@ items:
     - take
     attributes:
       weight: 100
+      slot: ring
   21746:
     name: cursed gold
     article: a
@@ -127741,6 +128447,7 @@ items:
     - take
     attributes:
       weight: 4500
+      slot: head
   21893:
     name: dead seacrest serpent
     article: a
@@ -128101,6 +128808,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   21956:
     name: dead deepling tyrant
     article: a
@@ -128292,6 +129000,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: feet
   21982:
     name: nightmare teddy
     article: a
@@ -128700,6 +129409,7 @@ items:
     - take
     attributes:
       weight: 550
+      slot: necklace
   22061:
     name: enchanted werewolf amulet
     article: an
@@ -128708,6 +129418,7 @@ items:
     - take
     attributes:
       weight: 550
+      slot: necklace
   22062:
     name: werewolf helmet
     article: a
@@ -128716,6 +129427,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: head
   22063:
     name: purple nightshade
     article: a
@@ -128866,6 +129578,7 @@ items:
     attributes:
       weight: 1800
       capacity: 20
+      slot: backpack
   22085:
     name: fur armor
     article: a
@@ -128873,6 +129586,7 @@ items:
     - take
     attributes:
       weight: 4900
+      slot: armor
   22086:
     name: badger boots
     article: a
@@ -128880,6 +129594,7 @@ items:
     - take
     attributes:
       weight: 1200
+      slot: feet
   22087:
     name: wereboar loincloth
     article: a
@@ -128887,6 +129602,7 @@ items:
     - take
     attributes:
       weight: 1300
+      slot: legs
   22088:
     name: enchanted werewolf helmet
     article: an
@@ -129124,6 +129840,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: head
   22128:
     name: enchanted werewolf helmet
     article: an
@@ -129131,6 +129848,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: head
   22129:
     name: enchanted werewolf helmet
     article: an
@@ -129138,6 +129856,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: head
   22130:
     name: enchanted werewolf helmet
     article: an
@@ -129145,6 +129864,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: head
   22131:
     name: remains of owin
     flags:
@@ -129159,6 +129879,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: necklace
   22133:
     name: remains of owin
     flags: []
@@ -129170,6 +129891,7 @@ items:
     - take
     attributes:
       weight: 550
+      slot: necklace
   22135:
     name: dead elder forest fury
     flags:
@@ -129411,6 +130133,7 @@ items:
     - take
     attributes:
       weight: 450
+      slot: ring
   22171:
     name: ogre klubba
     article: an
@@ -129491,6 +130214,7 @@ items:
     - take
     attributes:
       weight: 2900
+      slot: hand
   22184:
     name: shamanic talisman
     article: a
@@ -129549,6 +130273,7 @@ items:
     - take
     attributes:
       weight: 390
+      slot: shield
   22191:
     name: skull fetish
     article: a
@@ -129564,6 +130289,7 @@ items:
     - take
     attributes:
       weight: 3100
+      slot: head
   22193:
     name: onyx chip
     article: an
@@ -129589,6 +130315,7 @@ items:
     - take
     attributes:
       weight: 850
+      slot: necklace
   22196:
     name: crystal ball
     article: a
@@ -131039,6 +131766,7 @@ items:
     - take
     attributes:
       weight: 14500
+      slot: armor
   22519:
     name: fireheart hauberk
     article: a
@@ -131046,6 +131774,7 @@ items:
     - take
     attributes:
       weight: 14500
+      slot: armor
   22520:
     name: fireheart platemail
     article: a
@@ -131053,6 +131782,7 @@ items:
     - take
     attributes:
       weight: 14500
+      slot: armor
   22521:
     name: earthheart cuirass
     article: an
@@ -131060,6 +131790,7 @@ items:
     - take
     attributes:
       weight: 14500
+      slot: armor
   22522:
     name: earthheart hauberk
     article: an
@@ -131067,6 +131798,7 @@ items:
     - take
     attributes:
       weight: 14500
+      slot: armor
   22523:
     name: earthheart platemail
     article: an
@@ -131074,6 +131806,7 @@ items:
     - take
     attributes:
       weight: 14500
+      slot: armor
   22524:
     name: thunderheart cuirass
     article: a
@@ -131081,6 +131814,7 @@ items:
     - take
     attributes:
       weight: 14500
+      slot: armor
   22525:
     name: thunderheart hauberk
     article: a
@@ -131088,6 +131822,7 @@ items:
     - take
     attributes:
       weight: 14500
+      slot: armor
   22526:
     name: thunderheart platemail
     article: a
@@ -131095,6 +131830,7 @@ items:
     - take
     attributes:
       weight: 14500
+      slot: armor
   22527:
     name: frostheart cuirass
     article: a
@@ -131102,6 +131838,7 @@ items:
     - take
     attributes:
       weight: 14500
+      slot: armor
   22528:
     name: frostheart hauberk
     article: a
@@ -131109,6 +131846,7 @@ items:
     - take
     attributes:
       weight: 14500
+      slot: armor
   22529:
     name: frostheart platemail
     article: a
@@ -131116,6 +131854,7 @@ items:
     - take
     attributes:
       weight: 14500
+      slot: armor
   22530:
     name: firesoul tabard
     article: a
@@ -131123,6 +131862,7 @@ items:
     - take
     attributes:
       weight: 14500
+      slot: armor
   22531:
     name: earthsoul tabard
     article: an
@@ -131130,6 +131870,7 @@ items:
     - take
     attributes:
       weight: 14500
+      slot: armor
   22532:
     name: thundersoul tabard
     article: a
@@ -131137,6 +131878,7 @@ items:
     - take
     attributes:
       weight: 14500
+      slot: armor
   22533:
     name: frostsoul tabard
     article: a
@@ -131144,6 +131886,7 @@ items:
     - take
     attributes:
       weight: 14500
+      slot: armor
   22534:
     name: firemind raiment
     article: a
@@ -131151,6 +131894,7 @@ items:
     - take
     attributes:
       weight: 5500
+      slot: armor
   22535:
     name: earthmind raiment
     article: an
@@ -131158,6 +131902,7 @@ items:
     - take
     attributes:
       weight: 5500
+      slot: armor
   22536:
     name: thundermind raiment
     article: a
@@ -131165,6 +131910,7 @@ items:
     - take
     attributes:
       weight: 5500
+      slot: armor
   22537:
     name: frostmind raiment
     article: a
@@ -131172,6 +131918,7 @@ items:
     - take
     attributes:
       weight: 5500
+      slot: armor
   22538:
     name: stone floor
     flags:
@@ -131692,6 +132439,7 @@ items:
     - take
     attributes:
       weight: 2000
+      slot: shield
   22651:
     name: gourd
     article: a
@@ -131700,6 +132448,7 @@ items:
     - take
     attributes:
       weight: 390
+      slot: shield
   22652:
     name: red paint
     article: a
@@ -132200,6 +132949,7 @@ items:
     - take
     attributes:
       weight: 6500
+      slot: shield
   22727:
     name: rift lance
     article: a
@@ -132341,6 +133091,7 @@ items:
     - take
     attributes:
       weight: 840
+      slot: necklace
   22747:
     name: water vortex
     article: a
@@ -132381,6 +133132,7 @@ items:
     - take
     attributes:
       weight: 3800
+      slot: head
   22755:
     name: book of lies
     article: a
@@ -132389,6 +133141,7 @@ items:
     - take
     attributes:
       weight: 2400
+      slot: shield
   22756:
     name: treader of torment
     article: a
@@ -132396,6 +133149,7 @@ items:
     - take
     attributes:
       weight: 3600
+      slot: feet
   22757:
     name: shroud of despair
     article: a
@@ -132403,6 +133157,7 @@ items:
     - take
     attributes:
       weight: 3400
+      slot: head
   22758:
     name: death gaze
     article: a
@@ -132410,6 +133165,7 @@ items:
     - take
     attributes:
       weight: 7900
+      slot: shield
   22759:
     name: plague bite
     article: a
@@ -132418,6 +133174,7 @@ items:
     - take
     attributes:
       weight: 9900
+      slot: hand
   22760:
     name: impaler of the igniter
     article: an
@@ -132426,6 +133183,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   22761:
     name: vortex
     article: a
@@ -132440,6 +133198,7 @@ items:
     - take
     attributes:
       weight: 7700
+      slot: hand
   22763:
     name: shaggy ogre bag
     article: a
@@ -132456,6 +133215,7 @@ items:
     - take
     attributes:
       weight: 2900
+      slot: hand
   22765:
     name: Ferumbras' staff
     article: a
@@ -132463,6 +133223,7 @@ items:
     - take
     attributes:
       weight: 2900
+      slot: hand
   22766:
     name: Ferumbras' staff
     article: a
@@ -132470,6 +133231,7 @@ items:
     - take
     attributes:
       weight: 2250
+      slot: hand
   22767:
     name: Ferumbras' amulet
     article: a
@@ -132478,6 +133240,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: necklace
   22768:
     name: Ferumbras' amulet
     article: a
@@ -132486,6 +133249,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: necklace
   22769:
     name: Ferumbras' mana keg
     article: a
@@ -132524,6 +133288,7 @@ items:
     - take
     attributes:
       weight: 1600
+      slot: feet
   22774:
     name: boots of homecoming
     article: a
@@ -132531,6 +133296,7 @@ items:
     - take
     attributes:
       weight: 1600
+      slot: feet
   22775:
     name: Ferumbras' teddy
     article: a
@@ -132947,6 +133713,7 @@ items:
     - take
     attributes:
       weight: 6800
+      slot: shield
   22890:
     name: shield of destiny
     article: a
@@ -132955,6 +133722,7 @@ items:
     - take
     attributes:
       weight: 6800
+      slot: shield
   22892:
     name: stone tile
     article: a
@@ -134845,6 +135613,7 @@ items:
     - take
     attributes:
       weight: 1150
+      slot: head
   23475:
     name: tiara of power
     article: a
@@ -134852,18 +135621,21 @@ items:
     - take
     attributes:
       weight: 1150
+      slot: head
   23476:
     name: void boots
     flags:
     - take
     attributes:
       weight: 1500
+      slot: feet
   23477:
     name: void boots
     flags:
     - take
     attributes:
       weight: 1500
+      slot: feet
   23478:
     name: dead dread intruder
     article: a
@@ -135208,6 +135980,7 @@ items:
     attributes:
       weight: 2160
       capacity: 24
+      slot: backpack
   23526:
     name: collar of blue plasma
     article: a
@@ -135215,6 +135988,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: necklace
   23527:
     name: collar of green plasma
     article: a
@@ -135222,6 +135996,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: necklace
   23528:
     name: collar of red plasma
     article: a
@@ -135229,12 +136004,14 @@ items:
     - take
     attributes:
       weight: 500
+      slot: necklace
   23529:
     name: ring of blue plasma
     flags:
     - take
     attributes:
       weight: 90
+      slot: ring
   23530:
     name: ring of blue plasma
     article: a
@@ -135242,12 +136019,14 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   23531:
     name: ring of green plasma
     flags:
     - take
     attributes:
       weight: 90
+      slot: ring
   23532:
     name: ring of green plasma
     article: a
@@ -135255,12 +136034,14 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   23533:
     name: ring of red plasma
     flags:
     - take
     attributes:
       weight: 90
+      slot: ring
   23534:
     name: ring of red plasma
     article: a
@@ -135268,6 +136049,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   23535:
     name: energy bar
     article: an
@@ -135331,18 +136113,21 @@ items:
     - take
     attributes:
       weight: 500
+      slot: necklace
   23543:
     name: collar of green plasma
     flags:
     - take
     attributes:
       weight: 500
+      slot: necklace
   23544:
     name: collar of red plasma
     flags:
     - take
     attributes:
       weight: 500
+      slot: necklace
   23545:
     name: energy drink
     article: an
@@ -139171,6 +139956,7 @@ items:
     attributes:
       weight: 1450
       capacity: 24
+      slot: backpack
   24394:
     name: orclops santa
     article: an
@@ -139188,6 +139974,7 @@ items:
     attributes:
       weight: 1500
       capacity: 20
+      slot: backpack
   24396:
     name: birthday cake
     article: a
@@ -139204,6 +139991,7 @@ items:
     - take
     attributes:
       weight: 850
+      slot: head
   24398:
     name: plate layered archway
     flags:
@@ -139227,6 +140015,7 @@ items:
     - take
     attributes:
       weight: 1800
+      slot: legs
   24403:
     name: plate layered wall
     flags:
@@ -139240,6 +140029,7 @@ items:
     - take
     attributes:
       weight: 3800
+      slot: legs
   24405:
     name: rusty winged helmet
     article: a
@@ -139247,6 +140037,7 @@ items:
     - take
     attributes:
       weight: 1200
+      slot: head
   24406:
     name: plate layered wall
     flags:
@@ -139271,6 +140062,7 @@ items:
     - take
     attributes:
       weight: 600
+      slot: feet
   24410:
     name: plate layered archway
     flags:
@@ -142914,6 +143706,7 @@ items:
     - take
     attributes:
       weight: 450
+      slot: head
   25089:
     name: colourful feathers
     flags:
@@ -144155,6 +144948,7 @@ items:
     - take
     attributes:
       weight: 509
+      slot: necklace
   25297:
     name: glowing rubbish amulet
     article: a
@@ -144163,6 +144957,7 @@ items:
     - take
     attributes:
       weight: 509
+      slot: necklace
   25298:
     name: paralysed bully
     flags:
@@ -146042,6 +146837,7 @@ items:
     - take
     attributes:
       weight: 120
+      slot: ring
   25699:
     name: wooden spellbook
     article: a
@@ -146050,6 +146846,7 @@ items:
     - take
     attributes:
       weight: 1200
+      slot: shield
   25700:
     name: dream blossom staff
     article: a
@@ -146057,6 +146854,7 @@ items:
     - take
     attributes:
       weight: 3200
+      slot: hand
   25701:
     name: single human eye
     article: a
@@ -146257,6 +147055,7 @@ items:
     - take
     attributes:
       weight: 200
+      slot: hand
   25736:
     name: swan feathers
     flags:
@@ -146417,6 +147216,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ammo
   25759:
     name: royal star
     article: a
@@ -146425,6 +147225,7 @@ items:
     - take
     attributes:
       weight: 220
+      slot: hand
   25760:
     name: wand of darkness
     article: a
@@ -146432,6 +147233,7 @@ items:
     - take
     attributes:
       weight: 3200
+      slot: hand
   25761:
     name: unknown tile
     flags:
@@ -146542,6 +147344,7 @@ items:
     - take
     attributes:
       weight: 400
+      slot: armor
   25780:
     name: blossom bag
     article: a
@@ -146552,6 +147355,7 @@ items:
     attributes:
       weight: 800
       capacity: 24
+      slot: backpack
   25782:
     name: magical music notes
     article: a
@@ -147213,6 +148017,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   25916:
     name: fiery relic sword replica
     article: a
@@ -147221,6 +148026,7 @@ items:
     - take
     attributes:
       weight: 4800
+      slot: hand
   25917:
     name: fiery mystic blade replica
     article: a
@@ -147229,6 +148035,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: hand
   25918:
     name: fire blacksteel replica
     article: a
@@ -147237,6 +148044,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   25919:
     name: fiery dragon slayer replica
     article: a
@@ -147245,6 +148053,7 @@ items:
     - take
     attributes:
       weight: 8200
+      slot: hand
   25920:
     name: fiery barbarian axe replica
     article: a
@@ -147253,6 +148062,7 @@ items:
     - take
     attributes:
       weight: 5100
+      slot: hand
   25921:
     name: fiery knight axe replica
     article: a
@@ -147261,6 +148071,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   25922:
     name: fiery heroic axe replica
     article: a
@@ -147269,6 +148080,7 @@ items:
     - take
     attributes:
       weight: 6100
+      slot: hand
   25923:
     name: fiery headchopper replica
     article: a
@@ -147277,6 +148089,7 @@ items:
     - take
     attributes:
       weight: 4500
+      slot: hand
   25924:
     name: fiery war axe replica
     article: a
@@ -147285,6 +148098,7 @@ items:
     - take
     attributes:
       weight: 6150
+      slot: hand
   25925:
     name: fiery clerical mace replica
     article: a
@@ -147293,6 +148107,7 @@ items:
     - take
     attributes:
       weight: 5800
+      slot: hand
   25926:
     name: fiery crystal mace replica
     article: a
@@ -147301,6 +148116,7 @@ items:
     - take
     attributes:
       weight: 8000
+      slot: hand
   25927:
     name: fiery basher replica
     article: a
@@ -147309,6 +148125,7 @@ items:
     - take
     attributes:
       weight: 7800
+      slot: hand
   25928:
     name: fiery orcish maul replica
     article: a
@@ -147317,6 +148134,7 @@ items:
     - take
     attributes:
       weight: 5400
+      slot: hand
   25929:
     name: fiery war hammer replica
     article: a
@@ -147325,6 +148143,7 @@ items:
     - take
     attributes:
       weight: 8500
+      slot: hand
   25930:
     name: icy spike sword replica
     article: an
@@ -147333,6 +148152,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   25931:
     name: icy relic sword replica
     article: an
@@ -147341,6 +148161,7 @@ items:
     - take
     attributes:
       weight: 4800
+      slot: hand
   25932:
     name: icy mystic blade replica
     article: an
@@ -147349,6 +148170,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: hand
   25933:
     name: icy blacksteel replica
     article: an
@@ -147357,6 +148179,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   25934:
     name: icy dragon slayer replica
     article: an
@@ -147365,6 +148188,7 @@ items:
     - take
     attributes:
       weight: 8200
+      slot: hand
   25935:
     name: icy barbarian axe replica
     article: an
@@ -147373,6 +148197,7 @@ items:
     - take
     attributes:
       weight: 5100
+      slot: hand
   25936:
     name: icy knight axe replica
     article: an
@@ -147381,6 +148206,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   25937:
     name: icy heroic axe replica
     article: an
@@ -147389,6 +148215,7 @@ items:
     - take
     attributes:
       weight: 6100
+      slot: hand
   25938:
     name: icy headchopper replica
     article: an
@@ -147397,6 +148224,7 @@ items:
     - take
     attributes:
       weight: 4500
+      slot: hand
   25939:
     name: icy war axe replica
     article: an
@@ -147405,6 +148233,7 @@ items:
     - take
     attributes:
       weight: 6150
+      slot: hand
   25940:
     name: icy clerical mace replica
     article: an
@@ -147413,6 +148242,7 @@ items:
     - take
     attributes:
       weight: 5800
+      slot: hand
   25941:
     name: icy crystal mace replica
     article: an
@@ -147421,6 +148251,7 @@ items:
     - take
     attributes:
       weight: 8000
+      slot: hand
   25942:
     name: icy cranial basher replica
     article: an
@@ -147429,6 +148260,7 @@ items:
     - take
     attributes:
       weight: 7800
+      slot: hand
   25943:
     name: icy orcish maul replica
     article: an
@@ -147437,6 +148269,7 @@ items:
     - take
     attributes:
       weight: 5400
+      slot: hand
   25944:
     name: icy war hammer replica
     article: an
@@ -147445,6 +148278,7 @@ items:
     - take
     attributes:
       weight: 8500
+      slot: hand
   25945:
     name: earth spike sword replica
     article: an
@@ -147453,6 +148287,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   25946:
     name: earth relic sword replica
     article: an
@@ -147461,6 +148296,7 @@ items:
     - take
     attributes:
       weight: 4800
+      slot: hand
   25947:
     name: earth mystic blade replica
     article: an
@@ -147469,6 +148305,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: hand
   25948:
     name: earth blacksteel replica
     article: an
@@ -147477,6 +148314,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   25949:
     name: earth slayer replica
     article: an
@@ -147485,6 +148323,7 @@ items:
     - take
     attributes:
       weight: 8200
+      slot: hand
   25950:
     name: earth barbaric axe replica
     article: an
@@ -147493,6 +148332,7 @@ items:
     - take
     attributes:
       weight: 5100
+      slot: hand
   25951:
     name: earth knight axe replica
     article: an
@@ -147501,6 +148341,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   25952:
     name: earth heroic axe replica
     article: an
@@ -147509,6 +148350,7 @@ items:
     - take
     attributes:
       weight: 6100
+      slot: hand
   25953:
     name: earth headchopper replica
     article: an
@@ -147517,6 +148359,7 @@ items:
     - take
     attributes:
       weight: 4500
+      slot: hand
   25954:
     name: earth war axe replica
     article: an
@@ -147525,6 +148368,7 @@ items:
     - take
     attributes:
       weight: 6150
+      slot: hand
   25955:
     name: earth cleric mace replica
     article: an
@@ -147533,6 +148377,7 @@ items:
     - take
     attributes:
       weight: 5800
+      slot: hand
   25956:
     name: earth crystal mace replica
     article: an
@@ -147541,6 +148386,7 @@ items:
     - take
     attributes:
       weight: 8000
+      slot: hand
   25957:
     name: earth basher replica
     article: an
@@ -147549,6 +148395,7 @@ items:
     - take
     attributes:
       weight: 7800
+      slot: hand
   25958:
     name: earth orcish maul replica
     article: an
@@ -147557,6 +148404,7 @@ items:
     - take
     attributes:
       weight: 5400
+      slot: hand
   25959:
     name: earth war hammer replica
     article: an
@@ -147565,6 +148413,7 @@ items:
     - take
     attributes:
       weight: 8500
+      slot: hand
   25960:
     name: energy spike sword replica
     article: an
@@ -147573,6 +148422,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   25961:
     name: energy relic sword replica
     article: an
@@ -147581,6 +148431,7 @@ items:
     - take
     attributes:
       weight: 4800
+      slot: hand
   25962:
     name: energy blade replica
     article: an
@@ -147589,6 +148440,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: hand
   25963:
     name: energy blacksteel replica
     article: an
@@ -147597,6 +148449,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   25964:
     name: energy slayer replica
     article: an
@@ -147605,6 +148458,7 @@ items:
     - take
     attributes:
       weight: 8200
+      slot: hand
   25965:
     name: energy axe replica
     article: an
@@ -147613,6 +148467,7 @@ items:
     - take
     attributes:
       weight: 5100
+      slot: hand
   25966:
     name: energy knight axe replica
     article: an
@@ -147621,6 +148476,7 @@ items:
     - take
     attributes:
       weight: 5900
+      slot: hand
   25967:
     name: energy heroic axe replica
     article: an
@@ -147629,6 +148485,7 @@ items:
     - take
     attributes:
       weight: 6100
+      slot: hand
   25968:
     name: energy headchopper replica
     article: an
@@ -147637,6 +148494,7 @@ items:
     - take
     attributes:
       weight: 4500
+      slot: hand
   25969:
     name: energy war axe replica
     article: an
@@ -147645,6 +148503,7 @@ items:
     - take
     attributes:
       weight: 6150
+      slot: hand
   25970:
     name: energy cleric mace replica
     article: an
@@ -147653,6 +148512,7 @@ items:
     - take
     attributes:
       weight: 5800
+      slot: hand
   25971:
     name: energy mace replica
     article: an
@@ -147661,6 +148521,7 @@ items:
     - take
     attributes:
       weight: 8000
+      slot: hand
   25972:
     name: energy basher replica
     article: an
@@ -147669,6 +148530,7 @@ items:
     - take
     attributes:
       weight: 7800
+      slot: hand
   25973:
     name: energy orcish maul replica
     article: an
@@ -147677,6 +148539,7 @@ items:
     - take
     attributes:
       weight: 5400
+      slot: hand
   25974:
     name: energy war hammer replica
     article: an
@@ -147685,6 +148548,7 @@ items:
     - take
     attributes:
       weight: 8500
+      slot: hand
   25975:
     name: moon mirror
     article: a
@@ -147692,6 +148556,7 @@ items:
     - take
     attributes:
       weight: 200
+      slot: ammo
   25976:
     name: starlight vial
     article: a
@@ -147699,6 +148564,7 @@ items:
     - take
     attributes:
       weight: 200
+      slot: ammo
   25977:
     name: sun catcher
     article: a
@@ -147706,6 +148572,7 @@ items:
     - take
     attributes:
       weight: 200
+      slot: ammo
   25979:
     name: draken doll
     article: a
@@ -147734,6 +148601,7 @@ items:
     - take
     attributes:
       weight: 314
+      slot: shield
   25983:
     name: plain mayhem blade
     article: a
@@ -147742,6 +148610,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   25984:
     name: valuable mayhem blade
     article: a
@@ -147750,6 +148619,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   25985:
     name: ornate mayhem blade
     article: an
@@ -147758,6 +148628,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   25986:
     name: plain mayhem slayer
     article: a
@@ -147766,6 +148637,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   25987:
     name: valuable mayhem slayer
     article: a
@@ -147774,6 +148646,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   25988:
     name: ornate mayhem slayer
     article: an
@@ -147782,6 +148655,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   25989:
     name: plain mayhem axe
     article: a
@@ -147790,6 +148664,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   25990:
     name: valuable mayhem axe
     article: a
@@ -147798,6 +148673,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   25991:
     name: ornate mayhem axe
     article: an
@@ -147806,6 +148682,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   25992:
     name: plain mayhem chopper
     article: a
@@ -147814,6 +148691,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   25993:
     name: valuable mayhem chopper
     article: a
@@ -147822,6 +148700,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   25994:
     name: ornate mayhem chopper
     article: an
@@ -147830,6 +148709,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   25995:
     name: plain mayhem mace
     article: a
@@ -147838,6 +148718,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   25996:
     name: valuable mayhem mace
     article: a
@@ -147846,6 +148727,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   25997:
     name: ornate mayhem mace
     article: an
@@ -147854,6 +148736,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   25998:
     name: plain mayhem hammer
     article: a
@@ -147862,6 +148745,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   25999:
     name: valuable mayhem hammer
     article: a
@@ -147870,6 +148754,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   26000:
     name: ornate mayhem hammer
     article: an
@@ -147878,6 +148763,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   26001:
     name: plain mayhem bow
     article: a
@@ -147970,6 +148856,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   26015:
     name: valuable remedy blade
     article: a
@@ -147978,6 +148865,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   26016:
     name: ornate remedy blade
     article: an
@@ -147986,6 +148874,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   26017:
     name: plain remedy slayer
     article: a
@@ -147994,6 +148883,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   26018:
     name: valuable remedy slayer
     article: a
@@ -148002,6 +148892,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   26019:
     name: ornate remedy slayer
     article: an
@@ -148010,6 +148901,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   26020:
     name: plain remedy axe
     article: a
@@ -148018,6 +148910,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   26021:
     name: valuable remedy axe
     article: a
@@ -148026,6 +148919,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   26022:
     name: ornate remedy axe
     article: an
@@ -148034,6 +148928,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   26023:
     name: plain remedy chopper
     article: a
@@ -148042,6 +148937,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   26024:
     name: valuable remedy chopper
     article: a
@@ -148050,6 +148946,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   26025:
     name: ornate remedy chopper
     article: an
@@ -148058,6 +148955,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   26026:
     name: plain remedy mace
     article: a
@@ -148066,6 +148964,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   26027:
     name: valuable remedy mace
     article: a
@@ -148074,6 +148973,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   26028:
     name: ornate remedy mace
     article: an
@@ -148082,6 +148982,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   26029:
     name: plain remedy hammer
     article: a
@@ -148090,6 +148991,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   26030:
     name: valuable remedy hammer
     article: a
@@ -148098,6 +149000,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   26031:
     name: ornate remedy hammer
     article: an
@@ -148106,6 +149009,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   26032:
     name: plain remedy bow
     article: a
@@ -148198,6 +149102,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   26045:
     name: valuable carving blade
     article: a
@@ -148206,6 +149111,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   26046:
     name: ornate carving blade
     article: an
@@ -148214,6 +149120,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   26047:
     name: plain carving slayer
     article: a
@@ -148222,6 +149129,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   26048:
     name: valuable carving slayer
     article: a
@@ -148230,6 +149138,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   26049:
     name: ornate carving slayer
     article: an
@@ -148238,6 +149147,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   26050:
     name: plain carving axe
     article: a
@@ -148246,6 +149156,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   26051:
     name: valuable carving axe
     article: a
@@ -148254,6 +149165,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   26052:
     name: ornate carving axe
     article: an
@@ -148262,6 +149174,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   26053:
     name: plain carving chopper
     article: a
@@ -148270,6 +149183,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   26054:
     name: valuable carving chopper
     article: a
@@ -148278,6 +149192,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   26055:
     name: ornate carving chopper
     article: an
@@ -148286,6 +149201,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   26056:
     name: plain carving mace
     article: a
@@ -148294,6 +149210,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   26057:
     name: valuable carving mace
     article: a
@@ -148302,6 +149219,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   26058:
     name: ornate carving mace
     article: an
@@ -148310,6 +149228,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   26059:
     name: plain carving hammer
     article: a
@@ -148318,6 +149237,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   26060:
     name: valuable carving hammer
     article: a
@@ -148326,6 +149246,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   26061:
     name: ornate carving hammer
     article: an
@@ -148334,6 +149255,7 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: hand
   26062:
     name: plain carving bow
     article: a
@@ -148999,6 +149921,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: head
   26188:
     name: iron crown
     article: an
@@ -149007,6 +149930,7 @@ items:
     - take
     attributes:
       weight: 1000
+      slot: head
   26189:
     name: incandescent crown
     article: a
@@ -149015,6 +149939,7 @@ items:
     - take
     attributes:
       weight: 1000
+      slot: head
   26190:
     name: reflecting crown
     article: a
@@ -149023,6 +149948,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: head
   26191:
     name: your magical tree
     article: a
@@ -151645,6 +152571,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   27450:
     name: slayer of destruction
     article: a
@@ -151661,6 +152588,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   27452:
     name: chopper of destruction
     article: a
@@ -151677,6 +152605,7 @@ items:
     - take
     attributes:
       weight: 5000
+      slot: hand
   27454:
     name: hammer of destruction
     article: a
@@ -151706,6 +152635,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: hand
   27458:
     name: rod of destruction
     article: a
@@ -151713,6 +152643,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: hand
   27459:
     name: shadow bite plant
     article: a
@@ -152125,6 +153056,7 @@ items:
     - take
     attributes:
       weight: 250
+      slot: head
   27523:
     name: strange mallet
     article: a
@@ -152133,6 +153065,7 @@ items:
     - take
     attributes:
       weight: 4500
+      slot: hand
   27524:
     name: mallet head
     article: a
@@ -152148,6 +153081,7 @@ items:
     - take
     attributes:
       weight: 1500
+      slot: hand
   27526:
     name: mallet pommel
     article: a
@@ -152335,6 +153269,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: necklace
   27582:
     name: unknown corpse
     flags:
@@ -152751,6 +153686,7 @@ items:
     - take
     attributes:
       weight: 2400
+      slot: head
   27648:
     name: gnome armor
     article: a
@@ -152758,6 +153694,7 @@ items:
     - take
     attributes:
       weight: 12000
+      slot: armor
   27649:
     name: gnome legs
     article: a
@@ -152765,6 +153702,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: legs
   27650:
     name: gnome shield
     article: a
@@ -152772,6 +153710,7 @@ items:
     - take
     attributes:
       weight: 6000
+      slot: shield
   27651:
     name: gnome sword
     article: a
@@ -152780,6 +153719,7 @@ items:
     - take
     attributes:
       weight: 8500
+      slot: hand
   27652:
     name: unknown item
     flags:
@@ -152795,6 +153735,7 @@ items:
     - take
     attributes:
       weight: 1000
+      slot: necklace
   27654:
     name: surprise jar
     article: a
@@ -156417,16 +157358,22 @@ items:
     flags:
     - usable
     - take
+    attributes:
+      slot: hand
   28465:
     name: bow of destruction test
     article: a
     flags:
     - take
+    attributes:
+      slot: hand
   28466:
     name: sorcerer test weapon TEST
     article: a
     flags:
     - take
+    attributes:
+      slot: hand
   28467:
     name: wall
     article: a
@@ -156501,6 +157448,8 @@ items:
     article: an
     flags:
     - take
+    attributes:
+      slot: armor
   28476:
     name: lotus key
     article: a
@@ -156522,6 +157471,8 @@ items:
     article: an
     flags:
     - take
+    attributes:
+      slot: hand
   28479:
     name: wand of destruction TEST
     article: a
@@ -156628,6 +157579,7 @@ items:
     - take
     attributes:
       weight: 3800
+      slot: ammo
   28494:
     name: silver chimes
     article: a
@@ -157086,6 +158038,7 @@ items:
     attributes:
       weight: 1800
       capacity: 22
+      slot: backpack
   28572:
     name: ornate tome
     article: an
@@ -158017,6 +158970,7 @@ items:
     - take
     attributes:
       weight: 1300
+      slot: head
   28715:
     name: falcon coif
     article: a
@@ -158024,6 +158978,7 @@ items:
     - take
     attributes:
       weight: 2800
+      slot: head
   28716:
     name: falcon rod
     article: a
@@ -158031,6 +158986,7 @@ items:
     - take
     attributes:
       weight: 3700
+      slot: hand
   28717:
     name: falcon wand
     article: a
@@ -158038,6 +158994,7 @@ items:
     - take
     attributes:
       weight: 3300
+      slot: hand
   28718:
     name: falcon bow
     article: a
@@ -158052,12 +159009,14 @@ items:
     - take
     attributes:
       weight: 18800
+      slot: armor
   28720:
     name: falcon greaves
     flags:
     - take
     attributes:
       weight: 3600
+      slot: legs
   28721:
     name: falcon shield
     article: a
@@ -158066,6 +159025,7 @@ items:
     - take
     attributes:
       weight: 5700
+      slot: shield
   28722:
     name: falcon escutcheon
     article: a
@@ -158073,6 +159033,7 @@ items:
     - take
     attributes:
       weight: 6000
+      slot: shield
   28723:
     name: falcon longsword
     article: a
@@ -158097,6 +159058,7 @@ items:
     - take
     attributes:
       weight: 6800
+      slot: hand
   28726:
     name: dead grand commander soeren
     article: a
@@ -158671,6 +159633,7 @@ items:
     - take
     attributes:
       weight: 3200
+      slot: hand
   28826:
     name: deepling fork
     article: a
@@ -158678,6 +159641,7 @@ items:
     - take
     attributes:
       weight: 3300
+      slot: hand
   28829:
     name: rotten demonbone
     article: a
@@ -158686,6 +159650,7 @@ items:
     - take
     attributes:
       weight: 18000
+      slot: hand
   28830:
     name: energized demonbone
     article: an
@@ -158694,6 +159659,7 @@ items:
     - take
     attributes:
       weight: 18000
+      slot: hand
   28831:
     name: unliving demonbone
     article: an
@@ -158702,6 +159668,7 @@ items:
     - take
     attributes:
       weight: 18000
+      slot: hand
   28832:
     name: sulphurous demonbone
     article: a
@@ -158710,6 +159677,7 @@ items:
     - take
     attributes:
       weight: 18000
+      slot: hand
   28833:
     name: unknown item
     flags:
@@ -161676,6 +162644,7 @@ items:
     - take
     attributes:
       weight: 4800
+      slot: armor
   29419:
     name: resizer
     article: a
@@ -161691,6 +162660,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: shield
   29421:
     name: summerblade
     article: a
@@ -161699,6 +162669,7 @@ items:
     - take
     attributes:
       weight: 4300
+      slot: hand
   29422:
     name: winterblade
     article: a
@@ -161707,6 +162678,7 @@ items:
     - take
     attributes:
       weight: 4300
+      slot: hand
   29423:
     name: dream shroud
     article: a
@@ -161714,6 +162686,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: armor
   29424:
     name: pair of dreamwalkers
     article: a
@@ -161721,6 +162694,7 @@ items:
     - take
     attributes:
       weight: 800
+      slot: feet
   29425:
     name: energized limb
     article: an
@@ -161728,6 +162702,7 @@ items:
     - take
     attributes:
       weight: 2700
+      slot: hand
   29426:
     name: brain in a jar
     article: a
@@ -161736,6 +162711,7 @@ items:
     - take
     attributes:
       weight: 2700
+      slot: shield
   29427:
     name: dark whispers
     article: a
@@ -161743,6 +162719,7 @@ items:
     - take
     attributes:
       weight: 3400
+      slot: head
   29428:
     name: sleep shawl
     article: a
@@ -161750,6 +162727,7 @@ items:
     - take
     attributes:
       weight: 430
+      slot: necklace
   29429:
     name: pendulet
     article: a
@@ -161757,6 +162735,7 @@ items:
     - take
     attributes:
       weight: 650
+      slot: necklace
   29430:
     name: ectoplasmic shield
     article: an
@@ -161764,6 +162743,7 @@ items:
     - take
     attributes:
       weight: 5800
+      slot: shield
   29431:
     name: spirit guide
     article: a
@@ -161772,6 +162752,7 @@ items:
     - take
     attributes:
       weight: 1800
+      slot: shield
   29432:
     name: hireling lamp
     article: a
@@ -163360,6 +164341,7 @@ items:
     - take
     attributes:
       weight: 1100
+      slot: shield
   30182:
     name: shield of endless search
     article: a
@@ -163486,6 +164468,7 @@ items:
     - take
     attributes:
       weight: 740
+      slot: feet
   30197:
     name: festive backpack
     article: a
@@ -163496,6 +164479,7 @@ items:
     attributes:
       weight: 1500
       capacity: 22
+      slot: backpack
   30198:
     name: meringue cake
     article: a
@@ -164009,6 +164993,7 @@ items:
     - take
     attributes:
       weight: 1900
+      slot: head
   30276:
     name: crown of the percht queen
     article: the
@@ -164016,6 +165001,7 @@ items:
     - take
     attributes:
       weight: 1900
+      slot: head
   30277:
     name: icicle
     article: an
@@ -164038,6 +165024,7 @@ items:
     - take
     attributes:
       weight: 455
+      slot: ring
   30280:
     name: percht queen's frozen heart
     article: a
@@ -164068,6 +165055,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: hand
   30284:
     name: percht handkerchief
     article: a
@@ -164314,6 +165302,7 @@ items:
     - take
     attributes:
       weight: 490
+      slot: necklace
   30324:
     name: bright bell
     article: a
@@ -164454,6 +165443,7 @@ items:
     - take
     attributes:
       weight: 430
+      slot: necklace
   30343:
     name: enchanted sleep shawl
     article: an
@@ -164461,6 +165451,7 @@ items:
     - take
     attributes:
       weight: 430
+      slot: necklace
   30344:
     name: enchanted pendulet
     article: an
@@ -164468,6 +165459,7 @@ items:
     - take
     attributes:
       weight: 650
+      slot: necklace
   30345:
     name: enchanted pendulet
     article: an
@@ -164475,6 +165467,7 @@ items:
     - take
     attributes:
       weight: 650
+      slot: necklace
   30352:
     name: dead lost gnome
     article: a
@@ -164598,6 +165591,7 @@ items:
     - take
     attributes:
       weight: 900
+      slot: feet
   30395:
     name: cobra club
     flags:
@@ -164605,6 +165599,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: hand
   30396:
     name: cobra axe
     flags:
@@ -164612,6 +165607,7 @@ items:
     - take
     attributes:
       weight: 4000
+      slot: hand
   30397:
     name: cobra hood
     article: a
@@ -164619,6 +165615,7 @@ items:
     - take
     attributes:
       weight: 2700
+      slot: head
   30398:
     name: cobra sword
     flags:
@@ -164626,36 +165623,42 @@ items:
     - take
     attributes:
       weight: 6300
+      slot: hand
   30399:
     name: cobra wand
     flags:
     - take
     attributes:
       weight: 1900
+      slot: hand
   30400:
     name: cobra rod
     flags:
     - take
     attributes:
       weight: 2500
+      slot: hand
   30401:
     name: amulet of theurgy
     flags:
     - take
     attributes:
       weight: 500
+      slot: necklace
   30402:
     name: enchanted theurgic amulet
     flags:
     - take
     attributes:
       weight: 500
+      slot: necklace
   30403:
     name: enchanted theurgic amulet
     flags:
     - take
     attributes:
       weight: 500
+      slot: necklace
   30407:
     name: sequoia trunk
     article: a
@@ -168884,6 +169887,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   31264:
     name: wheel oil
     article: a
@@ -168920,6 +169924,7 @@ items:
     - take
     attributes:
       weight: 400
+      slot: necklace
   31269:
     name: ankh mosaic
     article: a
@@ -169159,6 +170164,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   31307:
     name: dead gaffir
     article: a
@@ -169588,6 +170594,7 @@ items:
     - take
     attributes:
       weight: 3200
+      slot: head
   31371:
     name: ivory mask
     article: an
@@ -169936,6 +170943,7 @@ items:
     - take
     attributes:
       weight: 100
+      slot: ring
   31432:
     name: basin filled with blood
     article: a
@@ -169950,6 +170958,7 @@ items:
     - take
     attributes:
       weight: 20
+      slot: head
   31434:
     name: secret instruction
     article: a
@@ -169987,6 +170996,7 @@ items:
     - take
     attributes:
       weight: 350
+      slot: head
   31439:
     name: manticore tail
     article: a
@@ -170705,6 +171715,7 @@ items:
     - take
     attributes:
       weight: 570
+      slot: necklace
   31557:
     name: enchanted blister ring
     article: a
@@ -170712,6 +171723,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   31558:
     name: red goanna scale
     article: a
@@ -170860,6 +171872,7 @@ items:
     - take
     attributes:
       weight: 3100
+      slot: head
   31578:
     name: bear skin
     article: a
@@ -170867,6 +171880,7 @@ items:
     - take
     attributes:
       weight: 4400
+      slot: armor
   31579:
     name: embrace of nature
     article: an
@@ -170874,6 +171888,7 @@ items:
     - take
     attributes:
       weight: 2400
+      slot: armor
   31580:
     name: mortal mace
     article: a
@@ -170882,6 +171897,7 @@ items:
     - take
     attributes:
       weight: 4100
+      slot: hand
   31581:
     name: bow of cataclysm
     article: a
@@ -170896,6 +171912,7 @@ items:
     - take
     attributes:
       weight: 2300
+      slot: head
   31583:
     name: toga mortis
     article: a
@@ -170903,6 +171920,7 @@ items:
     - take
     attributes:
       weight: 5200
+      slot: armor
   31584:
     name: unknown item
     flags: []
@@ -171122,12 +172140,14 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   31617:
     name: winged boots
     flags:
     - take
     attributes:
       weight: 1200
+      slot: feet
   31618:
     name: frayed veldt flowers
     flags:
@@ -171155,6 +172175,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   31622:
     name: Urmahlullu's tail
     flags:
@@ -171186,6 +172207,7 @@ items:
     attributes:
       weight: 1500
       capacity: 24
+      slot: backpack
   31626:
     name: gryphon nest
     article: a
@@ -171226,6 +172248,7 @@ items:
     - take
     attributes:
       weight: 530
+      slot: necklace
   31632:
     name: missing piece of the cube
     article: the
@@ -171522,6 +172545,7 @@ items:
     - take
     attributes:
       weight: 50
+      slot: necklace
   31678:
     name: cobra crest
     flags:
@@ -172912,6 +173936,7 @@ items:
     - take
     attributes:
       weight: 343
+      slot: hand
   32096:
     name: lots
     article: a
@@ -172928,6 +173953,7 @@ items:
     - take
     attributes:
       weight: 800
+      slot: legs
   32098:
     name: traditional leather shoes
     article: a
@@ -172935,6 +173961,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: feet
   32099:
     name: traditional shirt
     article: a
@@ -172942,6 +173969,7 @@ items:
     - take
     attributes:
       weight: 400
+      slot: armor
   32100:
     name: traditional gamsbart hat
     article: a
@@ -172949,6 +173977,7 @@ items:
     - take
     attributes:
       weight: 250
+      slot: head
   32101:
     name: traditional neckerchief
     article: a
@@ -175592,6 +176621,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: armor
   32586:
     name: yarn
     article: a
@@ -175826,6 +176856,7 @@ items:
     - take
     attributes:
       weight: 5500
+      slot: legs
   32618:
     name: soulful legs
     article: a
@@ -175833,12 +176864,14 @@ items:
     - take
     attributes:
       weight: 3800
+      slot: legs
   32619:
     name: pair of nightmare boots
     flags:
     - take
     attributes:
       weight: 1300
+      slot: feet
   32620:
     name: ghost backpack
     article: a
@@ -175849,6 +176882,7 @@ items:
     attributes:
       weight: 500
       capacity: 26
+      slot: backpack
   32621:
     name: enchanted ring of souls
     article: a
@@ -175856,6 +176890,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ring
   32622:
     name: giant amethyst
     article: a
@@ -175912,6 +176947,7 @@ items:
     - take
     attributes:
       weight: 12300
+      slot: armor
   32629:
     name: spectral scrap of cloth
     flags:
@@ -175927,6 +176963,7 @@ items:
     - take
     attributes:
       weight: 1250
+      slot: head
   32631:
     name: ghost claw
     article: a
@@ -175964,6 +177001,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ring
   32636:
     name: ring of souls
     article: a
@@ -175971,6 +177009,7 @@ items:
     - take
     attributes:
       weight: 80
+      slot: ring
   32638:
     name: floor
     article: a
@@ -176265,6 +177304,7 @@ items:
     - take
     attributes:
       weight: 200
+      slot: armor
   32707:
     name: dead corpse
     article: a
@@ -180944,6 +181984,7 @@ items:
     - take
     attributes:
       weight: 500
+      slot: ammo
   34017:
     name: lit torch
     article: a
@@ -181298,6 +182339,7 @@ items:
     - take
     attributes:
       weight: 40
+      slot: ring
   34081:
     name: lion statue
     article: a
@@ -181313,6 +182355,7 @@ items:
     - take
     attributes:
       weight: 6300
+      slot: hand
   34083:
     name: soulshredder
     article: a
@@ -181329,6 +182372,7 @@ items:
     - take
     attributes:
       weight: 4000
+      slot: hand
   34085:
     name: souleater
     article: a
@@ -181345,6 +182389,7 @@ items:
     - take
     attributes:
       weight: 4100
+      slot: hand
   34087:
     name: soulmaimer
     article: a
@@ -181374,6 +182419,7 @@ items:
     - take
     attributes:
       weight: 1900
+      slot: hand
   34091:
     name: soulhexer
     article: a
@@ -181381,6 +182427,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: hand
   34092:
     name: soulshanks
     article: a
@@ -181388,6 +182435,7 @@ items:
     - take
     attributes:
       weight: 3800
+      slot: legs
   34093:
     name: soulstrider
     article: a
@@ -181395,6 +182443,7 @@ items:
     - take
     attributes:
       weight: 3800
+      slot: legs
   34094:
     name: soulshell
     article: a
@@ -181402,6 +182451,7 @@ items:
     - take
     attributes:
       weight: 12300
+      slot: armor
   34095:
     name: soulmantle
     article: a
@@ -181409,6 +182459,7 @@ items:
     - take
     attributes:
       weight: 2400
+      slot: armor
   34096:
     name: soulshroud
     article: a
@@ -181416,18 +182467,21 @@ items:
     - take
     attributes:
       weight: 2400
+      slot: armor
   34097:
     name: pair of soulwalkers
     flags:
     - take
     attributes:
       weight: 1300
+      slot: feet
   34098:
     name: pair of soulstalkers
     flags:
     - take
     attributes:
       weight: 1300
+      slot: feet
   34099:
     name: soulbastion
     article: a
@@ -181435,6 +182489,7 @@ items:
     - take
     attributes:
       weight: 5800
+      slot: shield
   34100:
     name: Katex' blood
     flags:
@@ -181788,6 +182843,7 @@ items:
     - take
     attributes:
       weight: 2600
+      slot: hand
   34152:
     name: lion wand
     article: a
@@ -181795,6 +182851,7 @@ items:
     - take
     attributes:
       weight: 2100
+      slot: hand
   34153:
     name: lion spellbook
     article: a
@@ -181803,6 +182860,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: shield
   34154:
     name: lion shield
     article: a
@@ -181810,6 +182868,7 @@ items:
     - take
     attributes:
       weight: 6500
+      slot: hand
   34155:
     name: lion longsword
     article: a
@@ -181818,6 +182877,7 @@ items:
     - take
     attributes:
       weight: 7500
+      slot: hand
   34156:
     name: lion spangenhelm
     article: a
@@ -181825,6 +182885,7 @@ items:
     - take
     attributes:
       weight: 3000
+      slot: head
   34157:
     name: lion plate
     article: a
@@ -181832,6 +182893,7 @@ items:
     - take
     attributes:
       weight: 15000
+      slot: armor
   34158:
     name: lion amulet
     article: a
@@ -181839,6 +182901,7 @@ items:
     - take
     attributes:
       weight: 520
+      slot: necklace
   34160:
     name: lion crest
     article: a
@@ -182377,6 +183440,7 @@ items:
     - take
     attributes:
       weight: 7900
+      slot: hand
   34254:
     name: lion hammer
     article: a
@@ -182385,6 +183449,7 @@ items:
     - take
     attributes:
       weight: 6500
+      slot: hand
   34255:
     name: trapdoor
     article: a
@@ -183438,18 +184503,21 @@ items:
     - take
     attributes:
       weight: 4700
+      slot: hand
   35516:
     name: exotic legs
     flags:
     - take
     attributes:
       weight: 7200
+      slot: legs
   35517:
     name: bast legs
     flags:
     - take
     attributes:
       weight: 6400
+      slot: legs
   35518:
     name: jungle bow
     article: a
@@ -183463,12 +184531,14 @@ items:
     - take
     attributes:
       weight: 1450
+      slot: feet
   35520:
     name: make-do boots
     flags:
     - take
     attributes:
       weight: 1450
+      slot: feet
   35521:
     name: jungle rod
     article: a
@@ -183476,6 +184546,7 @@ items:
     - take
     attributes:
       weight: 3700
+      slot: hand
   35522:
     name: jungle wand
     article: a
@@ -183483,6 +184554,7 @@ items:
     - take
     attributes:
       weight: 3200
+      slot: hand
   35523:
     name: exotic amulet
     article: an
@@ -183491,6 +184563,7 @@ items:
     - take
     attributes:
       weight: 730
+      slot: necklace
   35524:
     name: jungle quiver
     article: a
@@ -183501,6 +184574,7 @@ items:
     attributes:
       weight: 1800
       capacity: 8
+      slot: right-hand
   35562:
     name: quiver
     article: a
@@ -183511,6 +184585,7 @@ items:
     attributes:
       weight: 1700
       capacity: 6
+      slot: right-hand
   35563:
     name: magic shield potion
     article: a
@@ -183800,6 +184875,7 @@ items:
     attributes:
       weight: 1700
       capacity: 6
+      slot: right-hand
   35849:
     name: red quiver
     article: a
@@ -183810,6 +184886,7 @@ items:
     attributes:
       weight: 1700
       capacity: 6
+      slot: right-hand
   35851:
     name: magnificent bed
     flags:
@@ -184101,6 +185178,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ammo
   35909:
     name: chaos critical dice
     flags:
@@ -185919,6 +186997,7 @@ items:
     - take
     attributes:
       weight: 6900
+      slot: shield
   36657:
     name: eldritch claymore
     article: a
@@ -185951,6 +187030,7 @@ items:
     - take
     attributes:
       weight: 8300
+      slot: hand
   36661:
     name: eldritch greataxe
     article: a
@@ -185974,6 +187054,7 @@ items:
     - take
     attributes:
       weight: 11000
+      slot: armor
   36664:
     name: eldritch bow
     article: a
@@ -185998,6 +187079,7 @@ items:
     attributes:
       weight: 2200
       capacity: 8
+      slot: right-hand
   36667:
     name: eldritch breeches
     article: a
@@ -186005,6 +187087,7 @@ items:
     - take
     attributes:
       weight: 6900
+      slot: legs
   36668:
     name: eldritch wand
     article: a
@@ -186012,6 +187095,7 @@ items:
     - take
     attributes:
       weight: 3600
+      slot: hand
   36669:
     name: gilded eldritch wand
     article: a
@@ -186019,6 +187103,7 @@ items:
     - take
     attributes:
       weight: 3700
+      slot: hand
   36670:
     name: eldritch cowl
     article: a
@@ -186026,6 +187111,7 @@ items:
     - take
     attributes:
       weight: 2600
+      slot: head
   36671:
     name: eldritch hood
     article: a
@@ -186033,6 +187119,7 @@ items:
     - take
     attributes:
       weight: 2700
+      slot: head
   36672:
     name: eldritch folio
     article: a
@@ -186041,6 +187128,7 @@ items:
     - take
     attributes:
       weight: 2800
+      slot: shield
   36673:
     name: eldritch tome
     article: a
@@ -186049,6 +187137,7 @@ items:
     - take
     attributes:
       weight: 2600
+      slot: shield
   36674:
     name: eldritch rod
     article: a
@@ -186056,6 +187145,7 @@ items:
     - take
     attributes:
       weight: 3500
+      slot: hand
   36675:
     name: gilded eldritch rod
     article: a
@@ -186063,6 +187153,7 @@ items:
     - take
     attributes:
       weight: 3600
+      slot: hand
   36676:
     name: dead lavaworm
     article: a
@@ -190581,6 +191672,7 @@ items:
     attributes:
       weight: 1500
       capacity: 20
+      slot: backpack
   37537:
     name: tapestry of honour
     article: a
@@ -191008,30 +192100,35 @@ items:
     - take
     attributes:
       weight: 7000
+      slot: legs
   37608:
     name: green demon armor
     flags:
     - take
     attributes:
       weight: 8000
+      slot: armor
   37609:
     name: green demon helmet
     flags:
     - take
     attributes:
       weight: 2950
+      slot: head
   37610:
     name: green demon slippers
     flags:
     - take
     attributes:
       weight: 600
+      slot: feet
   37611:
     name: Morshabaal's mask
     flags:
     - take
     attributes:
       weight: 4100
+      slot: shield
   37613:
     name: Morshabaal's brain
     article: a
@@ -197787,6 +198884,7 @@ items:
     - take
     attributes:
       weight: 16000
+      slot: armor
   39148:
     name: spiritthorn helmet
     article: a
@@ -197794,6 +198892,7 @@ items:
     - take
     attributes:
       weight: 4400
+      slot: head
   39149:
     name: alicorn headguard
     article: an
@@ -197801,6 +198900,7 @@ items:
     - take
     attributes:
       weight: 3900
+      slot: head
   39150:
     name: alicorn quiver
     article: an
@@ -197811,6 +198911,7 @@ items:
     attributes:
       weight: 2000
       capacity: 12
+      slot: right-hand
   39151:
     name: arcanomancer regalia
     article: an
@@ -197818,6 +198919,7 @@ items:
     - take
     attributes:
       weight: 1500
+      slot: head
   39152:
     name: arcanomancer folio
     article: an
@@ -197826,6 +198928,7 @@ items:
     - take
     attributes:
       weight: 2600
+      slot: shield
   39153:
     name: arboreal crown
     article: an
@@ -197833,6 +198936,7 @@ items:
     - take
     attributes:
       weight: 1200
+      slot: head
   39154:
     name: arboreal tome
     article: an
@@ -197841,6 +198945,7 @@ items:
     - take
     attributes:
       weight: 2300
+      slot: shield
   39155:
     name: naga sword
     article: a
@@ -197849,6 +198954,7 @@ items:
     - take
     attributes:
       weight: 5200
+      slot: hand
   39156:
     name: naga axe
     article: a
@@ -197857,6 +198963,7 @@ items:
     - take
     attributes:
       weight: 5500
+      slot: hand
   39157:
     name: naga club
     article: a
@@ -197865,6 +198972,7 @@ items:
     - take
     attributes:
       weight: 6000
+      slot: hand
   39158:
     name: frostflower boots
     article: a
@@ -197872,6 +198980,7 @@ items:
     - take
     attributes:
       weight: 1100
+      slot: feet
   39159:
     name: naga crossbow
     article: a
@@ -197889,6 +198998,7 @@ items:
     attributes:
       weight: 1900
       capacity: 8
+      slot: right-hand
   39161:
     name: feverbloom boots
     article: a
@@ -197896,6 +199006,7 @@ items:
     - take
     attributes:
       weight: 980
+      slot: feet
   39162:
     name: naga wand
     article: a
@@ -197903,6 +199014,7 @@ items:
     - take
     attributes:
       weight: 2800
+      slot: hand
   39163:
     name: naga rod
     article: a
@@ -197910,6 +199022,7 @@ items:
     - take
     attributes:
       weight: 2900
+      slot: hand
   39164:
     name: dawnfire sherwani
     article: a
@@ -197917,6 +199030,7 @@ items:
     - take
     attributes:
       weight: 2800
+      slot: armor
   39165:
     name: midnight tunic
     article: a
@@ -197924,6 +199038,7 @@ items:
     - take
     attributes:
       weight: 2700
+      slot: armor
   39166:
     name: dawnfire pantaloons
     article: a
@@ -197931,6 +199046,7 @@ items:
     - take
     attributes:
       weight: 3000
+      slot: legs
   39167:
     name: midnight sarong
     article: a
@@ -197938,6 +199054,7 @@ items:
     - take
     attributes:
       weight: 3100
+      slot: legs
   39168:
     name: heated crystal
     article: a
@@ -197981,6 +199098,7 @@ items:
     - take
     attributes:
       weight: 95
+      slot: ring
   39178:
     name: charged spiritthorn ring
     article: a
@@ -197988,6 +199106,7 @@ items:
     - take
     attributes:
       weight: 95
+      slot: ring
   39179:
     name: spiritthorn ring
     article: a
@@ -197995,6 +199114,7 @@ items:
     - take
     attributes:
       weight: 95
+      slot: ring
   39180:
     name: charged alicorn ring
     article: a
@@ -198002,6 +199122,7 @@ items:
     - take
     attributes:
       weight: 85
+      slot: ring
   39181:
     name: charged alicorn ring
     article: a
@@ -198009,6 +199130,7 @@ items:
     - take
     attributes:
       weight: 85
+      slot: ring
   39182:
     name: alicorn ring
     article: an
@@ -198016,6 +199138,7 @@ items:
     - take
     attributes:
       weight: 85
+      slot: ring
   39183:
     name: charged arcanomancer sigil
     article: a
@@ -198023,6 +199146,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   39184:
     name: charged arcanomancer sigil
     article: a
@@ -198030,6 +199154,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   39185:
     name: arcanomancer sigil
     article: an
@@ -198037,6 +199162,7 @@ items:
     - take
     attributes:
       weight: 90
+      slot: ring
   39186:
     name: charged arboreal ring
     article: a
@@ -198044,11 +199170,14 @@ items:
     - take
     attributes:
       weight: 70
+      slot: ring
   39187:
     name: charged arboreal ring
     article: a
     flags:
     - take
+    attributes:
+      slot: ring
   39188:
     name: arboreal ring
     article: an
@@ -198056,6 +199185,7 @@ items:
     - take
     attributes:
       weight: 70
+      slot: ring
   39195:
     name: lava
     flags:
@@ -198327,6 +199457,7 @@ items:
     - take
     attributes:
       weight: 480
+      slot: necklace
   39234:
     name: enchanted turtle amulet
     article: an
@@ -198334,6 +199465,7 @@ items:
     - take
     attributes:
       weight: 480
+      slot: necklace
   39235:
     name: turtle amulet
     article: a
@@ -198341,6 +199473,7 @@ items:
     - take
     attributes:
       weight: 480
+      slot: necklace
   39238:
     name: portal without energy
     article: a
@@ -200537,6 +201670,7 @@ items:
     attributes:
       weight: 1700
       capacity: 25
+      slot: backpack
   39694:
     name: lucky dragon
     article: a
@@ -201644,6 +202778,7 @@ items:
     - take
     attributes:
       weight: 2400
+      slot: hand
   40531:
     name: broken Iks faulds
     article: the
@@ -201652,6 +202787,7 @@ items:
     - take
     attributes:
       weight: 1500
+      slot: legs
   40532:
     name: broken Iks headpiece
     article: the
@@ -201668,6 +202804,7 @@ items:
     - take
     attributes:
       weight: 1900
+      slot: armor
   40534:
     name: broken Iks sandals
     article: the
@@ -201676,6 +202813,7 @@ items:
     - take
     attributes:
       weight: 380
+      slot: feet
   40535:
     name: broken Iks spear
     flags:
@@ -201745,18 +202883,21 @@ items:
     - take
     attributes:
       weight: 2200
+      slot: head
   40589:
     name: stitched mutant hide legs
     flags:
     - take
     attributes:
       weight: 3400
+      slot: legs
   40590:
     name: mutated skin legs
     flags:
     - take
     attributes:
       weight: 5200
+      slot: legs
   40591:
     name: mutated skin armor
     article: a
@@ -201764,6 +202905,7 @@ items:
     - take
     attributes:
       weight: 6300
+      slot: armor
   40592:
     name: alchemist's boots
     article: a
@@ -201771,6 +202913,7 @@ items:
     - take
     attributes:
       weight: 1600
+      slot: feet
   40593:
     name: mutant bone boots
     article: a
@@ -201778,6 +202921,7 @@ items:
     - take
     attributes:
       weight: 1100
+      slot: feet
   40594:
     name: alchemist's notepad
     article: an
@@ -201786,12 +202930,14 @@ items:
     - take
     attributes:
       weight: 1300
+      slot: shield
   40595:
     name: mutant bone kilt
     flags:
     - take
     attributes:
       weight: 3500
+      slot: legs
   42050:
     name: dead iks
     article: a
@@ -202800,6 +203946,7 @@ items:
     - take
     attributes:
       weight: 120
+      slot: ammo
   43665:
     name: dead elder bloodjaw
     article: a
@@ -202956,6 +204103,7 @@ items:
     - take
     attributes:
       weight: 150
+      slot: ammo
   43864:
     name: sanguine blade
     article: a
@@ -202964,6 +204112,7 @@ items:
     - take
     attributes:
       weight: 6100
+      slot: hand
   43865:
     name: grand sanguine blade
     article: a
@@ -202972,6 +204121,7 @@ items:
     - take
     attributes:
       weight: 6000
+      slot: hand
   43866:
     name: sanguine cudgel
     article: a
@@ -202980,6 +204130,7 @@ items:
     - take
     attributes:
       weight: 6900
+      slot: hand
   43867:
     name: grand sanguine cudgel
     article: a
@@ -202988,6 +204139,7 @@ items:
     - take
     attributes:
       weight: 6800
+      slot: hand
   43868:
     name: sanguine hatchet
     article: a
@@ -202996,6 +204148,7 @@ items:
     - take
     attributes:
       weight: 7200
+      slot: hand
   43869:
     name: grand sanguine hatchet
     article: a
@@ -203004,6 +204157,7 @@ items:
     - take
     attributes:
       weight: 7200
+      slot: hand
   43870:
     name: sanguine razor
     article: a
@@ -203059,6 +204213,7 @@ items:
     - take
     attributes:
       weight: 3800
+      slot: legs
   43877:
     name: sanguine bow
     article: a
@@ -203094,6 +204249,7 @@ items:
     - take
     attributes:
       weight: 3200
+      slot: legs
   43882:
     name: sanguine coil
     article: a
@@ -203101,6 +204257,7 @@ items:
     - take
     attributes:
       weight: 2200
+      slot: hand
   43883:
     name: grand sanguine coil
     article: a
@@ -203108,12 +204265,14 @@ items:
     - take
     attributes:
       weight: 2100
+      slot: hand
   43884:
     name: sanguine boots
     flags:
     - take
     attributes:
       weight: 1900
+      slot: feet
   43885:
     name: sanguine rod
     article: a
@@ -203121,6 +204280,7 @@ items:
     - take
     attributes:
       weight: 2500
+      slot: hand
   43886:
     name: grand sanguine rod
     article: a
@@ -203128,6 +204288,7 @@ items:
     - take
     attributes:
       weight: 2400
+      slot: hand
   43887:
     name: sanguine galoshes
     article: a
@@ -203135,6 +204296,7 @@ items:
     - take
     attributes:
       weight: 1700
+      slot: feet
   43895:
     name: bag you covet
     article: a
@@ -203331,12 +204493,14 @@ items:
     - take
     attributes:
       weight: 4400
+      slot: armor
   44620:
     name: stoic iks chestplate
     flags:
     - take
     attributes:
       weight: 14200
+      slot: armor
   44621:
     name: dauntless dragon scale armor
     article: a
@@ -203344,6 +204508,7 @@ items:
     - take
     attributes:
       weight: 15200
+      slot: armor
   44622:
     name: unerring dragon scale armor
     article: an
@@ -203351,6 +204516,7 @@ items:
     - take
     attributes:
       weight: 13500
+      slot: armor
   44623:
     name: arcane dragon robe
     article: an
@@ -203358,6 +204524,7 @@ items:
     - take
     attributes:
       weight: 4300
+      slot: armor
   44624:
     name: mystical dragon robe
     article: an
@@ -203365,39 +204532,46 @@ items:
     - take
     attributes:
       weight: 3800
+      slot: armor
   44636:
     name: stoic iks casque
     flags:
     - take
     attributes:
       weight: 3500
+      slot: feet
   44637:
     name: stoic iks headpiece
     flags:
     - take
     attributes:
       weight: 2100
+      slot: head
   44642:
     name: stoic iks culet
     flags:
     - take
     attributes:
       weight: 5100
+      slot: legs
   44643:
     name: stoic iks faulds
     flags:
     - take
     attributes:
       weight: 3400
+      slot: legs
   44648:
     name: stoic iks boots
     flags:
     - take
     attributes:
       weight: 1500
+      slot: feet
   44649:
     name: stoic iks sandals
     flags:
     - take
     attributes:
       weight: 900
+      slot: feet

@@ -3,3 +3,4 @@ pub mod items;
 pub mod map;
 pub mod player;
 pub mod position;
+pub mod skills;

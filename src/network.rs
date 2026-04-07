@@ -9,7 +9,10 @@ use tokio::{
 use uuid::{NoContext, Timestamp};
 
 use crate::{
-    actors::{ConnectionActor, ConnectionCommand, SessionActor},
+    actors::{
+        connection::{ConnectionActor, ConnectionCommand},
+        session::SessionActor,
+    },
     Context,
 };
 

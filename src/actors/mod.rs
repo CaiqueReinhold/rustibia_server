@@ -1,14 +1,10 @@
 use tokio::sync::mpsc;
 
-mod connection;
+pub mod connection;
 mod map_query;
 mod player_query;
-mod session;
-mod world;
-
-pub use connection::{ConnectionActor, ConnectionCommand};
-pub use session::SessionActor;
-pub use world::{BroadcastMessage, Tick, WorldActor, WorldCommand};
+pub mod session;
+pub mod world;
 
 #[derive(Clone, Debug)]
 pub struct ActorHandle<T: Clone> {

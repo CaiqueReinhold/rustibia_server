@@ -16,7 +16,7 @@ use crate::config::CONFIG;
 use crate::entities::agent::{Agent, AgentKey};
 use crate::entities::items::{ItemFlag, ItemGuid};
 use crate::entities::map::GameMap;
-use crate::entities::player::Player;
+use crate::entities::player::InventorySlot;
 use crate::entities::position::{Direction, ItemPlacement, Position};
 
 pub type Tick = u64;
@@ -24,7 +24,7 @@ pub type Tick = u64;
 #[derive(Clone, Debug)]
 pub enum WorldCommand {
     SpawnPlayer {
-        player: Player,
+        player: Agent,
         session: ActorHandle<SessionCommand>,
     },
     Walk {
@@ -81,6 +81,10 @@ pub enum BroadcastMessage {
     },
     PlayerWalkDenied {
         agent_key: AgentKey,
+    },
+    UpdateInventorySlot {
+        agent_key: AgentKey,
+        slot: InventorySlot,
     },
 }
 
@@ -247,18 +251,19 @@ impl WorldActor {
 
     async fn spawn_player(
         &mut self,
-        player: Player,
+        agent: Agent,
         session: ActorHandle<SessionCommand>,
     ) -> Result<()> {
+        let player = agent
+            .get_player()
+            .ok_or(anyhow::anyhow!("agent {:?} is not a player", agent))?;
         let origin = player.origin.clone();
         let position = player.position.clone();
 
         let agent_key = self
             .map
-            .insert_agent(Agent::from_player(player.clone()), &position)
-            .or_else(|_| self.map.insert_agent(Agent::from_player(player), &origin))?;
-
-        self.map.get_agent_mut(agent_key).unwrap().handle = Some(agent_key);
+            .insert_agent(agent.clone(), &position)
+            .or_else(|_| self.map.insert_agent(agent, &origin))?;
 
         let Some(spawn_pos) = self.map.agent_position(agent_key).cloned() else {
             session
@@ -337,39 +342,39 @@ impl WorldActor {
             .agent_position(agent)
             .ok_or(anyhow::anyhow!("agent {:?} position not found", agent))?;
 
-        match &from {
-            ItemPlacement::Map(pos) => {
-                if !player_pos.is_adjacent(pos) {
-                    self.add_broadcast(BroadcastMessage::MoveDenied { agent_key: agent });
-                    return Ok(());
-                }
-            }
-            ItemPlacement::Inventory(_) => {
-                todo!("Implement inventory move validation");
+        if let ItemPlacement::Map(pos) = &from {
+            if !player_pos.is_adjacent(pos) {
+                self.add_broadcast(BroadcastMessage::MoveDenied { agent_key: agent });
+                return Ok(());
             }
         }
 
         let source = self.map.remove_item(&from, item_guid, amount).map(|it| {
-            (
+            if let Some((parent, _)) = &it.1 {
+                (
+                    BroadcastMessage::UpdateContainer {
+                        guid: parent.clone(),
+                        placement: from.clone(),
+                    },
+                    it,
+                )
+            } else {
                 match &from {
-                    ItemPlacement::Map(pos) => {
-                        if let Some((parent, _)) = &it.1 {
-                            BroadcastMessage::UpdateContainer {
-                                guid: parent.clone(),
-                                placement: from.clone(),
-                            }
-                        } else {
-                            BroadcastMessage::TileChanged {
-                                position: pos.clone(),
-                            }
-                        }
-                    }
-                    ItemPlacement::Inventory(_) => {
-                        todo!("Implement inventory move broadcast");
-                    }
-                },
-                it,
-            )
+                    ItemPlacement::Map(pos) => (
+                        BroadcastMessage::TileChanged {
+                            position: pos.clone(),
+                        },
+                        it,
+                    ),
+                    ItemPlacement::Inventory(slot, agent_key) => (
+                        BroadcastMessage::UpdateInventorySlot {
+                            agent_key: *agent_key,
+                            slot: *slot,
+                        },
+                        it,
+                    ),
+                }
+            }
         });
 
         let Some((source_change, (item, parent))) = source else {
@@ -377,46 +382,98 @@ impl WorldActor {
             return Ok(());
         };
 
-        let target_change = match &to {
-            ItemPlacement::Map(pos) => {
-                if let Some(target_container) = target_container.as_ref() {
-                    if self
-                        .map
-                        .add_to_container(pos, item.clone(), target_container, 0)
-                        .is_err()
-                    {
-                        None
-                    } else {
-                        Some(BroadcastMessage::UpdateContainer {
-                            guid: target_container.clone(),
-                            placement: to.clone(),
-                        })
-                    }
-                } else if self.map.drop_item(pos, item.clone()).is_ok() {
-                    Some(BroadcastMessage::TileChanged {
-                        position: pos.clone(),
-                    })
-                } else {
-                    None
-                }
+        let target_change = if let Some(target_container) = target_container.as_ref() {
+            if self
+                .map
+                .add_to_container(&to, target_container, 0, item.clone())
+                .is_ok()
+            {
+                Some(BroadcastMessage::UpdateContainer {
+                    guid: target_container.clone(),
+                    placement: to.clone(),
+                })
+            } else {
+                None
             }
-            ItemPlacement::Inventory(_) => {
-                todo!("Implement inventory move");
+        } else {
+            match &to {
+                ItemPlacement::Map(pos) => {
+                    if self.map.drop_item(pos, item.clone()).is_ok() {
+                        Some(BroadcastMessage::TileChanged {
+                            position: pos.clone(),
+                        })
+                    } else {
+                        None
+                    }
+                }
+                ItemPlacement::Inventory(slot, _) => {
+                    let current_item = self
+                        .map
+                        .get_agent_mut(agent)
+                        .and_then(|ag| ag.get_player_mut())
+                        .and_then(|player| player.inventory.remove(slot));
+
+                    // first, remove the item occupying the slot and place it in the source position
+                    if let Some(current_item) = current_item {
+                        if let Some((container_guid, container_slot)) = &parent {
+                            if self
+                                .map
+                                .add_to_container(
+                                    &from,
+                                    container_guid,
+                                    *container_slot,
+                                    current_item.clone(),
+                                )
+                                .is_err()
+                            {
+                                // if it can't fit the container, place on the ground at the player pos
+                                let pos = self.map.agent_position(agent).cloned();
+                                if let Some(pos) = pos {
+                                    let _ = self.map.drop_item(&pos, current_item);
+                                }
+                            }
+                        } else if let ItemPlacement::Map(pos) = &from {
+                            let _ = self.map.drop_item(pos, current_item);
+                        }
+                        // no need to cover ItemPlacement::Iventory as it would be rejected early
+                        // on slot type validation
+                    }
+
+                    // now
+                    let player = self
+                        .map
+                        .get_agent_mut(agent)
+                        .and_then(|ag| ag.get_player_mut());
+                    if let Some(player) = player {
+                        player.inventory.insert(*slot, item.clone());
+                        Some(BroadcastMessage::UpdateInventorySlot {
+                            agent_key: agent,
+                            slot: *slot,
+                        })
+                    } else {
+                        None
+                    }
+                }
             }
         };
 
         let Some(tartget_change) = target_change else {
             // Try to put the item back in the source if the target failed
-            match &from {
-                ItemPlacement::Map(pos) => {
-                    if let Some((container_guid, slot)) = parent {
-                        let _ = self.map.add_to_container(pos, item, &container_guid, slot);
-                    } else {
+            if let Some((container_guid, slot)) = &parent {
+                let _ = self
+                    .map
+                    .add_to_container(&from, container_guid, *slot, item);
+            } else {
+                match &from {
+                    ItemPlacement::Map(pos) => {
                         let _ = self.map.drop_item(pos, item);
                     }
-                }
-                ItemPlacement::Inventory(_) => {
-                    todo!("Implement inventory move rollback");
+                    ItemPlacement::Inventory(slot, _) => {
+                        self.map
+                            .get_agent_mut(agent)
+                            .and_then(|a| a.get_player_mut())
+                            .and_then(|player| player.inventory.insert(*slot, item));
+                    }
                 }
             }
 
@@ -453,8 +510,12 @@ impl WorldActor {
                 }
                 self.map.get_item_by_id(item_pos, &guid)
             }
-            ItemPlacement::Inventory(_) => {
-                todo!("handle inventory item use");
+            ItemPlacement::Inventory(slot, inv_agent_key) => {
+                self.map
+                    .get_agent(*inv_agent_key)
+                    .and_then(|agent| agent.get_player())
+                    .and_then(|player| player.inventory.get(slot))
+                    .filter(|item| item.guid == guid)
             }
         };
         let Some(item) = item else {

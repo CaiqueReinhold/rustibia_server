@@ -1,11 +1,11 @@
-use tracing::info;
-
 use crate::{
+    actors::player_query::find_item_in_slot,
     constants::{MAX_VISIBLE_ITEMS, PLAYER_VIEWPORT_HEIGHT, PLAYER_VIEWPORT_WIDTH, VIEWPORT_SIZE},
     entities::{
         agent::AgentKey,
         items::{ContainerId, Item, ItemGuid, ItemId},
         map::GameMap,
+        player::InventorySlot,
         position::{Direction, ItemPlacement, Position},
     },
     local_id::LocalIdMap,
@@ -134,15 +134,15 @@ pub fn retrieve_item<'a>(
         item.filter(|it| it.item_id == item_id)
             .map(|item| (item, placement))
     } else if position.is_inventory_coord() {
-        todo!("Implement inventory retrieval");
+        let agent = map.get_agent(agent_key)?;
+        let player = agent.get_player()?;
+        let slot = InventorySlot::from_id(position.y)?;
+        player
+            .inventory
+            .get(&slot)
+            .filter(|it| it.item_id == item_id)
+            .map(|it| (it, ItemPlacement::Inventory(slot, agent_key)))
     } else {
-        info!("retrieving from map at position {:?}", position);
-        info!(
-            "looking for item_id {} at stack index {}",
-            item_id, stack_index
-        );
-        let items = map.get_visible_items(position).ok()?;
-        info!("items at position: {:?}", items.collect::<Vec<&Item>>());
         let item = map.get_item_at(position, stack_index as usize);
         item.filter(|it| it.item_id == item_id)
             .map(|item| (item, ItemPlacement::Map(position.clone())))
@@ -171,7 +171,13 @@ pub fn find_item_in_reach<'a>(
         }
     }
 
-    // TODO: check for player inventory
+    let agent = map.get_agent(agent_key)?;
+    let player = agent.get_player()?;
+    for slot in player.inventory.keys() {
+        if let Some(item) = find_item_in_slot(agent, *slot, guid) {
+            return Some((item, ItemPlacement::Inventory(*slot, agent_key)));
+        }
+    }
 
     None
 }

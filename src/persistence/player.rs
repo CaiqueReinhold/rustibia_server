@@ -3,14 +3,29 @@ use std::collections::HashMap;
 use thiserror::Error;
 
 use crate::entities::{
-    player::{Player, PlayerId, Pool, Skill},
+    agent::{OutfitColors, OutfitId, Pool},
+    items::Item,
+    player::{InventorySlot, Player, PlayerId},
     position::Position,
+    skills::{SkillType, SkillValue},
 };
 
 #[derive(Error, Debug)]
 pub enum PlayerRepositoryError {
     #[error("Player not found")]
     NotFound,
+}
+
+pub struct PlayerSnapshot {
+    pub id: PlayerId,
+    pub position: Position,
+    pub origin: Position,
+    pub name: String,
+    pub life: Pool,
+    pub mana: Pool,
+    pub outfit: (OutfitId, OutfitColors),
+    pub skills: HashMap<SkillType, SkillValue>,
+    pub inventory: HashMap<InventorySlot, Item>,
 }
 
 pub struct PlayerRepository {}
@@ -20,9 +35,9 @@ impl PlayerRepository {
         Self {}
     }
 
-    pub async fn get_by_id(&self, id: PlayerId) -> Result<Player, PlayerRepositoryError> {
+    pub async fn get_by_id(&self, id: PlayerId) -> Result<PlayerSnapshot, PlayerRepositoryError> {
         if id == 1 {
-            Ok(Player {
+            let mut player = PlayerSnapshot {
                 id: 1,
                 name: "Rizael".to_string(),
                 position: Position {
@@ -35,22 +50,6 @@ impl PlayerRepository {
                     y: 1028,
                     z: 7,
                 },
-                experience: Pool {
-                    current: 0,
-                    maximum: 100,
-                },
-                inventory: HashMap::new(),
-                level: 1,
-                magic: Skill {
-                    value: 1,
-                    current_ticks: 0,
-                    max_ticks: 100,
-                },
-                meele: Skill {
-                    value: 1,
-                    current_ticks: 0,
-                    max_ticks: 100,
-                },
                 life: Pool {
                     current: 100,
                     maximum: 100,
@@ -59,9 +58,27 @@ impl PlayerRepository {
                     current: 100,
                     maximum: 100,
                 },
-                base_speed: 120,
-                outfit: 133,
-            })
+                outfit: (133, (1, 2, 3, 4)),
+                inventory: HashMap::new(),
+                skills: HashMap::new(),
+            };
+            player.skills.insert(
+                SkillType::Level,
+                SkillValue {
+                    value: 1,
+                    current_ticks: 0,
+                    max_ticks: 100,
+                },
+            );
+            player.skills.insert(
+                SkillType::Speed,
+                SkillValue {
+                    value: 120,
+                    current_ticks: 0,
+                    max_ticks: 0,
+                },
+            );
+            Ok(player)
         } else {
             Err(PlayerRepositoryError::NotFound)
         }

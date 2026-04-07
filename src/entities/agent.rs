@@ -1,11 +1,24 @@
+use std::collections::HashMap;
+
 use slotmap::new_key_type;
 
 use super::player::Player;
 use crate::{
-    actors::Tick,
+    actors::world::Tick,
     config,
     constants::{SPEED_PARAM_A, SPEED_PARAM_B, SPEED_PARAM_C},
+    entities::skills::{SkillType, SkillValue},
+    persistence::player::PlayerSnapshot,
 };
+
+pub type OutfitId = u16;
+pub type OutfitColors = (u8, u8, u8, u8);
+
+#[derive(Clone, Debug)]
+pub struct Pool {
+    pub current: u32,
+    pub maximum: u32,
+}
 
 #[derive(Clone, Debug)]
 enum AgentInner {
@@ -17,10 +30,14 @@ new_key_type! { pub struct AgentKey; }
 
 #[derive(Clone, Debug)]
 pub struct Agent {
-    pub handle: Option<AgentKey>,
-    pub next_walk_tick: Tick,
-    pub speed: u16,
     inner: AgentInner,
+    name: String,
+    life: Pool,
+    skills: HashMap<SkillType, SkillValue>,
+    outfit: (OutfitId, OutfitColors),
+
+    pub speed: u16,
+    pub next_walk_tick: Tick,
 }
 
 impl Agent {
@@ -31,13 +48,53 @@ impl Agent {
         }
     }
 
-    pub fn from_player(player: Player) -> Self {
-        let speed = player.base_speed;
-        Self {
-            handle: None,
-            inner: AgentInner::Player(player),
+    pub fn get_player_mut(&mut self) -> Option<&mut Player> {
+        match &mut self.inner {
+            AgentInner::Player(p) => Some(p),
+            AgentInner::Creature => None,
+        }
+    }
+
+    pub fn from_player(player: PlayerSnapshot) -> Self {
+        let mut agent = Self {
+            inner: AgentInner::Player(Player {
+                id: player.id,
+                position: player.position,
+                origin: player.origin,
+                mana: player.mana,
+                inventory: player.inventory,
+            }),
+            name: player.name,
+            life: player.life,
+            skills: player.skills,
+            outfit: player.outfit,
+            speed: 0,
             next_walk_tick: 0,
-            speed,
+        };
+        agent.apply_modifiers();
+        agent
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn life(&self) -> &Pool {
+        &self.life
+    }
+
+    pub fn outfit(&self) -> (OutfitId, OutfitColors) {
+        self.outfit
+    }
+
+    pub fn get_skill(&self, skill: SkillType) -> Option<&SkillValue> {
+        self.skills.get(&skill)
+    }
+
+    pub fn apply_modifiers(&mut self) {
+        if let Some(speed) = self.skills.get(&SkillType::Speed) {
+            // TODO: apply effects
+            self.speed = speed.value;
         }
     }
 

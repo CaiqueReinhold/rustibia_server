@@ -1,49 +1,66 @@
 use std::collections::HashMap;
 
-use crate::entities::items::Item;
+use crate::entities::{agent::Pool, items::Item};
 
 use super::position::Position;
 
 pub type PlayerId = u32;
-pub type OutfitId = u16;
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Copy)]
 pub enum InventorySlot {
-    Backpack,
     Head,
+    Amulet,
     Chest,
-    Legs,
-    Feet,
+    Backpack,
     LeftHand,
     RightHand,
+    BothHands,
+    Ring,
+    Legs,
+    Feet,
+    Trinket,
 }
 
-#[derive(Clone, Debug)]
-pub struct Skill {
-    pub value: u32,
-    pub current_ticks: u64,
-    pub max_ticks: u64,
-}
+impl InventorySlot {
+    pub fn as_id(&self) -> u32 {
+        match self {
+            InventorySlot::BothHands => 0,
+            InventorySlot::Head => 1,
+            InventorySlot::Amulet => 2,
+            InventorySlot::Backpack => 3,
+            InventorySlot::Chest => 4,
+            InventorySlot::RightHand => 5,
+            InventorySlot::LeftHand => 6,
+            InventorySlot::Legs => 7,
+            InventorySlot::Feet => 8,
+            InventorySlot::Ring => 9,
+            InventorySlot::Trinket => 10,
+        }
+    }
 
-#[derive(Clone, Debug)]
-pub struct Pool {
-    pub current: u32,
-    pub maximum: u32,
+    pub fn from_id(id: u32) -> Option<Self> {
+        match id {
+            0 => Some(InventorySlot::BothHands),
+            1 => Some(InventorySlot::Head),
+            2 => Some(InventorySlot::Amulet),
+            3 => Some(InventorySlot::Backpack),
+            4 => Some(InventorySlot::Chest),
+            5 => Some(InventorySlot::RightHand),
+            6 => Some(InventorySlot::LeftHand),
+            7 => Some(InventorySlot::Legs),
+            8 => Some(InventorySlot::Feet),
+            9 => Some(InventorySlot::Ring),
+            10 => Some(InventorySlot::Trinket),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
 pub struct Player {
     pub id: PlayerId,
-    pub name: String,
     pub position: Position,
     pub origin: Position,
-    pub inventory: HashMap<InventorySlot, Item>,
-    pub level: u16,
-    pub magic: Skill,
-    pub meele: Skill,
-    pub life: Pool,
     pub mana: Pool,
-    pub experience: Pool,
-    pub base_speed: u16,
-    pub outfit: OutfitId,
+    pub inventory: HashMap<InventorySlot, Item>,
 }

@@ -4,7 +4,7 @@ use crate::{
     constants::{
         CONTAINER_COORD_FLAG, INVENTORY_COORD_FLAG, PLAYER_VIEWPORT_HEIGHT, PLAYER_VIEWPORT_WIDTH,
     },
-    entities::player::InventorySlot,
+    entities::{agent::AgentKey, player::InventorySlot},
 };
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
@@ -167,6 +167,6 @@ impl Direction {
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum ItemPlacement {
-    Map(Position),            // position and stack position
-    Inventory(InventorySlot), // slot and guid
+    Map(Position),
+    Inventory(InventorySlot, AgentKey),
 }
