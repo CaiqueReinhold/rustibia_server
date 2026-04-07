@@ -14,7 +14,7 @@ use tracing::{debug, info, warn};
 use super::{session::SessionCommand, ActorHandle};
 use crate::config::CONFIG;
 use crate::entities::agent::{Agent, AgentKey};
-use crate::entities::items::{ItemFlag, ItemGuid};
+use crate::entities::items::{ItemAttribute, ItemFlag, ItemGuid};
 use crate::entities::map::GameMap;
 use crate::entities::player::InventorySlot;
 use crate::entities::position::{Direction, ItemPlacement, Position};
@@ -439,7 +439,15 @@ impl WorldActor {
                         // on slot type validation
                     }
 
-                    // now
+                    // if item is two handed, also remove shield and add it to first available container
+                    if item.config.get_attributes().any(|attr| match attr {
+                        ItemAttribute::Inventory(slot) => *slot == InventorySlot::BothHands,
+                        _ => false,
+                    }) {
+                        // TODO
+                    }
+
+                    // lastly, insert item in container
                     let player = self
                         .map
                         .get_agent_mut(agent)
@@ -510,13 +518,12 @@ impl WorldActor {
                 }
                 self.map.get_item_by_id(item_pos, &guid)
             }
-            ItemPlacement::Inventory(slot, inv_agent_key) => {
-                self.map
-                    .get_agent(*inv_agent_key)
-                    .and_then(|agent| agent.get_player())
-                    .and_then(|player| player.inventory.get(slot))
-                    .filter(|item| item.guid == guid)
-            }
+            ItemPlacement::Inventory(slot, inv_agent_key) => self
+                .map
+                .get_agent(*inv_agent_key)
+                .and_then(|agent| agent.get_player())
+                .and_then(|player| player.inventory.get(slot))
+                .filter(|item| item.guid == guid),
         };
         let Some(item) = item else {
             self.add_broadcast(BroadcastMessage::UseItemAck {

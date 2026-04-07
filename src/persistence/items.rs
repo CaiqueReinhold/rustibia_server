@@ -54,23 +54,14 @@ fn parse_flag(s: &str) -> Option<ItemFlag> {
     }
 }
 
-fn parse_inventory_slot(s: &str) -> Option<InventorySlot> {
-    match s {
-        "backpack" => Some(InventorySlot::Backpack),
-        "head" => Some(InventorySlot::Head),
-        "chest" => Some(InventorySlot::Chest),
-        "legs" => Some(InventorySlot::Legs),
-        "feet" => Some(InventorySlot::Feet),
-        "left" => Some(InventorySlot::LeftHand),
-        "right" => Some(InventorySlot::RightHand),
-        _ => None,
-    }
+fn parse_inventory_slot(s: u64) -> Option<InventorySlot> {
+    InventorySlot::from_id(s as u32)
 }
 
 fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute> {
     match key {
-        "inventory" => {
-            let slot = parse_inventory_slot(value.as_str()?)?;
+        "slot" => {
+            let slot = parse_inventory_slot(value.as_u64()?)?;
             Some(ItemAttribute::Inventory(slot))
         }
         "floor_change" => {

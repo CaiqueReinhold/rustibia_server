@@ -362,9 +362,13 @@ impl SessionActor {
                     .await?;
                 return Ok(());
             };
-            if item.config.get_attributes().all(|attr| match attr {
-                ItemAttribute::Inventory(slot) => target_slot == *slot,
-                _ => true,
+            if item.config.get_attributes().any(|attr| match attr {
+                ItemAttribute::Inventory(slot) => {
+                    target_slot == *slot
+                        || (target_slot == InventorySlot::BothHands
+                            && *slot == InventorySlot::LeftHand)
+                }
+                _ => false,
             }) {
                 (
                     Some(ItemPlacement::Inventory(
@@ -377,7 +381,7 @@ impl SessionActor {
                 (None, None)
             }
         } else {
-            // check if target position can be reached (unsight flag)
+            // TODO: check if target position can be reached (unsight flag)
             if map.can_drop_item(&to) && player_pos.in_viewport(&to) {
                 (Some(ItemPlacement::Map(to)), None)
             } else {
