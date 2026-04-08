@@ -1,8 +1,17 @@
-use std::collections::HashMap;
-
 use crate::entities::items::{Item, ItemGuid};
-use crate::entities::map::MapError;
 use crate::entities::player::InventorySlot;
+use std::collections::HashMap;
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum InventoryError {
+    #[error("Item does not exist in slot")]
+    ItemNotInPosition,
+    #[error("Container is full")]
+    ContainerIsFull,
+    #[error("Cannot equip this")]
+    CannotEquip,
+}
 
 #[derive(Debug, Clone)]
 pub struct Inventory {
@@ -38,7 +47,7 @@ impl Inventory {
         slot: InventorySlot,
         container: Option<(&ItemGuid, usize)>,
         item: Item,
-    ) -> Result<Option<Item>, MapError> {
+    ) -> Result<Option<Item>, InventoryError> {
         match container {
             None => {
                 let weight_added = item.total_weight();
@@ -53,23 +62,30 @@ impl Inventory {
                 let slot_item = self
                     .slots
                     .get_mut(&slot)
-                    .ok_or(MapError::EntityNotInPosition)?;
+                    .ok_or(InventoryError::ItemNotInPosition)?;
                 let container = slot_item
                     .find_by_guid_mut(target_guid)
-                    .ok_or(MapError::EntityNotInPosition)?;
+                    .ok_or(InventoryError::ItemNotInPosition)?;
                 let cap = container.container_capacity().unwrap();
                 let content = container
                     .content
                     .as_mut()
-                    .ok_or(MapError::EntityNotInPosition)?;
+                    .ok_or(InventoryError::ItemNotInPosition)?;
                 if content.len() >= cap as usize {
-                    return Err(MapError::ContainerIsFull);
+                    return Err(InventoryError::ContainerIsFull);
                 }
                 self.carried_weight += item.total_weight();
                 content.insert(container_pos, item);
                 Ok(None)
             }
         }
+    }
+
+    // Find the first container having at least one free slot inside
+    // the InventorySlot::Backpack slot
+    pub fn first_available_container(&self) -> Option<&ItemGuid> {
+        let backpack = self.slots.get(&InventorySlot::Backpack)?;
+        find_available_container(backpack)
     }
 
     /// Remove item by `guid` from `slot` or from within a container inside that slot.
@@ -147,6 +163,19 @@ impl Inventory {
     pub fn into_slots(self) -> HashMap<InventorySlot, Item> {
         self.slots
     }
+}
+
+fn find_available_container(item: &Item) -> Option<&ItemGuid> {
+    let available = item.available_capacity()?;
+    if available > 0 {
+        return Some(&item.guid);
+    }
+    for child in item.content.as_ref()? {
+        if let Some(guid) = find_available_container(child) {
+            return Some(guid);
+        }
+    }
+    None
 }
 
 fn remove_from_container(

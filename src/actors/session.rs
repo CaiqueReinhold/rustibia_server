@@ -362,14 +362,16 @@ impl SessionActor {
                     .await?;
                 return Ok(());
             };
-            if item.config.get_attributes().any(|attr| match attr {
-                ItemAttribute::Inventory(slot) => {
-                    target_slot == *slot
-                        || (target_slot == InventorySlot::BothHands
-                            && *slot == InventorySlot::LeftHand)
-                }
-                _ => false,
-            }) {
+
+            let ok = item
+                .get_slot()
+                .map(|slot| {
+                    slot == target_slot
+                        || (slot == InventorySlot::BothHands
+                            && target_slot == InventorySlot::LeftHand)
+                })
+                .unwrap_or(false);
+            if ok {
                 (
                     Some(ItemPlacement::Inventory(
                         target_slot,
@@ -839,13 +841,12 @@ impl SessionActor {
     async fn update_player_capacity(&self, agent_key: AgentKey) -> Result<()> {
         if self.player_key == Some(agent_key) {
             let map = self.shared_map.load();
-            if let Some(cap) = map
-                .get_player(agent_key)
-                .map(|player| player.capacity.clone())
-            {
+            if let Some(cap) = map.get_player(agent_key).map(|player| &player.capacity) {
                 self.connection
                     .send(ConnectionCommand::SendPlayerMessage(
-                        ServerMessage::PlayerCapacityUpdated { cap: cap.current },
+                        ServerMessage::PlayerCapacityUpdated {
+                            cap: cap.available(),
+                        },
                     ))
                     .await?;
             }

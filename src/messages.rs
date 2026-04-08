@@ -93,6 +93,7 @@ pub enum ServerMessage {
         mana: Pool,
         outfit: (OutfitId, OutfitColors),
         speed: u16,
+        capacity: u32,
         inventory_head: Option<ItemId>,
         inventory_amulet: Option<ItemId>,
         inventory_backpack: Option<ItemId>,
@@ -269,6 +270,7 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 mana,
                 outfit,
                 speed,
+                capacity,
                 inventory_head,
                 inventory_amulet,
                 inventory_backpack,
@@ -296,6 +298,7 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u8(outfit.1 .2);
                 dst.put_u8(outfit.1 .3);
                 dst.put_u16_le(speed);
+                dst.put_u32_le(capacity);
                 encode_optional_item(inventory_head, dst);
                 encode_optional_item(inventory_amulet, dst);
                 encode_optional_item(inventory_backpack, dst);

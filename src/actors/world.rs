@@ -14,7 +14,8 @@ use tracing::{debug, error, info, warn};
 use super::{session::SessionCommand, ActorHandle};
 use crate::config::CONFIG;
 use crate::entities::agent::{Agent, AgentKey};
-use crate::entities::items::{ItemAttribute, ItemFlag, ItemGuid};
+use crate::entities::inventory::InventoryError;
+use crate::entities::items::{ItemFlag, ItemGuid};
 use crate::entities::map::GameMap;
 use crate::entities::player::InventorySlot;
 use crate::entities::position::{Direction, ItemPlacement, Position};
@@ -341,6 +342,10 @@ impl WorldActor {
         to: ItemPlacement,
         target_container: Option<ItemGuid>,
     ) -> Result<()> {
+        if self.map.get_player(agent).is_none() {
+            return Ok(());
+        }
+
         let player_pos = self
             .map
             .agent_position(agent)
@@ -407,22 +412,24 @@ impl WorldActor {
         // parent container info as Option<(&guid, slot)> — used for displacing and rollback
         let parent_ref = parent.as_ref().map(|(guid, slot)| (guid, *slot));
 
-        let target_change = match &to {
+        let error_message = match &to {
             ItemPlacement::Map(pos) => {
                 let container = target_container.as_ref().map(|g| (g, 0usize));
-                if self.map.place_item(pos, container, item.clone()).is_ok() {
-                    Some(if let Some(guid) = target_container.as_ref() {
-                        BroadcastMessage::UpdateContainer {
-                            guid: guid.clone(),
-                            placement: to.clone(),
+                match self.map.place_item(pos, container, item.clone()) {
+                    Ok(..) => {
+                        if let Some(guid) = target_container.as_ref() {
+                            self.add_broadcast(BroadcastMessage::UpdateContainer {
+                                guid: guid.clone(),
+                                placement: to.clone(),
+                            });
+                        } else {
+                            self.add_broadcast(BroadcastMessage::TileChanged {
+                                position: pos.clone(),
+                            });
                         }
-                    } else {
-                        BroadcastMessage::TileChanged {
-                            position: pos.clone(),
-                        }
-                    })
-                } else {
-                    None
+                        None
+                    }
+                    Err(e) => Some(e.to_string()),
                 }
             }
             ItemPlacement::Inventory(slot, _) => {
@@ -431,35 +438,31 @@ impl WorldActor {
                     .get_player(agent)
                     .map(|player| player.can_carry(item.total_weight()))
                     .unwrap_or(false);
-                if !can_carry {
-                    self.add_broadcast(BroadcastMessage::MoveDenied {
-                        agent_key: agent,
-                        message: "Not enough capacity".to_string(),
-                    });
-                    return Ok(());
-                }
 
-                if let Some(target_container) = target_container.as_ref() {
+                if !can_carry {
+                    Some("Not enough capacity".to_string())
+                } else if let Some(target_container) = target_container.as_ref() {
                     // Moving into a container within the inventory slot
-                    let result = self.map.get_player_mut(agent).map(|player| {
-                        player
-                            .inventory
-                            .insert(*slot, Some((target_container, 0)), item.clone())
-                    });
-                    if let Some(result) = result {
-                        if let Err(e) = result {
-                            self.add_broadcast(BroadcastMessage::MoveDenied {
-                                agent_key: agent,
-                                message: e.to_string(),
-                            });
-                            return Ok(());
-                        }
-                        Some(BroadcastMessage::UpdateContainer {
-                            guid: target_container.clone(),
-                            placement: to.clone(),
+                    let result = self
+                        .map
+                        .get_player_mut(agent)
+                        .map(|player| {
+                            player.inventory.insert(
+                                *slot,
+                                Some((target_container, 0)),
+                                item.clone(),
+                            )
                         })
-                    } else {
-                        None
+                        .unwrap();
+                    match result {
+                        Ok(..) => {
+                            self.add_broadcast(BroadcastMessage::UpdateContainer {
+                                guid: target_container.clone(),
+                                placement: to.clone(),
+                            });
+                            None
+                        }
+                        Err(e) => Some(e.to_string()),
                     }
                 } else {
                     // Moving directly into an equipment slot
@@ -487,29 +490,118 @@ impl WorldActor {
                         }
                     }
 
-                    // if item is two handed, also remove shield and add it to first available container
-                    if item.config.get_attributes().any(|attr| match attr {
-                        ItemAttribute::Inventory(slot) => *slot == InventorySlot::BothHands,
-                        _ => false,
-                    }) {
-                        // TODO
+                    let mut error = None;
+                    if item.get_slot().unwrap() == InventorySlot::BothHands {
+                        info!("is two handed");
+                        let player = self.map.get_player_mut(agent).unwrap();
+                        if let Some(rh_item) = player.inventory.take_slot(&InventorySlot::RightHand)
+                        {
+                            info!("right hand item {:?}", rh_item);
+                            if let Some(available_container) =
+                                player.inventory.first_available_container().cloned()
+                            {
+                                if let Err(e) = player.inventory.insert(
+                                    InventorySlot::Backpack,
+                                    Some((&available_container, 0)),
+                                    rh_item.clone(),
+                                ) {
+                                    let _ = player.inventory.insert(
+                                        InventorySlot::RightHand,
+                                        None,
+                                        rh_item,
+                                    );
+                                    error = Some(e.to_string());
+                                } else {
+                                    self.add_broadcast(BroadcastMessage::UpdateInventorySlot {
+                                        agent_key: agent,
+                                        slot: InventorySlot::RightHand,
+                                    });
+                                    self.add_broadcast(BroadcastMessage::UpdateContainer {
+                                        guid: available_container,
+                                        placement: ItemPlacement::Inventory(
+                                            InventorySlot::Backpack,
+                                            agent,
+                                        ),
+                                    });
+                                }
+                            } else {
+                                let _ = player.inventory.insert(
+                                    InventorySlot::RightHand,
+                                    None,
+                                    rh_item,
+                                );
+                                error = Some(InventoryError::CannotEquip.to_string())
+                            }
+                        }
                     }
 
-                    let player = self.map.get_player_mut(agent);
-                    if let Some(player) = player {
-                        let _ = player.inventory.insert(*slot, None, item.clone());
-                        Some(BroadcastMessage::UpdateInventorySlot {
-                            agent_key: agent,
-                            slot: *slot,
-                        })
+                    let left_is_two_handed = self
+                        .map
+                        .get_player_mut(agent)
+                        .unwrap()
+                        .inventory
+                        .get(&InventorySlot::LeftHand)
+                        .map(|it| it.get_slot().unwrap() == InventorySlot::BothHands)
+                        .unwrap_or(false);
+                    if *slot == InventorySlot::RightHand && left_is_two_handed {
+                        let player = self.map.get_player_mut(agent).unwrap();
+                        let lh_item = player
+                            .inventory
+                            .take_slot(&InventorySlot::LeftHand)
+                            .unwrap();
+                        if let Some(available_container) =
+                            player.inventory.first_available_container().cloned()
+                        {
+                            if let Err(e) = player.inventory.insert(
+                                InventorySlot::Backpack,
+                                Some((&available_container, 0)),
+                                lh_item.clone(),
+                            ) {
+                                let _ =
+                                    player
+                                        .inventory
+                                        .insert(InventorySlot::LeftHand, None, lh_item);
+                                error = Some(e.to_string());
+                            }
+                            self.add_broadcast(BroadcastMessage::UpdateInventorySlot {
+                                agent_key: agent,
+                                slot: InventorySlot::LeftHand,
+                            });
+                            self.add_broadcast(BroadcastMessage::UpdateContainer {
+                                guid: available_container,
+                                placement: ItemPlacement::Inventory(InventorySlot::Backpack, agent),
+                            });
+                        } else {
+                            let _ = player
+                                .inventory
+                                .insert(InventorySlot::LeftHand, None, lh_item);
+                            error = Some(InventoryError::CannotEquip.to_string())
+                        }
+                    }
+
+                    if let Some(e) = error {
+                        Some(e)
                     } else {
-                        None
+                        match self.map.get_player_mut(agent).unwrap().inventory.insert(
+                            *slot,
+                            None,
+                            item.clone(),
+                        ) {
+                            Ok(..) => {
+                                self.add_broadcast(BroadcastMessage::UpdateInventorySlot {
+                                    agent_key: agent,
+                                    slot: *slot,
+                                });
+                                None
+                            }
+                            Err(e) => Some(e.to_string()),
+                        }
                     }
                 }
             }
         };
 
-        let Some(tartget_change) = target_change else {
+        if let Some(error) = error_message {
             // Restore item to its exact source position on failure
             match &from {
                 ItemPlacement::Map(pos) => {
@@ -524,10 +616,10 @@ impl WorldActor {
 
             self.add_broadcast(BroadcastMessage::MoveDenied {
                 agent_key: agent,
-                message: "Can't move this".to_string(),
+                message: error,
             });
             return Ok(());
-        };
+        }
 
         let player = self.map.get_player_mut(agent);
         if let Some(player) = player {
@@ -538,7 +630,6 @@ impl WorldActor {
         }
         self.add_broadcast(BroadcastMessage::MoveAck { agent_key: agent });
         self.add_broadcast(source_change);
-        self.add_broadcast(tartget_change);
 
         Ok(())
     }

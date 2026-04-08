@@ -5,8 +5,8 @@ use thiserror::Error;
 
 use crate::constants::MAX_VISIBLE_ITEMS;
 use crate::entities::agent::{Agent, AgentKey};
-use crate::entities::player::Player;
 use crate::entities::items::{Item, ItemAttribute, ItemFlag, ItemGuid};
+use crate::entities::player::Player;
 use crate::entities::position::Position;
 
 #[derive(Debug, Clone)]

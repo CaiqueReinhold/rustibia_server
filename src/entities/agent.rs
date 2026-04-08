@@ -20,6 +20,12 @@ pub struct Pool {
     pub maximum: u32,
 }
 
+impl Pool {
+    pub fn available(&self) -> u32 {
+        self.maximum - self.current
+    }
+}
+
 #[derive(Clone, Debug)]
 enum AgentInner {
     Player(Player),
