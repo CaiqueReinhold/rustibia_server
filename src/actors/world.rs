@@ -13,7 +13,7 @@ use tracing::{debug, error, info, warn};
 
 use super::{session::SessionCommand, ActorHandle};
 use crate::config::CONFIG;
-use crate::entities::agent::{Agent, AgentKey};
+use crate::entities::agent::{Agent, AgentKey, Facing};
 use crate::entities::inventory::InventoryError;
 use crate::entities::items::{ItemFlag, ItemGuid};
 use crate::entities::map::GameMap;
@@ -44,6 +44,10 @@ pub enum WorldCommand {
         agent: AgentKey,
         guid: ItemGuid,
         placement: ItemPlacement,
+    },
+    ChangeDirection {
+        agent: AgentKey,
+        facing: Facing,
     },
 }
 
@@ -90,6 +94,10 @@ pub enum BroadcastMessage {
     },
     UpdatePlayerCapacity {
         agent_key: AgentKey,
+    },
+    AgentChangedDirection {
+        agent_key: AgentKey,
+        facing: Facing,
     },
 }
 
@@ -248,6 +256,9 @@ impl WorldActor {
                 guid,
                 placement,
             } => self.use_item(agent, guid, placement).await,
+            WorldCommand::ChangeDirection { agent, facing } => {
+                self.change_direction(agent, facing).await
+            }
         };
         if let Err(e) = result {
             warn!("Error on apply command: {e}");
@@ -680,6 +691,19 @@ impl WorldActor {
                 guid,
                 placement,
             });
+        }
+
+        Ok(())
+    }
+
+    async fn change_direction(&mut self, agent_key: AgentKey, facing: Facing) -> Result<()> {
+        let current_facing = self.map.get_agent(agent_key).map(|agent| agent.facing);
+        if let Some(current_facing) = current_facing {
+            if facing != current_facing {
+                let agent = self.map.get_agent_mut(agent_key).unwrap();
+                agent.facing = facing;
+                self.add_broadcast(BroadcastMessage::AgentChangedDirection { agent_key, facing });
+            }
         }
 
         Ok(())

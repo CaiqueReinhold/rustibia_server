@@ -11,6 +11,7 @@ use crate::{
     persistence::player::PlayerSnapshot,
 };
 
+pub type AgentId = u16;
 pub type OutfitId = u16;
 pub type OutfitColors = (u8, u8, u8, u8);
 
@@ -24,6 +25,14 @@ impl Pool {
     pub fn available(&self) -> u32 {
         self.maximum - self.current
     }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Facing {
+    North,
+    East,
+    South,
+    West,
 }
 
 #[derive(Clone, Debug)]
@@ -41,8 +50,9 @@ pub struct Agent {
     life: Pool,
     skills: HashMap<SkillType, SkillValue>,
     outfit: (OutfitId, OutfitColors),
+    speed: u16,
 
-    pub speed: u16,
+    pub facing: Facing,
     pub next_walk_tick: Tick,
 }
 
@@ -72,6 +82,7 @@ impl Agent {
                 inventory: Inventory::from_snapshot(player.inventory),
             }),
             name: player.name,
+            facing: player.facing,
             life: player.life,
             skills: player.skills,
             outfit: player.outfit,
@@ -92,6 +103,10 @@ impl Agent {
 
     pub fn outfit(&self) -> (OutfitId, OutfitColors) {
         self.outfit
+    }
+
+    pub fn speed(&self) -> u16 {
+        self.speed
     }
 
     pub fn get_skill(&self, skill: SkillType) -> Option<&SkillValue> {

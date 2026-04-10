@@ -7,7 +7,7 @@ use tokio_util::{
 use crate::{
     constants::{MAX_VISIBLE_ITEMS, VIEWPORT_SIZE},
     entities::{
-        agent::{OutfitColors, OutfitId, Pool},
+        agent::{AgentId, Facing, OutfitColors, OutfitId, Pool},
         items::{ContainerId, ItemId},
         player::InventorySlot,
         position::{Direction, Position},
@@ -25,6 +25,7 @@ const MSG_MOVE_ITEM: u8 = 4;
 const MSG_USE_ITEM: u8 = 5;
 const MSG_CLOSE_CONTAINER: u8 = 6;
 const MSG_OPEN_PARENT_CONTAINER: u8 = 7;
+const MSG_CHANGE_DIRECTION: u8 = 8;
 
 #[derive(Clone, Debug)]
 pub enum ClientMessage {
@@ -55,6 +56,9 @@ pub enum ClientMessage {
     OpenParentContainer {
         container_id: ContainerId,
     },
+    ChangeDirection {
+        direction: Facing,
+    },
 }
 
 // server
@@ -75,6 +79,7 @@ const MSG_CONTAINER_CLOSED: u8 = 13;
 const MSG_PLAYER_WALK_DENIED: u8 = 14;
 const MSG_INVETORY_SLOT_UPDATED: u8 = 15;
 const MSG_PLAYER_CAPACITY_UPDATED: u8 = 16;
+const MSG_ACTOR_DIRECTION_CHANGED: u8 = 17;
 
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
@@ -86,7 +91,9 @@ pub enum ServerMessage {
     Pong,
     LoginError,
     DescribePlayer {
+        agent_id: AgentId,
         position: Position,
+        facing: Facing,
         name: String,
         level: u16,
         life: Pool,
@@ -147,6 +154,10 @@ pub enum ServerMessage {
     },
     PlayerCapacityUpdated {
         cap: u32,
+    },
+    AgentChangedDirection {
+        agent_id: AgentId,
+        facing: Facing,
     },
 }
 
@@ -219,6 +230,9 @@ impl Decoder for GameMessageCodec {
             MSG_OPEN_PARENT_CONTAINER => Ok(Some(ClientMessage::OpenParentContainer {
                 container_id: buf.get_u16_le(),
             })),
+            MSG_CHANGE_DIRECTION => Ok(Some(ClientMessage::ChangeDirection {
+                direction: decode_facing(buf.get_u8())?,
+            })),
             _ => Err(MessageDecodeError::WrongSequence),
         }
     }
@@ -246,6 +260,16 @@ fn decode_direction(b: u8) -> Result<Direction, MessageDecodeError> {
     }
 }
 
+fn decode_facing(b: u8) -> Result<Facing, MessageDecodeError> {
+    match b {
+        1 => Ok(Facing::North),
+        2 => Ok(Facing::East),
+        3 => Ok(Facing::South),
+        4 => Ok(Facing::West),
+        _ => Err(MessageDecodeError::WrongSequence),
+    }
+}
+
 #[derive(Error, Debug)]
 pub enum MessageEncodeError {
     #[error("Read error")]
@@ -263,7 +287,9 @@ impl Encoder<ServerMessage> for GameMessageCodec {
             ServerMessage::Pong => dst.put_u8(MSG_PONG),
             ServerMessage::LoginError => dst.put_u8(MSG_LOGIN_ERROR),
             ServerMessage::DescribePlayer {
+                agent_id,
                 position,
+                facing,
                 name,
                 level,
                 life,
@@ -283,7 +309,9 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 inventory_trinket,
             } => {
                 dst.put_u8(MSG_DESCRIBE_PLAYER);
+                dst.put_u16_le(agent_id);
                 encode_position(position, dst);
+                encode_facing(facing, dst);
                 let name_bytes = name.as_bytes();
                 dst.put_u16_le(name_bytes.len() as u16);
                 dst.put_slice(name_bytes);
@@ -386,6 +414,10 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u8(MSG_PLAYER_CAPACITY_UPDATED);
                 dst.put_u32_le(cap);
             }
+            ServerMessage::AgentChangedDirection { agent_id, facing } => {
+                dst.put_u16_le(agent_id);
+                encode_facing(facing, dst);
+            }
         }
 
         let payload_len = (dst.len() - len_offset - 2) as u16;
@@ -399,6 +431,15 @@ fn encode_position(pos: Position, dst: &mut BytesMut) {
     dst.put_u32_le(pos.x);
     dst.put_u32_le(pos.y);
     dst.put_u32_le(pos.z);
+}
+
+fn encode_facing(facing: Facing, dst: &mut BytesMut) {
+    match facing {
+        Facing::North => dst.put_u8(1),
+        Facing::East => dst.put_u8(2),
+        Facing::South => dst.put_u8(3),
+        Facing::West => dst.put_u8(3),
+    }
 }
 
 fn encode_direction(d: &Direction, dst: &mut BytesMut) {

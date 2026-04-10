@@ -1,6 +1,6 @@
 use crate::{
     entities::{
-        agent::{Agent, AgentKey},
+        agent::{Agent, AgentId, AgentKey},
         items::{Item, ItemGuid},
         map::GameMap,
         player::InventorySlot,
@@ -9,7 +9,7 @@ use crate::{
     messages::ServerMessage,
 };
 
-pub fn get_player_desc(map: &GameMap, key: AgentKey) -> Option<ServerMessage> {
+pub fn get_player_desc(map: &GameMap, key: AgentKey, id: AgentId) -> Option<ServerMessage> {
     let agent = map.get_agent(key)?;
     let position = map.agent_position(key)?;
     let exp = agent.get_skill(SkillType::Level)?;
@@ -18,13 +18,15 @@ pub fn get_player_desc(map: &GameMap, key: AgentKey) -> Option<ServerMessage> {
     let slot_item = |slot: InventorySlot| player.inventory.get(&slot).map(|it| it.item_id);
 
     Some(ServerMessage::DescribePlayer {
+        agent_id: id,
         position: position.clone(),
+        facing: agent.facing,
         name: agent.name().to_string(),
         level: exp.value,
         life: agent.life().clone(),
         mana: player.mana.clone(),
         outfit: agent.outfit(),
-        speed: agent.speed,
+        speed: agent.speed(),
         capacity: player.capacity.available(),
         inventory_head: slot_item(InventorySlot::Head),
         inventory_amulet: slot_item(InventorySlot::Amulet),

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use thiserror::Error;
 
 use crate::entities::{
-    agent::{OutfitColors, OutfitId, Pool},
+    agent::{Facing, OutfitColors, OutfitId, Pool},
     items::Item,
     player::{InventorySlot, Player, PlayerId},
     position::Position,
@@ -20,6 +20,7 @@ pub struct PlayerSnapshot {
     pub id: PlayerId,
     pub position: Position,
     pub origin: Position,
+    pub facing: Facing,
     pub name: String,
     pub life: Pool,
     pub mana: Pool,
@@ -51,6 +52,7 @@ impl PlayerRepository {
                     y: 1028,
                     z: 7,
                 },
+                facing: Facing::South,
                 life: Pool {
                     current: 100,
                     maximum: 100,

@@ -19,6 +19,7 @@ use crate::actors::player_query::get_player_desc;
 use crate::actors::world::BroadcastMessage;
 use crate::config::CONFIG;
 use crate::entities::agent::Agent;
+use crate::entities::agent::Facing;
 use crate::entities::items::{ContainerId, ItemAttribute, ItemFlag, ItemGuid};
 use crate::entities::player::InventorySlot;
 use crate::entities::position::ItemPlacement;
@@ -70,6 +71,7 @@ pub struct SessionActor {
     player_repo: Arc<PlayerRepository>,
     shared_map: Arc<ArcSwap<GameMap>>,
     containers: LocalIdMap<ItemGuid>,
+    agents: LocalIdMap<AgentKey>,
 }
 
 impl SessionActor {
@@ -101,6 +103,7 @@ impl SessionActor {
                 brx: receiver,
                 shared_map,
                 containers: LocalIdMap::new(),
+                agents: LocalIdMap::new(),
             };
             actor.run().await;
         });
@@ -120,6 +123,7 @@ impl SessionActor {
                 break;
             }
         }
+        let _ = self.connection.send(ConnectionCommand::Close).await;
     }
 
     async fn route_command(&mut self, cmd: SessionCommand) -> Result<()> {
@@ -160,11 +164,11 @@ impl SessionActor {
 
     async fn spawn_result(&mut self, handle: Option<AgentKey>) -> Result<()> {
         if handle.is_none() {
-            let _ = self.connection.send(ConnectionCommand::Close).await;
             return Err(SessionError::FailedToInitialize.into());
         }
 
         self.player_key = handle;
+        self.agents.get_or_insert(handle.unwrap());
         Ok(())
     }
 
@@ -214,6 +218,9 @@ impl SessionActor {
             }
             ClientMessage::OpenParentContainer { container_id } => {
                 self.handle_open_parent_container(container_id).await
+            }
+            ClientMessage::ChangeDirection { direction } => {
+                self.handle_change_direction(direction).await
             }
         }
     }
@@ -501,6 +508,27 @@ impl SessionActor {
         Ok(())
     }
 
+    async fn handle_change_direction(&self, facing: Facing) -> Result<()> {
+        let map = self.shared_map.load();
+        let agent = map
+            .get_agent(self.player_key.unwrap())
+            .ok_or(SessionError::NotSpawned)?;
+
+        if agent.facing != facing {
+            self.world
+                .send(WorldCommand::ChangeDirection {
+                    agent: self.player_key.unwrap(),
+                    facing,
+                })
+                .await?;
+        } else {
+            self.actor_direction_changed(self.player_key.unwrap(), facing)
+                .await?;
+        }
+
+        Ok(())
+    }
+
     async fn route_broadcast(&mut self, msg: BroadcastMessage) -> Result<()> {
         info!(
             session = self.session_id,
@@ -541,6 +569,9 @@ impl SessionActor {
             BroadcastMessage::UpdatePlayerCapacity { agent_key } => {
                 self.update_player_capacity(agent_key).await
             }
+            BroadcastMessage::AgentChangedDirection { agent_key, facing } => {
+                self.actor_direction_changed(agent_key, facing).await
+            }
         }
     }
 
@@ -555,7 +586,11 @@ impl SessionActor {
                 ))
                 .await?;
 
-            let player_desc = get_player_desc(&map, self.player_key.unwrap());
+            let player_desc = get_player_desc(
+                &map,
+                self.player_key.unwrap(),
+                self.agents.get_local(&self.player_key.unwrap()).unwrap(),
+            );
             if let Some(pdesc_msg) = player_desc {
                 self.connection
                     .send(ConnectionCommand::SendPlayerMessage(pdesc_msg))
@@ -850,6 +885,17 @@ impl SessionActor {
                     ))
                     .await?;
             }
+        }
+        Ok(())
+    }
+
+    async fn actor_direction_changed(&self, agent_key: AgentKey, facing: Facing) -> Result<()> {
+        if let Some(agent_id) = self.agents.get_local(&agent_key) {
+            self.connection
+                .send(ConnectionCommand::SendPlayerMessage(
+                    ServerMessage::AgentChangedDirection { agent_id, facing },
+                ))
+                .await?;
         }
         Ok(())
     }
