@@ -13,15 +13,15 @@ use tokio_stream::StreamExt;
 use tokio_util::codec::{FramedRead, FramedWrite};
 use tracing::{debug, error, info};
 
-use super::{session::SessionCommand, ActorHandle};
+use super::{auth::AuthCommand, session::SessionCommand, ActorHandle};
 use crate::config::CONFIG;
 use crate::messages::{ClientMessage, GameMessageCodec, MessageDecodeError, ServerMessage};
 
 #[derive(Clone, Debug)]
 pub enum ConnectionCommand {
     Close,
-    AuthOk,
     SendPlayerMessage(ServerMessage),
+    SetSession(ActorHandle<SessionCommand>),
 }
 
 #[derive(Error, Debug)]
@@ -38,19 +38,24 @@ pub enum ConnectionError {
     InvalidAuth,
 }
 
+enum Upstream {
+    Auth(ActorHandle<AuthCommand>),
+    Session(ActorHandle<SessionCommand>),
+}
+
 pub struct ConnectionActor {
     session_id: String,
     rx: mpsc::Receiver<ConnectionCommand>,
     reader: FramedRead<OwnedReadHalf, GameMessageCodec>,
     writer: FramedWrite<OwnedWriteHalf, GameMessageCodec>,
-    session: ActorHandle<SessionCommand>,
+    upstream: Upstream,
 }
 
 impl ConnectionActor {
     pub fn start(
         session_id: String,
         stream: TcpStream,
-        session: ActorHandle<SessionCommand>,
+        auth: ActorHandle<AuthCommand>,
     ) -> ActorHandle<ConnectionCommand> {
         let (tx, rx) = mpsc::channel(CONFIG.max_buffered_messages);
         let (read, write) = stream.into_split();
@@ -60,7 +65,7 @@ impl ConnectionActor {
             rx,
             reader: FramedRead::new(read, GameMessageCodec {}),
             writer: FramedWrite::new(write, GameMessageCodec {}),
-            session,
+            upstream: Upstream::Auth(auth),
         };
 
         tokio::spawn(actor.run());
@@ -70,11 +75,6 @@ impl ConnectionActor {
 
     async fn run(mut self) {
         info!(session = self.session_id, "Connection started");
-        if self.authenticate().await.is_err() {
-            info!(session = self.session_id, "Auth failed");
-            return;
-        }
-        info!(session = self.session_id, "Connection authenticated");
         loop {
             debug!(session = self.session_id, "Connection waiting for messages");
             let result = select! {
@@ -98,14 +98,19 @@ impl ConnectionActor {
             session = self.session_id,
             "Connection received message: {:?}", msg
         );
-        if self
-            .session
-            .send(SessionCommand::ReceivePlayerMessage(msg))
-            .await
-            .is_err()
-        {
-            return Err(ConnectionError::ServerError);
+        let send_result = match &self.upstream {
+            Upstream::Auth(auth) => auth
+                .send(AuthCommand::ReceivePlayerMessage(msg))
+                .await
+                .is_err(),
+            Upstream::Session(session) => session
+                .send(SessionCommand::ReceivePlayerMessage(msg))
+                .await
+                .is_err(),
         };
+        if send_result {
+            return Err(ConnectionError::ServerError);
+        }
         Ok(())
     }
 
@@ -114,16 +119,13 @@ impl ConnectionActor {
         command: Option<ConnectionCommand>,
     ) -> Result<(), ConnectionError> {
         let cmd = command.ok_or(ConnectionError::ConnectionClosed)?;
-        // info!(
-        //     session = self.session_id,
-        //     "Connection received command: {:?}", cmd
-        // );
         match cmd {
             ConnectionCommand::Close => {
                 return Err(ConnectionError::ConnectionClosed);
             }
-            ConnectionCommand::AuthOk => {
-                return Err(ConnectionError::WrongMessageType);
+            ConnectionCommand::SetSession(session) => {
+                info!(session = self.session_id, "Upstream switched to session");
+                self.upstream = Upstream::Session(session);
             }
             ConnectionCommand::SendPlayerMessage(msg) => {
                 info!(session = self.session_id, "Sending player msg: {:?}", msg);
@@ -133,33 +135,5 @@ impl ConnectionActor {
             }
         }
         Ok(())
-    }
-
-    async fn authenticate(&mut self) -> Result<()> {
-        let msg = self
-            .reader
-            .next()
-            .await
-            .ok_or(ConnectionError::ConnectionClosed)??;
-        if let ClientMessage::Login {
-            character_id,
-            auth_token,
-        } = msg
-        {
-            self.session
-                .send(SessionCommand::Login {
-                    character_id,
-                    auth_token,
-                })
-                .await?;
-            let cmd = self.rx.recv().await.ok_or(ConnectionError::ServerError)?;
-            if let ConnectionCommand::AuthOk = cmd {
-                return Ok(());
-            }
-
-            Err(ConnectionError::InvalidAuth.into())
-        } else {
-            Err(ConnectionError::WrongMessageType.into())
-        }
     }
 }

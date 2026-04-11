@@ -1,5 +1,6 @@
 use tokio::sync::mpsc;
 
+pub mod auth;
 pub mod connection;
 mod map_query;
 mod player_query;

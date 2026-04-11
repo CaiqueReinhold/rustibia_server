@@ -10,8 +10,8 @@ use uuid::{NoContext, Timestamp};
 
 use crate::{
     actors::{
+        auth::AuthActor,
         connection::{ConnectionActor, ConnectionCommand},
-        session::SessionActor,
     },
     Context,
 };
@@ -43,17 +43,19 @@ impl Listener {
     }
 
     async fn accept_connection(stream: TcpStream, context: &Context) -> Result<()> {
-        let sesion_id = uuid::Uuid::new_v7(Timestamp::now(NoContext)).to_string();
+        let session_id = uuid::Uuid::new_v7(Timestamp::now(NoContext)).to_string();
         let (conn_tx, conn_rx) = oneshot::channel();
-        let session = SessionActor::start(
-            sesion_id.clone(),
+
+        let auth = AuthActor::start(
+            session_id.clone(),
             conn_rx,
             context.world.clone(),
             context.player_repo.clone(),
             context.broadcast_receiver.resubscribe(),
             context.shared_map.clone(),
         );
-        let connection = ConnectionActor::start(sesion_id, stream, session);
+        let connection = ConnectionActor::start(session_id, stream, auth);
+
         if let Err(conn) = conn_tx.send(connection) {
             info!("failed to open connection");
             conn.send(ConnectionCommand::Close).await?;

@@ -5,7 +5,6 @@ use thiserror::Error;
 use tokio::select;
 use tokio::sync::broadcast;
 use tokio::sync::mpsc;
-use tokio::sync::oneshot;
 use tracing::error;
 use tracing::info;
 
@@ -34,7 +33,6 @@ use crate::entities::{
     position::{Direction, Position},
 };
 use crate::messages::{ClientMessage, ServerMessage};
-use crate::persistence::player::PlayerRepository;
 
 #[derive(Error, Debug)]
 pub enum SessionError {
@@ -51,10 +49,6 @@ pub enum SessionError {
 #[derive(Clone, Debug)]
 pub enum SessionCommand {
     Close,
-    Login {
-        character_id: u32,
-        auth_token: String,
-    },
     PlayerSpawnResult(Option<AgentKey>),
     PlayerPosition(Position),
     ReceivePlayerMessage(ClientMessage),
@@ -68,7 +62,6 @@ pub struct SessionActor {
     connection: ActorHandle<ConnectionCommand>,
     world: ActorHandle<WorldCommand>,
     player_key: Option<AgentKey>,
-    player_repo: Arc<PlayerRepository>,
     shared_map: Arc<ArcSwap<GameMap>>,
     containers: LocalIdMap<ItemGuid>,
     agents: LocalIdMap<AgentKey>,
@@ -77,9 +70,9 @@ pub struct SessionActor {
 impl SessionActor {
     pub fn start(
         session_id: String,
-        conn_rx: oneshot::Receiver<ActorHandle<ConnectionCommand>>,
+        connection: ActorHandle<ConnectionCommand>,
+        agent: Agent,
         world: ActorHandle<WorldCommand>,
-        player_repo: Arc<PlayerRepository>,
         receiver: broadcast::Receiver<BroadcastMessage>,
         shared_map: Arc<ArcSwap<GameMap>>,
     ) -> ActorHandle<SessionCommand> {
@@ -88,10 +81,6 @@ impl SessionActor {
 
         let self_handle_clone = self_handle.clone();
         tokio::spawn(async move {
-            let connection = match conn_rx.await {
-                Ok(c) => c,
-                Err(_) => return,
-            };
             let actor = Self {
                 session_id,
                 rx,
@@ -99,20 +88,34 @@ impl SessionActor {
                 connection,
                 world,
                 player_key: None,
-                player_repo,
                 brx: receiver,
                 shared_map,
                 containers: LocalIdMap::new(),
                 agents: LocalIdMap::new(),
             };
-            actor.run().await;
+            actor.run(agent).await;
         });
 
         self_handle
     }
 
-    async fn run(mut self) {
+    async fn run(mut self, agent: Agent) {
         info!(session = self.session_id, "Session actor started");
+
+        // Enter the world immediately — auth is already complete.
+        if let Err(e) = self
+            .world
+            .send(WorldCommand::SpawnPlayer {
+                player: agent,
+                session: self.self_handle.clone(),
+            })
+            .await
+        {
+            error!(session = self.session_id, "Failed to spawn player: {e}");
+            let _ = self.connection.send(ConnectionCommand::Close).await;
+            return;
+        }
+
         loop {
             let result = select! { biased;
                 cmd = self.rx.recv() => self.route_command(cmd.unwrap()).await,
@@ -129,13 +132,9 @@ impl SessionActor {
     async fn route_command(&mut self, cmd: SessionCommand) -> Result<()> {
         info!(
             session = self.session_id,
-            "Session eceived command: {:?}", cmd
+            "Session received command: {:?}", cmd
         );
         match cmd {
-            SessionCommand::Login {
-                character_id,
-                auth_token,
-            } => self.login(character_id, auth_token).await,
             SessionCommand::Close => self.close_connection().await,
             SessionCommand::ReceivePlayerMessage(msg) => self.handle_client_message(msg).await,
             SessionCommand::PlayerSpawnResult(handle) => self.spawn_result(handle).await,
@@ -145,20 +144,6 @@ impl SessionActor {
 
     async fn close_connection(&self) -> Result<()> {
         self.connection.send(ConnectionCommand::Close).await?;
-        Ok(())
-    }
-
-    async fn login(&self, character_id: u32, _auth_token: String) -> Result<()> {
-        self.connection.send(ConnectionCommand::AuthOk).await?; // TODO
-
-        let player = self.player_repo.get_by_id(character_id).await?;
-        self.world
-            .send(WorldCommand::SpawnPlayer {
-                player: Agent::from_player(player),
-                session: self.self_handle.clone(),
-            })
-            .await
-            .unwrap();
         Ok(())
     }
 
