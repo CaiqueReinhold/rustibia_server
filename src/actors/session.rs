@@ -226,24 +226,13 @@ impl SessionActor {
     }
 
     async fn handle_move_player(&self, direction: Direction) -> Result<()> {
-        let map = self.shared_map.load();
-        if let Some(position) = map.agent_position(self.player_key.unwrap()) {
-            let target_position = position.clone() + direction;
-            if !map.can_move(&target_position, self.player_key.unwrap()) {
-                return self.walk_denied(self.player_key.unwrap()).await;
-            }
-
-            let _ = self
-                .world
-                .send(WorldCommand::Walk {
-                    direction,
-                    actor: self.player_key.unwrap(),
-                })
-                .await;
-        } else {
-            return Err(SessionError::WrongMessageType.into());
-        }
-
+        let _ = self
+            .world
+            .send(WorldCommand::Walk {
+                direction,
+                actor: self.player_key.unwrap(),
+            })
+            .await;
         Ok(())
     }
 
@@ -272,147 +261,48 @@ impl SessionActor {
         to: Position,
     ) -> Result<()> {
         let map = self.shared_map.load();
+        let player_key = self.player_key.unwrap();
 
-        let player_pos = map
-            .agent_position(self.player_key.unwrap())
-            .ok_or(SessionError::NotSpawned)?;
-
-        if !from.is_container_coord()
-            && !from.is_inventory_coord()
-            && !player_pos.is_adjacent(&from)
-        {
-            info!("not adjacent");
-            self.connection
-                .send(ConnectionCommand::SendPlayerMessage(
-                    ServerMessage::MoveItemDenied,
-                ))
-                .await?;
-            return Ok(());
-        }
-
-        let source = retrieve_item(
-            &map,
-            &from,
-            item_id,
-            stack_index,
-            &self.containers,
-            self.player_key.unwrap(),
-        );
-        let Some((item, source_placement)) = source else {
-            info!("cant retrieve item");
-            self.connection
-                .send(ConnectionCommand::SendPlayerMessage(
-                    ServerMessage::MoveItemDenied,
-                ))
-                .await?;
+        // Resolve source: Position → (item_guid, ItemPlacement).
+        // Uses the session-local container map to translate container coords.
+        let Some((item, source_placement)) =
+            retrieve_item(&map, &from, item_id, stack_index, &self.containers, player_key)
+        else {
             return Ok(());
         };
+        let item_guid = item.guid.clone();
 
-        if item.amount < amount || item.config.has_flag(ItemFlag::Unmove) {
-            info!("not enough items or item unmovable");
-            self.connection
-                .send(ConnectionCommand::SendPlayerMessage(
-                    ServerMessage::MoveItemDenied,
-                ))
-                .await?;
-            return Ok(());
-        }
-
+        // Resolve target: Position → (ItemPlacement, Option<container_guid>).
         let (target_placement, target_container) = if to.is_container_coord() {
             let container_id = to.y as ContainerId;
-            let container_guid = self.containers.get_global(container_id);
-            if let Some(guid) = container_guid {
-                let container = find_item_in_reach(&map, guid, self.player_key.unwrap());
-                match container {
-                    Some((container, placement)) => {
-                        let slot = to.z as usize;
-                        let Some(content) = &container.content else {
-                            self.connection
-                                .send(ConnectionCommand::SendPlayerMessage(
-                                    ServerMessage::MoveItemDenied,
-                                ))
-                                .await?;
-                            return Ok(());
-                        };
-                        let container = if let Some(slot_item) = content.get(slot) {
-                            if slot_item.config.has_flag(ItemFlag::Container) {
-                                slot_item
-                            } else {
-                                container
-                            }
-                        } else {
-                            container
-                        };
-
-                        if !container.is_full()
-                            && !item.config.has_flag(ItemFlag::Unmove)
-                            && item.config.has_flag(ItemFlag::Take)
-                            && container.config.has_flag(ItemFlag::Container)
-                            && item.guid != container.guid
-                        {
-                            (Some(placement), Some(container.guid.clone()))
-                        } else {
-                            (None, None)
-                        }
-                    }
-                    None => (None, None),
-                }
-            } else {
-                (None, None)
-            }
-        } else if to.is_inventory_coord() {
-            let Some(target_slot) = InventorySlot::from_id(to.y) else {
-                self.connection
-                    .send(ConnectionCommand::SendPlayerMessage(
-                        ServerMessage::MoveItemDenied,
-                    ))
-                    .await?;
+            let Some(guid) = self.containers.get_global(container_id) else {
                 return Ok(());
             };
-
-            let ok = item
-                .get_slot()
-                .map(|slot| {
-                    slot == target_slot
-                        || (slot == InventorySlot::BothHands
-                            && target_slot == InventorySlot::LeftHand)
-                })
-                .unwrap_or(false);
-            if ok {
-                (
-                    Some(ItemPlacement::Inventory(
-                        target_slot,
-                        self.player_key.unwrap(),
-                    )),
-                    None,
-                )
-            } else {
-                (None, None)
-            }
+            let Some((container, placement)) = find_item_in_reach(&map, guid, player_key) else {
+                return Ok(());
+            };
+            // If the target slot holds a container, redirect into it.
+            let slot = to.z as usize;
+            let effective_guid = container
+                .content
+                .as_ref()
+                .and_then(|c| c.get(slot))
+                .filter(|it| it.config.has_flag(ItemFlag::Container))
+                .map(|it| it.guid.clone())
+                .unwrap_or_else(|| container.guid.clone());
+            (placement, Some(effective_guid))
+        } else if to.is_inventory_coord() {
+            let Some(target_slot) = InventorySlot::from_id(to.y) else {
+                return Ok(());
+            };
+            (ItemPlacement::Inventory(target_slot, player_key), None)
         } else {
-            // TODO: check if target position can be reached (unsight flag)
-            if map.can_drop_item(&to) && player_pos.in_viewport(&to) {
-                (Some(ItemPlacement::Map(to)), None)
-            } else {
-                (None, None)
-            }
+            (ItemPlacement::Map(to), None)
         };
-
-        let Some(target_placement) = target_placement else {
-            info!("invalid target");
-            self.connection
-                .send(ConnectionCommand::SendPlayerMessage(
-                    ServerMessage::MoveItemDenied,
-                ))
-                .await?;
-            return Ok(());
-        };
-
-        let item_guid = item.guid.clone();
 
         self.world
             .send(WorldCommand::MoveItem {
-                agent: self.player_key.unwrap(),
+                agent: player_key,
                 from: source_placement,
                 item_guid,
                 amount,
@@ -431,60 +321,18 @@ impl SessionActor {
         stack_index: u16,
     ) -> Result<()> {
         let map = self.shared_map.load();
+        let player_key = self.player_key.unwrap();
 
-        let player_pos = map
-            .agent_position(self.player_key.unwrap())
-            .ok_or(SessionError::NotSpawned)?;
-
-        let send_error_ack = async || {
-            self.connection
-                .send(ConnectionCommand::SendPlayerMessage(
-                    ServerMessage::TextMessage {
-                        text: "Item cannot be used".to_string(),
-                        message_type: TextMessageType::ActionDenied,
-                    },
-                ))
-                .await
-                .and(
-                    self.connection
-                        .send(ConnectionCommand::SendPlayerMessage(
-                            ServerMessage::UseItemAck,
-                        ))
-                        .await,
-                )
-        };
-
-        let item = retrieve_item(
-            &map,
-            &position,
-            item_id,
-            stack_index,
-            &self.containers,
-            self.player_key.unwrap(),
-        );
-        let Some((item, placement)) = item else {
-            info!("cant retrieve item");
-            send_error_ack().await?;
+        // Resolve the item's position and guid using the session-local container map.
+        let Some((item, placement)) =
+            retrieve_item(&map, &position, item_id, stack_index, &self.containers, player_key)
+        else {
             return Ok(());
         };
-
-        if let ItemPlacement::Map(pos) = &placement {
-            if !player_pos.is_adjacent(pos) {
-                info!("not adjacent");
-                send_error_ack().await?;
-                return Ok(());
-            }
-        }
-
-        if !item.config.has_flag(ItemFlag::Usable) {
-            info!("item not usable");
-            send_error_ack().await?;
-            return Ok(());
-        }
 
         self.world
             .send(WorldCommand::UseItem {
-                agent: self.player_key.unwrap(),
+                agent: player_key,
                 guid: item.guid.clone(),
                 placement,
             })
@@ -509,23 +357,12 @@ impl SessionActor {
     }
 
     async fn handle_change_direction(&self, facing: Facing) -> Result<()> {
-        let map = self.shared_map.load();
-        let agent = map
-            .get_agent(self.player_key.unwrap())
-            .ok_or(SessionError::NotSpawned)?;
-
-        if agent.facing != facing {
-            self.world
-                .send(WorldCommand::ChangeDirection {
-                    agent: self.player_key.unwrap(),
-                    facing,
-                })
-                .await?;
-        } else {
-            self.actor_direction_changed(self.player_key.unwrap(), facing)
-                .await?;
-        }
-
+        self.world
+            .send(WorldCommand::ChangeDirection {
+                agent: self.player_key.unwrap(),
+                facing,
+            })
+            .await?;
         Ok(())
     }
 

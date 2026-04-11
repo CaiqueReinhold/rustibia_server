@@ -360,7 +360,8 @@ impl WorldActor {
         let player_pos = self
             .map
             .agent_position(agent)
-            .ok_or(anyhow::anyhow!("agent {:?} position not found", agent))?;
+            .ok_or(anyhow::anyhow!("agent {:?} position not found", agent))?
+            .clone();
 
         if let ItemPlacement::Map(pos) = &from {
             if !player_pos.is_adjacent(pos) {
@@ -369,6 +370,88 @@ impl WorldActor {
                     message: "Item not in reach".to_string(),
                 });
                 return Ok(());
+            }
+        }
+
+        // Validate source item: Unmove flag and stack amount.
+        {
+            let item = match &from {
+                ItemPlacement::Map(pos) => self.map.get_item_by_id(pos, &item_guid),
+                ItemPlacement::Inventory(slot, _) => self
+                    .map
+                    .get_player(agent)
+                    .and_then(|p| p.inventory.get(slot))
+                    .and_then(|it| it.find_by_guid(&item_guid)),
+            };
+            if let Some(item) = item {
+                if item.config.has_flag(ItemFlag::Unmove) || item.amount < amount {
+                    self.add_broadcast(BroadcastMessage::MoveDenied {
+                        agent_key: agent,
+                        message: "Can't move this".to_string(),
+                    });
+                    return Ok(());
+                }
+            }
+        }
+
+        // Validate target placement.
+        match (&to, target_container.as_ref()) {
+            (ItemPlacement::Map(pos), None) => {
+                // Direct map drop: tile must accept items and be within viewport.
+                if !self.map.can_drop_item(pos) || !player_pos.in_viewport(pos) {
+                    self.add_broadcast(BroadcastMessage::MoveDenied {
+                        agent_key: agent,
+                        message: "Can't drop here".to_string(),
+                    });
+                    return Ok(());
+                }
+            }
+            (ItemPlacement::Inventory(target_slot, _), None) => {
+                // Direct equip: item must declare this as its valid slot.
+                let item = match &from {
+                    ItemPlacement::Map(pos) => self.map.get_item_by_id(pos, &item_guid),
+                    ItemPlacement::Inventory(slot, _) => self
+                        .map
+                        .get_player(agent)
+                        .and_then(|p| p.inventory.get(slot))
+                        .and_then(|it| it.find_by_guid(&item_guid)),
+                };
+                let compatible = item
+                    .and_then(|it| it.get_slot())
+                    .map(|item_slot| {
+                        item_slot == *target_slot
+                            || (item_slot == InventorySlot::BothHands
+                                && *target_slot == InventorySlot::LeftHand)
+                    })
+                    .unwrap_or(false);
+                if !compatible {
+                    self.add_broadcast(BroadcastMessage::MoveDenied {
+                        agent_key: agent,
+                        message: "Can't equip this here".to_string(),
+                    });
+                    return Ok(());
+                }
+            }
+            (_, Some(container_guid)) => {
+                // Placing into a container: item needs Take flag and can't go into itself.
+                let item = match &from {
+                    ItemPlacement::Map(pos) => self.map.get_item_by_id(pos, &item_guid),
+                    ItemPlacement::Inventory(slot, _) => self
+                        .map
+                        .get_player(agent)
+                        .and_then(|p| p.inventory.get(slot))
+                        .and_then(|it| it.find_by_guid(&item_guid)),
+                };
+                let take_ok = item
+                    .map(|it| it.config.has_flag(ItemFlag::Take))
+                    .unwrap_or(false);
+                if !take_ok || container_guid == &item_guid {
+                    self.add_broadcast(BroadcastMessage::MoveDenied {
+                        agent_key: agent,
+                        message: "Can't move this".to_string(),
+                    });
+                    return Ok(());
+                }
             }
         }
 
@@ -680,6 +763,14 @@ impl WorldActor {
             });
             return Ok(());
         };
+
+        if !item.config.has_flag(ItemFlag::Usable) {
+            self.add_broadcast(BroadcastMessage::UseItemAck {
+                agent_key,
+                success: false,
+            });
+            return Ok(());
+        }
 
         if item.config.has_flag(ItemFlag::Container) {
             self.add_broadcast(BroadcastMessage::UseItemAck {
