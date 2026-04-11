@@ -58,7 +58,6 @@ pub struct SessionActor {
     session_id: String,
     rx: mpsc::Receiver<SessionCommand>,
     brx: broadcast::Receiver<BroadcastMessage>,
-    self_handle: ActorHandle<SessionCommand>,
     connection: ActorHandle<ConnectionCommand>,
     world: ActorHandle<WorldCommand>,
     player_key: Option<AgentKey>,
@@ -84,7 +83,6 @@ impl SessionActor {
             let actor = Self {
                 session_id,
                 rx,
-                self_handle: self_handle_clone,
                 connection,
                 world,
                 player_key: None,
@@ -93,13 +91,13 @@ impl SessionActor {
                 containers: LocalIdMap::new(),
                 agents: LocalIdMap::new(),
             };
-            actor.run(agent).await;
+            actor.run(agent, self_handle_clone).await;
         });
 
         self_handle
     }
 
-    async fn run(mut self, agent: Agent) {
+    async fn run(mut self, agent: Agent, self_handle: ActorHandle<SessionCommand>) {
         info!(session = self.session_id, "Session actor started");
 
         // Enter the world immediately — auth is already complete.
@@ -107,7 +105,7 @@ impl SessionActor {
             .world
             .send(WorldCommand::SpawnPlayer {
                 player: agent,
-                session: self.self_handle.clone(),
+                session: self_handle,
             })
             .await
         {
@@ -250,9 +248,14 @@ impl SessionActor {
 
         // Resolve source: Position → (item_guid, ItemPlacement).
         // Uses the session-local container map to translate container coords.
-        let Some((item, source_placement)) =
-            retrieve_item(&map, &from, item_id, stack_index, &self.containers, player_key)
-        else {
+        let Some((item, source_placement)) = retrieve_item(
+            &map,
+            &from,
+            item_id,
+            stack_index,
+            &self.containers,
+            player_key,
+        ) else {
             return Ok(());
         };
         let item_guid = item.guid.clone();
@@ -309,9 +312,14 @@ impl SessionActor {
         let player_key = self.player_key.unwrap();
 
         // Resolve the item's position and guid using the session-local container map.
-        let Some((item, placement)) =
-            retrieve_item(&map, &position, item_id, stack_index, &self.containers, player_key)
-        else {
+        let Some((item, placement)) = retrieve_item(
+            &map,
+            &position,
+            item_id,
+            stack_index,
+            &self.containers,
+            player_key,
+        ) else {
             return Ok(());
         };
 

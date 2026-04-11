@@ -41,7 +41,7 @@ async fn main() -> Result<()> {
     let items = persistence::items::load_items(&CONFIG.items_file_path).unwrap();
     let map = persistence::map::load_map(&CONFIG.map_file_path, &items).unwrap();
     let shared_map = Arc::new(ArcSwap::from_pointee(map.clone()));
-    let (world, broadcast_receiver) = WorldActor::start(map, shared_map.clone());
+    let (world, broadcast_receiver) = WorldActor::start(map, items, shared_map.clone());
 
     let context = Context {
         player_repo: Arc::new(PlayerRepository::new()),

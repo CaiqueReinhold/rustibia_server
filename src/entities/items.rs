@@ -1,5 +1,7 @@
 use std::{collections::HashSet, fmt::Display, sync::Arc};
 
+use uuid::Uuid;
+
 use crate::entities::player::InventorySlot;
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
@@ -45,6 +47,7 @@ pub enum ItemAttribute {
     FloorChange(FloorChangeDirection),
     Inventory(InventorySlot),
     TileFriction(u32),
+    Action(ItemAction),
 }
 
 #[derive(Debug)]
@@ -92,6 +95,21 @@ pub struct Item {
 }
 
 impl Item {
+    pub fn new(item_id: ItemId, config: Arc<ItemConfig>, amount: u8) -> Self {
+        let content = if config.has_flag(ItemFlag::Container) {
+            Some(Vec::new())
+        } else {
+            None
+        };
+        Item {
+            config,
+            guid: ItemGuid(Uuid::now_v7().to_string()),
+            item_id,
+            amount,
+            content,
+        }
+    }
+
     pub fn get_name(&self) -> &str {
         &self.config.name
     }
@@ -163,4 +181,16 @@ impl Item {
             .iter_mut()
             .find_map(|i| i.find_by_guid_mut(guid))
     }
+
+    pub fn get_action(&self) -> Option<ItemAction> {
+        self.config.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::Action(a) => Some(a.clone()),
+            _ => None,
+        })
+    }
+}
+
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
+pub enum ItemAction {
+    Transform { into: ItemId },
 }

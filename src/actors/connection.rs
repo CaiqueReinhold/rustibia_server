@@ -1,7 +1,12 @@
 //! The connection actor is responsible for framing and message
 //! serialization/deserialization. It owns the raw [`TcpStream`] and translates
-//! between bytes on the wire and typed commands exchanged with the
-//! [`SessionActor`](crate::actors::SessionActor).
+//! between bytes on the wire and typed commands.
+//!
+//! Incoming client messages are routed to whichever upstream actor is currently
+//! active. On connection start the upstream is [`AuthActor`](super::auth::AuthActor);
+//! once authentication completes a [`ConnectionCommand::SetSession`] switches it
+//! to the [`SessionActor`](super::session::SessionActor) for the remainder of the
+//! connection's lifetime.
 
 use anyhow::Result;
 use futures::sink::SinkExt;

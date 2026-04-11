@@ -1,7 +1,7 @@
 use anyhow::Result;
 use arc_swap::ArcSwap;
 use std::collections::binary_heap::BinaryHeap;
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::time;
@@ -12,10 +12,11 @@ use tokio::{
 use tracing::{debug, error, info, warn};
 
 use super::{session::SessionCommand, ActorHandle};
+use crate::actors::item_action::{route_action, ItemActionError};
 use crate::config::CONFIG;
 use crate::entities::agent::{Agent, AgentKey, Facing};
 use crate::entities::inventory::InventoryError;
-use crate::entities::items::{ItemFlag, ItemGuid};
+use crate::entities::items::{ItemConfig, ItemFlag, ItemGuid, ItemId};
 use crate::entities::map::GameMap;
 use crate::entities::player::InventorySlot;
 use crate::entities::position::{Direction, ItemPlacement, Position};
@@ -138,6 +139,7 @@ pub struct WorldActor {
     btx: broadcast::Sender<BroadcastMessage>,
     command_queue: BinaryHeap<ScheduledCommand>,
     map: GameMap,
+    item_configs: HashMap<ItemId, Arc<ItemConfig>>,
     shared_map: Arc<ArcSwap<GameMap>>,
     tick: Tick,
     tick_duration: Duration,
@@ -147,6 +149,7 @@ pub struct WorldActor {
 impl WorldActor {
     pub fn start(
         map: GameMap,
+        item_configs: HashMap<ItemId, Arc<ItemConfig>>,
         shared_map: Arc<ArcSwap<GameMap>>,
     ) -> (
         ActorHandle<WorldCommand>,
@@ -160,6 +163,7 @@ impl WorldActor {
             btx,
             command_queue: BinaryHeap::with_capacity(CONFIG.max_queue_size),
             map,
+            item_configs,
             shared_map,
             tick: 0,
             tick_duration: CONFIG.tick_duration,
@@ -459,7 +463,7 @@ impl WorldActor {
         let source = match &from {
             ItemPlacement::Map(pos) => {
                 self.map
-                    .remove_item_from_tile(pos, item_guid, amount)
+                    .remove_item_from_tile(pos, &item_guid, amount)
                     .map(|it| {
                         let change = if let Some((parent, _)) = &it.1 {
                             BroadcastMessage::UpdateContainer {
@@ -772,7 +776,10 @@ impl WorldActor {
             return Ok(());
         }
 
-        if item.config.has_flag(ItemFlag::Container) {
+        let is_container = item.config.has_flag(ItemFlag::Container);
+        let action = item.get_action();
+
+        if is_container {
             self.add_broadcast(BroadcastMessage::UseItemAck {
                 agent_key,
                 success: true,
@@ -782,6 +789,36 @@ impl WorldActor {
                 guid,
                 placement,
             });
+        } else if let Some(action) = action {
+            let broadcasts = route_action(
+                &action,
+                &self.item_configs,
+                &mut self.map,
+                agent_key,
+                &placement,
+                &guid,
+            );
+
+            match broadcasts {
+                Ok(broadcasts) => {
+                    for msg in broadcasts {
+                        self.add_broadcast(msg);
+                    }
+                    self.add_broadcast(BroadcastMessage::UseItemAck {
+                        agent_key,
+                        success: true,
+                    });
+                }
+                Err(e) => {
+                    if let ItemActionError::InvalidState = e {
+                        warn!("{e}");
+                    }
+                    self.add_broadcast(BroadcastMessage::UseItemAck {
+                        agent_key,
+                        success: false,
+                    });
+                }
+            };
         }
 
         Ok(())

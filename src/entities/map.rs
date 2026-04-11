@@ -204,12 +204,12 @@ impl GameMap {
     pub fn remove_item_from_tile(
         &mut self,
         pos: &Position,
-        guid: ItemGuid,
+        guid: &ItemGuid,
         amount: u8,
     ) -> Option<(Item, Option<(ItemGuid, usize)>)> {
         let tile = self.get_tile_mut(pos).ok()?;
 
-        if let Some(idx) = tile.items.iter().position(|i| i.guid == guid) {
+        if let Some(idx) = tile.items.iter().position(|i| i.guid == *guid) {
             let current_amount = tile.items[idx].amount;
             if current_amount > amount {
                 let item = &mut tile.items[idx];
@@ -232,7 +232,7 @@ impl GameMap {
 
         for item in tile.items.iter_mut() {
             if let Some(content) = &mut item.content {
-                let found = Self::remove_from_container(&item.guid, content, &guid, amount);
+                let found = Self::remove_from_container(&item.guid, content, guid, amount);
                 if found.is_some() {
                     return found;
                 }
