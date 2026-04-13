@@ -415,6 +415,7 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u32_le(cap);
             }
             ServerMessage::AgentChangedDirection { agent_id, facing } => {
+                dst.put_u8(MSG_ACTOR_DIRECTION_CHANGED);
                 dst.put_u16_le(agent_id);
                 encode_facing(facing, dst);
             }
@@ -438,7 +439,7 @@ fn encode_facing(facing: Facing, dst: &mut BytesMut) {
         Facing::North => dst.put_u8(1),
         Facing::East => dst.put_u8(2),
         Facing::South => dst.put_u8(3),
-        Facing::West => dst.put_u8(3),
+        Facing::West => dst.put_u8(4),
     }
 }
 

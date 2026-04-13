@@ -44,6 +44,8 @@ pub enum SessionError {
     NotSpawned,
     #[error("Invalid State")]
     InvalidState,
+    #[error("Connection is closed")]
+    ConnectionClosed,
 }
 
 #[derive(Clone, Debug)]
@@ -116,7 +118,12 @@ impl SessionActor {
 
         loop {
             let result = select! { biased;
-                cmd = self.rx.recv() => self.route_command(cmd.unwrap()).await,
+                cmd = self.rx.recv() =>
+                    if let Some(cmd) = cmd {
+                        self.route_command(cmd).await
+                    } else {
+                        Err(SessionError::ConnectionClosed.into())
+                    },
                 msg = self.brx.recv() => self.route_broadcast(msg.unwrap()).await
             };
             if let Err(e) = result {

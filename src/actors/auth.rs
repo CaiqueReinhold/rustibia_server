@@ -83,7 +83,8 @@ impl AuthActor {
                 character_id,
                 auth_token,
             } => (character_id, auth_token),
-            _ => {
+            msg => {
+                info!("{:?}", msg);
                 let _ = connection
                     .send(ConnectionCommand::SendPlayerMessage(
                         ServerMessage::LoginError,
@@ -119,7 +120,10 @@ impl AuthActor {
             .send(ConnectionCommand::SetSession(session))
             .await?;
 
-        info!(session = self.session_id, "Auth complete, session handed off");
+        info!(
+            session = self.session_id,
+            "Auth complete, session handed off"
+        );
         Ok(())
     }
 }
