@@ -8,9 +8,10 @@ use tracing::{error, info};
 use super::{
     connection::{ConnectionCommand, ConnectionError},
     session::SessionActor,
-    world::{BroadcastMessage, WorldCommand},
+    world::WorldCommand,
     ActorHandle,
 };
+use crate::game::events::BroadcastMessage;
 use crate::{
     config::CONFIG,
     entities::{agent::Agent, map::GameMap},

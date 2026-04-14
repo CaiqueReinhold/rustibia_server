@@ -8,6 +8,7 @@ mod actors;
 mod config;
 mod constants;
 mod entities;
+mod game;
 mod local_id;
 mod messages;
 mod network;
@@ -19,10 +20,11 @@ use arc_swap::ArcSwap;
 
 use crate::{
     actors::{
-        world::{BroadcastMessage, WorldActor, WorldCommand},
+        world::{WorldActor, WorldCommand},
         ActorHandle,
     },
     entities::map::GameMap,
+    game::events::BroadcastMessage,
     persistence::player::PlayerRepository,
 };
 

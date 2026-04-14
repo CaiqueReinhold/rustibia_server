@@ -1,7 +1,6 @@
 use crate::{
     entities::{
-        agent::{Agent, AgentId, AgentKey},
-        items::{Item, ItemGuid},
+        agent::{AgentId, AgentKey},
         map::GameMap,
         player::InventorySlot,
         skills::SkillType,
@@ -41,11 +40,3 @@ pub fn get_player_desc(map: &GameMap, key: AgentKey, id: AgentId) -> Option<Serv
     })
 }
 
-pub fn find_item_in_slot<'a>(
-    agent: &'a Agent,
-    slot: InventorySlot,
-    guid: &'a ItemGuid,
-) -> Option<&'a Item> {
-    let player = agent.get_player()?;
-    player.inventory.get(&slot)?.find_by_guid(guid)
-}

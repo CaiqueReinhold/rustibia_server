@@ -2,8 +2,6 @@ use tokio::sync::mpsc;
 
 pub mod auth;
 pub mod connection;
-mod item_action;
-mod map_query;
 mod player_query;
 pub mod session;
 pub mod world;

@@ -1,16 +1,18 @@
 use std::{collections::HashMap, sync::Arc};
 
 use thiserror::Error;
+use tracing::warn;
 
 use crate::{
-    actors::world::BroadcastMessage,
     entities::{
         agent::AgentKey,
-        items::{Item, ItemAction, ItemConfig, ItemGuid, ItemId},
+        items::{Item, ItemAction, ItemConfig, ItemFlag, ItemGuid, ItemId},
         map::GameMap,
         position::ItemPlacement,
     },
 };
+
+use super::events::BroadcastMessage;
 
 #[derive(Error, Debug)]
 pub enum ItemActionError {
@@ -18,6 +20,89 @@ pub enum ItemActionError {
     ActionFailed,
     #[error("Invalid State")]
     InvalidState,
+}
+
+pub fn use_item(
+    map: &mut GameMap,
+    item_configs: &HashMap<ItemId, Arc<ItemConfig>>,
+    agent_key: AgentKey,
+    guid: ItemGuid,
+    placement: ItemPlacement,
+) -> Vec<BroadcastMessage> {
+    let item = match &placement {
+        ItemPlacement::Map(item_pos) => {
+            if map
+                .agent_position(agent_key)
+                .filter(|player_pos| player_pos.is_adjacent(item_pos))
+                .is_none()
+            {
+                return vec![BroadcastMessage::UseItemAck {
+                    agent_key,
+                    success: false,
+                }];
+            }
+            map.get_item_by_id(item_pos, &guid)
+        }
+        ItemPlacement::Inventory(slot, inv_agent_key) => map
+            .get_player(*inv_agent_key)
+            .and_then(|player| player.inventory.get(slot))
+            .filter(|item| item.guid == guid),
+    };
+
+    let Some(item) = item else {
+        return vec![BroadcastMessage::UseItemAck {
+            agent_key,
+            success: false,
+        }];
+    };
+
+    if !item.config.has_flag(ItemFlag::Usable) {
+        return vec![BroadcastMessage::UseItemAck {
+            agent_key,
+            success: false,
+        }];
+    }
+
+    let is_container = item.config.has_flag(ItemFlag::Container);
+    let action = item.get_action();
+
+    if is_container {
+        vec![
+            BroadcastMessage::UseItemAck {
+                agent_key,
+                success: true,
+            },
+            BroadcastMessage::OpenContainer {
+                agent_key,
+                guid,
+                placement,
+            },
+        ]
+    } else if let Some(action) = action {
+        match route_action(&action, item_configs, map, agent_key, &placement, &guid) {
+            Ok(mut action_broadcasts) => {
+                action_broadcasts.push(BroadcastMessage::UseItemAck {
+                    agent_key,
+                    success: true,
+                });
+                action_broadcasts
+            }
+            Err(e) => {
+                if let ItemActionError::InvalidState = e {
+                    warn!("{e}");
+                }
+                vec![BroadcastMessage::UseItemAck {
+                    agent_key,
+                    success: false,
+                }]
+            }
+        }
+    } else {
+        vec![BroadcastMessage::UseItemAck {
+            agent_key,
+            success: false,
+        }]
+    }
 }
 
 pub fn route_action(

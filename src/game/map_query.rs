@@ -1,8 +1,7 @@
 use crate::{
-    actors::player_query::find_item_in_slot,
     constants::{MAX_VISIBLE_ITEMS, PLAYER_VIEWPORT_HEIGHT, PLAYER_VIEWPORT_WIDTH, VIEWPORT_SIZE},
     entities::{
-        agent::AgentKey,
+        agent::{Agent, AgentKey},
         items::{ContainerId, Item, ItemGuid, ItemId},
         map::GameMap,
         player::InventorySlot,
@@ -156,6 +155,15 @@ fn iter_adjacent(pos: &Position) -> impl Iterator<Item = Position> {
     let z = pos.z;
 
     (y_start..=y_end).flat_map(move |y| (x_start..=x_end).map(move |x| Position { x, y, z }))
+}
+
+pub fn find_item_in_slot<'a>(
+    agent: &'a Agent,
+    slot: InventorySlot,
+    guid: &'a ItemGuid,
+) -> Option<&'a Item> {
+    let player = agent.get_player()?;
+    player.inventory.get(&slot)?.find_by_guid(guid)
 }
 
 pub fn find_item_in_reach<'a>(

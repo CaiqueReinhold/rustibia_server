@@ -9,13 +9,12 @@ use tracing::error;
 use tracing::info;
 
 use super::{connection::ConnectionCommand, world::WorldCommand, ActorHandle};
-use crate::actors::map_query::{
-    find_item_in_reach, find_parent_container, get_map_desc_on_viewport, get_map_expansion,
-    get_tile, retrieve_item,
-};
-use crate::actors::player_query::find_item_in_slot;
 use crate::actors::player_query::get_player_desc;
-use crate::actors::world::BroadcastMessage;
+use crate::game::events::BroadcastMessage;
+use crate::game::map_query::{
+    find_item_in_reach, find_item_in_slot, find_parent_container, get_map_desc_on_viewport,
+    get_map_expansion, get_tile, retrieve_item,
+};
 use crate::config::CONFIG;
 use crate::entities::agent::Agent;
 use crate::entities::agent::Facing;

@@ -4,7 +4,7 @@ use slotmap::new_key_type;
 
 use super::{inventory::Inventory, player::Player};
 use crate::{
-    actors::world::Tick,
+    game::Tick,
     config,
     constants::{SPEED_PARAM_A, SPEED_PARAM_B, SPEED_PARAM_C},
     entities::skills::{SkillType, SkillValue},
