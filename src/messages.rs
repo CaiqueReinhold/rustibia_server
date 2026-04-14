@@ -80,6 +80,7 @@ const MSG_PLAYER_WALK_DENIED: u8 = 14;
 const MSG_INVETORY_SLOT_UPDATED: u8 = 15;
 const MSG_PLAYER_CAPACITY_UPDATED: u8 = 16;
 const MSG_ACTOR_DIRECTION_CHANGED: u8 = 17;
+const MSG_REMOVE_AGENT: u8 = 18;
 
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
@@ -158,6 +159,9 @@ pub enum ServerMessage {
     AgentChangedDirection {
         agent_id: AgentId,
         facing: Facing,
+    },
+    RemoveAgent {
+        agent_id: AgentId,
     },
 }
 
@@ -418,6 +422,10 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u8(MSG_ACTOR_DIRECTION_CHANGED);
                 dst.put_u16_le(agent_id);
                 encode_facing(facing, dst);
+            }
+            ServerMessage::RemoveAgent { agent_id } => {
+                dst.put_u8(MSG_REMOVE_AGENT);
+                dst.put_u16_le(agent_id);
             }
         }
 

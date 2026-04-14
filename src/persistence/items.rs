@@ -6,7 +6,9 @@ use std::sync::Arc;
 use serde::Deserialize;
 use thiserror::Error;
 
-use crate::entities::items::{FloorChangeDirection, ItemAttribute, ItemConfig, ItemFlag, ItemId};
+use crate::entities::items::{
+    FloorChangeDirection, ItemAction, ItemAttribute, ItemConfig, ItemFlag, ItemId,
+};
 use crate::entities::player::InventorySlot;
 
 #[derive(Error, Debug)]
@@ -71,6 +73,19 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
                 _ => return None,
             };
             Some(ItemAttribute::FloorChange(dir))
+        }
+        "action" => {
+            let mut iter = value.as_str()?.split("(");
+            let action_name = iter.next()?;
+            let params = iter.next()?.trim_end_matches(')');
+            let action = match action_name {
+                "transform" => {
+                    let item_id = params.parse::<u16>().ok()?;
+                    ItemAction::Transform { into: item_id }
+                }
+                _ => return None,
+            };
+            Some(ItemAttribute::Action(action))
         }
         _ => {
             let n = value.as_u64()? as u32;

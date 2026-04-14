@@ -128,7 +128,7 @@ impl Agent {
 
         let mut tile_speed = (1000.0 * (tile_friction as f32) / move_speed).floor();
         if diagonal {
-            tile_speed *= 2.0;
+            tile_speed *= 2.5;
         }
 
         (tile_speed / (config::CONFIG.tick_duration.as_millis() as f32)).ceil() as Tick

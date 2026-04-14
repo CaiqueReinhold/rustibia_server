@@ -132,6 +132,18 @@ impl SessionActor {
             }
         }
         let _ = self.connection.send(ConnectionCommand::Close).await;
+
+        if let Some(agent_key) = self.player_key {
+            let delay_ticks = (CONFIG.player_despawn_delay.as_millis()
+                / CONFIG.tick_duration.as_millis()) as u64;
+            let _ = self
+                .world
+                .send(WorldCommand::DespawnPlayer {
+                    agent_key,
+                    delay_ticks,
+                })
+                .await;
+        }
     }
 
     async fn route_command(&mut self, cmd: SessionCommand) -> Result<()> {
@@ -408,6 +420,9 @@ impl SessionActor {
             }
             BroadcastMessage::AgentChangedDirection { agent_key, facing } => {
                 self.actor_direction_changed(agent_key, facing).await
+            }
+            BroadcastMessage::PlayerDespawned { agent_key } => {
+                self.player_despawned(agent_key).await
             }
         }
     }
@@ -731,6 +746,18 @@ impl SessionActor {
             self.connection
                 .send(ConnectionCommand::SendPlayerMessage(
                     ServerMessage::AgentChangedDirection { agent_id, facing },
+                ))
+                .await?;
+        }
+        Ok(())
+    }
+
+    async fn player_despawned(&mut self, agent_key: AgentKey) -> Result<()> {
+        if let Some(agent_id) = self.agents.get_local(&agent_key) {
+            self.agents.remove_by_local(agent_id);
+            self.connection
+                .send(ConnectionCommand::SendPlayerMessage(
+                    ServerMessage::RemoveAgent { agent_id },
                 ))
                 .await?;
         }

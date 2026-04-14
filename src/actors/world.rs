@@ -50,6 +50,10 @@ pub enum WorldCommand {
         agent: AgentKey,
         facing: Facing,
     },
+    DespawnPlayer {
+        agent_key: AgentKey,
+        delay_ticks: Tick,
+    },
 }
 
 #[derive(Clone, Debug)]
@@ -99,6 +103,9 @@ pub enum BroadcastMessage {
     AgentChangedDirection {
         agent_key: AgentKey,
         facing: Facing,
+    },
+    PlayerDespawned {
+        agent_key: AgentKey,
     },
 }
 
@@ -187,7 +194,12 @@ impl WorldActor {
                         break
                     },
                     Some(cmd) = self.rx.recv() => {
-                        self.command_queue.push(ScheduledCommand { at_tick: self.tick + 1, command: cmd });
+                        let at_tick = if let WorldCommand::DespawnPlayer { delay_ticks, .. } = &cmd {
+                            self.tick + delay_ticks
+                        } else {
+                            self.tick + 1
+                        };
+                        self.command_queue.push(ScheduledCommand { at_tick, command: cmd });
                     }
                 }
             }
@@ -262,6 +274,12 @@ impl WorldActor {
             } => self.use_item(agent, guid, placement).await,
             WorldCommand::ChangeDirection { agent, facing } => {
                 self.change_direction(agent, facing).await
+            }
+            WorldCommand::DespawnPlayer { agent_key, .. } => {
+                self.map.remove_agent(agent_key);
+                info!("Player {:?} despawned after disconnect", agent_key);
+                self.add_broadcast(BroadcastMessage::PlayerDespawned { agent_key });
+                Ok(())
             }
         };
         if let Err(e) = result {
@@ -819,6 +837,11 @@ impl WorldActor {
                     });
                 }
             };
+        } else {
+            self.add_broadcast(BroadcastMessage::UseItemAck {
+                agent_key,
+                success: false,
+            });
         }
 
         Ok(())

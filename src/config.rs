@@ -13,6 +13,7 @@ pub struct ServerConfig {
     pub max_buffered_messages: usize,
     pub map_file_path: String,
     pub items_file_path: String,
+    pub player_despawn_delay: Duration,
 }
 
 impl Default for ServerConfig {
@@ -24,6 +25,7 @@ impl Default for ServerConfig {
             max_buffered_messages: 512,
             map_file_path: "assets/map.otbm".to_string(),
             items_file_path: "assets/items.yaml".to_string(),
+            player_despawn_delay: Duration::from_secs(2),
         }
     }
 }
