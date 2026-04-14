@@ -39,8 +39,6 @@ pub enum ConnectionError {
     ConnectionClosed,
     #[error("Wrong message type")]
     WrongMessageType,
-    #[error("Invalid authentication")]
-    InvalidAuth,
 }
 
 enum Upstream {
@@ -90,6 +88,9 @@ impl ConnectionActor {
                 error!(session = self.session_id, "Connection error: {e}");
                 break;
             }
+        }
+        if let Upstream::Session(session) = self.upstream {
+            let _ = session.send(SessionCommand::Close).await;
         }
         info!(session = self.session_id, "Connection finished");
     }

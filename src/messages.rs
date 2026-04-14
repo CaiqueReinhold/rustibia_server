@@ -79,8 +79,10 @@ const MSG_CONTAINER_CLOSED: u8 = 13;
 const MSG_PLAYER_WALK_DENIED: u8 = 14;
 const MSG_INVETORY_SLOT_UPDATED: u8 = 15;
 const MSG_PLAYER_CAPACITY_UPDATED: u8 = 16;
-const MSG_ACTOR_DIRECTION_CHANGED: u8 = 17;
+const MSG_AGENT_DIRECTION_CHANGED: u8 = 17;
 const MSG_REMOVE_AGENT: u8 = 18;
+const MSG_MOVE_AGENT: u8 = 19;
+const MSG_SPAWN_AGENT: u8 = 20;
 
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
@@ -162,6 +164,20 @@ pub enum ServerMessage {
     },
     RemoveAgent {
         agent_id: AgentId,
+    },
+    MoveAgent {
+        agent_id: AgentId,
+        direction: Direction,
+        from: Position,
+    },
+    SpawnAgent {
+        agent_id: AgentId,
+        outfit: (OutfitId, OutfitColors),
+        position: Position,
+        facing: Facing,
+        name: String,
+        life: Pool,
+        speed: u16,
     },
 }
 
@@ -419,13 +435,48 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u32_le(cap);
             }
             ServerMessage::AgentChangedDirection { agent_id, facing } => {
-                dst.put_u8(MSG_ACTOR_DIRECTION_CHANGED);
+                dst.put_u8(MSG_AGENT_DIRECTION_CHANGED);
                 dst.put_u16_le(agent_id);
                 encode_facing(facing, dst);
             }
             ServerMessage::RemoveAgent { agent_id } => {
                 dst.put_u8(MSG_REMOVE_AGENT);
                 dst.put_u16_le(agent_id);
+            }
+            ServerMessage::MoveAgent {
+                agent_id,
+                direction,
+                from,
+            } => {
+                dst.put_u8(MSG_MOVE_AGENT);
+                dst.put_u16_le(agent_id);
+                encode_direction(&direction, dst);
+                encode_position(from, dst);
+            }
+            ServerMessage::SpawnAgent {
+                agent_id,
+                outfit,
+                position,
+                facing,
+                name,
+                life,
+                speed,
+            } => {
+                dst.put_u8(MSG_SPAWN_AGENT);
+                dst.put_u16_le(agent_id);
+                encode_position(position, dst);
+                encode_facing(facing, dst);
+                let name_bytes = name.as_bytes();
+                dst.put_u16_le(name_bytes.len() as u16);
+                dst.put_slice(name_bytes);
+                dst.put_u32_le(life.current);
+                dst.put_u32_le(life.maximum);
+                dst.put_u16_le(outfit.0);
+                dst.put_u8(outfit.1 .0);
+                dst.put_u8(outfit.1 .1);
+                dst.put_u8(outfit.1 .2);
+                dst.put_u8(outfit.1 .3);
+                dst.put_u16_le(speed);
             }
         }
 

@@ -52,7 +52,6 @@ pub enum SessionError {
 pub enum SessionCommand {
     Close,
     PlayerSpawnResult(Option<AgentKey>),
-    PlayerPosition(Position),
     ReceivePlayerMessage(ClientMessage),
 }
 
@@ -134,8 +133,8 @@ impl SessionActor {
         let _ = self.connection.send(ConnectionCommand::Close).await;
 
         if let Some(agent_key) = self.player_key {
-            let delay_ticks = (CONFIG.player_despawn_delay.as_millis()
-                / CONFIG.tick_duration.as_millis()) as u64;
+            let delay_ticks =
+                (CONFIG.player_despawn_delay.as_millis() / CONFIG.tick_duration.as_millis()) as u64;
             let _ = self
                 .world
                 .send(WorldCommand::DespawnPlayer {
@@ -155,7 +154,6 @@ impl SessionActor {
             SessionCommand::Close => self.close_connection().await,
             SessionCommand::ReceivePlayerMessage(msg) => self.handle_client_message(msg).await,
             SessionCommand::PlayerSpawnResult(handle) => self.spawn_result(handle).await,
-            SessionCommand::PlayerPosition(pos) => self.send_position(pos).await,
         }
     }
 
@@ -171,15 +169,6 @@ impl SessionActor {
 
         self.player_key = handle;
         self.agents.get_or_insert(handle.unwrap());
-        Ok(())
-    }
-
-    async fn send_position(&self, position: Position) -> Result<()> {
-        self.connection
-            .send(ConnectionCommand::SendPlayerMessage(
-                ServerMessage::PlayerPosition { position },
-            ))
-            .await?;
         Ok(())
     }
 

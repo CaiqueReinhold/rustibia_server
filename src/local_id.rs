@@ -41,12 +41,12 @@ where
         local
     }
 
-    pub fn remove_by_global(&mut self, global: &G) {
-        if let Some(local) = self.global_to_local.remove(global) {
-            self.local_to_global.remove(&local);
-            self.free_list.push(local);
-        }
-    }
+    // pub fn remove_by_global(&mut self, global: &G) {
+    //     if let Some(local) = self.global_to_local.remove(global) {
+    //         self.local_to_global.remove(&local);
+    //         self.free_list.push(local);
+    //     }
+    // }
 
     pub fn remove_by_local(&mut self, local: u16) {
         if let Some(global) = self.local_to_global.remove(&local) {
