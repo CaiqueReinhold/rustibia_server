@@ -5,7 +5,7 @@ use thiserror::Error;
 
 use crate::constants::MAX_VISIBLE_ITEMS;
 use crate::entities::agent::{Agent, AgentKey};
-use crate::entities::items::{Item, ItemAttribute, ItemFlag, ItemGuid};
+use crate::entities::items::{FloorChangeDirection, Item, ItemAttribute, ItemFlag, ItemGuid};
 use crate::entities::player::Player;
 use crate::entities::position::Position;
 
@@ -171,6 +171,18 @@ impl GameMap {
             })
         });
         friction
+    }
+
+    pub fn get_floor_change(&self, pos: &Position) -> Option<FloorChangeDirection> {
+        let Ok(tile) = self.get_tile(pos) else {
+            return None;
+        };
+        tile.items.iter().find_map(|it| {
+            it.config.get_attributes().find_map(|attr| match attr {
+                ItemAttribute::FloorChange(dir) => Some(*dir),
+                _ => None,
+            })
+        })
     }
 
     pub fn get_visible_items(

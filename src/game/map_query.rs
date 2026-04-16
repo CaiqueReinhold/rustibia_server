@@ -1,5 +1,8 @@
 use crate::{
-    constants::{MAX_VISIBLE_ITEMS, PLAYER_VIEWPORT_HEIGHT, PLAYER_VIEWPORT_WIDTH, VIEWPORT_SIZE},
+    constants::{
+        BASE_FLOOR, MAX_FLOOR, MAX_VISIBLE_ITEMS, MIN_FLOOR, PLAYER_VIEWPORT_HEIGHT,
+        PLAYER_VIEWPORT_WIDTH, VIEWPORT_SIZE,
+    },
     entities::{
         agent::{Agent, AgentKey},
         items::{ContainerId, Item, ItemGuid, ItemId},
@@ -11,66 +14,107 @@ use crate::{
     messages::ItemStack,
 };
 
+fn iter_visible_floors(position: &Position) -> impl Iterator<Item = u8> {
+    let (min_z, max_z) = if position.z <= 7 {
+        (MIN_FLOOR, BASE_FLOOR)
+    } else {
+        let min_z = if (position.z as i32) - 2 >= (BASE_FLOOR + 1) as i32 {
+            position.z
+        } else {
+            BASE_FLOOR + 1
+        };
+        let max_z = if position.z + 2 <= MAX_FLOOR {
+            position.z
+        } else {
+            MAX_FLOOR
+        };
+        (min_z, max_z)
+    };
+    min_z..=max_z
+}
+
+fn iter_viewport(pos: &Position, floor: u8) -> impl Iterator<Item = Position> {
+    let floor_offset = pos.z as i16 - floor as i16;
+    let half_w = (PLAYER_VIEWPORT_WIDTH / 2) as i16;
+    let half_h = (PLAYER_VIEWPORT_HEIGHT / 2) as i16;
+    let x = pos.x as i16;
+    let y = pos.y as i16;
+
+    let x_start = (x - half_w + floor_offset).max(0) as u16;
+    let x_end = (x + half_w + floor_offset) as u16;
+    let y_start = (y - half_h + floor_offset).max(0) as u16;
+    let y_end = (y + half_h + floor_offset) as u16;
+    let z = floor;
+
+    (y_start..=y_end).flat_map(move |y| (x_start..=x_end).map(move |x| Position::new(x, y, z)))
+}
+
 pub fn get_map_desc_on_viewport(
     map: &GameMap,
     viewport_center: &Position,
-) -> Box<[ItemStack; VIEWPORT_SIZE]> {
-    let mut tiles: [[Option<(u16, u8)>; MAX_VISIBLE_ITEMS]; VIEWPORT_SIZE] =
-        [[None; MAX_VISIBLE_ITEMS]; VIEWPORT_SIZE];
-    for (i, pos) in iter_viewport(viewport_center).enumerate() {
-        let items = map.get_visible_items(&pos);
-        if let Ok(items) = items {
-            for (j, item) in items.enumerate() {
-                tiles[i][j] = Some((item.item_id, item.amount));
+) -> Vec<(u8, Box<[ItemStack; VIEWPORT_SIZE]>)> {
+    let mut floors = Vec::new();
+    for floor in iter_visible_floors(viewport_center) {
+        let mut tiles = [[None; MAX_VISIBLE_ITEMS]; VIEWPORT_SIZE];
+        let mut found_any = false;
+        for (i, pos) in iter_viewport(viewport_center, floor).enumerate() {
+            let items = map.get_visible_items(&pos);
+            if let Ok(items) = items {
+                for (j, item) in items.enumerate() {
+                    found_any = true;
+                    tiles[i][j] = Some((item.item_id, item.amount));
+                }
             }
         }
+        if found_any {
+            floors.push((floor, tiles.into()));
+        }
     }
-    Box::new(tiles)
-}
-
-pub fn iter_viewport(pos: &Position) -> impl Iterator<Item = Position> {
-    let half_w = (PLAYER_VIEWPORT_WIDTH / 2) as u32;
-    let half_h = (PLAYER_VIEWPORT_HEIGHT / 2) as u32;
-
-    let x_start = pos.x.saturating_sub(half_w);
-    let x_end = pos.x + half_w;
-    let y_start = pos.y.saturating_sub(half_h);
-    let y_end = pos.y + half_h;
-    let z = pos.z;
-
-    (y_start..=y_end).flat_map(move |y| (x_start..=x_end).map(move |x| Position { x, y, z }))
+    floors
 }
 
 pub fn get_map_expansion(
     map: &GameMap,
     viewport_center: &Position,
     direction: &Direction,
-) -> Box<[ItemStack]> {
-    iter_expansion(viewport_center, direction)
-        .map(|pos| {
-            let mut stack: ItemStack = [None; MAX_VISIBLE_ITEMS];
-            if let Ok(items) = map.get_visible_items(&pos) {
-                for (i, item) in items.enumerate() {
-                    stack[i] = Some((item.item_id, item.amount));
+) -> Vec<(u8, Box<[ItemStack]>)> {
+    let mut floors = Vec::new();
+    for floor in iter_visible_floors(viewport_center) {
+        let tiles = iter_expansion(viewport_center, direction, floor)
+            .map(|pos| {
+                let mut stack: ItemStack = [None; MAX_VISIBLE_ITEMS];
+                if let Ok(items) = map.get_visible_items(&pos) {
+                    for (i, item) in items.enumerate() {
+                        stack[i] = Some((item.item_id, item.amount));
+                    }
                 }
-            }
-            stack
-        })
-        .collect::<Vec<_>>()
-        .into_boxed_slice()
+                stack
+            })
+            .collect::<Vec<_>>()
+            .into_boxed_slice();
+        if tiles.iter().any(|t| t[0].is_some()) {
+            floors.push((floor, tiles));
+        }
+    }
+    floors
 }
 
-fn iter_expansion(pos: &Position, direction: &Direction) -> Box<dyn Iterator<Item = Position>> {
-    let half_w = (PLAYER_VIEWPORT_WIDTH / 2) as u32;
-    let half_h = (PLAYER_VIEWPORT_HEIGHT / 2) as u32;
-    let x = pos.x;
-    let y = pos.y;
-    let z = pos.z;
+fn iter_expansion(
+    pos: &Position,
+    direction: &Direction,
+    floor: u8,
+) -> Box<dyn Iterator<Item = Position>> {
+    let floor_offset = pos.z as i16 - floor as i16;
+    let half_w = (PLAYER_VIEWPORT_WIDTH / 2) as i16;
+    let half_h = (PLAYER_VIEWPORT_HEIGHT / 2) as i16;
+    let x = pos.x as i16;
+    let y = pos.y as i16;
+    let z = floor;
 
-    let x_start = x.saturating_sub(half_w);
-    let x_end = x + half_w;
-    let y_start = y.saturating_sub(half_h);
-    let y_end = y + half_h;
+    let x_start = (x - half_w + floor_offset).max(0) as u16;
+    let x_end = (x + half_w + floor_offset) as u16;
+    let y_start = (y - half_h + floor_offset).max(0) as u16;
+    let y_end = (y + half_h + floor_offset) as u16;
 
     let top_row = {
         (x_start..=x_end).map(move |xi| Position {

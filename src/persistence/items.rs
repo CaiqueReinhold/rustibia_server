@@ -57,7 +57,7 @@ fn parse_flag(s: &str) -> Option<ItemFlag> {
 }
 
 fn parse_inventory_slot(s: u64) -> Option<InventorySlot> {
-    InventorySlot::from_id(s as u32)
+    InventorySlot::from_id(s as u16)
 }
 
 fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute> {
@@ -70,6 +70,10 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
             let dir = match value.as_str()? {
                 "up" => FloorChangeDirection::Up,
                 "down" => FloorChangeDirection::Down,
+                "north" => FloorChangeDirection::North,
+                "east" => FloorChangeDirection::East,
+                "south" => FloorChangeDirection::South,
+                "west" => FloorChangeDirection::West,
                 _ => return None,
             };
             Some(ItemAttribute::FloorChange(dir))

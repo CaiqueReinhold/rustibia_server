@@ -10,17 +10,18 @@ use tracing::info;
 
 use super::{connection::ConnectionCommand, world::WorldCommand, ActorHandle};
 use crate::actors::player_query::get_player_desc;
-use crate::game::events::BroadcastMessage;
-use crate::game::map_query::{
-    find_item_in_reach, find_item_in_slot, find_parent_container, get_map_desc_on_viewport,
-    get_map_expansion, get_tile, retrieve_item,
-};
 use crate::config::CONFIG;
+use crate::constants::BASE_FLOOR;
 use crate::entities::agent::Agent;
 use crate::entities::agent::Facing;
 use crate::entities::items::{ContainerId, ItemAttribute, ItemFlag, ItemGuid};
 use crate::entities::player::InventorySlot;
 use crate::entities::position::ItemPlacement;
+use crate::game::events::BroadcastMessage;
+use crate::game::map_query::{
+    find_item_in_reach, find_item_in_slot, find_parent_container, get_map_desc_on_viewport,
+    get_map_expansion, get_tile, retrieve_item,
+};
 use crate::local_id::LocalIdMap;
 use crate::messages::TextMessageType;
 use arc_swap::ArcSwap;
@@ -412,6 +413,10 @@ impl SessionActor {
             BroadcastMessage::PlayerDespawned { agent_key } => {
                 self.player_despawned(agent_key).await
             }
+            BroadcastMessage::AgentTeleport {
+                agent_key,
+                position,
+            } => self.agent_teleported(agent_key, position).await,
         }
     }
 
@@ -419,12 +424,18 @@ impl SessionActor {
         if self.player_key == Some(agent_key) {
             let map = self.shared_map.load();
 
-            let tiles = get_map_desc_on_viewport(&map, &position);
-            self.connection
-                .send(ConnectionCommand::SendPlayerMessage(
-                    ServerMessage::DescribeMap { tiles },
-                ))
-                .await?;
+            let map_desc_floors = get_map_desc_on_viewport(&map, &position);
+            for (floor, tiles) in map_desc_floors {
+                self.connection
+                    .send(ConnectionCommand::SendPlayerMessage(
+                        ServerMessage::DescribeMap {
+                            tiles,
+                            center: position.clone(),
+                            floor,
+                        },
+                    ))
+                    .await?;
+            }
 
             let player_desc = get_player_desc(
                 &map,
@@ -746,6 +757,39 @@ impl SessionActor {
             self.connection
                 .send(ConnectionCommand::SendPlayerMessage(
                     ServerMessage::RemoveAgent { agent_id },
+                ))
+                .await?;
+        }
+        Ok(())
+    }
+
+    async fn agent_teleported(&mut self, agent_key: AgentKey, position: Position) -> Result<()> {
+        if Some(agent_key) == self.player_key {
+            let map = self.shared_map.load();
+            let map_desc_floors = get_map_desc_on_viewport(&map, &position);
+            for (floor, tiles) in map_desc_floors {
+                if floor >= position.z {
+                    self.connection
+                        .send(ConnectionCommand::SendPlayerMessage(
+                            ServerMessage::DescribeMap {
+                                tiles,
+                                center: position.clone(),
+                                floor,
+                            },
+                        ))
+                        .await?;
+                }
+            }
+
+            self.connection
+                .send(ConnectionCommand::SendPlayerMessage(
+                    ServerMessage::TeleportAgent {
+                        agent_id: self
+                            .agents
+                            .get_local(&agent_key)
+                            .ok_or(SessionError::InvalidState)?,
+                        position,
+                    },
                 ))
                 .await?;
         }

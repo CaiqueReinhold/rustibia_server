@@ -9,12 +9,16 @@ use crate::{
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
 pub struct Position {
-    pub x: u32,
-    pub y: u32,
-    pub z: u32,
+    pub x: u16,
+    pub y: u16,
+    pub z: u8,
 }
 
 impl Position {
+    pub fn new(x: u16, y: u16, z: u8) -> Self {
+        Self { x, y, z }
+    }
+
     pub fn is_container_coord(&self) -> bool {
         self.x == CONTAINER_COORD_FLAG
     }
@@ -24,8 +28,8 @@ impl Position {
     }
 
     pub fn in_viewport(&self, other: &Position) -> bool {
-        let half_x = (PLAYER_VIEWPORT_WIDTH / 2) as u32;
-        let half_y = (PLAYER_VIEWPORT_HEIGHT / 2) as u32;
+        let half_x = (PLAYER_VIEWPORT_WIDTH / 2) as u16;
+        let half_y = (PLAYER_VIEWPORT_HEIGHT / 2) as u16;
         let start_x = self.x.saturating_sub(half_x);
         let end_x = self.x + half_x;
         let start_y = self.y.saturating_sub(half_y);

@@ -36,7 +36,7 @@ impl InventorySlot {
         }
     }
 
-    pub fn from_id(id: u32) -> Option<Self> {
+    pub fn from_id(id: u16) -> Option<Self> {
         match id {
             0 => Some(InventorySlot::BothHands),
             1 => Some(InventorySlot::Head),

@@ -83,6 +83,7 @@ const MSG_AGENT_DIRECTION_CHANGED: u8 = 17;
 const MSG_REMOVE_AGENT: u8 = 18;
 const MSG_MOVE_AGENT: u8 = 19;
 const MSG_SPAWN_AGENT: u8 = 20;
+const MSG_TELEPORT_AGENT: u8 = 21;
 
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
@@ -117,6 +118,8 @@ pub enum ServerMessage {
     },
     DescribeMap {
         tiles: Box<[ItemStack; VIEWPORT_SIZE]>,
+        center: Position,
+        floor: u8,
     },
     TileChanged {
         position: Position,
@@ -124,7 +127,7 @@ pub enum ServerMessage {
     },
     PlayerWalkAck {
         position: Position,
-        tiles: Box<[ItemStack]>,
+        tiles: Vec<(u8, Box<[ItemStack]>)>, // (floor, tiles)
     },
     PlayerPosition {
         position: Position,
@@ -178,6 +181,10 @@ pub enum ServerMessage {
         name: String,
         life: Pool,
         speed: u16,
+    },
+    TeleportAgent {
+        agent_id: AgentId,
+        position: Position,
     },
 }
 
@@ -260,9 +267,9 @@ impl Decoder for GameMessageCodec {
 
 fn decode_position(buf: &mut BytesMut) -> Position {
     Position {
-        x: buf.get_u32_le(),
-        y: buf.get_u32_le(),
-        z: buf.get_u32_le(),
+        x: buf.get_u16_le(),
+        y: buf.get_u16_le(),
+        z: buf.get_u8(),
     }
 }
 
@@ -358,25 +365,34 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 encode_optional_item(inventory_ring, dst);
                 encode_optional_item(inventory_trinket, dst);
             }
-            ServerMessage::DescribeMap { tiles } => {
+            ServerMessage::DescribeMap {
+                tiles,
+                center,
+                floor,
+            } => {
                 dst.put_u8(MSG_DESCRIBE_MAP);
+                encode_position(center, dst);
+                dst.put_u8(floor);
                 for tile in tiles.iter() {
                     encode_tile(tile.as_ref(), dst);
                 }
             }
             ServerMessage::TileChanged { position, items } => {
                 dst.put_u8(MSG_TILE_CHANGED);
-                dst.put_u32_le(position.x);
-                dst.put_u32_le(position.y);
-                dst.put_u32_le(position.z);
+                encode_position(position, dst);
                 encode_tile(items.as_ref(), dst);
             }
             ServerMessage::PlayerWalkAck { position, tiles } => {
                 dst.put_u8(MSG_PLAYER_WALK_ACK);
                 encode_position(position, dst);
-                for t in tiles.iter() {
-                    encode_tile(t, dst);
+                for (floor, tiles) in tiles.iter() {
+                    dst.put_u8(*floor);
+                    dst.put_u8(tiles.len() as u8);
+                    for tile in tiles.iter() {
+                        encode_tile(tile, dst);
+                    }
                 }
+                dst.put_u8(0xFF);
             }
             ServerMessage::PlayerPosition { position } => {
                 dst.put_u8(MSG_PLAYER_POS);
@@ -478,6 +494,11 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u8(outfit.1 .3);
                 dst.put_u16_le(speed);
             }
+            ServerMessage::TeleportAgent { agent_id, position } => {
+                dst.put_u8(MSG_TELEPORT_AGENT);
+                dst.put_u16_le(agent_id);
+                encode_position(position, dst);
+            }
         }
 
         let payload_len = (dst.len() - len_offset - 2) as u16;
@@ -488,9 +509,9 @@ impl Encoder<ServerMessage> for GameMessageCodec {
 }
 
 fn encode_position(pos: Position, dst: &mut BytesMut) {
-    dst.put_u32_le(pos.x);
-    dst.put_u32_le(pos.y);
-    dst.put_u32_le(pos.z);
+    dst.put_u16_le(pos.x);
+    dst.put_u16_le(pos.y);
+    dst.put_u8(pos.z);
 }
 
 fn encode_facing(facing: Facing, dst: &mut BytesMut) {

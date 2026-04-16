@@ -3,13 +3,11 @@ use std::{collections::HashMap, sync::Arc};
 use thiserror::Error;
 use tracing::warn;
 
-use crate::{
-    entities::{
-        agent::AgentKey,
-        items::{Item, ItemAction, ItemConfig, ItemFlag, ItemGuid, ItemId},
-        map::GameMap,
-        position::ItemPlacement,
-    },
+use crate::entities::{
+    agent::AgentKey,
+    items::{Item, ItemAction, ItemConfig, ItemFlag, ItemGuid, ItemId},
+    map::GameMap,
+    position::ItemPlacement,
 };
 
 use super::events::BroadcastMessage;
@@ -28,7 +26,19 @@ pub fn use_item(
     agent_key: AgentKey,
     guid: ItemGuid,
     placement: ItemPlacement,
+    current_tick: u64,
 ) -> Vec<BroadcastMessage> {
+    if !map
+        .get_agent(agent_key)
+        .map(|agent| agent.next_use_tick >= current_tick)
+        .unwrap_or(false)
+    {
+        return vec![BroadcastMessage::UseItemAck {
+            agent_key,
+            success: false,
+        }];
+    }
+
     let item = match &placement {
         ItemPlacement::Map(item_pos) => {
             if map

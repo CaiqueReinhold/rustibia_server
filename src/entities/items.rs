@@ -34,10 +34,14 @@ pub enum ItemFlag {
     Usable,
 }
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum FloorChangeDirection {
     Up,
     Down,
+    North,
+    East,
+    South,
+    West,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash)]

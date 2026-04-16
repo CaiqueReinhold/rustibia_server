@@ -53,6 +53,10 @@ pub enum BroadcastMessage {
         agent_key: AgentKey,
         facing: Facing,
     },
+    AgentTeleport {
+        agent_key: AgentKey,
+        position: Position,
+    },
     PlayerDespawned {
         agent_key: AgentKey,
     },

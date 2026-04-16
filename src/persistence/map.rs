@@ -264,9 +264,9 @@ fn parse_tile_area(
     map: &mut GameMap,
     items: &Items,
 ) -> Result<(), MapRepositoryError> {
-    let base_x = p.read_u16()? as u32;
-    let base_y = p.read_u16()? as u32;
-    let base_z = p.read_u8()? as u32;
+    let base_x = p.read_u16()?;
+    let base_y = p.read_u16()?;
+    let base_z = p.read_u8()?;
 
     while p.peek_raw() == Some(NODE_START) {
         p.pos += 1;
@@ -285,13 +285,13 @@ fn parse_tile(
     p: &mut Parser,
     map: &mut GameMap,
     items: &Items,
-    base_x: u32,
-    base_y: u32,
-    base_z: u32,
+    base_x: u16,
+    base_y: u16,
+    base_z: u8,
     tile_type: u8,
 ) -> Result<(), MapRepositoryError> {
-    let offset_x = p.read_u8()? as u32;
-    let offset_y = p.read_u8()? as u32;
+    let offset_x = p.read_u8()? as u16;
+    let offset_y = p.read_u8()? as u16;
     let pos = Position {
         x: base_x + offset_x,
         y: base_y + offset_y,

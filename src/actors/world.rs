@@ -13,8 +13,8 @@ use tracing::{debug, error, info, warn};
 
 use super::{session::SessionCommand, ActorHandle};
 use crate::config::CONFIG;
-use crate::entities::agent::{Agent, AgentKey};
-use crate::entities::items::{ItemConfig, ItemId};
+use crate::entities::agent::{Agent, AgentKey, Facing};
+use crate::entities::items::{ItemConfig, ItemGuid, ItemId};
 use crate::entities::map::GameMap;
 use crate::entities::position::{Direction, ItemPlacement};
 use crate::game::events::BroadcastMessage;
@@ -33,19 +33,19 @@ pub enum WorldCommand {
     MoveItem {
         agent: AgentKey,
         from: ItemPlacement,
-        item_guid: crate::entities::items::ItemGuid,
+        item_guid: ItemGuid,
         amount: u8,
         to: ItemPlacement,
-        target_container: Option<crate::entities::items::ItemGuid>,
+        target_container: Option<ItemGuid>,
     },
     UseItem {
         agent: AgentKey,
-        guid: crate::entities::items::ItemGuid,
+        guid: ItemGuid,
         placement: ItemPlacement,
     },
     ChangeDirection {
         agent: AgentKey,
-        facing: crate::entities::agent::Facing,
+        facing: Facing,
     },
     DespawnPlayer {
         agent_key: AgentKey,
@@ -238,6 +238,7 @@ impl WorldActor {
                     agent,
                     guid,
                     placement,
+                    self.tick,
                 );
                 self.apply_broadcasts(msgs);
                 Ok(())

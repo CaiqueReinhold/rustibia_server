@@ -4,10 +4,10 @@ use slotmap::new_key_type;
 
 use super::{inventory::Inventory, player::Player};
 use crate::{
-    game::Tick,
     config,
     constants::{SPEED_PARAM_A, SPEED_PARAM_B, SPEED_PARAM_C},
     entities::skills::{SkillType, SkillValue},
+    game::Tick,
     persistence::player::PlayerSnapshot,
 };
 
@@ -54,6 +54,7 @@ pub struct Agent {
 
     pub facing: Facing,
     pub next_walk_tick: Tick,
+    pub next_use_tick: Tick,
 }
 
 impl Agent {
@@ -88,6 +89,7 @@ impl Agent {
             outfit: player.outfit,
             speed: 0,
             next_walk_tick: 0,
+            next_use_tick: 0,
         };
         agent.apply_modifiers();
         agent
