@@ -95,6 +95,41 @@ impl Agent {
         agent
     }
 
+    // Testing
+    pub fn new_creature() -> Self {
+        let mut creature = Self {
+            name: "Demon".to_string(),
+            facing: Facing::South,
+            life: Pool {
+                current: 100,
+                maximum: 100,
+            },
+            outfit: (35, (0, 0, 0, 0)),
+            skills: HashMap::new(),
+            inner: AgentInner::Creature,
+            speed: 200,
+            next_use_tick: 0,
+            next_walk_tick: 0,
+        };
+        creature.skills.insert(
+            SkillType::Level,
+            SkillValue {
+                value: 1,
+                current_ticks: 0,
+                max_ticks: 100,
+            },
+        );
+        creature.skills.insert(
+            SkillType::Speed,
+            SkillValue {
+                value: 120,
+                current_ticks: 0,
+                max_ticks: 0,
+            },
+        );
+        creature
+    }
+
     pub fn name(&self) -> &str {
         &self.name
     }

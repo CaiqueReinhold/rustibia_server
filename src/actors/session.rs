@@ -9,9 +9,9 @@ use tracing::error;
 use tracing::info;
 
 use super::{connection::ConnectionCommand, world::WorldCommand, ActorHandle};
+use crate::actors::player_query::get_agent_desc;
 use crate::actors::player_query::get_player_desc;
 use crate::config::CONFIG;
-use crate::constants::BASE_FLOOR;
 use crate::entities::agent::Agent;
 use crate::entities::agent::Facing;
 use crate::entities::items::{ContainerId, ItemAttribute, ItemFlag, ItemGuid};
@@ -420,7 +420,7 @@ impl SessionActor {
         }
     }
 
-    async fn player_spawned(&self, agent_key: AgentKey, position: Position) -> Result<()> {
+    async fn player_spawned(&mut self, agent_key: AgentKey, position: Position) -> Result<()> {
         if self.player_key == Some(agent_key) {
             let map = self.shared_map.load();
 
@@ -451,8 +451,25 @@ impl SessionActor {
             }
             Ok(())
         } else {
-            // check if player is in viewport
-            // send player data if it is
+            let map = self.shared_map.load();
+            let my_pos = map
+                .agent_position(self.player_key.unwrap())
+                .ok_or(SessionError::NotSpawned)?;
+
+            if !my_pos.in_viewport(&position) {
+                return Ok(());
+            }
+            let Some(agent) = map.get_agent(agent_key) else {
+                return Ok(());
+            };
+            let agent_id = self.agents.get_or_insert(agent_key);
+
+            self.connection
+                .send(ConnectionCommand::SendPlayerMessage(get_agent_desc(
+                    agent, agent_id, position,
+                )))
+                .await?;
+
             Ok(())
         }
     }

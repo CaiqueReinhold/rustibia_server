@@ -1,8 +1,9 @@
 use crate::{
     entities::{
-        agent::{AgentId, AgentKey},
+        agent::{Agent, AgentId, AgentKey},
         map::GameMap,
         player::InventorySlot,
+        position::Position,
         skills::SkillType,
     },
     messages::ServerMessage,
@@ -40,3 +41,14 @@ pub fn get_player_desc(map: &GameMap, key: AgentKey, id: AgentId) -> Option<Serv
     })
 }
 
+pub fn get_agent_desc(agent: &Agent, agent_id: AgentId, position: Position) -> ServerMessage {
+    ServerMessage::SpawnAgent {
+        agent_id,
+        outfit: agent.outfit(),
+        position,
+        facing: agent.facing,
+        name: agent.name().to_owned(),
+        life: agent.life().clone(),
+        speed: agent.speed(),
+    }
+}

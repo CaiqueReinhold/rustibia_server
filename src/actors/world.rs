@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use arc_swap::ArcSwap;
 use std::collections::binary_heap::BinaryHeap;
 use std::collections::{HashMap, VecDeque};
@@ -16,7 +16,7 @@ use crate::config::CONFIG;
 use crate::entities::agent::{Agent, AgentKey, Facing};
 use crate::entities::items::{ItemConfig, ItemGuid, ItemId};
 use crate::entities::map::GameMap;
-use crate::entities::position::{Direction, ItemPlacement};
+use crate::entities::position::{Direction, ItemPlacement, Position};
 use crate::game::events::BroadcastMessage;
 use crate::game::{item_action, item_movement, movement, Tick};
 
@@ -50,6 +50,9 @@ pub enum WorldCommand {
     DespawnPlayer {
         agent_key: AgentKey,
         delay_ticks: Tick,
+    },
+    SpawnAgent {
+        agent: Agent,
     },
 }
 
@@ -254,6 +257,18 @@ impl WorldActor {
                 self.add_broadcast(BroadcastMessage::PlayerDespawned { agent_key });
                 Ok(())
             }
+            WorldCommand::SpawnAgent { agent } => {
+                let pos = Position::new(1029, 1028, 7);
+                if let Ok(agent_key) = self.map.insert_agent(agent, &pos) {
+                    self.add_broadcast(BroadcastMessage::PlayerSpawned {
+                        agent_key,
+                        position: pos,
+                    });
+                    Ok(())
+                } else {
+                    Err(anyhow!("Failed to spawn agent at {:?}", pos))
+                }
+            }
         };
         if let Err(e) = result {
             error!("Error on apply command: {e}");
@@ -295,6 +310,16 @@ impl WorldActor {
             agent_key,
             position: spawn_pos,
         });
+
+        // testing
+        if self.tick < 1000 {
+            let creature = Agent::new_creature();
+            self.command_queue.push(ScheduledCommand {
+                at_tick: self.tick + 500,
+                command: WorldCommand::SpawnAgent { agent: creature },
+            });
+        }
+
         Ok(())
     }
 }
