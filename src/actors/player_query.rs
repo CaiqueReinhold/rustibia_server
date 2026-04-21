@@ -6,6 +6,7 @@ use crate::{
         position::Position,
         skills::SkillType,
     },
+    game::map_query::{iter_viewport, iter_visible_floors},
     messages::ServerMessage,
 };
 
@@ -51,4 +52,22 @@ pub fn get_agent_desc(agent: &Agent, agent_id: AgentId, position: Position) -> S
         life: agent.life().clone(),
         speed: agent.speed(),
     }
+}
+
+pub fn get_agents_in_viewport<'a>(
+    map: &'a GameMap,
+    pos: &'a Position,
+) -> impl Iterator<Item = (AgentKey, &'a Agent, Position)> + 'a {
+    iter_visible_floors(pos)
+        .flat_map(move |floor| iter_viewport(pos, floor))
+        .flat_map(move |tile_pos| {
+            let keys: Vec<AgentKey> = map
+                .get_agents_at(&tile_pos)
+                .map(|iter| iter.copied().collect())
+                .unwrap_or_default();
+            keys.into_iter().filter_map(move |key| {
+                map.get_agent(key)
+                    .map(|agent| (key, agent, tile_pos.clone()))
+            })
+        })
 }

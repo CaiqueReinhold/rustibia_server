@@ -19,7 +19,7 @@ pub struct ServerConfig {
 impl Default for ServerConfig {
     fn default() -> Self {
         ServerConfig {
-            bind_address: SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 5555)),
+            bind_address: SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(0, 0, 0, 0), 5555)),
             tick_duration: Duration::from_millis(50),
             max_queue_size: 2048,
             max_buffered_messages: 512,

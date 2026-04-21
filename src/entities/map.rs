@@ -133,6 +133,14 @@ impl GameMap {
         self.agents.get_mut(key)?.get_player_mut()
     }
 
+    pub fn get_agents_at(
+        &self,
+        pos: &Position,
+    ) -> Result<impl Iterator<Item = &AgentKey> + '_, MapError> {
+        let tile = self.get_tile(pos)?;
+        Ok(tile.agents.iter())
+    }
+
     pub fn can_move(&self, pos: &Position, _key: AgentKey) -> bool {
         let tile = self.get_tile(pos);
         if tile.is_err() {

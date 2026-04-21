@@ -10,6 +10,7 @@ use tracing::info;
 
 use super::{connection::ConnectionCommand, world::WorldCommand, ActorHandle};
 use crate::actors::player_query::get_agent_desc;
+use crate::actors::player_query::get_agents_in_viewport;
 use crate::actors::player_query::get_player_desc;
 use crate::config::CONFIG;
 use crate::entities::agent::Agent;
@@ -437,6 +438,18 @@ impl SessionActor {
                     .await?;
             }
 
+            for (key, agent, pos) in get_agents_in_viewport(&map, &position) {
+                if Some(key) == self.player_key {
+                    continue;
+                }
+                let agent_id = self.agents.get_or_insert(key);
+                self.connection
+                    .send(ConnectionCommand::SendPlayerMessage(get_agent_desc(
+                        agent, agent_id, pos,
+                    )))
+                    .await?;
+            }
+
             let player_desc = get_player_desc(
                 &map,
                 self.player_key.unwrap(),
@@ -515,6 +528,48 @@ impl SessionActor {
 
             Ok(())
         } else {
+            let map = self.shared_map.load();
+            let Some(my_pos) = map.agent_position(self.player_key.unwrap()) else {
+                return Ok(());
+            };
+            let Some(agent_pos) = map.agent_position(agent_key) else {
+                return Ok(());
+            };
+
+            if my_pos.in_viewport(agent_pos) {
+                if let Some(agent_id) = self.agents.get_local(&agent_key) {
+                    let from = agent_pos.clone() - direction;
+                    self.connection
+                        .send(ConnectionCommand::SendPlayerMessage(
+                            ServerMessage::MoveAgent {
+                                agent_id,
+                                direction,
+                                from,
+                            },
+                        ))
+                        .await?;
+                } else {
+                    let Some(agent) = map.get_agent(agent_key) else {
+                        return Ok(());
+                    };
+                    let agent_id = self.agents.get_or_insert(agent_key);
+
+                    self.connection
+                        .send(ConnectionCommand::SendPlayerMessage(get_agent_desc(
+                            agent,
+                            agent_id,
+                            agent_pos.clone(),
+                        )))
+                        .await?;
+                }
+            } else if let Some(agent_id) = self.agents.get_local(&agent_key) {
+                self.connection
+                    .send(ConnectionCommand::SendPlayerMessage(
+                        ServerMessage::RemoveAgent { agent_id },
+                    ))
+                    .await?;
+            }
+
             Ok(())
         }
     }

@@ -14,7 +14,7 @@ use crate::{
     messages::ItemStack,
 };
 
-fn iter_visible_floors(position: &Position) -> impl Iterator<Item = u8> {
+pub fn iter_visible_floors(position: &Position) -> impl Iterator<Item = u8> {
     let (min_z, max_z) = if position.z <= 7 {
         (MIN_FLOOR, BASE_FLOOR)
     } else {
@@ -33,7 +33,7 @@ fn iter_visible_floors(position: &Position) -> impl Iterator<Item = u8> {
     min_z..=max_z
 }
 
-fn iter_viewport(pos: &Position, floor: u8) -> impl Iterator<Item = Position> {
+pub fn iter_viewport(pos: &Position, floor: u8) -> impl Iterator<Item = Position> {
     let floor_offset = pos.z as i16 - floor as i16;
     let half_w = (PLAYER_VIEWPORT_WIDTH / 2) as i16;
     let half_h = (PLAYER_VIEWPORT_HEIGHT / 2) as i16;
