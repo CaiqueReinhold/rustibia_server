@@ -148,6 +148,10 @@ impl Inventory {
     pub fn keys(&self) -> impl Iterator<Item = &InventorySlot> {
         self.slots.keys()
     }
+
+    pub fn slots(&self) -> &HashMap<InventorySlot, Item> {
+        &self.slots
+    }
 }
 
 fn find_available_container(item: &Item) -> Option<&ItemGuid> {

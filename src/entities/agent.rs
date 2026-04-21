@@ -6,7 +6,7 @@ use super::{inventory::Inventory, player::Player};
 use crate::{
     config,
     constants::{SPEED_PARAM_A, SPEED_PARAM_B, SPEED_PARAM_C},
-    entities::skills::{SkillType, SkillValue},
+    entities::{position::Position, skills::{SkillType, SkillValue}},
     game::Tick,
     persistence::player::PlayerSnapshot,
 };
@@ -169,5 +169,75 @@ impl Agent {
         }
 
         (tile_speed / (config::CONFIG.tick_duration.as_millis() as f32)).ceil() as Tick
+    }
+
+    pub fn to_snapshot(&self, position: Position) -> Option<PlayerSnapshot> {
+        let player = self.get_player()?;
+        Some(PlayerSnapshot {
+            id: player.id,
+            name: self.name.clone(),
+            position,
+            origin: player.origin.clone(),
+            facing: self.facing,
+            life: self.life.clone(),
+            mana: player.mana.clone(),
+            capacity: player.capacity.clone(),
+            outfit: self.outfit,
+            skills: self.skills.clone(),
+            inventory: player.inventory.slots().clone(),
+        })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::entities::position::Position;
+    use crate::entities::skills::{SkillType, SkillValue};
+    use crate::persistence::player::PlayerSnapshot;
+    use std::collections::HashMap;
+
+    fn make_snapshot(id: u32) -> PlayerSnapshot {
+        PlayerSnapshot {
+            id,
+            name: "Rizael".to_string(),
+            position: Position { x: 100, y: 100, z: 7 },
+            origin: Position { x: 100, y: 100, z: 7 },
+            facing: Facing::North,
+            life: Pool { current: 80, maximum: 100 },
+            mana: Pool { current: 50, maximum: 100 },
+            capacity: Pool { current: 0, maximum: 40000 },
+            outfit: (133, (1, 2, 3, 4)),
+            skills: {
+                let mut m = HashMap::new();
+                m.insert(SkillType::Speed, SkillValue { value: 120, current_ticks: 0, max_ticks: 0 });
+                m
+            },
+            inventory: HashMap::new(),
+        }
+    }
+
+    #[test]
+    fn to_snapshot_returns_none_for_creature() {
+        let creature = Agent::new_creature();
+        let pos = Position { x: 200, y: 200, z: 7 };
+        assert!(creature.to_snapshot(pos).is_none());
+    }
+
+    #[test]
+    fn to_snapshot_uses_passed_position_not_stored() {
+        let agent = Agent::from_player(make_snapshot(1));
+        let new_pos = Position { x: 999, y: 888, z: 5 };
+        let snap = agent.to_snapshot(new_pos.clone()).unwrap();
+        assert_eq!(snap.position, new_pos);
+        assert_eq!(snap.id, 1);
+        assert_eq!(snap.name, "Rizael");
+        assert_eq!(snap.facing, Facing::North);
+        assert_eq!(snap.life.current, 80);
+        assert_eq!(snap.life.maximum, 100);
+        assert_eq!(snap.mana.current, 50);
+        assert_eq!(snap.capacity.maximum, 40000);
+        assert_eq!(snap.outfit, (133, (1, 2, 3, 4)));
+        assert_eq!(snap.skills[&SkillType::Speed].value, 120);
     }
 }

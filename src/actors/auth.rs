@@ -7,6 +7,7 @@ use tracing::{error, info};
 
 use super::{
     connection::{ConnectionCommand, ConnectionError},
+    persistence::PersistenceCommand,
     session::SessionActor,
     world::WorldCommand,
     ActorHandle,
@@ -31,6 +32,7 @@ pub struct AuthActor {
     player_repo: Arc<PlayerRepository>,
     brx: broadcast::Receiver<BroadcastMessage>,
     shared_map: Arc<ArcSwap<GameMap>>,
+    persistence: ActorHandle<PersistenceCommand>,
 }
 
 impl AuthActor {
@@ -41,6 +43,7 @@ impl AuthActor {
         player_repo: Arc<PlayerRepository>,
         brx: broadcast::Receiver<BroadcastMessage>,
         shared_map: Arc<ArcSwap<GameMap>>,
+        persistence: ActorHandle<PersistenceCommand>,
     ) -> ActorHandle<AuthCommand> {
         let (tx, rx) = mpsc::channel(CONFIG.max_buffered_messages);
 
@@ -52,6 +55,7 @@ impl AuthActor {
                 player_repo,
                 brx,
                 shared_map,
+                persistence,
             };
             actor.run(conn_rx).await;
         });
@@ -115,6 +119,7 @@ impl AuthActor {
             self.world.clone(),
             self.brx.resubscribe(),
             self.shared_map.clone(),
+            self.persistence.clone(),
         );
 
         connection

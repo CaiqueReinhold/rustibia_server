@@ -8,7 +8,7 @@ use tokio::sync::mpsc;
 use tracing::error;
 use tracing::info;
 
-use super::{connection::ConnectionCommand, world::WorldCommand, ActorHandle};
+use super::{connection::ConnectionCommand, persistence::PersistenceCommand, world::WorldCommand, ActorHandle};
 use crate::actors::player_query::get_agent_desc;
 use crate::actors::player_query::get_agents_in_viewport;
 use crate::actors::player_query::get_player_desc;
@@ -66,6 +66,7 @@ pub struct SessionActor {
     shared_map: Arc<ArcSwap<GameMap>>,
     containers: LocalIdMap<ItemGuid>,
     agents: LocalIdMap<AgentKey>,
+    persistence: ActorHandle<PersistenceCommand>,
 }
 
 impl SessionActor {
@@ -76,6 +77,7 @@ impl SessionActor {
         world: ActorHandle<WorldCommand>,
         receiver: broadcast::Receiver<BroadcastMessage>,
         shared_map: Arc<ArcSwap<GameMap>>,
+        persistence: ActorHandle<PersistenceCommand>,
     ) -> ActorHandle<SessionCommand> {
         let (tx, rx) = mpsc::channel(CONFIG.max_buffered_messages);
         let self_handle = ActorHandle { tx };
@@ -92,11 +94,27 @@ impl SessionActor {
                 shared_map,
                 containers: LocalIdMap::new(),
                 agents: LocalIdMap::new(),
+                persistence,
             };
             actor.run(agent, self_handle_clone).await;
         });
 
         self_handle
+    }
+
+    async fn save_player(&self) {
+        let Some(key) = self.player_key else { return; };
+        let map = self.shared_map.load();
+        let Some(agent) = map.get_agent(key) else { return; };
+        let Some(position) = map.agent_position(key) else { return; };
+        let Some(snapshot) = agent.to_snapshot(position.clone()) else { return; };
+        if let Err(e) = self
+            .persistence
+            .send(PersistenceCommand::SavePlayer(snapshot))
+            .await
+        {
+            error!(session = self.session_id, "Failed to queue player save: {e}");
+        }
     }
 
     async fn run(mut self, agent: Agent, self_handle: ActorHandle<SessionCommand>) {
@@ -116,6 +134,9 @@ impl SessionActor {
             return;
         }
 
+        let mut save_timer = tokio::time::interval(CONFIG.save_interval);
+        save_timer.tick().await; // skip the immediate first tick
+
         loop {
             let result = select! { biased;
                 cmd = self.rx.recv() =>
@@ -124,13 +145,19 @@ impl SessionActor {
                     } else {
                         Err(SessionError::ConnectionClosed.into())
                     },
-                msg = self.brx.recv() => self.route_broadcast(msg.unwrap()).await
+                msg = self.brx.recv() => self.route_broadcast(msg.unwrap()).await,
+                _ = save_timer.tick() => {
+                    self.save_player().await;
+                    Ok(())
+                }
             };
             if let Err(e) = result {
                 error!("Error on session command: {e}");
                 break;
             }
         }
+
+        self.save_player().await;
         let _ = self.connection.send(ConnectionCommand::Close).await;
 
         if let Some(agent_key) = self.player_key {

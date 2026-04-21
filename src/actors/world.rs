@@ -93,7 +93,7 @@ pub struct WorldActor {
     btx: broadcast::Sender<BroadcastMessage>,
     command_queue: BinaryHeap<ScheduledCommand>,
     map: GameMap,
-    item_configs: HashMap<ItemId, Arc<ItemConfig>>,
+    item_configs: Arc<HashMap<ItemId, Arc<ItemConfig>>>,
     shared_map: Arc<ArcSwap<GameMap>>,
     tick: Tick,
     tick_duration: Duration,
@@ -103,7 +103,7 @@ pub struct WorldActor {
 impl WorldActor {
     pub fn start(
         map: GameMap,
-        item_configs: HashMap<ItemId, Arc<ItemConfig>>,
+        item_configs: Arc<HashMap<ItemId, Arc<ItemConfig>>>,
         shared_map: Arc<ArcSwap<GameMap>>,
     ) -> (
         ActorHandle<WorldCommand>,

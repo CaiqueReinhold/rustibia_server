@@ -53,6 +53,7 @@ impl Listener {
             context.player_repo.clone(),
             context.broadcast_receiver.resubscribe(),
             context.shared_map.clone(),
+            context.persistence.clone(),
         );
         let connection = ConnectionActor::start(session_id, stream, auth);
 

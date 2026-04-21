@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: rustibia
+      POSTGRES_PASSWORD: rustibia
+      POSTGRES_DB: rustibia
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rustibia -d rustibia"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://rustibia:rustibia@db/rustibia?sslmode=disable
+    ports:
+      - "5555:5555"
+
+volumes:
+  db_data:
