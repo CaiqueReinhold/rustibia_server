@@ -26,6 +26,7 @@ const MSG_USE_ITEM: u8 = 5;
 const MSG_CLOSE_CONTAINER: u8 = 6;
 const MSG_OPEN_PARENT_CONTAINER: u8 = 7;
 const MSG_CHANGE_DIRECTION: u8 = 8;
+const MSG_LOGOUT: u8 = 9;
 
 #[derive(Clone, Debug)]
 pub enum ClientMessage {
@@ -59,6 +60,7 @@ pub enum ClientMessage {
     ChangeDirection {
         direction: Facing,
     },
+    Logout,
 }
 
 // server
@@ -88,6 +90,7 @@ const MSG_TELEPORT_AGENT: u8 = 21;
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
     ActionDenied,
+    LogoutDenied,
 }
 
 #[derive(Clone, Debug)]
@@ -260,6 +263,7 @@ impl Decoder for GameMessageCodec {
             MSG_CHANGE_DIRECTION => Ok(Some(ClientMessage::ChangeDirection {
                 direction: decode_facing(buf.get_u8())?,
             })),
+            MSG_LOGOUT => Ok(Some(ClientMessage::Logout)),
             _ => Err(MessageDecodeError::WrongSequence),
         }
     }
@@ -553,6 +557,7 @@ fn encode_tile(items: &[Option<(ItemId, u8)>], dst: &mut BytesMut) {
 fn encode_text_message_type(text_type: TextMessageType) -> u8 {
     match text_type {
         TextMessageType::ActionDenied => 0x01,
+        TextMessageType::LogoutDenied => 0x02,
     }
 }
 
@@ -561,5 +566,23 @@ fn encode_optional_item(item_id: Option<ItemId>, dst: &mut BytesMut) {
         dst.put_u16_le(item_id);
     } else {
         dst.put_u16_le(0xFFFF);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio_util::bytes::BytesMut;
+    use tokio_util::codec::Decoder;
+
+    #[test]
+    fn decode_logout_message() {
+        let mut codec = GameMessageCodec {};
+        let mut buf = BytesMut::new();
+        // 2-byte LE length prefix (1 byte payload) + 1 byte type
+        buf.extend_from_slice(&[1u8, 0u8, MSG_LOGOUT]);
+        let msg = codec.decode(&mut buf).unwrap().unwrap();
+        assert!(matches!(msg, ClientMessage::Logout));
+        assert!(buf.is_empty());
     }
 }

@@ -8,7 +8,10 @@ use tokio::sync::mpsc;
 use tracing::error;
 use tracing::info;
 
-use super::{connection::ConnectionCommand, persistence::PersistenceCommand, world::WorldCommand, ActorHandle};
+use super::{
+    connection::ConnectionCommand, persistence::PersistenceCommand, world::WorldCommand,
+    ActorHandle,
+};
 use crate::actors::player_query::get_agent_desc;
 use crate::actors::player_query::get_agents_in_viewport;
 use crate::actors::player_query::get_player_desc;
@@ -25,6 +28,7 @@ use crate::game::map_query::{
 };
 use crate::local_id::LocalIdMap;
 use crate::messages::TextMessageType;
+use crate::persistence::player::PlayerSnapshot;
 use arc_swap::ArcSwap;
 
 use crate::entities::{
@@ -47,6 +51,8 @@ pub enum SessionError {
     InvalidState,
     #[error("Connection is closed")]
     ConnectionClosed,
+    #[error("Player logged out")]
+    Logout,
 }
 
 #[derive(Clone, Debug)]
@@ -54,6 +60,7 @@ pub enum SessionCommand {
     Close,
     PlayerSpawnResult(Option<AgentKey>),
     ReceivePlayerMessage(ClientMessage),
+    LogoutDenied,
 }
 
 pub struct SessionActor {
@@ -67,6 +74,8 @@ pub struct SessionActor {
     containers: LocalIdMap<ItemGuid>,
     agents: LocalIdMap<AgentKey>,
     persistence: ActorHandle<PersistenceCommand>,
+    self_handle: ActorHandle<SessionCommand>,
+    logout_pending: bool,
 }
 
 impl SessionActor {
@@ -95,29 +104,42 @@ impl SessionActor {
                 containers: LocalIdMap::new(),
                 agents: LocalIdMap::new(),
                 persistence,
+                self_handle: self_handle_clone,
+                logout_pending: false,
             };
-            actor.run(agent, self_handle_clone).await;
+            actor.run(agent).await;
         });
 
         self_handle
     }
 
     async fn save_player(&self) {
-        let Some(key) = self.player_key else { return; };
+        let Some(key) = self.player_key else {
+            return;
+        };
         let map = self.shared_map.load();
-        let Some(agent) = map.get_agent(key) else { return; };
-        let Some(position) = map.agent_position(key) else { return; };
-        let Some(snapshot) = agent.to_snapshot(position.clone()) else { return; };
+        let Some(agent) = map.get_agent(key) else {
+            return;
+        };
+        let Some(position) = map.agent_position(key) else {
+            return;
+        };
+        let Some(snapshot) = agent.to_snapshot(position.clone()) else {
+            return;
+        };
         if let Err(e) = self
             .persistence
             .send(PersistenceCommand::SavePlayer(snapshot))
             .await
         {
-            error!(session = self.session_id, "Failed to queue player save: {e}");
+            error!(
+                session = self.session_id,
+                "Failed to queue player save: {e}"
+            );
         }
     }
 
-    async fn run(mut self, agent: Agent, self_handle: ActorHandle<SessionCommand>) {
+    async fn run(mut self, agent: Agent) {
         info!(session = self.session_id, "Session actor started");
 
         // Enter the world immediately — auth is already complete.
@@ -125,7 +147,7 @@ impl SessionActor {
             .world
             .send(WorldCommand::SpawnPlayer {
                 player: agent,
-                session: self_handle,
+                session: self.self_handle.clone(),
             })
             .await
         {
@@ -152,7 +174,13 @@ impl SessionActor {
                 }
             };
             if let Err(e) = result {
-                error!("Error on session command: {e}");
+                if e.downcast_ref::<SessionError>()
+                    .map_or(false, |e| matches!(e, SessionError::Logout))
+                {
+                    info!(session = self.session_id, "Player logged out cleanly");
+                } else {
+                    error!("Error on session command: {e}");
+                }
                 break;
             }
         }
@@ -182,7 +210,20 @@ impl SessionActor {
             SessionCommand::Close => self.close_connection().await,
             SessionCommand::ReceivePlayerMessage(msg) => self.handle_client_message(msg).await,
             SessionCommand::PlayerSpawnResult(handle) => self.spawn_result(handle).await,
+            SessionCommand::LogoutDenied => self.logout_denied().await,
         }
+    }
+
+    async fn logout_denied(&self) -> Result<()> {
+        self.connection
+            .send(ConnectionCommand::SendPlayerMessage(
+                ServerMessage::TextMessage {
+                    text: "You may not logout right now.".to_string(),
+                    message_type: TextMessageType::LogoutDenied,
+                },
+            ))
+            .await?;
+        Ok(())
     }
 
     async fn close_connection(&self) -> Result<()> {
@@ -241,7 +282,21 @@ impl SessionActor {
             ClientMessage::ChangeDirection { direction } => {
                 self.handle_change_direction(direction).await
             }
+            ClientMessage::Logout => self.handle_logout().await,
         }
+    }
+
+    async fn handle_logout(&mut self) -> Result<()> {
+        if !self.logout_pending {
+            self.logout_pending = true;
+            self.world
+                .send(WorldCommand::RequestLogout {
+                    agent_key: self.player_key.unwrap(),
+                    session: self.self_handle.clone(),
+                })
+                .await?;
+        }
+        Ok(())
     }
 
     async fn handle_move_player(&self, direction: Direction) -> Result<()> {
@@ -438,9 +493,10 @@ impl SessionActor {
             BroadcastMessage::AgentChangedDirection { agent_key, facing } => {
                 self.actor_direction_changed(agent_key, facing).await
             }
-            BroadcastMessage::PlayerDespawned { agent_key } => {
-                self.player_despawned(agent_key).await
-            }
+            BroadcastMessage::PlayerDespawned {
+                agent_key,
+                snapshot,
+            } => self.player_despawned(agent_key, snapshot).await,
             BroadcastMessage::AgentTeleport {
                 agent_key,
                 position,
@@ -850,7 +906,28 @@ impl SessionActor {
         Ok(())
     }
 
-    async fn player_despawned(&mut self, agent_key: AgentKey) -> Result<()> {
+    async fn player_despawned(
+        &mut self,
+        agent_key: AgentKey,
+        snapshot: Option<Arc<PlayerSnapshot>>,
+    ) -> Result<()> {
+        if self.player_key == Some(agent_key) {
+            if let Some(snapshot) = snapshot {
+                if let Err(e) = self
+                    .persistence
+                    .send(PersistenceCommand::SavePlayer(snapshot.as_ref().clone()))
+                    .await
+                {
+                    error!(
+                        session = self.session_id,
+                        "Failed to save player on logout: {e}"
+                    );
+                }
+                self.player_key = None;
+                return Err(SessionError::Logout.into());
+            }
+            return Ok(());
+        }
         if let Some(agent_id) = self.agents.get_local(&agent_key) {
             self.agents.remove_by_local(agent_id);
             self.connection

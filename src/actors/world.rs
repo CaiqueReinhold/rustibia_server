@@ -54,6 +54,10 @@ pub enum WorldCommand {
     SpawnAgent {
         agent: Agent,
     },
+    RequestLogout {
+        agent_key: AgentKey,
+        session: ActorHandle<SessionCommand>,
+    },
 }
 
 #[derive(Debug)]
@@ -254,7 +258,10 @@ impl WorldActor {
             WorldCommand::DespawnPlayer { agent_key, .. } => {
                 self.map.remove_agent(agent_key);
                 info!("Player {:?} despawned after disconnect", agent_key);
-                self.add_broadcast(BroadcastMessage::PlayerDespawned { agent_key });
+                self.add_broadcast(BroadcastMessage::PlayerDespawned {
+                    agent_key,
+                    snapshot: None,
+                });
                 Ok(())
             }
             WorldCommand::SpawnAgent { agent } => {
@@ -269,10 +276,51 @@ impl WorldActor {
                     Err(anyhow!("Failed to spawn agent at {:?}", pos))
                 }
             }
+            WorldCommand::RequestLogout { agent_key, session } => {
+                self.handle_request_logout(agent_key, session).await
+            }
         };
         if let Err(e) = result {
             error!("Error on apply command: {e}");
         }
+    }
+
+    async fn handle_request_logout(
+        &mut self,
+        agent_key: AgentKey,
+        session: ActorHandle<SessionCommand>,
+    ) -> Result<()> {
+        let Some(agent) = self.map.get_agent(agent_key) else {
+            return Ok(());
+        };
+
+        if !agent.can_logout(self.tick) {
+            let next_tick = agent.next_walk_tick;
+            self.command_queue.push(ScheduledCommand {
+                at_tick: next_tick,
+                command: WorldCommand::RequestLogout {
+                    agent_key,
+                    session: session.clone(),
+                },
+            });
+            let _ = session.send(SessionCommand::LogoutDenied).await;
+            return Ok(());
+        }
+
+        let position = self.map.agent_position(agent_key).cloned();
+        let snapshot = position
+            .and_then(|pos| agent.to_snapshot(pos))
+            .map(Arc::new);
+        self.map.remove_agent(agent_key);
+        info!(
+            "Player {:?} logged out cleanly at tick {}",
+            agent_key, self.tick
+        );
+        self.add_broadcast(BroadcastMessage::PlayerDespawned {
+            agent_key,
+            snapshot,
+        });
+        Ok(())
     }
 
     async fn spawn_player(

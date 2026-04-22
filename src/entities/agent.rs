@@ -171,6 +171,10 @@ impl Agent {
         (tile_speed / (config::CONFIG.tick_duration.as_millis() as f32)).ceil() as Tick
     }
 
+    pub fn can_logout(&self, current_tick: Tick) -> bool {
+        self.next_walk_tick <= current_tick
+    }
+
     pub fn to_snapshot(&self, position: Position) -> Option<PlayerSnapshot> {
         let player = self.get_player()?;
         Some(PlayerSnapshot {
@@ -239,5 +243,22 @@ mod tests {
         assert_eq!(snap.capacity.maximum, 40000);
         assert_eq!(snap.outfit, (133, (1, 2, 3, 4)));
         assert_eq!(snap.skills[&SkillType::Speed].value, 120);
+    }
+
+    #[test]
+    fn can_logout_when_walk_tick_is_current_or_past() {
+        let agent = Agent::from_player(make_snapshot(1));
+        // next_walk_tick defaults to 0
+        assert!(agent.can_logout(0));
+        assert!(agent.can_logout(1));
+    }
+
+    #[test]
+    fn cannot_logout_when_walk_tick_is_in_future() {
+        let mut agent = Agent::from_player(make_snapshot(1));
+        agent.next_walk_tick = 10;
+        assert!(!agent.can_logout(9));
+        assert!(agent.can_logout(10));
+        assert!(agent.can_logout(11));
     }
 }

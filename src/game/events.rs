@@ -1,9 +1,12 @@
+use std::sync::Arc;
+
 use crate::entities::{
     agent::{AgentKey, Facing},
     items::ItemGuid,
     player::InventorySlot,
     position::{Direction, ItemPlacement, Position},
 };
+use crate::persistence::player::PlayerSnapshot;
 
 #[derive(Clone, Debug)]
 pub enum BroadcastMessage {
@@ -59,5 +62,6 @@ pub enum BroadcastMessage {
     },
     PlayerDespawned {
         agent_key: AgentKey,
+        snapshot: Option<Arc<PlayerSnapshot>>,
     },
 }
