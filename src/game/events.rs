@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use crate::entities::{
     agent::{AgentKey, Facing},
-    items::ItemGuid,
+    items::ItemRef,
     player::InventorySlot,
-    position::{Direction, ItemPlacement, Position},
+    position::{Direction, Position},
 };
 use crate::persistence::player::PlayerSnapshot;
 
@@ -31,16 +31,14 @@ pub enum BroadcastMessage {
     },
     OpenContainer {
         agent_key: AgentKey,
-        guid: ItemGuid,
-        placement: ItemPlacement,
+        item: ItemRef,
     },
     UseItemAck {
         agent_key: AgentKey,
         success: bool,
     },
     UpdateContainer {
-        guid: ItemGuid,
-        placement: ItemPlacement,
+        item: ItemRef,
     },
     PlayerWalkDenied {
         agent_key: AgentKey,

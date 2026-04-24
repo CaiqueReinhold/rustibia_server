@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use arc_swap::ArcSwap;
 use std::collections::binary_heap::BinaryHeap;
 use std::collections::{HashMap, VecDeque};
@@ -11,20 +11,20 @@ use tokio::{
 };
 use tracing::{debug, error, info, warn};
 
-use super::{session::SessionCommand, ActorHandle};
+use crate::actors::session::SessionActorHandle;
 use crate::config::CONFIG;
 use crate::entities::agent::{Agent, AgentKey, Facing};
-use crate::entities::items::{ItemConfig, ItemGuid, ItemId};
+use crate::entities::items::{ItemConfig, ItemGuid, ItemId, ItemRef};
 use crate::entities::map::GameMap;
 use crate::entities::position::{Direction, ItemPlacement, Position};
 use crate::game::events::BroadcastMessage;
-use crate::game::{item_action, item_movement, movement, Tick};
+use crate::game::{Tick, item_action, item_movement, item_multi_action, movement};
 
 #[derive(Clone, Debug)]
 pub enum WorldCommand {
     SpawnPlayer {
         player: Agent,
-        session: ActorHandle<SessionCommand>,
+        session: SessionActorHandle,
     },
     Walk {
         direction: Direction,
@@ -32,16 +32,19 @@ pub enum WorldCommand {
     },
     MoveItem {
         agent: AgentKey,
-        from: ItemPlacement,
-        item_guid: ItemGuid,
+        source: ItemRef,
         amount: u8,
         to: ItemPlacement,
         target_container: Option<ItemGuid>,
     },
     UseItem {
         agent: AgentKey,
-        guid: ItemGuid,
-        placement: ItemPlacement,
+        item: ItemRef,
+    },
+    UseItemWith {
+        agent: AgentKey,
+        source: ItemRef,
+        target: ItemRef,
     },
     ChangeDirection {
         agent: AgentKey,
@@ -49,21 +52,23 @@ pub enum WorldCommand {
     },
     DespawnPlayer {
         agent_key: AgentKey,
-        delay_ticks: Tick,
     },
     SpawnAgent {
         agent: Agent,
     },
     RequestLogout {
         agent_key: AgentKey,
-        session: ActorHandle<SessionCommand>,
+        session: SessionActorHandle,
+    },
+    DecayItem {
+        item: ItemRef,
     },
 }
 
 #[derive(Debug)]
 pub struct ScheduledCommand {
-    at_tick: Tick,
-    command: WorldCommand,
+    pub at_tick: Tick,
+    pub command: WorldCommand,
 }
 
 impl PartialEq for ScheduledCommand {
@@ -92,8 +97,32 @@ impl Ord for ScheduledCommand {
     }
 }
 
+#[derive(Clone, Debug)]
+pub struct WorldActorHandle {
+    tx: mpsc::Sender<(WorldCommand, Option<Tick>)>,
+}
+
+impl WorldActorHandle {
+    pub async fn send(
+        &self,
+        command: WorldCommand,
+    ) -> Result<(), mpsc::error::SendError<(WorldCommand, Option<Tick>)>> {
+        self.tx.send((command, None)).await?;
+        Ok(())
+    }
+
+    pub async fn send_delayed(
+        &self,
+        command: WorldCommand,
+        after: Tick,
+    ) -> Result<(), mpsc::error::SendError<(WorldCommand, Option<Tick>)>> {
+        self.tx.send((command, Some(after))).await?;
+        Ok(())
+    }
+}
+
 pub struct WorldActor {
-    rx: mpsc::Receiver<WorldCommand>,
+    rx: mpsc::Receiver<(WorldCommand, Option<Tick>)>,
     btx: broadcast::Sender<BroadcastMessage>,
     command_queue: BinaryHeap<ScheduledCommand>,
     map: GameMap,
@@ -109,10 +138,7 @@ impl WorldActor {
         map: GameMap,
         item_configs: Arc<HashMap<ItemId, Arc<ItemConfig>>>,
         shared_map: Arc<ArcSwap<GameMap>>,
-    ) -> (
-        ActorHandle<WorldCommand>,
-        broadcast::Receiver<BroadcastMessage>,
-    ) {
+    ) -> (WorldActorHandle, broadcast::Receiver<BroadcastMessage>) {
         let (tx, rx) = mpsc::channel(CONFIG.max_buffered_messages);
         let (btx, brx) = broadcast::channel(CONFIG.max_buffered_messages);
 
@@ -130,7 +156,7 @@ impl WorldActor {
 
         tokio::spawn(actor.run());
 
-        (ActorHandle { tx }, brx)
+        (WorldActorHandle { tx }, brx)
     }
 
     pub async fn run(mut self) {
@@ -145,13 +171,13 @@ impl WorldActor {
                     _ = ticker.tick() => {
                         break
                     },
-                    Some(cmd) = self.rx.recv() => {
-                        let at_tick = if let WorldCommand::DespawnPlayer { delay_ticks, .. } = &cmd {
-                            self.tick + delay_ticks
+                    Some((command, after)) = self.rx.recv() => {
+                        if let Some(after) = after {
+                            self.command_queue.push(ScheduledCommand { at_tick: self.tick + after, command });
                         } else {
-                            self.tick + 1
-                        };
-                        self.command_queue.push(ScheduledCommand { at_tick, command: cmd });
+                            self.command_queue.push(ScheduledCommand { at_tick: self.tick + 1, command });
+                        }
+
                     }
                 }
             }
@@ -207,6 +233,12 @@ impl WorldActor {
         }
     }
 
+    fn apply_commands(&mut self, cmds: Vec<ScheduledCommand>) {
+        for cmd in cmds {
+            self.command_queue.push(cmd);
+        }
+    }
+
     async fn handle_command(&mut self, command: WorldCommand) {
         info!("{:?}", command);
         let result: Result<()> = match command {
@@ -219,35 +251,49 @@ impl WorldActor {
             }
             WorldCommand::MoveItem {
                 agent,
-                from,
-                item_guid,
+                source,
                 amount,
                 to,
                 target_container,
-            } => item_movement::move_item(
-                &mut self.map,
-                agent,
-                from,
-                item_guid,
-                amount,
-                to,
-                target_container,
-            )
-            .map(|msgs| self.apply_broadcasts(msgs)),
-            WorldCommand::UseItem {
-                agent,
-                guid,
-                placement,
             } => {
-                let msgs = item_action::use_item(
+                let msgs = item_movement::move_item(
+                    &mut self.map,
+                    agent,
+                    source,
+                    amount,
+                    to,
+                    target_container,
+                );
+                self.apply_broadcasts(msgs);
+                Ok(())
+            }
+            WorldCommand::UseItem { agent, item } => {
+                let (msgs, cmds) = item_action::use_item(
                     &mut self.map,
                     &self.item_configs,
                     agent,
-                    guid,
-                    placement,
+                    item,
                     self.tick,
                 );
                 self.apply_broadcasts(msgs);
+                self.apply_commands(cmds);
+                Ok(())
+            }
+            WorldCommand::UseItemWith {
+                agent,
+                source,
+                target,
+            } => {
+                let (msgs, cmds) = item_multi_action::use_item_with(
+                    &mut self.map,
+                    &self.item_configs,
+                    agent,
+                    source,
+                    target,
+                    self.tick,
+                );
+                self.apply_broadcasts(msgs);
+                self.apply_commands(cmds);
                 Ok(())
             }
             WorldCommand::ChangeDirection { agent, facing } => {
@@ -279,6 +325,13 @@ impl WorldActor {
             WorldCommand::RequestLogout { agent_key, session } => {
                 self.handle_request_logout(agent_key, session).await
             }
+            WorldCommand::DecayItem { item } => {
+                let (messages, commands) =
+                    item_action::decay_item(&mut self.map, &self.item_configs, item, self.tick);
+                self.apply_broadcasts(messages);
+                self.apply_commands(commands);
+                Ok(())
+            }
         };
         if let Err(e) = result {
             error!("Error on apply command: {e}");
@@ -288,7 +341,7 @@ impl WorldActor {
     async fn handle_request_logout(
         &mut self,
         agent_key: AgentKey,
-        session: ActorHandle<SessionCommand>,
+        session: SessionActorHandle,
     ) -> Result<()> {
         let Some(agent) = self.map.get_agent(agent_key) else {
             return Ok(());
@@ -303,7 +356,7 @@ impl WorldActor {
                     session: session.clone(),
                 },
             });
-            let _ = session.send(SessionCommand::LogoutDenied).await;
+            let _ = session.logout_denied().await;
             return Ok(());
         }
 
@@ -323,11 +376,7 @@ impl WorldActor {
         Ok(())
     }
 
-    async fn spawn_player(
-        &mut self,
-        agent: Agent,
-        session: ActorHandle<SessionCommand>,
-    ) -> Result<()> {
+    async fn spawn_player(&mut self, agent: Agent, session: SessionActorHandle) -> Result<()> {
         let player = agent
             .get_player()
             .ok_or(anyhow::anyhow!("agent {:?} is not a player", agent))?;
@@ -340,16 +389,11 @@ impl WorldActor {
             .or_else(|_| self.map.insert_agent(agent, &origin))?;
 
         let Some(spawn_pos) = self.map.agent_position(agent_key).cloned() else {
-            session
-                .send(SessionCommand::PlayerSpawnResult(None))
-                .await?;
+            session.spawn_result(None).await?;
             return Ok(());
         };
 
-        if let Err(e) = session
-            .send(SessionCommand::PlayerSpawnResult(Some(agent_key)))
-            .await
-        {
+        if let Err(e) = session.spawn_result(Some(agent_key)).await {
             self.map.remove_agent(agent_key);
             return Err(e.into());
         }

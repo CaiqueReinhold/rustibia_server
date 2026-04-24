@@ -5,7 +5,7 @@ use crate::{
     },
     entities::{
         agent::{Agent, AgentKey},
-        items::{ContainerId, Item, ItemGuid, ItemId},
+        items::{ContainerId, Item, ItemGuid, ItemId, ItemRef},
         map::GameMap,
         player::InventorySlot,
         position::{Direction, ItemPlacement, Position},
@@ -164,7 +164,7 @@ pub fn retrieve_item<'a>(
     map: &'a GameMap,
     position: &'a Position,
     item_id: ItemId,
-    stack_index: u16,
+    stack_index: u8,
     containers: &'a LocalIdMap<ItemGuid>,
     agent_key: AgentKey,
 ) -> Option<(&'a Item, ItemPlacement)> {
@@ -245,4 +245,14 @@ pub fn find_parent_container<'a>(
         }
     }
     None
+}
+
+pub fn find_item_in_placement<'a>(map: &'a GameMap, item_ref: &ItemRef) -> Option<&'a Item> {
+    match &item_ref.placement {
+        ItemPlacement::Map(item_pos) => map.get_item_by_id(item_pos, &item_ref.guid),
+        ItemPlacement::Inventory(slot, inv_agent_key) => map
+            .get_player(*inv_agent_key)
+            .and_then(|player| player.inventory.get(slot))
+            .filter(|item| item.guid == item_ref.guid),
+    }
 }

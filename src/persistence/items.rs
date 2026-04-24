@@ -7,9 +7,10 @@ use serde::Deserialize;
 use thiserror::Error;
 
 use crate::entities::items::{
-    FloorChangeDirection, ItemAction, ItemAttribute, ItemConfig, ItemFlag, ItemId,
+    FloorChangeDirection, ItemAction, ItemAttribute, ItemConfig, ItemFlag, ItemId, ItemMultiAction,
 };
 use crate::entities::player::InventorySlot;
+use crate::game::Tick;
 
 #[derive(Error, Debug)]
 pub enum ItemsLoadError {
@@ -90,6 +91,16 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
                 _ => return None,
             };
             Some(ItemAttribute::Action(action))
+        }
+        "multi_action" => match value.as_str()? {
+            "shovel" => Some(ItemAttribute::MultiAction(ItemMultiAction::Shovel)),
+            "rope" => Some(ItemAttribute::MultiAction(ItemMultiAction::Rope)),
+            _ => None,
+        },
+        "decay" => {
+            let duration = value.get("duration")?.as_u64()? as Tick;
+            let decay_to = value.get("decay_to")?.as_u64()? as ItemId;
+            Some(ItemAttribute::Decay { duration, decay_to })
         }
         _ => {
             let n = value.as_u64()? as u32;

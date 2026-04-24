@@ -6,7 +6,10 @@ use super::{inventory::Inventory, player::Player};
 use crate::{
     config,
     constants::{SPEED_PARAM_A, SPEED_PARAM_B, SPEED_PARAM_C},
-    entities::{position::Position, skills::{SkillType, SkillValue}},
+    entities::{
+        position::Position,
+        skills::{SkillType, SkillValue},
+    },
     game::Tick,
     persistence::player::PlayerSnapshot,
 };
@@ -205,16 +208,40 @@ mod tests {
         PlayerSnapshot {
             id,
             name: "Rizael".to_string(),
-            position: Position { x: 100, y: 100, z: 7 },
-            origin: Position { x: 100, y: 100, z: 7 },
+            position: Position {
+                x: 100,
+                y: 100,
+                z: 7,
+            },
+            origin: Position {
+                x: 100,
+                y: 100,
+                z: 7,
+            },
             facing: Facing::North,
-            life: Pool { current: 80, maximum: 100 },
-            mana: Pool { current: 50, maximum: 100 },
-            capacity: Pool { current: 0, maximum: 40000 },
+            life: Pool {
+                current: 80,
+                maximum: 100,
+            },
+            mana: Pool {
+                current: 50,
+                maximum: 100,
+            },
+            capacity: Pool {
+                current: 0,
+                maximum: 40000,
+            },
             outfit: (133, (1, 2, 3, 4)),
             skills: {
                 let mut m = HashMap::new();
-                m.insert(SkillType::Speed, SkillValue { value: 120, current_ticks: 0, max_ticks: 0 });
+                m.insert(
+                    SkillType::Speed,
+                    SkillValue {
+                        value: 120,
+                        current_ticks: 0,
+                        max_ticks: 0,
+                    },
+                );
                 m
             },
             inventory: HashMap::new(),
@@ -224,14 +251,22 @@ mod tests {
     #[test]
     fn to_snapshot_returns_none_for_creature() {
         let creature = Agent::new_creature();
-        let pos = Position { x: 200, y: 200, z: 7 };
+        let pos = Position {
+            x: 200,
+            y: 200,
+            z: 7,
+        };
         assert!(creature.to_snapshot(pos).is_none());
     }
 
     #[test]
     fn to_snapshot_uses_passed_position_not_stored() {
         let agent = Agent::from_player(make_snapshot(1));
-        let new_pos = Position { x: 999, y: 888, z: 5 };
+        let new_pos = Position {
+            x: 999,
+            y: 888,
+            z: 5,
+        };
         let snap = agent.to_snapshot(new_pos.clone()).unwrap();
         assert_eq!(snap.position, new_pos);
         assert_eq!(snap.id, 1);

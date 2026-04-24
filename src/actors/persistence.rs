@@ -3,7 +3,6 @@ use std::sync::Arc;
 use tokio::sync::mpsc;
 use tracing::{error, info};
 
-use super::ActorHandle;
 use crate::config::CONFIG;
 use crate::persistence::player::{PlayerRepository, PlayerSnapshot};
 
@@ -12,19 +11,34 @@ pub enum PersistenceCommand {
     SavePlayer(PlayerSnapshot),
 }
 
+#[derive(Clone, Debug)]
+pub struct PersistenceActorHandle {
+    tx: mpsc::Sender<PersistenceCommand>,
+}
+
+impl PersistenceActorHandle {
+    pub async fn save_player(
+        &self,
+        player: PlayerSnapshot,
+    ) -> Result<(), mpsc::error::SendError<PersistenceCommand>> {
+        self.tx.send(PersistenceCommand::SavePlayer(player)).await?;
+        Ok(())
+    }
+}
+
 pub struct PersistenceActor {
     rx: mpsc::Receiver<PersistenceCommand>,
     repo: Arc<PlayerRepository>,
 }
 
 impl PersistenceActor {
-    pub fn start(repo: Arc<PlayerRepository>) -> ActorHandle<PersistenceCommand> {
+    pub fn start(repo: Arc<PlayerRepository>) -> PersistenceActorHandle {
         let (tx, rx) = mpsc::channel(CONFIG.max_buffered_messages);
         tokio::spawn(async move {
             let actor = Self { rx, repo };
             actor.run().await;
         });
-        ActorHandle { tx }
+        PersistenceActorHandle { tx }
     }
 
     async fn run(mut self) {

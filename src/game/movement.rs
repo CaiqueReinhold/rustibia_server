@@ -24,12 +24,6 @@ pub fn walk(
         return Err(anyhow::anyhow!("agent {:?} position not found", agent_key));
     };
 
-    info!("current pos: {:?}", current_pos);
-    info!(
-        "current tick {} next walk {}",
-        current_tick, agent.next_walk_tick
-    );
-
     if agent.next_walk_tick > current_tick {
         broadcasts.push(BroadcastMessage::PlayerWalkDenied { agent_key });
         return Ok(broadcasts);
@@ -70,7 +64,6 @@ pub fn walk(
     });
 
     if let Some(floor_change) = floor_change {
-        info!("pos: {:?}, floor change: {:?}", new_pos, floor_change);
         let position = match floor_change {
             FloorChangeDirection::Up => Position::new(new_pos.x, new_pos.y, new_pos.z - 1),
             FloorChangeDirection::Down => {
@@ -112,11 +105,11 @@ pub fn change_direction(
     facing: Facing,
 ) -> Vec<BroadcastMessage> {
     let current_facing = map.get_agent(agent_key).map(|agent| agent.facing);
-    if let Some(current_facing) = current_facing {
-        if facing != current_facing {
-            map.get_agent_mut(agent_key).unwrap().facing = facing;
-            return vec![BroadcastMessage::AgentChangedDirection { agent_key, facing }];
-        }
+    if let Some(current_facing) = current_facing
+        && facing != current_facing
+    {
+        map.get_agent_mut(agent_key).unwrap().facing = facing;
+        return vec![BroadcastMessage::AgentChangedDirection { agent_key, facing }];
     }
     vec![]
 }

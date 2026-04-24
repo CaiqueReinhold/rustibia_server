@@ -1,16 +1,24 @@
 use std::{collections::HashMap, sync::Arc};
 
 use thiserror::Error;
-use tracing::warn;
+use tracing::{error, warn};
 
-use crate::entities::{
-    agent::AgentKey,
-    items::{Item, ItemAction, ItemConfig, ItemFlag, ItemGuid, ItemId},
-    map::GameMap,
-    position::ItemPlacement,
+use crate::{
+    actors::world::{ScheduledCommand, WorldCommand},
+    entities::{
+        agent::AgentKey,
+        items::{Item, ItemAction, ItemConfig, ItemFlag, ItemId, ItemRef},
+        map::GameMap,
+        position::ItemPlacement,
+    },
+    game::{
+        Tick,
+        game_config::GAME_CONFIG,
+        item_movement::{ItemMovementError, insert_item_at, remove_item_at},
+    },
 };
 
-use super::events::BroadcastMessage;
+use super::{events::BroadcastMessage, map_query::find_item_in_placement};
 
 #[derive(Error, Debug)]
 pub enum ItemActionError {
@@ -20,99 +28,166 @@ pub enum ItemActionError {
     InvalidState,
 }
 
+pub fn decay_item(
+    map: &mut GameMap,
+    item_configs: &HashMap<ItemId, Arc<ItemConfig>>,
+    item_ref: ItemRef,
+    current_tick: Tick,
+) -> (Vec<BroadcastMessage>, Vec<ScheduledCommand>) {
+    let (mut broadcasts, mut commands) = (vec![], vec![]);
+    let Some(item) = find_item_in_placement(map, &item_ref) else {
+        return (broadcasts, commands);
+    };
+    let Some((_, decay_to)) = item.get_decay() else {
+        return (broadcasts, commands);
+    };
+    let Some(config) = item_configs.get(&decay_to) else {
+        error!("Config not found for item id {decay_to}");
+        return (broadcasts, commands);
+    };
+    let new_item = Item::new(decay_to, config.clone(), 1);
+    check_decay(
+        &mut commands,
+        &new_item,
+        item_ref.placement.clone(),
+        current_tick,
+    );
+    let Ok((old_item, source_index, source_cointainer)) =
+        remove_item_at(&mut broadcasts, map, &item_ref, 1)
+    else {
+        return (vec![], vec![]);
+    };
+    if insert_item_at(
+        &mut broadcasts,
+        map,
+        new_item,
+        source_cointainer.as_ref(),
+        &item_ref.placement,
+        source_index,
+    )
+    .is_err()
+    {
+        if let Err(e) = insert_item_at(
+            &mut broadcasts,
+            map,
+            old_item.clone(),
+            source_cointainer.as_ref(),
+            &item_ref.placement,
+            source_index,
+        ) {
+            error!(
+                "Failed to revert item move. Item {:?} at {:?}. Error {}",
+                old_item, item_ref.placement, e
+            );
+        }
+        return (vec![], vec![]);
+    };
+
+    (broadcasts, commands)
+}
+
+fn check_decay(
+    commands: &mut Vec<ScheduledCommand>,
+    item: &Item,
+    placement: ItemPlacement,
+    current_tick: Tick,
+) {
+    if let Some((duration, _)) = item.get_decay() {
+        commands.push(ScheduledCommand {
+            at_tick: current_tick + duration,
+            command: WorldCommand::DecayItem {
+                item: ItemRef {
+                    guid: item.guid.clone(),
+                    placement,
+                },
+            },
+        });
+    }
+}
+
 pub fn use_item(
     map: &mut GameMap,
     item_configs: &HashMap<ItemId, Arc<ItemConfig>>,
     agent_key: AgentKey,
-    guid: ItemGuid,
-    placement: ItemPlacement,
-    current_tick: u64,
-) -> Vec<BroadcastMessage> {
-    if !map
+    item_ref: ItemRef,
+    current_tick: Tick,
+) -> (Vec<BroadcastMessage>, Vec<ScheduledCommand>) {
+    let use_item_failed = || {
+        (
+            vec![BroadcastMessage::UseItemAck {
+                agent_key,
+                success: false,
+            }],
+            vec![],
+        )
+    };
+    if map
         .get_agent(agent_key)
-        .map(|agent| agent.next_use_tick >= current_tick)
+        .map(|agent| agent.next_use_tick > current_tick)
         .unwrap_or(false)
     {
-        return vec![BroadcastMessage::UseItemAck {
-            agent_key,
-            success: false,
-        }];
+        return use_item_failed();
     }
 
-    let item = match &placement {
-        ItemPlacement::Map(item_pos) => {
-            if map
-                .agent_position(agent_key)
-                .filter(|player_pos| player_pos.is_adjacent(item_pos))
-                .is_none()
-            {
-                return vec![BroadcastMessage::UseItemAck {
-                    agent_key,
-                    success: false,
-                }];
-            }
-            map.get_item_by_id(item_pos, &guid)
-        }
-        ItemPlacement::Inventory(slot, inv_agent_key) => map
-            .get_player(*inv_agent_key)
-            .and_then(|player| player.inventory.get(slot))
-            .filter(|item| item.guid == guid),
-    };
+    if map
+        .agent_position(agent_key)
+        .filter(|player_pos| player_pos.placement_is_adjacent(&item_ref.placement))
+        .is_none()
+    {
+        return use_item_failed();
+    }
 
-    let Some(item) = item else {
-        return vec![BroadcastMessage::UseItemAck {
-            agent_key,
-            success: false,
-        }];
+    let Some(item) = find_item_in_placement(map, &item_ref) else {
+        return use_item_failed();
     };
 
     if !item.config.has_flag(ItemFlag::Usable) {
-        return vec![BroadcastMessage::UseItemAck {
-            agent_key,
-            success: false,
-        }];
+        return use_item_failed();
     }
 
     let is_container = item.config.has_flag(ItemFlag::Container);
     let action = item.get_action();
 
     if is_container {
-        vec![
-            BroadcastMessage::UseItemAck {
-                agent_key,
-                success: true,
-            },
-            BroadcastMessage::OpenContainer {
-                agent_key,
-                guid,
-                placement,
-            },
-        ]
+        return (
+            vec![
+                BroadcastMessage::UseItemAck {
+                    agent_key,
+                    success: true,
+                },
+                BroadcastMessage::OpenContainer {
+                    agent_key,
+                    item: item_ref,
+                },
+            ],
+            vec![],
+        );
     } else if let Some(action) = action {
-        match route_action(&action, item_configs, map, agent_key, &placement, &guid) {
-            Ok(mut action_broadcasts) => {
+        match route_action(
+            &action,
+            item_configs,
+            map,
+            agent_key,
+            &item_ref,
+            current_tick,
+        ) {
+            Ok((mut action_broadcasts, scheduled_commands)) => {
+                map.get_agent_mut(agent_key).unwrap().next_use_tick =
+                    current_tick + GAME_CONFIG.action.use_item_cooldown_ticks;
                 action_broadcasts.push(BroadcastMessage::UseItemAck {
                     agent_key,
                     success: true,
                 });
-                action_broadcasts
+                return (action_broadcasts, scheduled_commands);
             }
             Err(e) => {
                 if let ItemActionError::InvalidState = e {
                     warn!("{e}");
                 }
-                vec![BroadcastMessage::UseItemAck {
-                    agent_key,
-                    success: false,
-                }]
             }
         }
-    } else {
-        vec![BroadcastMessage::UseItemAck {
-            agent_key,
-            success: false,
-        }]
     }
+    use_item_failed()
 }
 
 pub fn route_action(
@@ -120,89 +195,90 @@ pub fn route_action(
     item_configs: &HashMap<ItemId, Arc<ItemConfig>>,
     map: &mut GameMap,
     _agent_key: AgentKey,
-    placement: &ItemPlacement,
-    guid: &ItemGuid,
-) -> Result<Vec<BroadcastMessage>, ItemActionError> {
+    item: &ItemRef,
+    current_tick: Tick,
+) -> Result<(Vec<BroadcastMessage>, Vec<ScheduledCommand>), ItemActionError> {
     let mut broadcasts = Vec::new();
+    let mut commands = Vec::new();
     match action {
-        ItemAction::Transform { into } => {
-            transform(&mut broadcasts, map, item_configs, placement, guid, *into)?
-        }
+        ItemAction::Transform { into } => transform(
+            &mut broadcasts,
+            &mut commands,
+            map,
+            item_configs,
+            item,
+            *into,
+            current_tick,
+        )?,
     };
-    Ok(broadcasts)
+    Ok((broadcasts, commands))
 }
 
-fn transform(
+pub(super) fn transform(
     broadcasts: &mut Vec<BroadcastMessage>,
+    commands: &mut Vec<ScheduledCommand>,
     map: &mut GameMap,
     item_configs: &HashMap<ItemId, Arc<ItemConfig>>,
-    placement: &ItemPlacement,
-    guid: &ItemGuid,
+    item: &ItemRef,
     into: ItemId,
+    current_tick: Tick,
 ) -> Result<(), ItemActionError> {
-    let old_item = match placement {
-        ItemPlacement::Map(pos) => map.remove_item_from_tile(pos, guid, 1),
-        ItemPlacement::Inventory(slot, agent_key) => map
-            .get_player_mut(*agent_key)
-            .and_then(|player| player.inventory.remove(*slot, guid, 1)),
+    let Ok((old_item, source_index, source_container)) = remove_item_at(broadcasts, map, item, 1)
+    else {
+        return Err(ItemActionError::ActionFailed);
     };
 
-    if let Some((old_item, container)) = old_item {
-        let config = item_configs
-            .get(&into)
-            .unwrap_or_else(|| panic!("item config missing for transform target {into}"));
-        let new_item = Item::new(into, config.clone(), 1);
-        match placement {
-            ItemPlacement::Map(pos) => {
-                let container = container.as_ref().map(|(g, i)| (g, *i));
-                if map.place_item(pos, container, new_item).is_err() {
-                    let _ = map.place_item(pos, container, old_item);
-                    return Err(ItemActionError::ActionFailed);
-                }
-                broadcasts.push(BroadcastMessage::TileChanged {
-                    position: pos.clone(),
-                });
-            }
-            ItemPlacement::Inventory(slot, agent_key) => {
-                let container = container.as_ref().map(|(g, i)| (g, *i));
-                let can_carry = map
-                    .get_player(*agent_key)
-                    .map(|player| player.can_carry(new_item.total_weight()));
-                if let Some(can_carry) = can_carry {
-                    if can_carry {
-                        if let Some(player) = map.get_player_mut(*agent_key) {
-                            if player.inventory.insert(*slot, container, new_item).is_err() {
-                                let _ = player.inventory.insert(*slot, container, old_item);
-                                return Err(ItemActionError::ActionFailed);
-                            }
-                            if let Some((guid, _)) = container {
-                                broadcasts.push(BroadcastMessage::UpdateContainer {
-                                    guid: guid.clone(),
-                                    placement: placement.clone(),
-                                })
-                            } else {
-                                broadcasts.push(BroadcastMessage::UpdateInventorySlot {
-                                    agent_key: *agent_key,
-                                    slot: *slot,
-                                });
-                            }
-                        }
-                    } else if let Some(pos) = map.agent_position(*agent_key).cloned() {
-                        if map.place_item(&pos, None, new_item).is_err() {
-                            let _ = map.get_player_mut(*agent_key).and_then(|player| {
-                                player.inventory.insert(*slot, container, old_item).ok()
-                            });
-                            return Err(ItemActionError::ActionFailed);
-                        }
-                        broadcasts.push(BroadcastMessage::TileChanged { position: pos });
-                    }
+    let config = item_configs
+        .get(&into)
+        .unwrap_or_else(|| panic!("item config missing for transform target {into}"));
+    let new_item = Item::new(into, config.clone(), 1);
+    check_decay(commands, &new_item, item.placement.clone(), current_tick);
+
+    if let Err(e) = insert_item_at(
+        broadcasts,
+        map,
+        new_item.clone(),
+        source_container.as_ref(),
+        &item.placement,
+        source_index,
+    ) {
+        let result = match e {
+            ItemMovementError::NotEnoughCap
+                if let ItemPlacement::Inventory(_, agent_key) = &item.placement =>
+            {
+                if let Some(pos) = map.agent_position(*agent_key).cloned() {
+                    insert_item_at(
+                        broadcasts,
+                        map,
+                        new_item,
+                        None,
+                        &ItemPlacement::Map(pos),
+                        None,
+                    )
                 } else {
-                    return Err(ItemActionError::InvalidState);
+                    Err(ItemMovementError::PlayerDespawned)
                 }
             }
+            e => Err(e),
         };
-    } else {
-        return Err(ItemActionError::ActionFailed);
+
+        if result.is_err() {
+            if let Err(e) = insert_item_at(
+                broadcasts,
+                map,
+                old_item.clone(),
+                source_container.as_ref(),
+                &item.placement,
+                source_index,
+            ) {
+                error!(
+                    "Failed to revert item move. Item {:?} at {:?}. Error: {}",
+                    old_item, item.placement, e
+                );
+            }
+
+            return Err(ItemActionError::ActionFailed);
+        }
     }
 
     Ok(())

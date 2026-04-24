@@ -9,6 +9,8 @@ use crate::entities::items::{FloorChangeDirection, Item, ItemAttribute, ItemFlag
 use crate::entities::player::Player;
 use crate::entities::position::Position;
 
+pub type RemovedItem = (Item, Option<usize>, Option<(ItemGuid, usize)>);
+
 #[derive(Debug, Clone)]
 pub struct MapTile {
     items: SmallVec<[Item; MAX_VISIBLE_ITEMS]>,
@@ -86,12 +88,11 @@ impl GameMap {
 
     /// Remove an agent entirely. Returns the `Agent` on success.
     pub fn remove_agent(&mut self, key: AgentKey) -> Option<Agent> {
-        if let Some(pos) = self.agent_positions.remove(&key) {
-            if let Some(tile) = self.tiles.get_mut(&pos) {
-                if let Some(idx) = tile.agents.iter().position(|k| *k == key) {
-                    tile.agents.remove(idx);
-                }
-            }
+        if let Some(pos) = self.agent_positions.remove(&key)
+            && let Some(tile) = self.tiles.get_mut(&pos)
+            && let Some(idx) = tile.agents.iter().position(|k| *k == key)
+        {
+            tile.agents.remove(idx);
         }
         self.agents.remove(key)
     }
@@ -172,13 +173,12 @@ impl GameMap {
         let Ok(tile) = self.get_tile(pos) else {
             return None;
         };
-        let friction = tile.items.iter().find_map(|i| {
+        tile.items.iter().find_map(|i| {
             i.config.get_attributes().find_map(|attr| match attr {
                 ItemAttribute::TileFriction(f) => Some(*f),
                 _ => None,
             })
-        });
-        friction
+        })
     }
 
     pub fn get_floor_change(&self, pos: &Position) -> Option<FloorChangeDirection> {
@@ -199,6 +199,13 @@ impl GameMap {
     ) -> Result<impl Iterator<Item = &Item>, MapError> {
         let tile = self.get_tile(pos)?;
         Ok(tile.items.iter().take(MAX_VISIBLE_ITEMS))
+    }
+
+    pub fn get_top_item(&self, pos: &Position) -> Option<&Item> {
+        let Ok(tile) = self.get_tile(pos) else {
+            return None;
+        };
+        tile.items.last()
     }
 
     pub fn get_item_at(&self, pos: &Position, index: usize) -> Option<&Item> {
@@ -226,7 +233,7 @@ impl GameMap {
         pos: &Position,
         guid: &ItemGuid,
         amount: u8,
-    ) -> Option<(Item, Option<(ItemGuid, usize)>)> {
+    ) -> Option<RemovedItem> {
         let tile = self.get_tile_mut(pos).ok()?;
 
         if let Some(idx) = tile.items.iter().position(|i| i.guid == *guid) {
@@ -242,10 +249,11 @@ impl GameMap {
                         amount,
                         content: None,
                     },
+                    Some(idx),
                     None,
                 ));
             } else if current_amount == amount {
-                return Some((tile.items.remove(idx), None));
+                return Some((tile.items.remove(idx), Some(idx), None));
             }
             return None;
         }
@@ -253,8 +261,8 @@ impl GameMap {
         for item in tile.items.iter_mut() {
             if let Some(content) = &mut item.content {
                 let found = Self::remove_from_container(&item.guid, content, guid, amount);
-                if found.is_some() {
-                    return found;
+                if let Some((item, parent)) = found {
+                    return Some((item, None, parent));
                 }
             }
         }
@@ -307,13 +315,14 @@ impl GameMap {
     pub fn place_item(
         &mut self,
         pos: &Position,
+        index: Option<usize>,
         container: Option<(&ItemGuid, usize)>,
         item: Item,
     ) -> Result<(), MapError> {
         match container {
             None => {
                 let tile = self.get_tile_mut(pos)?;
-                tile.items.push(item);
+                tile.items.insert(index.unwrap_or(tile.items.len()), item);
                 Ok(())
             }
             Some((target, slot)) => {

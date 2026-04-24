@@ -1,17 +1,7 @@
 use crate::entities::items::{Item, ItemGuid};
 use crate::entities::player::InventorySlot;
+use crate::game::item_movement::ItemMovementError;
 use std::collections::HashMap;
-use thiserror::Error;
-
-#[derive(Error, Debug)]
-pub enum InventoryError {
-    #[error("Item does not exist in slot")]
-    ItemNotInPosition,
-    #[error("Container is full")]
-    ContainerIsFull,
-    #[error("Cannot equip this")]
-    CannotEquip,
-}
 
 #[derive(Debug, Clone)]
 pub struct Inventory {
@@ -40,7 +30,7 @@ impl Inventory {
         slot: InventorySlot,
         container: Option<(&ItemGuid, usize)>,
         item: Item,
-    ) -> Result<Option<Item>, InventoryError> {
+    ) -> Result<Option<Item>, ItemMovementError> {
         match container {
             None => {
                 let weight_added = item.total_weight();
@@ -55,17 +45,17 @@ impl Inventory {
                 let slot_item = self
                     .slots
                     .get_mut(&slot)
-                    .ok_or(InventoryError::ItemNotInPosition)?;
+                    .ok_or(ItemMovementError::ItemNotInPosition)?;
                 let container = slot_item
                     .find_by_guid_mut(target_guid)
-                    .ok_or(InventoryError::ItemNotInPosition)?;
+                    .ok_or(ItemMovementError::ItemNotInPosition)?;
                 let cap = container.container_capacity().unwrap();
                 let content = container
                     .content
                     .as_mut()
-                    .ok_or(InventoryError::ItemNotInPosition)?;
+                    .ok_or(ItemMovementError::ItemNotInPosition)?;
                 if content.len() >= cap as usize {
-                    return Err(InventoryError::ContainerIsFull);
+                    return Err(ItemMovementError::ContainerIsFull);
                 }
                 self.carried_weight += item.total_weight();
                 content.insert(container_pos, item);

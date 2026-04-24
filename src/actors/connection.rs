@@ -18,7 +18,8 @@ use tokio_stream::StreamExt;
 use tokio_util::codec::{FramedRead, FramedWrite};
 use tracing::{debug, error, info};
 
-use super::{auth::AuthCommand, session::SessionCommand, ActorHandle};
+use crate::actors::auth::AuthActorHandle;
+use crate::actors::session::SessionActorHandle;
 use crate::config::CONFIG;
 use crate::messages::{ClientMessage, GameMessageCodec, MessageDecodeError, ServerMessage};
 
@@ -26,7 +27,7 @@ use crate::messages::{ClientMessage, GameMessageCodec, MessageDecodeError, Serve
 pub enum ConnectionCommand {
     Close,
     SendPlayerMessage(ServerMessage),
-    SetSession(ActorHandle<SessionCommand>),
+    SetSession(SessionActorHandle),
 }
 
 #[derive(Error, Debug)]
@@ -42,8 +43,38 @@ pub enum ConnectionError {
 }
 
 enum Upstream {
-    Auth(ActorHandle<AuthCommand>),
-    Session(ActorHandle<SessionCommand>),
+    Auth(AuthActorHandle),
+    Session(SessionActorHandle),
+}
+
+#[derive(Clone, Debug)]
+pub struct ConnectionActorHandle {
+    tx: mpsc::Sender<ConnectionCommand>,
+}
+
+impl ConnectionActorHandle {
+    pub async fn close(&self) -> Result<(), mpsc::error::SendError<ConnectionCommand>> {
+        self.tx.send(ConnectionCommand::Close).await?;
+        Ok(())
+    }
+
+    pub async fn send_message(
+        &self,
+        msg: ServerMessage,
+    ) -> Result<(), mpsc::error::SendError<ConnectionCommand>> {
+        self.tx
+            .send(ConnectionCommand::SendPlayerMessage(msg))
+            .await?;
+        Ok(())
+    }
+
+    pub async fn set_session(
+        &self,
+        session: SessionActorHandle,
+    ) -> Result<(), mpsc::error::SendError<ConnectionCommand>> {
+        self.tx.send(ConnectionCommand::SetSession(session)).await?;
+        Ok(())
+    }
 }
 
 pub struct ConnectionActor {
@@ -58,8 +89,8 @@ impl ConnectionActor {
     pub fn start(
         session_id: String,
         stream: TcpStream,
-        auth: ActorHandle<AuthCommand>,
-    ) -> ActorHandle<ConnectionCommand> {
+        auth: AuthActorHandle,
+    ) -> ConnectionActorHandle {
         let (tx, rx) = mpsc::channel(CONFIG.max_buffered_messages);
         let (read, write) = stream.into_split();
 
@@ -73,7 +104,7 @@ impl ConnectionActor {
 
         tokio::spawn(actor.run());
 
-        ActorHandle { tx }
+        ConnectionActorHandle { tx }
     }
 
     async fn run(mut self) {
@@ -90,7 +121,7 @@ impl ConnectionActor {
             }
         }
         if let Upstream::Session(session) = self.upstream {
-            let _ = session.send(SessionCommand::Close).await;
+            let _ = session.close().await;
         }
         info!(session = self.session_id, "Connection finished");
     }
@@ -105,14 +136,8 @@ impl ConnectionActor {
             "Connection received message: {:?}", msg
         );
         let send_result = match &self.upstream {
-            Upstream::Auth(auth) => auth
-                .send(AuthCommand::ReceivePlayerMessage(msg))
-                .await
-                .is_err(),
-            Upstream::Session(session) => session
-                .send(SessionCommand::ReceivePlayerMessage(msg))
-                .await
-                .is_err(),
+            Upstream::Auth(auth) => auth.receive_message(msg).await.is_err(),
+            Upstream::Session(session) => session.receive_message(msg).await.is_err(),
         };
         if send_result {
             return Err(ConnectionError::ServerError);

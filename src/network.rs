@@ -9,11 +9,8 @@ use tokio::{
 use uuid::{NoContext, Timestamp};
 
 use crate::{
-    actors::{
-        auth::AuthActor,
-        connection::{ConnectionActor, ConnectionCommand},
-    },
     Context,
+    actors::{auth::AuthActor, connection::ConnectionActor},
 };
 
 pub struct Listener {
@@ -59,7 +56,7 @@ impl Listener {
 
         if let Err(conn) = conn_tx.send(connection) {
             info!("failed to open connection");
-            conn.send(ConnectionCommand::Close).await?;
+            conn.close().await?;
         }
         Ok(())
     }

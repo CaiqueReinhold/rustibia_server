@@ -21,26 +21,28 @@ use arc_swap::ArcSwap;
 
 use crate::{
     actors::{
-        persistence::{PersistenceActor, PersistenceCommand},
-        world::{WorldActor, WorldCommand},
-        ActorHandle,
+        persistence::{PersistenceActor, PersistenceActorHandle},
+        world::{WorldActor, WorldActorHandle},
     },
     entities::map::GameMap,
-    game::events::BroadcastMessage,
+    game::{events::BroadcastMessage, game_config::GAME_CONFIG},
     persistence::player::PlayerRepository,
 };
 
 pub struct Context {
     player_repo: Arc<PlayerRepository>,
-    world: ActorHandle<WorldCommand>,
+    world: WorldActorHandle,
     broadcast_receiver: Receiver<BroadcastMessage>,
     shared_map: Arc<ArcSwap<GameMap>>,
-    persistence: ActorHandle<PersistenceCommand>,
+    persistence: PersistenceActorHandle,
 }
 
 #[tokio::main(worker_threads = 4)]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
+
+    // access lazy config to make sure it loaded correctly
+    let _ = &GAME_CONFIG.action;
 
     let items = Arc::new(persistence::items::load_items(&CONFIG.items_file_path).unwrap());
     let map = persistence::map::load_map(&CONFIG.map_file_path, &items).unwrap();

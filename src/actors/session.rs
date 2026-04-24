@@ -8,17 +8,17 @@ use tokio::sync::mpsc;
 use tracing::error;
 use tracing::info;
 
-use super::{
-    connection::ConnectionCommand, persistence::PersistenceCommand, world::WorldCommand,
-    ActorHandle,
-};
+use super::world::WorldCommand;
+use crate::actors::connection::ConnectionActorHandle;
+use crate::actors::persistence::PersistenceActorHandle;
 use crate::actors::player_query::get_agent_desc;
 use crate::actors::player_query::get_agents_in_viewport;
 use crate::actors::player_query::get_player_desc;
+use crate::actors::world::WorldActorHandle;
 use crate::config::CONFIG;
 use crate::entities::agent::Agent;
 use crate::entities::agent::Facing;
-use crate::entities::items::{ContainerId, ItemAttribute, ItemFlag, ItemGuid};
+use crate::entities::items::{ContainerId, ItemAttribute, ItemFlag, ItemGuid, ItemRef};
 use crate::entities::player::InventorySlot;
 use crate::entities::position::ItemPlacement;
 use crate::game::events::BroadcastMessage;
@@ -63,33 +63,70 @@ pub enum SessionCommand {
     LogoutDenied,
 }
 
+#[derive(Clone, Debug)]
+pub struct SessionActorHandle {
+    tx: mpsc::Sender<SessionCommand>,
+}
+
+impl SessionActorHandle {
+    pub async fn close(&self) -> Result<(), mpsc::error::SendError<SessionCommand>> {
+        self.tx.send(SessionCommand::Close).await?;
+        Ok(())
+    }
+
+    pub async fn spawn_result(
+        &self,
+        agent_key: Option<AgentKey>,
+    ) -> Result<(), mpsc::error::SendError<SessionCommand>> {
+        self.tx
+            .send(SessionCommand::PlayerSpawnResult(agent_key))
+            .await?;
+        Ok(())
+    }
+
+    pub async fn receive_message(
+        &self,
+        msg: ClientMessage,
+    ) -> Result<(), mpsc::error::SendError<SessionCommand>> {
+        self.tx
+            .send(SessionCommand::ReceivePlayerMessage(msg))
+            .await?;
+        Ok(())
+    }
+
+    pub async fn logout_denied(&self) -> Result<(), mpsc::error::SendError<SessionCommand>> {
+        self.tx.send(SessionCommand::LogoutDenied).await?;
+        Ok(())
+    }
+}
+
 pub struct SessionActor {
     session_id: String,
     rx: mpsc::Receiver<SessionCommand>,
     brx: broadcast::Receiver<BroadcastMessage>,
-    connection: ActorHandle<ConnectionCommand>,
-    world: ActorHandle<WorldCommand>,
+    connection: ConnectionActorHandle,
+    world: WorldActorHandle,
     player_key: Option<AgentKey>,
     shared_map: Arc<ArcSwap<GameMap>>,
     containers: LocalIdMap<ItemGuid>,
     agents: LocalIdMap<AgentKey>,
-    persistence: ActorHandle<PersistenceCommand>,
-    self_handle: ActorHandle<SessionCommand>,
+    persistence: PersistenceActorHandle,
+    self_handle: SessionActorHandle,
     logout_pending: bool,
 }
 
 impl SessionActor {
     pub fn start(
         session_id: String,
-        connection: ActorHandle<ConnectionCommand>,
+        connection: ConnectionActorHandle,
         agent: Agent,
-        world: ActorHandle<WorldCommand>,
+        world: WorldActorHandle,
         receiver: broadcast::Receiver<BroadcastMessage>,
         shared_map: Arc<ArcSwap<GameMap>>,
-        persistence: ActorHandle<PersistenceCommand>,
-    ) -> ActorHandle<SessionCommand> {
+        persistence: PersistenceActorHandle,
+    ) -> SessionActorHandle {
         let (tx, rx) = mpsc::channel(CONFIG.max_buffered_messages);
-        let self_handle = ActorHandle { tx };
+        let self_handle = SessionActorHandle { tx };
 
         let self_handle_clone = self_handle.clone();
         tokio::spawn(async move {
@@ -127,11 +164,7 @@ impl SessionActor {
         let Some(snapshot) = agent.to_snapshot(position.clone()) else {
             return;
         };
-        if let Err(e) = self
-            .persistence
-            .send(PersistenceCommand::SavePlayer(snapshot))
-            .await
-        {
+        if let Err(e) = self.persistence.save_player(snapshot).await {
             error!(
                 session = self.session_id,
                 "Failed to queue player save: {e}"
@@ -152,7 +185,7 @@ impl SessionActor {
             .await
         {
             error!(session = self.session_id, "Failed to spawn player: {e}");
-            let _ = self.connection.send(ConnectionCommand::Close).await;
+            let _ = self.connection.close().await;
             return;
         }
 
@@ -175,7 +208,7 @@ impl SessionActor {
             };
             if let Err(e) = result {
                 if e.downcast_ref::<SessionError>()
-                    .map_or(false, |e| matches!(e, SessionError::Logout))
+                    .is_some_and(|e| matches!(e, SessionError::Logout))
                 {
                     info!(session = self.session_id, "Player logged out cleanly");
                 } else {
@@ -186,17 +219,14 @@ impl SessionActor {
         }
 
         self.save_player().await;
-        let _ = self.connection.send(ConnectionCommand::Close).await;
+        let _ = self.connection.close().await;
 
         if let Some(agent_key) = self.player_key {
             let delay_ticks =
                 (CONFIG.player_despawn_delay.as_millis() / CONFIG.tick_duration.as_millis()) as u64;
             let _ = self
                 .world
-                .send(WorldCommand::DespawnPlayer {
-                    agent_key,
-                    delay_ticks,
-                })
+                .send_delayed(WorldCommand::DespawnPlayer { agent_key }, delay_ticks)
                 .await;
         }
     }
@@ -216,18 +246,16 @@ impl SessionActor {
 
     async fn logout_denied(&self) -> Result<()> {
         self.connection
-            .send(ConnectionCommand::SendPlayerMessage(
-                ServerMessage::TextMessage {
-                    text: "You may not logout right now.".to_string(),
-                    message_type: TextMessageType::LogoutDenied,
-                },
-            ))
+            .send_message(ServerMessage::TextMessage {
+                text: "You may not logout right now.".to_string(),
+                message_type: TextMessageType::LogoutDenied,
+            })
             .await?;
         Ok(())
     }
 
     async fn close_connection(&self) -> Result<()> {
-        self.connection.send(ConnectionCommand::Close).await?;
+        self.connection.close().await?;
         Ok(())
     }
 
@@ -242,9 +270,7 @@ impl SessionActor {
     }
 
     async fn pong(&self) -> Result<()> {
-        self.connection
-            .send(ConnectionCommand::SendPlayerMessage(ServerMessage::Pong))
-            .await?;
+        self.connection.send_message(ServerMessage::Pong).await?;
         Ok(())
     }
 
@@ -283,6 +309,24 @@ impl SessionActor {
                 self.handle_change_direction(direction).await
             }
             ClientMessage::Logout => self.handle_logout().await,
+            ClientMessage::UseItemWith {
+                source,
+                source_item_id,
+                source_index,
+                target,
+                target_item_id,
+                target_index,
+            } => {
+                self.handle_use_item_with(
+                    source,
+                    source_item_id,
+                    source_index,
+                    target,
+                    target_item_id,
+                    target_index,
+                )
+                .await
+            }
         }
     }
 
@@ -314,11 +358,9 @@ impl SessionActor {
         let map = self.shared_map.load();
         if let Some(position) = map.agent_position(self.player_key.unwrap()) {
             self.connection
-                .send(ConnectionCommand::SendPlayerMessage(
-                    ServerMessage::PlayerPosition {
-                        position: position.clone(),
-                    },
-                ))
+                .send_message(ServerMessage::PlayerPosition {
+                    position: position.clone(),
+                })
                 .await?;
         } else {
             return Err(SessionError::WrongMessageType.into());
@@ -331,7 +373,7 @@ impl SessionActor {
         from: Position,
         item_id: ItemId,
         amount: u8,
-        stack_index: u16,
+        stack_index: u8,
         to: Position,
     ) -> Result<()> {
         let map = self.shared_map.load();
@@ -382,8 +424,10 @@ impl SessionActor {
         self.world
             .send(WorldCommand::MoveItem {
                 agent: player_key,
-                from: source_placement,
-                item_guid,
+                source: ItemRef {
+                    guid: item_guid,
+                    placement: source_placement,
+                },
                 amount,
                 to: target_placement,
                 target_container,
@@ -397,12 +441,11 @@ impl SessionActor {
         &self,
         position: Position,
         item_id: ItemId,
-        stack_index: u16,
+        stack_index: u8,
     ) -> Result<()> {
         let map = self.shared_map.load();
         let player_key = self.player_key.unwrap();
 
-        // Resolve the item's position and guid using the session-local container map.
         let Some((item, placement)) = retrieve_item(
             &map,
             &position,
@@ -417,8 +460,61 @@ impl SessionActor {
         self.world
             .send(WorldCommand::UseItem {
                 agent: player_key,
-                guid: item.guid.clone(),
-                placement,
+                item: ItemRef {
+                    guid: item.guid.clone(),
+                    placement,
+                },
+            })
+            .await?;
+
+        Ok(())
+    }
+
+    async fn handle_use_item_with(
+        &self,
+        source: Position,
+        source_item_id: ItemId,
+        source_index: u8,
+        target: Position,
+        target_item_id: ItemId,
+        target_index: u8,
+    ) -> Result<()> {
+        let map = self.shared_map.load();
+        let player_key = self.player_key.unwrap();
+
+        let Some((source_item, source_placement)) = retrieve_item(
+            &map,
+            &source,
+            source_item_id,
+            source_index,
+            &self.containers,
+            player_key,
+        ) else {
+            return Ok(());
+        };
+
+        let Some((target_item, target_placement)) = retrieve_item(
+            &map,
+            &target,
+            target_item_id,
+            target_index,
+            &self.containers,
+            player_key,
+        ) else {
+            return Ok(());
+        };
+
+        self.world
+            .send(WorldCommand::UseItemWith {
+                agent: player_key,
+                source: ItemRef {
+                    guid: source_item.guid.clone(),
+                    placement: source_placement,
+                },
+                target: ItemRef {
+                    guid: target_item.guid.clone(),
+                    placement: target_placement,
+                },
             })
             .await?;
 
@@ -432,7 +528,13 @@ impl SessionActor {
             let container = find_parent_container(&map, guid, self.player_key.unwrap());
             if let Some((parent_guid, placement)) = container {
                 return self
-                    .open_container(self.player_key.unwrap(), parent_guid.clone(), placement)
+                    .open_container(
+                        self.player_key.unwrap(),
+                        ItemRef {
+                            guid: parent_guid.clone(),
+                            placement,
+                        },
+                    )
                     .await;
             }
         }
@@ -475,14 +577,10 @@ impl SessionActor {
             BroadcastMessage::UseItemAck { agent_key, success } => {
                 self.use_item_ack(agent_key, success).await
             }
-            BroadcastMessage::OpenContainer {
-                agent_key,
-                guid,
-                placement,
-            } => self.open_container(agent_key, guid, placement).await,
-            BroadcastMessage::UpdateContainer { guid, placement } => {
-                self.update_container(guid, placement).await
+            BroadcastMessage::OpenContainer { agent_key, item } => {
+                self.open_container(agent_key, item).await
             }
+            BroadcastMessage::UpdateContainer { item } => self.update_container(item).await,
             BroadcastMessage::PlayerWalkDenied { agent_key } => self.walk_denied(agent_key).await,
             BroadcastMessage::UpdateInventorySlot { agent_key, slot } => {
                 self.update_inventory_slot(agent_key, slot).await
@@ -511,13 +609,11 @@ impl SessionActor {
             let map_desc_floors = get_map_desc_on_viewport(&map, &position);
             for (floor, tiles) in map_desc_floors {
                 self.connection
-                    .send(ConnectionCommand::SendPlayerMessage(
-                        ServerMessage::DescribeMap {
-                            tiles,
-                            center: position.clone(),
-                            floor,
-                        },
-                    ))
+                    .send_message(ServerMessage::DescribeMap {
+                        tiles,
+                        center: position.clone(),
+                        floor,
+                    })
                     .await?;
             }
 
@@ -527,9 +623,7 @@ impl SessionActor {
                 }
                 let agent_id = self.agents.get_or_insert(key);
                 self.connection
-                    .send(ConnectionCommand::SendPlayerMessage(get_agent_desc(
-                        agent, agent_id, pos,
-                    )))
+                    .send_message(get_agent_desc(agent, agent_id, pos))
                     .await?;
             }
 
@@ -539,9 +633,7 @@ impl SessionActor {
                 self.agents.get_local(&self.player_key.unwrap()).unwrap(),
             );
             if let Some(pdesc_msg) = player_desc {
-                self.connection
-                    .send(ConnectionCommand::SendPlayerMessage(pdesc_msg))
-                    .await?;
+                self.connection.send_message(pdesc_msg).await?;
             } else {
                 return Err(SessionError::FailedToInitialize.into());
             }
@@ -561,9 +653,7 @@ impl SessionActor {
             let agent_id = self.agents.get_or_insert(agent_key);
 
             self.connection
-                .send(ConnectionCommand::SendPlayerMessage(get_agent_desc(
-                    agent, agent_id, position,
-                )))
+                .send_message(get_agent_desc(agent, agent_id, position))
                 .await?;
 
             Ok(())
@@ -581,9 +671,7 @@ impl SessionActor {
         for id in remove {
             self.containers.remove_by_local(id);
             self.connection
-                .send(ConnectionCommand::SendPlayerMessage(
-                    ServerMessage::ContainerClosed { container_id: id },
-                ))
+                .send_message(ServerMessage::ContainerClosed { container_id: id })
                 .await?;
         }
         Ok(())
@@ -601,12 +689,10 @@ impl SessionActor {
             let from_pos = to_position.clone() - direction;
             let tiles = get_map_expansion(&map, &from_pos, &direction);
             self.connection
-                .send(ConnectionCommand::SendPlayerMessage(
-                    ServerMessage::PlayerWalkAck {
-                        position: to_position,
-                        tiles,
-                    },
-                ))
+                .send_message(ServerMessage::PlayerWalkAck {
+                    position: to_position,
+                    tiles,
+                })
                 .await?;
 
             Ok(())
@@ -623,13 +709,11 @@ impl SessionActor {
                 if let Some(agent_id) = self.agents.get_local(&agent_key) {
                     let from = agent_pos.clone() - direction;
                     self.connection
-                        .send(ConnectionCommand::SendPlayerMessage(
-                            ServerMessage::MoveAgent {
-                                agent_id,
-                                direction,
-                                from,
-                            },
-                        ))
+                        .send_message(ServerMessage::MoveAgent {
+                            agent_id,
+                            direction,
+                            from,
+                        })
                         .await?;
                 } else {
                     let Some(agent) = map.get_agent(agent_key) else {
@@ -638,18 +722,12 @@ impl SessionActor {
                     let agent_id = self.agents.get_or_insert(agent_key);
 
                     self.connection
-                        .send(ConnectionCommand::SendPlayerMessage(get_agent_desc(
-                            agent,
-                            agent_id,
-                            agent_pos.clone(),
-                        )))
+                        .send_message(get_agent_desc(agent, agent_id, agent_pos.clone()))
                         .await?;
                 }
             } else if let Some(agent_id) = self.agents.get_local(&agent_key) {
                 self.connection
-                    .send(ConnectionCommand::SendPlayerMessage(
-                        ServerMessage::RemoveAgent { agent_id },
-                    ))
+                    .send_message(ServerMessage::RemoveAgent { agent_id })
                     .await?;
             }
 
@@ -660,9 +738,7 @@ impl SessionActor {
     async fn walk_denied(&self, agent_key: AgentKey) -> Result<()> {
         if self.player_key == Some(agent_key) {
             self.connection
-                .send(ConnectionCommand::SendPlayerMessage(
-                    ServerMessage::PlayerWalkDenied,
-                ))
+                .send_message(ServerMessage::PlayerWalkDenied)
                 .await?;
         }
         Ok(())
@@ -677,25 +753,19 @@ impl SessionActor {
         if self.player_key == Some(agent_key) {
             if success {
                 self.connection
-                    .send(ConnectionCommand::SendPlayerMessage(
-                        ServerMessage::MoveItemAck,
-                    ))
+                    .send_message(ServerMessage::MoveItemAck)
                     .await?;
             } else {
                 if let Some(message) = message {
                     self.connection
-                        .send(ConnectionCommand::SendPlayerMessage(
-                            ServerMessage::TextMessage {
-                                text: message,
-                                message_type: TextMessageType::ActionDenied,
-                            },
-                        ))
+                        .send_message(ServerMessage::TextMessage {
+                            text: message,
+                            message_type: TextMessageType::ActionDenied,
+                        })
                         .await?;
                 }
                 self.connection
-                    .send(ConnectionCommand::SendPlayerMessage(
-                        ServerMessage::MoveItemDenied,
-                    ))
+                    .send_message(ServerMessage::MoveItemDenied)
                     .await?;
             }
         }
@@ -712,12 +782,10 @@ impl SessionActor {
         if player_pos.in_viewport(&position) {
             let tile = get_tile(&map, &position);
             self.connection
-                .send(ConnectionCommand::SendPlayerMessage(
-                    ServerMessage::TileChanged {
-                        position,
-                        items: tile,
-                    },
-                ))
+                .send_message(ServerMessage::TileChanged {
+                    position,
+                    items: tile,
+                })
                 .await?;
         }
 
@@ -728,37 +796,28 @@ impl SessionActor {
         if self.player_key == Some(agent_key) {
             if !success {
                 self.connection
-                    .send(ConnectionCommand::SendPlayerMessage(
-                        ServerMessage::TextMessage {
-                            text: "Cannot use this".to_string(),
-                            message_type: TextMessageType::ActionDenied,
-                        },
-                    ))
+                    .send_message(ServerMessage::TextMessage {
+                        text: "Cannot use this".to_string(),
+                        message_type: TextMessageType::ActionDenied,
+                    })
                     .await?;
             }
             self.connection
-                .send(ConnectionCommand::SendPlayerMessage(
-                    ServerMessage::UseItemAck,
-                ))
+                .send_message(ServerMessage::UseItemAck)
                 .await?;
         }
         Ok(())
     }
 
-    async fn open_container(
-        &mut self,
-        agent_key: AgentKey,
-        guid: ItemGuid,
-        placement: ItemPlacement,
-    ) -> Result<()> {
+    async fn open_container(&mut self, agent_key: AgentKey, item_ref: ItemRef) -> Result<()> {
         if self.player_key != Some(agent_key) {
             return Ok(());
         }
 
         let map = self.shared_map.load();
-        let item = match &placement {
+        let item = match &item_ref.placement {
             ItemPlacement::Map(position) => {
-                let item = map.get_item_by_id(position, &guid);
+                let item = map.get_item_by_id(position, &item_ref.guid);
                 let Some(item) = item else {
                     return Err(SessionError::InvalidState.into());
                 };
@@ -768,7 +827,7 @@ impl SessionActor {
                 let Some(agent) = map.get_agent(*agent_key) else {
                     return Err(SessionError::InvalidState.into());
                 };
-                let Some(item) = find_item_in_slot(agent, *slot, &guid) else {
+                let Some(item) = find_item_in_slot(agent, *slot, &item_ref.guid) else {
                     return Err(SessionError::InvalidState.into());
                 };
                 item
@@ -792,30 +851,29 @@ impl SessionActor {
             .map(|i| Some((i.item_id, i.amount)))
             .collect::<Vec<Option<(ItemId, u8)>>>()
             .into_boxed_slice();
-        let container_id = self.containers.get_or_insert(guid.clone());
-        let has_parent = find_parent_container(&map, &guid, self.player_key.unwrap()).is_some();
+        let container_id = self.containers.get_or_insert(item_ref.guid.clone());
+        let has_parent =
+            find_parent_container(&map, &item_ref.guid, self.player_key.unwrap()).is_some();
 
         self.connection
-            .send(ConnectionCommand::SendPlayerMessage(
-                ServerMessage::OpenContainer {
-                    container_id,
-                    capacity,
-                    has_parent,
-                    title,
-                    items,
-                },
-            ))
+            .send_message(ServerMessage::OpenContainer {
+                container_id,
+                capacity,
+                has_parent,
+                title,
+                items,
+            })
             .await?;
 
         Ok(())
     }
 
-    async fn update_container(&mut self, guid: ItemGuid, placement: ItemPlacement) -> Result<()> {
-        if let Some(local_id) = self.containers.get_local(&guid) {
+    async fn update_container(&mut self, item_ref: ItemRef) -> Result<()> {
+        if let Some(local_id) = self.containers.get_local(&item_ref.guid) {
             let map = self.shared_map.load();
-            let item = match &placement {
+            let item = match &item_ref.placement {
                 ItemPlacement::Map(position) => {
-                    let item = map.get_item_by_id(position, &guid);
+                    let item = map.get_item_by_id(position, &item_ref.guid);
                     let Some(item) = item else {
                         return Err(SessionError::InvalidState.into());
                     };
@@ -825,7 +883,7 @@ impl SessionActor {
                     let Some(agent) = map.get_agent(*agent_key) else {
                         return Err(SessionError::InvalidState.into());
                     };
-                    let Some(item) = find_item_in_slot(agent, *slot, &guid) else {
+                    let Some(item) = find_item_in_slot(agent, *slot, &item_ref.guid) else {
                         return Err(SessionError::InvalidState.into());
                     };
                     item
@@ -843,12 +901,10 @@ impl SessionActor {
                 .into_boxed_slice();
 
             self.connection
-                .send(ConnectionCommand::SendPlayerMessage(
-                    ServerMessage::UpdateContainer {
-                        container_id: local_id,
-                        items,
-                    },
-                ))
+                .send_message(ServerMessage::UpdateContainer {
+                    container_id: local_id,
+                    items,
+                })
                 .await?;
         }
 
@@ -871,9 +927,7 @@ impl SessionActor {
             };
             let item_id = player.inventory.get(&slot).map(|it| it.item_id);
             self.connection
-                .send(ConnectionCommand::SendPlayerMessage(
-                    ServerMessage::IventorySlotUpdated { slot, item_id },
-                ))
+                .send_message(ServerMessage::IventorySlotUpdated { slot, item_id })
                 .await?;
         }
         Ok(())
@@ -884,11 +938,9 @@ impl SessionActor {
             let map = self.shared_map.load();
             if let Some(cap) = map.get_player(agent_key).map(|player| &player.capacity) {
                 self.connection
-                    .send(ConnectionCommand::SendPlayerMessage(
-                        ServerMessage::PlayerCapacityUpdated {
-                            cap: cap.available(),
-                        },
-                    ))
+                    .send_message(ServerMessage::PlayerCapacityUpdated {
+                        cap: cap.available(),
+                    })
                     .await?;
             }
         }
@@ -898,9 +950,7 @@ impl SessionActor {
     async fn actor_direction_changed(&self, agent_key: AgentKey, facing: Facing) -> Result<()> {
         if let Some(agent_id) = self.agents.get_local(&agent_key) {
             self.connection
-                .send(ConnectionCommand::SendPlayerMessage(
-                    ServerMessage::AgentChangedDirection { agent_id, facing },
-                ))
+                .send_message(ServerMessage::AgentChangedDirection { agent_id, facing })
                 .await?;
         }
         Ok(())
@@ -915,7 +965,7 @@ impl SessionActor {
             if let Some(snapshot) = snapshot {
                 if let Err(e) = self
                     .persistence
-                    .send(PersistenceCommand::SavePlayer(snapshot.as_ref().clone()))
+                    .save_player(snapshot.as_ref().clone())
                     .await
                 {
                     error!(
@@ -931,9 +981,7 @@ impl SessionActor {
         if let Some(agent_id) = self.agents.get_local(&agent_key) {
             self.agents.remove_by_local(agent_id);
             self.connection
-                .send(ConnectionCommand::SendPlayerMessage(
-                    ServerMessage::RemoveAgent { agent_id },
-                ))
+                .send_message(ServerMessage::RemoveAgent { agent_id })
                 .await?;
         }
         Ok(())
@@ -946,27 +994,23 @@ impl SessionActor {
             for (floor, tiles) in map_desc_floors {
                 if floor >= position.z {
                     self.connection
-                        .send(ConnectionCommand::SendPlayerMessage(
-                            ServerMessage::DescribeMap {
-                                tiles,
-                                center: position.clone(),
-                                floor,
-                            },
-                        ))
+                        .send_message(ServerMessage::DescribeMap {
+                            tiles,
+                            center: position.clone(),
+                            floor,
+                        })
                         .await?;
                 }
             }
 
             self.connection
-                .send(ConnectionCommand::SendPlayerMessage(
-                    ServerMessage::TeleportAgent {
-                        agent_id: self
-                            .agents
-                            .get_local(&agent_key)
-                            .ok_or(SessionError::InvalidState)?,
-                        position,
-                    },
-                ))
+                .send_message(ServerMessage::TeleportAgent {
+                    agent_id: self
+                        .agents
+                        .get_local(&agent_key)
+                        .ok_or(SessionError::InvalidState)?,
+                    position,
+                })
                 .await?;
         }
         Ok(())

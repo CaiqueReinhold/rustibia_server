@@ -1,0 +1,7 @@
+multi_action:
+  rope_spot_ids: []
+  opened_hole_ids: []
+  diggable_ids: [ 593, 606, 608, 614 ]
+
+action:
+  use_item_cooldown_ticks: 20

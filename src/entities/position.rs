@@ -45,6 +45,13 @@ impl Position {
         let dy = (self.y as i64 - other.y as i64).abs();
         dx <= 1 && dy <= 1
     }
+
+    pub fn placement_is_adjacent(&self, placement: &ItemPlacement) -> bool {
+        match placement {
+            ItemPlacement::Map(pos) => self.is_adjacent(pos),
+            ItemPlacement::Inventory(..) => true,
+        }
+    }
 }
 
 impl Add<Direction> for Position {

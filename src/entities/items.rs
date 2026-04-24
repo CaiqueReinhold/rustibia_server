@@ -2,7 +2,10 @@ use std::{collections::HashSet, fmt::Display, sync::Arc};
 
 use uuid::Uuid;
 
-use crate::entities::player::InventorySlot;
+use crate::{
+    entities::{player::InventorySlot, position::ItemPlacement},
+    game::Tick,
+};
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub struct ItemGuid(pub String);
@@ -52,6 +55,8 @@ pub enum ItemAttribute {
     Inventory(InventorySlot),
     TileFriction(u32),
     Action(ItemAction),
+    MultiAction(ItemMultiAction),
+    Decay { duration: Tick, decay_to: ItemId },
 }
 
 #[derive(Debug)]
@@ -192,9 +197,35 @@ impl Item {
             _ => None,
         })
     }
+
+    pub fn get_multi_action(&self) -> Option<ItemMultiAction> {
+        self.config.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::MultiAction(a) => Some(a.clone()),
+            _ => None,
+        })
+    }
+
+    pub fn get_decay(&self) -> Option<(Tick, ItemId)> {
+        self.config.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::Decay { duration, decay_to } => Some((*duration, *decay_to)),
+            _ => None,
+        })
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ItemRef {
+    pub guid: ItemGuid,
+    pub placement: ItemPlacement,
 }
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub enum ItemAction {
     Transform { into: ItemId },
+}
+
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
+pub enum ItemMultiAction {
+    Shovel,
+    Rope,
 }

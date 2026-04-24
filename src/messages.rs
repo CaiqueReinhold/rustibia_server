@@ -17,16 +17,17 @@ use crate::{
 pub type ItemStack = [Option<(ItemId, u8)>; MAX_VISIBLE_ITEMS];
 
 // client
-const MSG_PING: u8 = 0;
-const MSG_LOGIN: u8 = 1;
-const MSG_MOVE_PLAYER: u8 = 2;
-const MSG_GET_PLAYER_POS: u8 = 3;
-const MSG_MOVE_ITEM: u8 = 4;
-const MSG_USE_ITEM: u8 = 5;
-const MSG_CLOSE_CONTAINER: u8 = 6;
-const MSG_OPEN_PARENT_CONTAINER: u8 = 7;
-const MSG_CHANGE_DIRECTION: u8 = 8;
-const MSG_LOGOUT: u8 = 9;
+const CLI_PING: u8 = 0;
+const CLI_LOGIN: u8 = 1;
+const CLI_MOVE_PLAYER: u8 = 2;
+const CLI_GET_PLAYER_POS: u8 = 3;
+const CLI_MOVE_ITEM: u8 = 4;
+const CLI_USE_ITEM: u8 = 5;
+const CLI_CLOSE_CONTAINER: u8 = 6;
+const CLI_OPEN_PARENT_CONTAINER: u8 = 7;
+const CLI_CHANGE_DIRECTION: u8 = 8;
+const CLI_LOGOUT: u8 = 9;
+const CLI_USE_ITEM_WITH: u8 = 10;
 
 #[derive(Clone, Debug)]
 pub enum ClientMessage {
@@ -43,13 +44,13 @@ pub enum ClientMessage {
         from: Position,
         item_id: ItemId,
         amount: u8,
-        stack_index: u16,
+        stack_index: u8,
         to: Position,
     },
     UseItem {
         position: Position,
         item_id: ItemId,
-        stack_index: u16,
+        stack_index: u8,
     },
     CloseContainer {
         container_id: ContainerId,
@@ -61,31 +62,39 @@ pub enum ClientMessage {
         direction: Facing,
     },
     Logout,
+    UseItemWith {
+        source: Position,
+        source_item_id: ItemId,
+        source_index: u8,
+        target: Position,
+        target_item_id: ItemId,
+        target_index: u8,
+    },
 }
 
 // server
-const MSG_PONG: u8 = 0;
-const MSG_LOGIN_ERROR: u8 = 1;
-const MSG_DESCRIBE_MAP: u8 = 2;
-const MSG_TILE_CHANGED: u8 = 3;
-const MSG_PLAYER_WALK_ACK: u8 = 4;
-const MSG_PLAYER_POS: u8 = 5;
-const MSG_DESCRIBE_PLAYER: u8 = 6;
-const MSG_MOVE_ITEM_ACK: u8 = 7;
-const MSG_MOVE_ITEM_DENIED: u8 = 8;
-const MSG_TEXT_MESSAGE: u8 = 9;
-const MSG_USE_ITEM_ACK: u8 = 10;
-const MSG_OPEN_CONTAINER: u8 = 11;
-const MSG_UPDATE_CONTAINER: u8 = 12;
-const MSG_CONTAINER_CLOSED: u8 = 13;
-const MSG_PLAYER_WALK_DENIED: u8 = 14;
-const MSG_INVETORY_SLOT_UPDATED: u8 = 15;
-const MSG_PLAYER_CAPACITY_UPDATED: u8 = 16;
-const MSG_AGENT_DIRECTION_CHANGED: u8 = 17;
-const MSG_REMOVE_AGENT: u8 = 18;
-const MSG_MOVE_AGENT: u8 = 19;
-const MSG_SPAWN_AGENT: u8 = 20;
-const MSG_TELEPORT_AGENT: u8 = 21;
+const SRV_PONG: u8 = 0;
+const SRV_LOGIN_ERROR: u8 = 1;
+const SRV_DESCRIBE_MAP: u8 = 2;
+const SRV_TILE_CHANGED: u8 = 3;
+const SRV_PLAYER_WALK_ACK: u8 = 4;
+const SRV_PLAYER_POS: u8 = 5;
+const SRV_DESCRIBE_PLAYER: u8 = 6;
+const SRV_MOVE_ITEM_ACK: u8 = 7;
+const SRV_MOVE_ITEM_DENIED: u8 = 8;
+const SRV_TEXT_MESSAGE: u8 = 9;
+const SRV_USE_ITEM_ACK: u8 = 10;
+const SRV_OPEN_CONTAINER: u8 = 11;
+const SRV_UPDATE_CONTAINER: u8 = 12;
+const SRV_CONTAINER_CLOSED: u8 = 13;
+const SRV_PLAYER_WALK_DENIED: u8 = 14;
+const SRV_INVETORY_SLOT_UPDATED: u8 = 15;
+const SRV_PLAYER_CAPACITY_UPDATED: u8 = 16;
+const SRV_AGENT_DIRECTION_CHANGED: u8 = 17;
+const SRV_REMOVE_AGENT: u8 = 18;
+const SRV_MOVE_AGENT: u8 = 19;
+const SRV_SPAWN_AGENT: u8 = 20;
+const SRV_TELEPORT_AGENT: u8 = 21;
 
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
@@ -219,8 +228,8 @@ impl Decoder for GameMessageCodec {
         buf.advance(2);
 
         match buf.get_u8() {
-            MSG_PING => Ok(Some(ClientMessage::Ping)),
-            MSG_LOGIN => {
+            CLI_PING => Ok(Some(ClientMessage::Ping)),
+            CLI_LOGIN => {
                 let character_id = buf.get_u32_le();
                 let token_len = payload_len - 1 - 4; // subtract msg type byte and character_id
                 let auth_token = String::from_utf8(buf.split_to(token_len).to_vec())
@@ -230,16 +239,16 @@ impl Decoder for GameMessageCodec {
                     auth_token,
                 }))
             }
-            MSG_MOVE_PLAYER => {
+            CLI_MOVE_PLAYER => {
                 let direction = decode_direction(buf.get_u8())?;
                 Ok(Some(ClientMessage::MovePlayer { direction }))
             }
-            MSG_GET_PLAYER_POS => Ok(Some(ClientMessage::GetPlayerPosition)),
-            MSG_MOVE_ITEM => {
+            CLI_GET_PLAYER_POS => Ok(Some(ClientMessage::GetPlayerPosition)),
+            CLI_MOVE_ITEM => {
                 let from = decode_position(buf);
                 let item_id = buf.get_u16_le();
                 let amount = buf.get_u8();
-                let stack_index = buf.get_u16_le();
+                let stack_index = buf.get_u8();
                 let to = decode_position(buf);
                 Ok(Some(ClientMessage::MoveItem {
                     from,
@@ -249,21 +258,29 @@ impl Decoder for GameMessageCodec {
                     to,
                 }))
             }
-            MSG_USE_ITEM => Ok(Some(ClientMessage::UseItem {
+            CLI_USE_ITEM => Ok(Some(ClientMessage::UseItem {
                 position: decode_position(buf),
                 item_id: buf.get_u16_le(),
-                stack_index: buf.get_u16_le(),
+                stack_index: buf.get_u8(),
             })),
-            MSG_CLOSE_CONTAINER => Ok(Some(ClientMessage::CloseContainer {
+            CLI_CLOSE_CONTAINER => Ok(Some(ClientMessage::CloseContainer {
                 container_id: buf.get_u16_le(),
             })),
-            MSG_OPEN_PARENT_CONTAINER => Ok(Some(ClientMessage::OpenParentContainer {
+            CLI_OPEN_PARENT_CONTAINER => Ok(Some(ClientMessage::OpenParentContainer {
                 container_id: buf.get_u16_le(),
             })),
-            MSG_CHANGE_DIRECTION => Ok(Some(ClientMessage::ChangeDirection {
+            CLI_CHANGE_DIRECTION => Ok(Some(ClientMessage::ChangeDirection {
                 direction: decode_facing(buf.get_u8())?,
             })),
-            MSG_LOGOUT => Ok(Some(ClientMessage::Logout)),
+            CLI_LOGOUT => Ok(Some(ClientMessage::Logout)),
+            CLI_USE_ITEM_WITH => Ok(Some(ClientMessage::UseItemWith {
+                source: decode_position(buf),
+                source_item_id: buf.get_u16_le(),
+                source_index: buf.get_u8(),
+                target: decode_position(buf),
+                target_item_id: buf.get_u16_le(),
+                target_index: buf.get_u8(),
+            })),
             _ => Err(MessageDecodeError::WrongSequence),
         }
     }
@@ -315,8 +332,8 @@ impl Encoder<ServerMessage> for GameMessageCodec {
         dst.put_u16_le(0); // placeholder for payload length
 
         match item {
-            ServerMessage::Pong => dst.put_u8(MSG_PONG),
-            ServerMessage::LoginError => dst.put_u8(MSG_LOGIN_ERROR),
+            ServerMessage::Pong => dst.put_u8(SRV_PONG),
+            ServerMessage::LoginError => dst.put_u8(SRV_LOGIN_ERROR),
             ServerMessage::DescribePlayer {
                 agent_id,
                 position,
@@ -339,7 +356,7 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 inventory_ring,
                 inventory_trinket,
             } => {
-                dst.put_u8(MSG_DESCRIBE_PLAYER);
+                dst.put_u8(SRV_DESCRIBE_PLAYER);
                 dst.put_u16_le(agent_id);
                 encode_position(position, dst);
                 encode_facing(facing, dst);
@@ -352,10 +369,10 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u32_le(mana.current);
                 dst.put_u32_le(mana.maximum);
                 dst.put_u16_le(outfit.0);
-                dst.put_u8(outfit.1 .0);
-                dst.put_u8(outfit.1 .1);
-                dst.put_u8(outfit.1 .2);
-                dst.put_u8(outfit.1 .3);
+                dst.put_u8(outfit.1.0);
+                dst.put_u8(outfit.1.1);
+                dst.put_u8(outfit.1.2);
+                dst.put_u8(outfit.1.3);
                 dst.put_u16_le(speed);
                 dst.put_u32_le(capacity);
                 encode_optional_item(inventory_head, dst);
@@ -374,7 +391,7 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 center,
                 floor,
             } => {
-                dst.put_u8(MSG_DESCRIBE_MAP);
+                dst.put_u8(SRV_DESCRIBE_MAP);
                 encode_position(center, dst);
                 dst.put_u8(floor);
                 for tile in tiles.iter() {
@@ -382,12 +399,12 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 }
             }
             ServerMessage::TileChanged { position, items } => {
-                dst.put_u8(MSG_TILE_CHANGED);
+                dst.put_u8(SRV_TILE_CHANGED);
                 encode_position(position, dst);
                 encode_tile(items.as_ref(), dst);
             }
             ServerMessage::PlayerWalkAck { position, tiles } => {
-                dst.put_u8(MSG_PLAYER_WALK_ACK);
+                dst.put_u8(SRV_PLAYER_WALK_ACK);
                 encode_position(position, dst);
                 for (floor, tiles) in tiles.iter() {
                     dst.put_u8(*floor);
@@ -399,23 +416,23 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u8(0xFF);
             }
             ServerMessage::PlayerPosition { position } => {
-                dst.put_u8(MSG_PLAYER_POS);
+                dst.put_u8(SRV_PLAYER_POS);
                 encode_position(position, dst);
             }
             ServerMessage::MoveItemAck => {
-                dst.put_u8(MSG_MOVE_ITEM_ACK);
+                dst.put_u8(SRV_MOVE_ITEM_ACK);
             }
             ServerMessage::MoveItemDenied => {
-                dst.put_u8(MSG_MOVE_ITEM_DENIED);
+                dst.put_u8(SRV_MOVE_ITEM_DENIED);
             }
             ServerMessage::TextMessage { text, message_type } => {
-                dst.put_u8(MSG_TEXT_MESSAGE);
+                dst.put_u8(SRV_TEXT_MESSAGE);
                 let text_bytes = text.as_bytes();
                 dst.put_u16_le(text_bytes.len() as u16);
                 dst.put_slice(text_bytes);
                 dst.put_u8(encode_text_message_type(message_type));
             }
-            ServerMessage::UseItemAck => dst.put_u8(MSG_USE_ITEM_ACK),
+            ServerMessage::UseItemAck => dst.put_u8(SRV_USE_ITEM_ACK),
             ServerMessage::OpenContainer {
                 container_id,
                 capacity,
@@ -423,7 +440,7 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 title,
                 items,
             } => {
-                dst.put_u8(MSG_OPEN_CONTAINER);
+                dst.put_u8(SRV_OPEN_CONTAINER);
                 dst.put_u16_le(container_id);
                 dst.put_u8(capacity);
                 dst.put_u8(if has_parent { 1 } else { 0 });
@@ -436,31 +453,31 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 container_id,
                 items,
             } => {
-                dst.put_u8(MSG_UPDATE_CONTAINER);
+                dst.put_u8(SRV_UPDATE_CONTAINER);
                 dst.put_u16_le(container_id);
                 encode_tile(&items, dst);
             }
             ServerMessage::ContainerClosed { container_id } => {
-                dst.put_u8(MSG_CONTAINER_CLOSED);
+                dst.put_u8(SRV_CONTAINER_CLOSED);
                 dst.put_u16_le(container_id);
             }
-            ServerMessage::PlayerWalkDenied => dst.put_u8(MSG_PLAYER_WALK_DENIED),
+            ServerMessage::PlayerWalkDenied => dst.put_u8(SRV_PLAYER_WALK_DENIED),
             ServerMessage::IventorySlotUpdated { slot, item_id } => {
-                dst.put_u8(MSG_INVETORY_SLOT_UPDATED);
+                dst.put_u8(SRV_INVETORY_SLOT_UPDATED);
                 dst.put_u8(slot.as_id() as u8);
                 encode_optional_item(item_id, dst);
             }
             ServerMessage::PlayerCapacityUpdated { cap } => {
-                dst.put_u8(MSG_PLAYER_CAPACITY_UPDATED);
+                dst.put_u8(SRV_PLAYER_CAPACITY_UPDATED);
                 dst.put_u32_le(cap);
             }
             ServerMessage::AgentChangedDirection { agent_id, facing } => {
-                dst.put_u8(MSG_AGENT_DIRECTION_CHANGED);
+                dst.put_u8(SRV_AGENT_DIRECTION_CHANGED);
                 dst.put_u16_le(agent_id);
                 encode_facing(facing, dst);
             }
             ServerMessage::RemoveAgent { agent_id } => {
-                dst.put_u8(MSG_REMOVE_AGENT);
+                dst.put_u8(SRV_REMOVE_AGENT);
                 dst.put_u16_le(agent_id);
             }
             ServerMessage::MoveAgent {
@@ -468,7 +485,7 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 direction,
                 from,
             } => {
-                dst.put_u8(MSG_MOVE_AGENT);
+                dst.put_u8(SRV_MOVE_AGENT);
                 dst.put_u16_le(agent_id);
                 encode_direction(&direction, dst);
                 encode_position(from, dst);
@@ -482,7 +499,7 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 life,
                 speed,
             } => {
-                dst.put_u8(MSG_SPAWN_AGENT);
+                dst.put_u8(SRV_SPAWN_AGENT);
                 dst.put_u16_le(agent_id);
                 encode_position(position, dst);
                 encode_facing(facing, dst);
@@ -492,14 +509,14 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u32_le(life.current);
                 dst.put_u32_le(life.maximum);
                 dst.put_u16_le(outfit.0);
-                dst.put_u8(outfit.1 .0);
-                dst.put_u8(outfit.1 .1);
-                dst.put_u8(outfit.1 .2);
-                dst.put_u8(outfit.1 .3);
+                dst.put_u8(outfit.1.0);
+                dst.put_u8(outfit.1.1);
+                dst.put_u8(outfit.1.2);
+                dst.put_u8(outfit.1.3);
                 dst.put_u16_le(speed);
             }
             ServerMessage::TeleportAgent { agent_id, position } => {
-                dst.put_u8(MSG_TELEPORT_AGENT);
+                dst.put_u8(SRV_TELEPORT_AGENT);
                 dst.put_u16_le(agent_id);
                 encode_position(position, dst);
             }
@@ -580,7 +597,7 @@ mod tests {
         let mut codec = GameMessageCodec {};
         let mut buf = BytesMut::new();
         // 2-byte LE length prefix (1 byte payload) + 1 byte type
-        buf.extend_from_slice(&[1u8, 0u8, MSG_LOGOUT]);
+        buf.extend_from_slice(&[1u8, 0u8, CLI_LOGOUT]);
         let msg = codec.decode(&mut buf).unwrap().unwrap();
         assert!(matches!(msg, ClientMessage::Logout));
         assert!(buf.is_empty());
