@@ -1,23 +1,19 @@
 use std::sync::Arc;
 
 use anyhow::Result;
-use arc_swap::ArcSwap;
 use tokio::sync::{broadcast, mpsc, oneshot};
 use tracing::{error, info};
 
-use super::{connection::ConnectionError, session::SessionActor};
-use crate::{
-    actors::{
-        connection::ConnectionActorHandle, persistence::PersistenceActorHandle,
-        world::WorldActorHandle,
-    },
-    game::events::BroadcastMessage,
-};
+use super::{SharedContext, connection::ConnectionError, session::SessionActor};
+use crate::{actors::connection::ConnectionActorHandle, game::events::BroadcastMessage};
 use crate::{
     config::CONFIG,
-    entities::{agent::Agent, map::GameMap},
+    entities::agent::Agent,
     messages::{ClientMessage, ServerMessage},
-    persistence::player::PlayerRepository,
+    persistence::{
+        auth::{AccountId, AuthRepository},
+        player::PlayerRepository,
+    },
 };
 
 #[derive(Clone, Debug)]
@@ -43,22 +39,20 @@ impl AuthActorHandle {
 pub struct AuthActor {
     session_id: String,
     rx: mpsc::Receiver<AuthCommand>,
-    world: WorldActorHandle,
+    world_ctx: SharedContext,
     player_repo: Arc<PlayerRepository>,
+    auth_repo: Arc<AuthRepository>,
     brx: broadcast::Receiver<BroadcastMessage>,
-    shared_map: Arc<ArcSwap<GameMap>>,
-    persistence: PersistenceActorHandle,
 }
 
 impl AuthActor {
     pub fn start(
         session_id: String,
         conn_rx: oneshot::Receiver<ConnectionActorHandle>,
-        world: WorldActorHandle,
         player_repo: Arc<PlayerRepository>,
+        auth_repo: Arc<AuthRepository>,
         brx: broadcast::Receiver<BroadcastMessage>,
-        shared_map: Arc<ArcSwap<GameMap>>,
-        persistence: PersistenceActorHandle,
+        world_ctx: SharedContext,
     ) -> AuthActorHandle {
         let (tx, rx) = mpsc::channel(CONFIG.max_buffered_messages);
 
@@ -66,11 +60,10 @@ impl AuthActor {
             let actor = Self {
                 session_id,
                 rx,
-                world,
+                world_ctx,
                 player_repo,
+                auth_repo,
                 brx,
-                shared_map,
-                persistence,
             };
             actor.run(conn_rx).await;
         });
@@ -98,7 +91,7 @@ impl AuthActor {
             None => return Err(ConnectionError::ConnectionClosed.into()),
         };
 
-        let (character_id, _auth_token) = match msg {
+        let (character_id, auth_token) = match msg {
             ClientMessage::Login {
                 character_id,
                 auth_token,
@@ -110,7 +103,20 @@ impl AuthActor {
             }
         };
 
-        let player = match self.player_repo.get_by_id(character_id).await {
+        let account_id: AccountId = match self.auth_repo.validate_token(&auth_token).await {
+            Ok(id) => id,
+            Err(e) => {
+                info!(session = self.session_id, "Token validation failed: {e}");
+                let _ = connection.send_message(ServerMessage::LoginError).await;
+                return Err(e.into());
+            }
+        };
+
+        let player = match self
+            .player_repo
+            .get_by_id_for_account(character_id, account_id)
+            .await
+        {
             Ok(p) => p,
             Err(e) => {
                 error!(session = self.session_id, "Player lookup failed: {e}");
@@ -123,10 +129,10 @@ impl AuthActor {
             self.session_id.clone(),
             connection.clone(),
             Agent::from_player(player),
-            self.world.clone(),
+            self.world_ctx.world.clone(),
             self.brx.resubscribe(),
-            self.shared_map.clone(),
-            self.persistence.clone(),
+            self.world_ctx.shared_map.clone(),
+            self.world_ctx.persistence.clone(),
         );
 
         connection.set_session(session).await?;

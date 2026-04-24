@@ -25,6 +25,7 @@ pub enum PlayerRepositoryError {
 #[derive(Debug, Clone)]
 pub struct PlayerSnapshot {
     pub id: PlayerId,
+    pub account_id: i32,
     pub position: Position,
     pub origin: Position,
     pub facing: Facing,
@@ -55,16 +56,21 @@ impl PlayerRepository {
         Self { pool, items }
     }
 
-    pub async fn get_by_id(&self, id: PlayerId) -> Result<PlayerSnapshot, PlayerRepositoryError> {
+    pub async fn get_by_id_for_account(
+        &self,
+        id: PlayerId,
+        account_id: i32,
+    ) -> Result<PlayerSnapshot, PlayerRepositoryError> {
         use sqlx::Row;
 
         let row = sqlx::query(
-            "SELECT id, name, pos_x, pos_y, pos_z, origin_x, origin_y, origin_z, \
+            "SELECT id, account_id, name, pos_x, pos_y, pos_z, origin_x, origin_y, origin_z, \
              facing, life_cur, life_max, mana_cur, mana_max, cap_cur, cap_max, \
              outfit_id, outfit_head, outfit_body, outfit_legs, outfit_feet, inventory \
-             FROM players WHERE id = $1",
+             FROM players WHERE id = $1 AND account_id = $2",
         )
         .bind(id as i32)
+        .bind(account_id)
         .fetch_optional(&self.pool)
         .await?
         .ok_or(PlayerRepositoryError::NotFound)?;
@@ -106,6 +112,7 @@ impl PlayerRepository {
 
         Ok(PlayerSnapshot {
             id: row.try_get::<i32, _>("id")? as u32,
+            account_id: row.try_get::<i32, _>("account_id")?,
             name: row.try_get("name")?,
             position: Position {
                 x: row.try_get::<i32, _>("pos_x")? as u16,
@@ -154,11 +161,12 @@ impl PlayerRepository {
 
         sqlx::query(
             "INSERT INTO players \
-             (id, name, pos_x, pos_y, pos_z, origin_x, origin_y, origin_z, \
+             (id, account_id, name, pos_x, pos_y, pos_z, origin_x, origin_y, origin_z, \
               facing, life_cur, life_max, mana_cur, mana_max, cap_cur, cap_max, \
               outfit_id, outfit_head, outfit_body, outfit_legs, outfit_feet, inventory) \
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21) \
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) \
              ON CONFLICT (id) DO UPDATE SET \
+              account_id = EXCLUDED.account_id, \
               name = EXCLUDED.name, \
               pos_x = EXCLUDED.pos_x, pos_y = EXCLUDED.pos_y, pos_z = EXCLUDED.pos_z, \
               origin_x = EXCLUDED.origin_x, origin_y = EXCLUDED.origin_y, origin_z = EXCLUDED.origin_z, \
@@ -172,6 +180,7 @@ impl PlayerRepository {
               inventory = EXCLUDED.inventory",
         )
         .bind(snapshot.id as i32)
+        .bind(snapshot.account_id)
         .bind(&snapshot.name)
         .bind(snapshot.position.x as i32)
         .bind(snapshot.position.y as i32)
@@ -360,10 +369,10 @@ mod tests {
     }
 
     #[sqlx::test(migrations = "./migrations")]
-    async fn get_by_id_returns_not_found_for_missing_player(pool: PgPool) {
+    async fn get_by_id_for_account_returns_not_found_for_missing_player(pool: PgPool) {
         let items = Arc::new(HashMap::new());
         let repo = PlayerRepository::new(pool, items);
-        let result = repo.get_by_id(9999).await;
+        let result = repo.get_by_id_for_account(9999, 1).await;
         assert!(
             matches!(result, Err(PlayerRepositoryError::NotFound)),
             "expected NotFound, got: {result:?}"
@@ -380,6 +389,7 @@ mod tests {
 
         let snapshot = PlayerSnapshot {
             id: 1,
+            account_id: 1,
             name: "Rizael".to_string(),
             position: Position {
                 x: 1028,
@@ -430,8 +440,9 @@ mod tests {
 
         repo.save(&snapshot).await.unwrap();
 
-        let loaded = repo.get_by_id(1).await.unwrap();
+        let loaded = repo.get_by_id_for_account(1, 1).await.unwrap();
         assert_eq!(loaded.name, "Rizael");
+        assert_eq!(loaded.account_id, 1);
         assert_eq!(loaded.position.x, 1028);
         assert_eq!(loaded.position.z, 7);
         assert_eq!(loaded.facing, Facing::South);
@@ -459,6 +470,7 @@ mod tests {
 
         let mut snapshot = PlayerSnapshot {
             id: 1,
+            account_id: 1,
             name: "Rizael".to_string(),
             position: Position {
                 x: 100,
@@ -498,10 +510,59 @@ mod tests {
         snapshot.life.current = 60;
         repo.save(&snapshot).await.unwrap();
 
-        let loaded = repo.get_by_id(1).await.unwrap();
+        let loaded = repo.get_by_id_for_account(1, 1).await.unwrap();
         assert_eq!(loaded.position.x, 200);
         assert_eq!(loaded.position.y, 300);
         assert_eq!(loaded.position.z, 5);
         assert_eq!(loaded.life.current, 60);
+    }
+
+    #[sqlx::test(migrations = "./migrations")]
+    async fn get_by_id_for_account_rejects_wrong_account(pool: PgPool) {
+        use crate::entities::agent::{Facing, Pool};
+        use crate::entities::position::Position;
+
+        let items = Arc::new(HashMap::new());
+        let repo = PlayerRepository::new(pool, Arc::clone(&items));
+
+        let snapshot = PlayerSnapshot {
+            id: 1,
+            account_id: 10,
+            name: "Rizael".to_string(),
+            position: Position {
+                x: 1028,
+                y: 1028,
+                z: 7,
+            },
+            origin: Position {
+                x: 1028,
+                y: 1028,
+                z: 7,
+            },
+            facing: Facing::South,
+            life: Pool {
+                current: 100,
+                maximum: 100,
+            },
+            mana: Pool {
+                current: 100,
+                maximum: 100,
+            },
+            capacity: Pool {
+                current: 0,
+                maximum: 40000,
+            },
+            outfit: (133, (0, 0, 0, 0)),
+            skills: HashMap::new(),
+            inventory: HashMap::new(),
+        };
+
+        repo.save(&snapshot).await.unwrap();
+
+        let result = repo.get_by_id_for_account(1, 99).await;
+        assert!(
+            matches!(result, Err(PlayerRepositoryError::NotFound)),
+            "expected NotFound for wrong account, got: {result:?}"
+        );
     }
 }

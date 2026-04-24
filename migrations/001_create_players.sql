@@ -1,5 +1,6 @@
 CREATE TABLE players (
     id          INTEGER  PRIMARY KEY,
+    account_id  INTEGER  NOT NULL,
     name        TEXT     NOT NULL,
     pos_x       INTEGER  NOT NULL,
     pos_y       INTEGER  NOT NULL,

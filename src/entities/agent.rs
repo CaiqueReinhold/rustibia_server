@@ -79,6 +79,7 @@ impl Agent {
         let mut agent = Self {
             inner: AgentInner::Player(Player {
                 id: player.id,
+                account_id: player.account_id,
                 position: player.position,
                 origin: player.origin,
                 mana: player.mana,
@@ -182,6 +183,7 @@ impl Agent {
         let player = self.get_player()?;
         Some(PlayerSnapshot {
             id: player.id,
+            account_id: player.account_id,
             name: self.name.clone(),
             position,
             origin: player.origin.clone(),
@@ -207,6 +209,7 @@ mod tests {
     fn make_snapshot(id: u32) -> PlayerSnapshot {
         PlayerSnapshot {
             id,
+            account_id: 1,
             name: "Rizael".to_string(),
             position: Position {
                 x: 100,

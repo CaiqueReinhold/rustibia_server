@@ -57,6 +57,7 @@ impl InventorySlot {
 #[derive(Clone, Debug)]
 pub struct Player {
     pub id: PlayerId,
+    pub account_id: i32,
     pub position: Position,
     pub origin: Position,
     pub mana: Pool,

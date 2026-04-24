@@ -20,21 +20,16 @@ use config::CONFIG;
 use arc_swap::ArcSwap;
 
 use crate::{
-    actors::{
-        persistence::{PersistenceActor, PersistenceActorHandle},
-        world::{WorldActor, WorldActorHandle},
-    },
-    entities::map::GameMap,
+    actors::{persistence::PersistenceActor, world::WorldActor, SharedContext},
     game::{events::BroadcastMessage, game_config::GAME_CONFIG},
-    persistence::player::PlayerRepository,
+    persistence::{auth::AuthRepository, player::PlayerRepository},
 };
 
 pub struct Context {
     player_repo: Arc<PlayerRepository>,
-    world: WorldActorHandle,
+    auth_repo: Arc<AuthRepository>,
+    shared_ctx: SharedContext,
     broadcast_receiver: Receiver<BroadcastMessage>,
-    shared_map: Arc<ArcSwap<GameMap>>,
-    persistence: PersistenceActorHandle,
 }
 
 #[tokio::main(worker_threads = 4)]
@@ -56,15 +51,19 @@ async fn main() -> Result<()> {
         .await?;
     sqlx::migrate!().run(&pool).await?;
 
-    let player_repo = Arc::new(PlayerRepository::new(pool, Arc::clone(&items)));
+    let player_repo = Arc::new(PlayerRepository::new(pool.clone(), Arc::clone(&items)));
+    let auth_repo = Arc::new(AuthRepository::new(pool));
     let persistence = PersistenceActor::start(Arc::clone(&player_repo));
 
     let context = Context {
         player_repo,
-        world,
+        auth_repo,
+        shared_ctx: SharedContext {
+            world,
+            shared_map,
+            persistence,
+        },
         broadcast_receiver,
-        shared_map,
-        persistence,
     };
 
     let listener = network::Listener::bind(CONFIG.bind_address).await?;

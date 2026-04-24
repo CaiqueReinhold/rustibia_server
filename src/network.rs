@@ -46,11 +46,10 @@ impl Listener {
         let auth = AuthActor::start(
             session_id.clone(),
             conn_rx,
-            context.world.clone(),
             context.player_repo.clone(),
+            context.auth_repo.clone(),
             context.broadcast_receiver.resubscribe(),
-            context.shared_map.clone(),
-            context.persistence.clone(),
+            context.shared_ctx.clone(),
         );
         let connection = ConnectionActor::start(session_id, stream, auth);
 
