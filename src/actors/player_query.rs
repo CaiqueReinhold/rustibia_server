@@ -1,12 +1,14 @@
 use crate::{
     entities::{
         agent::{Agent, AgentId, AgentKey},
+        items::{ContainerId, ItemGuid},
         map::GameMap,
         player::InventorySlot,
-        position::Position,
+        position::{ItemPlacement, Position},
         skills::SkillType,
     },
-    game::map_query::{iter_viewport, iter_visible_floors},
+    game::map_query::{find_item_in_reach, iter_viewport, iter_visible_floors},
+    local_id::LocalIdMap,
     messages::ServerMessage,
 };
 
@@ -70,4 +72,23 @@ pub fn get_agents_in_viewport<'a>(
                     .map(|agent| (key, agent, tile_pos.clone()))
             })
         })
+}
+
+pub fn client_position_to_placement(
+    position: Position,
+    map: &GameMap,
+    containers: &LocalIdMap<ItemGuid>,
+    agent_key: AgentKey,
+) -> Option<ItemPlacement> {
+    if position.is_container_coord() {
+        let container_id = position.y as ContainerId;
+        let guid = containers.get_global(container_id)?;
+        let (_, placement) = find_item_in_reach(map, guid, agent_key)?;
+        Some(placement)
+    } else if position.is_inventory_coord() {
+        let slot = InventorySlot::from_id(position.y)?;
+        Some(ItemPlacement::Inventory(slot, agent_key))
+    } else {
+        Some(ItemPlacement::Map(position))
+    }
 }

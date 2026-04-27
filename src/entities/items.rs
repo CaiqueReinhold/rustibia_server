@@ -61,9 +61,9 @@ pub enum ItemAttribute {
 
 #[derive(Debug)]
 pub struct ItemConfig {
-    name: String,
-    description: Option<String>,
-    article: Option<String>,
+    pub name: String,
+    pub description: Option<String>,
+    pub article: Option<String>,
     flags: HashSet<ItemFlag>,
     attributes: HashSet<ItemAttribute>,
 }

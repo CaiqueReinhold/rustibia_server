@@ -1,3 +1,4 @@
+pub mod description;
 pub mod events;
 pub mod game_config;
 pub mod item_action;

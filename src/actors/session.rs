@@ -11,6 +11,7 @@ use tracing::info;
 use super::world::WorldCommand;
 use crate::actors::connection::ConnectionActorHandle;
 use crate::actors::persistence::PersistenceActorHandle;
+use crate::actors::player_query::client_position_to_placement;
 use crate::actors::player_query::get_agent_desc;
 use crate::actors::player_query::get_agents_in_viewport;
 use crate::actors::player_query::get_player_desc;
@@ -21,6 +22,7 @@ use crate::entities::agent::Facing;
 use crate::entities::items::{ContainerId, ItemAttribute, ItemFlag, ItemGuid, ItemRef};
 use crate::entities::player::InventorySlot;
 use crate::entities::position::ItemPlacement;
+use crate::game::description::get_look_description;
 use crate::game::events::BroadcastMessage;
 use crate::game::map_query::{
     find_item_in_reach, find_item_in_slot, find_parent_container, get_map_desc_on_viewport,
@@ -247,8 +249,8 @@ impl SessionActor {
     async fn logout_denied(&self) -> Result<()> {
         self.connection
             .send_message(ServerMessage::TextMessage {
-                text: "You may not logout right now.".to_string(),
-                message_type: TextMessageType::LogoutDenied,
+                text: "You may not logout during an action.".to_string(),
+                message_type: TextMessageType::ActionDenied,
             })
             .await?;
         Ok(())
@@ -327,6 +329,7 @@ impl SessionActor {
                 )
                 .await
             }
+            ClientMessage::Look { position } => self.handle_look(position).await,
         }
     }
 
@@ -547,6 +550,29 @@ impl SessionActor {
             .send(WorldCommand::ChangeDirection {
                 agent: self.player_key.unwrap(),
                 facing,
+            })
+            .await?;
+        Ok(())
+    }
+
+    async fn handle_look(&self, position: Position) -> Result<()> {
+        let map = self.shared_map.load();
+        let player_pos = map
+            .agent_position(self.player_key.unwrap())
+            .ok_or(SessionError::InvalidState)?;
+        let Some(placement) = client_position_to_placement(
+            position,
+            &map,
+            &self.containers,
+            self.player_key.unwrap(),
+        ) else {
+            return Ok(());
+        };
+        let desc = get_look_description(&map, &placement, player_pos);
+        self.connection
+            .send_message(ServerMessage::TextMessage {
+                text: desc,
+                message_type: TextMessageType::Look,
             })
             .await?;
         Ok(())

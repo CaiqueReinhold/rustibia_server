@@ -253,6 +253,26 @@ pub fn find_item_in_placement<'a>(map: &'a GameMap, item_ref: &ItemRef) -> Optio
         ItemPlacement::Inventory(slot, inv_agent_key) => map
             .get_player(*inv_agent_key)
             .and_then(|player| player.inventory.get(slot))
-            .filter(|item| item.guid == item_ref.guid),
+            .map(|item| item.find_by_guid(&item_ref.guid))
+            .unwrap_or(None),
     }
+}
+
+pub enum TileEntity<'a> {
+    Item(&'a Item),
+    Agent(AgentKey),
+}
+
+pub fn get_top_entity<'a>(map: &'a GameMap, pos: &'a Position) -> Option<TileEntity<'a>> {
+    if let Ok(last_agent) = map
+        .get_agents_at(pos)
+        .map(|mut agents_iter| agents_iter.next().cloned())
+        && let Some(last_agent) = last_agent
+    {
+        return Some(TileEntity::Agent(last_agent));
+    } else if let Some(item) = map.get_top_item(pos) {
+        return Some(TileEntity::Item(item));
+    }
+
+    None
 }

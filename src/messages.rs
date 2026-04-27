@@ -28,6 +28,7 @@ const CLI_OPEN_PARENT_CONTAINER: u8 = 7;
 const CLI_CHANGE_DIRECTION: u8 = 8;
 const CLI_LOGOUT: u8 = 9;
 const CLI_USE_ITEM_WITH: u8 = 10;
+const CLI_LOOK: u8 = 11;
 
 #[derive(Clone, Debug)]
 pub enum ClientMessage {
@@ -70,6 +71,9 @@ pub enum ClientMessage {
         target_item_id: ItemId,
         target_index: u8,
     },
+    Look {
+        position: Position,
+    },
 }
 
 // server
@@ -99,7 +103,7 @@ const SRV_TELEPORT_AGENT: u8 = 21;
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
     ActionDenied,
-    LogoutDenied,
+    Look,
 }
 
 #[derive(Clone, Debug)]
@@ -280,6 +284,9 @@ impl Decoder for GameMessageCodec {
                 target: decode_position(buf),
                 target_item_id: buf.get_u16_le(),
                 target_index: buf.get_u8(),
+            })),
+            CLI_LOOK => Ok(Some(ClientMessage::Look {
+                position: decode_position(buf),
             })),
             _ => Err(MessageDecodeError::WrongSequence),
         }
@@ -574,7 +581,7 @@ fn encode_tile(items: &[Option<(ItemId, u8)>], dst: &mut BytesMut) {
 fn encode_text_message_type(text_type: TextMessageType) -> u8 {
     match text_type {
         TextMessageType::ActionDenied => 0x01,
-        TextMessageType::LogoutDenied => 0x02,
+        TextMessageType::Look => 0x02,
     }
 }
 
