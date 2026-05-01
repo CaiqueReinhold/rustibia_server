@@ -125,6 +125,19 @@ impl AuthActor {
             }
         };
 
+        // Reject duplicate logins
+        let registry_guard = match self.world_ctx.online_registry.try_register(character_id) {
+            Some(guard) => guard,
+            None => {
+                info!(
+                    session = self.session_id,
+                    "Character is already online."
+                );
+                let _ = connection.send_message(ServerMessage::LoginError).await;
+                return Err(anyhow::anyhow!("Character {character_id} is already online"));
+            }
+        };
+
         let session = SessionActor::start(
             self.session_id.clone(),
             connection.clone(),
@@ -133,6 +146,7 @@ impl AuthActor {
             self.brx.resubscribe(),
             self.world_ctx.shared_map.clone(),
             self.world_ctx.persistence.clone(),
+            registry_guard,
         );
 
         connection.set_session(session).await?;

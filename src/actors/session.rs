@@ -10,6 +10,7 @@ use tracing::info;
 
 use super::world::WorldCommand;
 use crate::actors::connection::ConnectionActorHandle;
+use crate::online_registry::RegistryGuard;
 use crate::actors::persistence::PersistenceActorHandle;
 use crate::actors::player_query::client_position_to_placement;
 use crate::actors::player_query::get_agent_desc;
@@ -126,12 +127,14 @@ impl SessionActor {
         receiver: broadcast::Receiver<BroadcastMessage>,
         shared_map: Arc<ArcSwap<GameMap>>,
         persistence: PersistenceActorHandle,
+        registry_guard: RegistryGuard,
     ) -> SessionActorHandle {
         let (tx, rx) = mpsc::channel(CONFIG.max_buffered_messages);
         let self_handle = SessionActorHandle { tx };
 
         let self_handle_clone = self_handle.clone();
         tokio::spawn(async move {
+            let _registry_guard = registry_guard;
             let actor = Self {
                 session_id,
                 rx,

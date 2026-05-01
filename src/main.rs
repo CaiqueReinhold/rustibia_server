@@ -14,13 +14,18 @@ mod local_id;
 mod messages;
 mod network;
 mod persistence;
+mod online_registry;
 
 use config::CONFIG;
 
 use arc_swap::ArcSwap;
 
 use crate::{
-    actors::{persistence::PersistenceActor, world::WorldActor, SharedContext},
+    online_registry::OnlineRegistry,
+    actors::{
+        persistence::PersistenceActor, world::WorldActor,
+        SharedContext,
+    },
     game::{events::BroadcastMessage, game_config::GAME_CONFIG},
     persistence::{auth::AuthRepository, player::PlayerRepository},
 };
@@ -62,6 +67,7 @@ async fn main() -> Result<()> {
             world,
             shared_map,
             persistence,
+            online_registry: OnlineRegistry::new(),
         },
         broadcast_receiver,
     };
