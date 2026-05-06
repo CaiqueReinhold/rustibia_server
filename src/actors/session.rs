@@ -10,7 +10,6 @@ use tracing::info;
 
 use super::world::WorldCommand;
 use crate::actors::connection::ConnectionActorHandle;
-use crate::online_registry::RegistryGuard;
 use crate::actors::persistence::PersistenceActorHandle;
 use crate::actors::player_query::client_position_to_placement;
 use crate::actors::player_query::get_agent_desc;
@@ -31,6 +30,7 @@ use crate::game::map_query::{
 };
 use crate::local_id::LocalIdMap;
 use crate::messages::TextMessageType;
+use crate::online_registry::RegistryGuard;
 use crate::persistence::player::PlayerSnapshot;
 use arc_swap::ArcSwap;
 

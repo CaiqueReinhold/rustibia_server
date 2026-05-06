@@ -27,3 +27,4 @@ serde_yaml = "0.9"
 arc-swap = "1"
 serde_json = "1"
 sqlx = { version = "0.8.6", features = ["runtime-tokio", "tls-rustls", "postgres", "migrate", "json"] }
+rand = "0.8"

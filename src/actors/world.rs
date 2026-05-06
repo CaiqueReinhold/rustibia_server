@@ -4,6 +4,7 @@ use std::collections::binary_heap::BinaryHeap;
 use std::collections::{HashMap, VecDeque};
 use std::sync::Arc;
 use std::time::Duration;
+use tokio::sync::watch;
 use tokio::time;
 use tokio::{
     select,
@@ -12,6 +13,9 @@ use tokio::{
 use tracing::{debug, error, info, warn};
 
 use crate::actors::session::SessionActorHandle;
+// Forward-declared: real impl in `actors::spawning`. Held by `WorldCommand::SpawnCreature`
+// so the WorldActor can notify which AgentKey was assigned to a spawn slot.
+use crate::actors::spawning::SpawningActorHandle;
 use crate::config::CONFIG;
 use crate::entities::agent::{Agent, AgentKey, Facing};
 use crate::entities::items::{ItemConfig, ItemGuid, ItemId, ItemRef};
@@ -53,8 +57,11 @@ pub enum WorldCommand {
     DespawnPlayer {
         agent_key: AgentKey,
     },
-    SpawnAgent {
-        agent: Agent,
+    SpawnCreature {
+        kind: Arc<crate::entities::creature::CreatureKind>,
+        position: Position,
+        spawning: SpawningActorHandle,
+        slot_idx: usize,
     },
     RequestLogout {
         agent_key: AgentKey,
@@ -131,6 +138,7 @@ pub struct WorldActor {
     tick: Tick,
     tick_duration: Duration,
     broadcast_messages: VecDeque<BroadcastMessage>,
+    tick_tx: watch::Sender<Tick>,
 }
 
 impl WorldActor {
@@ -138,9 +146,14 @@ impl WorldActor {
         map: GameMap,
         item_configs: Arc<HashMap<ItemId, Arc<ItemConfig>>>,
         shared_map: Arc<ArcSwap<GameMap>>,
-    ) -> (WorldActorHandle, broadcast::Receiver<BroadcastMessage>) {
+    ) -> (
+        WorldActorHandle,
+        broadcast::Receiver<BroadcastMessage>,
+        watch::Receiver<Tick>,
+    ) {
         let (tx, rx) = mpsc::channel(CONFIG.max_buffered_messages);
         let (btx, brx) = broadcast::channel(CONFIG.max_buffered_messages);
+        let (tick_tx, tick_rx) = watch::channel(0);
 
         let actor = Self {
             rx,
@@ -152,11 +165,12 @@ impl WorldActor {
             tick: 0,
             tick_duration: CONFIG.tick_duration,
             broadcast_messages: VecDeque::new(),
+            tick_tx,
         };
 
         tokio::spawn(actor.run());
 
-        (WorldActorHandle { tx }, brx)
+        (WorldActorHandle { tx }, brx, tick_rx)
     }
 
     pub async fn run(mut self) {
@@ -204,6 +218,7 @@ impl WorldActor {
             }
 
             self.shared_map.store(Arc::new(self.map.clone()));
+            let _ = self.tick_tx.send(self.tick);
             while let Some(msg) = self.broadcast_messages.pop_back() {
                 info!("World broadcast: {:?}", msg);
                 if let Err(e) = self.btx.send(msg) {
@@ -310,16 +325,29 @@ impl WorldActor {
                 });
                 Ok(())
             }
-            WorldCommand::SpawnAgent { agent } => {
-                let pos = Position::new(1029, 1028, 7);
-                if let Ok(agent_key) = self.map.insert_agent(agent, &pos) {
-                    self.add_broadcast(BroadcastMessage::PlayerSpawned {
-                        agent_key,
-                        position: pos,
-                    });
-                    Ok(())
-                } else {
-                    Err(anyhow!("Failed to spawn agent at {:?}", pos))
+            WorldCommand::SpawnCreature {
+                kind,
+                position,
+                spawning,
+                slot_idx,
+            } => {
+                let agent = Agent::from_creature_kind(kind.as_ref());
+                match self.map.insert_agent(agent, &position) {
+                    Ok(agent_key) => {
+                        self.add_broadcast(BroadcastMessage::PlayerSpawned {
+                            agent_key,
+                            position: position.clone(),
+                        });
+                        if let Err(e) = spawning.creature_spawned(slot_idx, agent_key).await {
+                            error!("Failed to notify SpawningActor of spawn: {e}");
+                        }
+                        Ok(())
+                    }
+                    Err(e) => Err(anyhow!(
+                        "Failed to spawn creature at {:?}: {:?}",
+                        position,
+                        e
+                    )),
                 }
             }
             WorldCommand::RequestLogout { agent_key, session } => {
@@ -402,15 +430,6 @@ impl WorldActor {
             agent_key,
             position: spawn_pos,
         });
-
-        // testing
-        if self.tick < 1000 {
-            let creature = Agent::new_creature();
-            self.command_queue.push(ScheduledCommand {
-                at_tick: self.tick + 500,
-                command: WorldCommand::SpawnAgent { agent: creature },
-            });
-        }
 
         Ok(())
     }

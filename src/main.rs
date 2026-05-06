@@ -13,20 +13,17 @@ mod game;
 mod local_id;
 mod messages;
 mod network;
-mod persistence;
 mod online_registry;
+mod persistence;
 
 use config::CONFIG;
 
 use arc_swap::ArcSwap;
 
 use crate::{
-    online_registry::OnlineRegistry,
-    actors::{
-        persistence::PersistenceActor, world::WorldActor,
-        SharedContext,
-    },
+    actors::{SharedContext, persistence::PersistenceActor, world::WorldActor},
     game::{events::BroadcastMessage, game_config::GAME_CONFIG},
+    online_registry::OnlineRegistry,
     persistence::{auth::AuthRepository, player::PlayerRepository},
 };
 
@@ -46,9 +43,26 @@ async fn main() -> Result<()> {
 
     let items = Arc::new(persistence::items::load_items(&CONFIG.items_file_path).unwrap());
     let map = persistence::map::load_map(&CONFIG.map_file_path, &items).unwrap();
+    let creatures =
+        Arc::new(persistence::creatures::load_creatures(&CONFIG.creatures_file_path).unwrap());
+    let spawns = persistence::spawns::load_spawns(&CONFIG.spawns_file_path).unwrap();
     let shared_map = Arc::new(ArcSwap::from_pointee(map.clone()));
-    let (world, broadcast_receiver) =
+    let (world, broadcast_receiver, tick_rx) =
         WorldActor::start(map, Arc::clone(&items), shared_map.clone());
+
+    let _spawning = actors::spawning::SpawningActor::start(
+        spawns,
+        Arc::clone(&creatures),
+        world.clone(),
+        shared_map.clone(),
+        tick_rx.clone(),
+    );
+
+    actors::creature_behavior::CreatureBehaviorActor::start(
+        world.clone(),
+        shared_map.clone(),
+        tick_rx,
+    );
 
     let pool = PgPoolOptions::new()
         .max_connections(5)

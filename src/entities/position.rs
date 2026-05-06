@@ -7,7 +7,7 @@ use crate::{
     entities::{agent::AgentKey, player::InventorySlot},
 };
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, serde::Deserialize)]
 pub struct Position {
     pub x: u16,
     pub y: u16,

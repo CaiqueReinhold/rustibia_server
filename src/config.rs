@@ -13,7 +13,9 @@ pub struct ServerConfig {
     pub max_buffered_messages: usize,
     pub map_file_path: String,
     pub items_file_path: String,
+    pub creatures_file_path: String,
     pub game_config_path: String,
+    pub spawns_file_path: String,
     pub player_despawn_delay: Duration,
     pub database_url: String,
     pub save_interval: Duration,
@@ -28,7 +30,9 @@ impl Default for ServerConfig {
             max_buffered_messages: 512,
             map_file_path: "assets/map.otbm".to_string(),
             items_file_path: "assets/items.yaml".to_string(),
+            creatures_file_path: "assets/creatures.yaml".to_string(),
             game_config_path: "assets/game_conf.yaml".to_string(),
+            spawns_file_path: "assets/spawns.yaml".to_string(),
             player_despawn_delay: Duration::from_secs(2), // TODO: move to game config
             database_url: std::env::var("DATABASE_URL")
                 .unwrap_or_else(|_| "postgres://localhost/rustibia".to_string()),

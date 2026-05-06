@@ -142,6 +142,10 @@ impl GameMap {
         Ok(tile.agents.iter())
     }
 
+    pub fn iter_agents(&self) -> impl Iterator<Item = (AgentKey, &Agent)> {
+        self.agents.iter()
+    }
+
     pub fn can_move(&self, pos: &Position, _key: AgentKey) -> bool {
         let tile = self.get_tile(pos);
         if tile.is_err() {
@@ -380,5 +384,30 @@ impl GameMap {
             }
         }
         None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::entities::agent::Agent;
+    use crate::entities::position::Position;
+
+    fn map_with_one_tile(pos: &Position) -> GameMap {
+        let mut map = GameMap::new();
+        map.insert_tile(pos.clone(), MapTile::new());
+        map
+    }
+
+    #[test]
+    fn iter_agents_yields_each_inserted_agent() {
+        let pos = Position::new(100, 100, 7);
+        let mut map = map_with_one_tile(&pos);
+        let k1 = map.insert_agent(Agent::new_creature(), &pos).unwrap();
+        let k2 = map.insert_agent(Agent::new_creature(), &pos).unwrap();
+        let keys: Vec<_> = map.iter_agents().map(|(k, _)| k).collect();
+        assert!(keys.contains(&k1));
+        assert!(keys.contains(&k2));
+        assert_eq!(keys.len(), 2);
     }
 }

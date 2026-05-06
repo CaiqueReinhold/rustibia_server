@@ -1075,6 +1075,7 @@ dependencies = [
  "futures",
  "once_cell",
  "pathfinding",
+ "rand",
  "rstar",
  "serde",
  "serde_json",

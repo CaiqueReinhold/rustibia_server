@@ -1,3 +1,4 @@
+pub mod creature_ai;
 pub mod description;
 pub mod events;
 pub mod game_config;

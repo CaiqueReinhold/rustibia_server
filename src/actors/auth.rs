@@ -129,12 +129,11 @@ impl AuthActor {
         let registry_guard = match self.world_ctx.online_registry.try_register(character_id) {
             Some(guard) => guard,
             None => {
-                info!(
-                    session = self.session_id,
-                    "Character is already online."
-                );
+                info!(session = self.session_id, "Character is already online.");
                 let _ = connection.send_message(ServerMessage::LoginError).await;
-                return Err(anyhow::anyhow!("Character {character_id} is already online"));
+                return Err(anyhow::anyhow!(
+                    "Character {character_id} is already online"
+                ));
             }
         };
 

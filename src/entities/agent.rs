@@ -75,6 +75,10 @@ impl Agent {
         }
     }
 
+    pub fn is_creature(&self) -> bool {
+        matches!(self.inner, AgentInner::Creature)
+    }
+
     pub fn from_player(player: PlayerSnapshot) -> Self {
         let mut agent = Self {
             inner: AgentInner::Player(Player {
@@ -92,6 +96,22 @@ impl Agent {
             skills: player.skills,
             outfit: player.outfit,
             speed: 0,
+            next_walk_tick: 0,
+            next_use_tick: 0,
+        };
+        agent.apply_modifiers();
+        agent
+    }
+
+    pub fn from_creature_kind(kind: &crate::entities::creature::CreatureKind) -> Self {
+        let mut agent = Self {
+            inner: AgentInner::Creature,
+            name: kind.name.clone(),
+            life: kind.life.clone(),
+            skills: kind.skills.clone(),
+            outfit: kind.outfit,
+            speed: kind.speed,
+            facing: Facing::South,
             next_walk_tick: 0,
             next_use_tick: 0,
         };
@@ -298,5 +318,34 @@ mod tests {
         assert!(!agent.can_logout(9));
         assert!(agent.can_logout(10));
         assert!(agent.can_logout(11));
+    }
+
+    #[test]
+    fn is_creature_distinguishes_player_and_creature() {
+        let player = Agent::from_player(make_snapshot(1));
+        let creature = Agent::new_creature();
+        assert!(!player.is_creature());
+        assert!(creature.is_creature());
+    }
+
+    #[test]
+    fn from_creature_kind_produces_creature_agent_with_kind_attributes() {
+        use crate::entities::creature::CreatureKind;
+        let kind = CreatureKind {
+            id: "demon".to_string(),
+            name: "Demon".to_string(),
+            life: Pool {
+                current: 8200,
+                maximum: 8200,
+            },
+            outfit: (35, (0, 0, 0, 0)),
+            speed: 230,
+            skills: HashMap::new(),
+        };
+        let agent = Agent::from_creature_kind(&kind);
+        assert!(agent.is_creature());
+        assert_eq!(agent.name(), "Demon");
+        assert_eq!(agent.life().maximum, 8200);
+        assert_eq!(agent.outfit(), (35, (0, 0, 0, 0)));
     }
 }

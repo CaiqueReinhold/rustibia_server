@@ -1,0 +1,8 @@
+creatures:
+  demon:
+    name: Demon
+    life: 8200
+    speed: 230
+    outfit:
+      id: 35
+      colors: [0, 0, 0, 0]
