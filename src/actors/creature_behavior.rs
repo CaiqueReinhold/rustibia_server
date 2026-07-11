@@ -50,9 +50,7 @@ impl CreatureBehaviorActor {
                     direction,
                 },
             };
-            if let Err(e) = self.world.send(cmd).await {
-                error!("CreatureBehaviorActor failed to send WorldCommand: {e}");
-            }
+            self.world.send(cmd).await;
         }
     }
 }

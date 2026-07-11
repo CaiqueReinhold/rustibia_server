@@ -390,8 +390,22 @@ impl GameMap {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::entities::agent::Agent;
+    use crate::entities::agent::{Agent, Pool};
+    use crate::entities::creature::CreatureKind;
     use crate::entities::position::Position;
+
+    fn new_creature() -> Agent {
+        Agent::from_creature_kind(&CreatureKind {
+            name: "Creature".to_string(),
+            life: Pool {
+                current: 1,
+                maximum: 1,
+            },
+            outfit: (1, (0, 0, 0, 0)),
+            speed: 1,
+            skills: HashMap::new(),
+        })
+    }
 
     fn map_with_one_tile(pos: &Position) -> GameMap {
         let mut map = GameMap::new();
@@ -403,8 +417,8 @@ mod tests {
     fn iter_agents_yields_each_inserted_agent() {
         let pos = Position::new(100, 100, 7);
         let mut map = map_with_one_tile(&pos);
-        let k1 = map.insert_agent(Agent::new_creature(), &pos).unwrap();
-        let k2 = map.insert_agent(Agent::new_creature(), &pos).unwrap();
+        let k1 = map.insert_agent(new_creature(), &pos).unwrap();
+        let k2 = map.insert_agent(new_creature(), &pos).unwrap();
         let keys: Vec<_> = map.iter_agents().map(|(k, _)| k).collect();
         assert!(keys.contains(&k1));
         assert!(keys.contains(&k2));

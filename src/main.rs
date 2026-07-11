@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use sqlx::postgres::PgPoolOptions;
-use tokio::sync::broadcast::Receiver;
 use tracing::info;
 
 mod actors;
@@ -21,8 +20,12 @@ use config::CONFIG;
 use arc_swap::ArcSwap;
 
 use crate::{
-    actors::{SharedContext, persistence::PersistenceActor, world::WorldActor},
-    game::{events::BroadcastMessage, game_config::GAME_CONFIG},
+    actors::{
+        SharedContext, creature_behavior::CreatureBehaviorActor,
+        message_router::MessageRouterActor, persistence::PersistenceActor, spawning::SpawningActor,
+        world::WorldActor,
+    },
+    game::game_config::GAME_CONFIG,
     online_registry::OnlineRegistry,
     persistence::{auth::AuthRepository, player::PlayerRepository},
 };
@@ -31,7 +34,6 @@ pub struct Context {
     player_repo: Arc<PlayerRepository>,
     auth_repo: Arc<AuthRepository>,
     shared_ctx: SharedContext,
-    broadcast_receiver: Receiver<BroadcastMessage>,
 }
 
 #[tokio::main(worker_threads = 4)]
@@ -46,11 +48,14 @@ async fn main() -> Result<()> {
     let creatures =
         Arc::new(persistence::creatures::load_creatures(&CONFIG.creatures_file_path).unwrap());
     let spawns = persistence::spawns::load_spawns(&CONFIG.spawns_file_path).unwrap();
-    let shared_map = Arc::new(ArcSwap::from_pointee(map.clone()));
-    let (world, broadcast_receiver, tick_rx) =
-        WorldActor::start(map, Arc::clone(&items), shared_map.clone());
 
-    let _spawning = actors::spawning::SpawningActor::start(
+    let shared_map = Arc::new(ArcSwap::from_pointee(map.clone()));
+
+    let message_router = MessageRouterActor::start(shared_map.clone());
+    let (world, tick_rx) =
+        WorldActor::start(map, Arc::clone(&items), shared_map.clone(), message_router);
+
+    let _spawning = SpawningActor::start(
         spawns,
         Arc::clone(&creatures),
         world.clone(),
@@ -58,11 +63,7 @@ async fn main() -> Result<()> {
         tick_rx.clone(),
     );
 
-    actors::creature_behavior::CreatureBehaviorActor::start(
-        world.clone(),
-        shared_map.clone(),
-        tick_rx,
-    );
+    CreatureBehaviorActor::start(world.clone(), shared_map.clone(), tick_rx);
 
     let pool = PgPoolOptions::new()
         .max_connections(5)
@@ -83,7 +84,6 @@ async fn main() -> Result<()> {
             persistence,
             online_registry: OnlineRegistry::new(),
         },
-        broadcast_receiver,
     };
 
     let listener = network::Listener::bind(CONFIG.bind_address).await?;

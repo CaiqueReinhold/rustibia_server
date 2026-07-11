@@ -157,10 +157,7 @@ impl SpawningActor {
                     spawning: self.self_handle.clone(),
                     slot_idx: idx,
                 };
-                if let Err(e) = self.world.send(cmd).await {
-                    error!("Failed to send SpawnCreature: {e}");
-                    return;
-                }
+                self.world.send(cmd).await;
                 self.states[idx] = SlotState::Pending;
             }
             SlotState::Pending => {}

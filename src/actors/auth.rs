@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
 use anyhow::Result;
-use tokio::sync::{broadcast, mpsc, oneshot};
+use tokio::sync::{mpsc, oneshot};
 use tracing::{error, info};
 
 use super::{SharedContext, connection::ConnectionError, session::SessionActor};
-use crate::{actors::connection::ConnectionActorHandle, game::events::BroadcastMessage};
+use crate::actors::connection::ConnectionActorHandle;
 use crate::{
     config::CONFIG,
     entities::agent::Agent,
@@ -42,7 +42,6 @@ pub struct AuthActor {
     world_ctx: SharedContext,
     player_repo: Arc<PlayerRepository>,
     auth_repo: Arc<AuthRepository>,
-    brx: broadcast::Receiver<BroadcastMessage>,
 }
 
 impl AuthActor {
@@ -51,7 +50,6 @@ impl AuthActor {
         conn_rx: oneshot::Receiver<ConnectionActorHandle>,
         player_repo: Arc<PlayerRepository>,
         auth_repo: Arc<AuthRepository>,
-        brx: broadcast::Receiver<BroadcastMessage>,
         world_ctx: SharedContext,
     ) -> AuthActorHandle {
         let (tx, rx) = mpsc::channel(CONFIG.max_buffered_messages);
@@ -63,7 +61,6 @@ impl AuthActor {
                 world_ctx,
                 player_repo,
                 auth_repo,
-                brx,
             };
             actor.run(conn_rx).await;
         });
@@ -140,11 +137,8 @@ impl AuthActor {
         let session = SessionActor::start(
             self.session_id.clone(),
             connection.clone(),
+            self.world_ctx.clone(),
             Agent::from_player(player),
-            self.world_ctx.world.clone(),
-            self.brx.resubscribe(),
-            self.world_ctx.shared_map.clone(),
-            self.world_ctx.persistence.clone(),
             registry_guard,
         );
 

@@ -1,20 +1,16 @@
 use anyhow::{Result, anyhow};
 use arc_swap::ArcSwap;
+use std::collections::HashMap;
 use std::collections::binary_heap::BinaryHeap;
-use std::collections::{HashMap, VecDeque};
 use std::sync::Arc;
 use std::time::Duration;
-use tokio::sync::watch;
+use tokio::sync::{oneshot, watch};
 use tokio::time;
-use tokio::{
-    select,
-    sync::{broadcast, mpsc},
-};
+use tokio::{select, sync::mpsc};
 use tracing::{debug, error, info, warn};
 
+use crate::actors::message_router::{MessageRouterActorHandle, MessageRouterGuard};
 use crate::actors::session::SessionActorHandle;
-// Forward-declared: real impl in `actors::spawning`. Held by `WorldCommand::SpawnCreature`
-// so the WorldActor can notify which AgentKey was assigned to a spawn slot.
 use crate::actors::spawning::SpawningActorHandle;
 use crate::config::CONFIG;
 use crate::entities::agent::{Agent, AgentKey, Facing};
@@ -24,11 +20,12 @@ use crate::entities::position::{Direction, ItemPlacement, Position};
 use crate::game::events::BroadcastMessage;
 use crate::game::{Tick, item_action, item_movement, item_multi_action, movement};
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum WorldCommand {
     SpawnPlayer {
         player: Agent,
         session: SessionActorHandle,
+        tx: oneshot::Sender<(AgentKey, MessageRouterGuard)>,
     },
     Walk {
         direction: Direction,
@@ -110,34 +107,44 @@ pub struct WorldActorHandle {
 }
 
 impl WorldActorHandle {
-    pub async fn send(
-        &self,
-        command: WorldCommand,
-    ) -> Result<(), mpsc::error::SendError<(WorldCommand, Option<Tick>)>> {
-        self.tx.send((command, None)).await?;
-        Ok(())
+    pub async fn send(&self, command: WorldCommand) {
+        let _ = self.tx.send((command, None)).await;
     }
 
-    pub async fn send_delayed(
+    pub async fn send_delayed(&self, command: WorldCommand, after: Tick) {
+        let _ = self.tx.send((command, Some(after))).await;
+    }
+
+    pub async fn spawn_player(
         &self,
-        command: WorldCommand,
-        after: Tick,
-    ) -> Result<(), mpsc::error::SendError<(WorldCommand, Option<Tick>)>> {
-        self.tx.send((command, Some(after))).await?;
-        Ok(())
+        player: Agent,
+        session: SessionActorHandle,
+    ) -> Result<(AgentKey, MessageRouterGuard)> {
+        let (tx, rx) = oneshot::channel();
+        let _ = self
+            .tx
+            .send((
+                WorldCommand::SpawnPlayer {
+                    player,
+                    session,
+                    tx,
+                },
+                None,
+            ))
+            .await;
+        Ok(rx.await?)
     }
 }
 
 pub struct WorldActor {
     rx: mpsc::Receiver<(WorldCommand, Option<Tick>)>,
-    btx: broadcast::Sender<BroadcastMessage>,
+    message_router: MessageRouterActorHandle,
     command_queue: BinaryHeap<ScheduledCommand>,
     map: GameMap,
     item_configs: Arc<HashMap<ItemId, Arc<ItemConfig>>>,
     shared_map: Arc<ArcSwap<GameMap>>,
     tick: Tick,
     tick_duration: Duration,
-    broadcast_messages: VecDeque<BroadcastMessage>,
     tick_tx: watch::Sender<Tick>,
 }
 
@@ -146,31 +153,26 @@ impl WorldActor {
         map: GameMap,
         item_configs: Arc<HashMap<ItemId, Arc<ItemConfig>>>,
         shared_map: Arc<ArcSwap<GameMap>>,
-    ) -> (
-        WorldActorHandle,
-        broadcast::Receiver<BroadcastMessage>,
-        watch::Receiver<Tick>,
-    ) {
+        message_router: MessageRouterActorHandle,
+    ) -> (WorldActorHandle, watch::Receiver<Tick>) {
         let (tx, rx) = mpsc::channel(CONFIG.max_buffered_messages);
-        let (btx, brx) = broadcast::channel(CONFIG.max_buffered_messages);
         let (tick_tx, tick_rx) = watch::channel(0);
 
         let actor = Self {
             rx,
-            btx,
+            message_router,
             command_queue: BinaryHeap::with_capacity(CONFIG.max_queue_size),
             map,
             item_configs,
             shared_map,
             tick: 0,
             tick_duration: CONFIG.tick_duration,
-            broadcast_messages: VecDeque::new(),
             tick_tx,
         };
 
         tokio::spawn(actor.run());
 
-        (WorldActorHandle { tx }, brx, tick_rx)
+        (WorldActorHandle { tx }, tick_rx)
     }
 
     pub async fn run(mut self) {
@@ -200,6 +202,8 @@ impl WorldActor {
             self.tick += 1;
             debug!("World: starting tick {}", self.tick);
 
+            let mut broadcast_messages: Vec<BroadcastMessage> = Vec::new();
+
             if !self.command_queue.is_empty() {
                 info!(
                     "Starting tick {} with {} commands",
@@ -211,7 +215,8 @@ impl WorldActor {
             while let Some(scheduled) = self.command_queue.peek() {
                 if scheduled.at_tick <= self.tick {
                     let scheduled = self.command_queue.pop().unwrap();
-                    self.handle_command(scheduled.command).await;
+                    self.handle_command(scheduled.command, &mut broadcast_messages)
+                        .await;
                 } else {
                     break;
                 }
@@ -219,12 +224,7 @@ impl WorldActor {
 
             self.shared_map.store(Arc::new(self.map.clone()));
             let _ = self.tick_tx.send(self.tick);
-            while let Some(msg) = self.broadcast_messages.pop_back() {
-                info!("World broadcast: {:?}", msg);
-                if let Err(e) = self.btx.send(msg) {
-                    debug!("No broadcast receivers: {e}");
-                }
-            }
+            self.message_router.broadcast(broadcast_messages).await;
 
             let elapsed = tick_start.elapsed();
             debug!("Tick {} took {} ms", self.tick, elapsed.as_millis());
@@ -238,31 +238,30 @@ impl WorldActor {
         }
     }
 
-    fn add_broadcast(&mut self, msg: BroadcastMessage) {
-        self.broadcast_messages.push_front(msg);
-    }
-
-    fn apply_broadcasts(&mut self, msgs: Vec<BroadcastMessage>) {
-        for msg in msgs {
-            self.add_broadcast(msg);
-        }
-    }
-
     fn apply_commands(&mut self, cmds: Vec<ScheduledCommand>) {
         for cmd in cmds {
             self.command_queue.push(cmd);
         }
     }
 
-    async fn handle_command(&mut self, command: WorldCommand) {
+    async fn handle_command(
+        &mut self,
+        command: WorldCommand,
+        broadcast_messages: &mut Vec<BroadcastMessage>,
+    ) {
         info!("{:?}", command);
         let result: Result<()> = match command {
-            WorldCommand::SpawnPlayer { player, session } => {
-                self.spawn_player(player, session).await
+            WorldCommand::SpawnPlayer {
+                player,
+                session,
+                tx,
+            } => {
+                self.spawn_player(player, session, tx, broadcast_messages)
+                    .await
             }
             WorldCommand::Walk { direction, actor } => {
                 movement::walk(&mut self.map, self.tick, direction, actor)
-                    .map(|msgs| self.apply_broadcasts(msgs))
+                    .map(|msgs| broadcast_messages.extend(msgs))
             }
             WorldCommand::MoveItem {
                 agent,
@@ -279,7 +278,7 @@ impl WorldActor {
                     to,
                     target_container,
                 );
-                self.apply_broadcasts(msgs);
+                broadcast_messages.extend(msgs);
                 Ok(())
             }
             WorldCommand::UseItem { agent, item } => {
@@ -290,7 +289,7 @@ impl WorldActor {
                     item,
                     self.tick,
                 );
-                self.apply_broadcasts(msgs);
+                broadcast_messages.extend(msgs);
                 self.apply_commands(cmds);
                 Ok(())
             }
@@ -307,19 +306,19 @@ impl WorldActor {
                     target,
                     self.tick,
                 );
-                self.apply_broadcasts(msgs);
+                broadcast_messages.extend(msgs);
                 self.apply_commands(cmds);
                 Ok(())
             }
             WorldCommand::ChangeDirection { agent, facing } => {
                 let msgs = movement::change_direction(&mut self.map, agent, facing);
-                self.apply_broadcasts(msgs);
+                broadcast_messages.extend(msgs);
                 Ok(())
             }
             WorldCommand::DespawnPlayer { agent_key, .. } => {
                 self.map.remove_agent(agent_key);
                 info!("Player {:?} despawned after disconnect", agent_key);
-                self.add_broadcast(BroadcastMessage::PlayerDespawned {
+                broadcast_messages.push(BroadcastMessage::PlayerDespawned {
                     agent_key,
                     snapshot: None,
                 });
@@ -334,7 +333,7 @@ impl WorldActor {
                 let agent = Agent::from_creature_kind(kind.as_ref());
                 match self.map.insert_agent(agent, &position) {
                     Ok(agent_key) => {
-                        self.add_broadcast(BroadcastMessage::PlayerSpawned {
+                        broadcast_messages.push(BroadcastMessage::PlayerSpawned {
                             agent_key,
                             position: position.clone(),
                         });
@@ -351,12 +350,13 @@ impl WorldActor {
                 }
             }
             WorldCommand::RequestLogout { agent_key, session } => {
-                self.handle_request_logout(agent_key, session).await
+                self.handle_request_logout(agent_key, session, broadcast_messages)
+                    .await
             }
             WorldCommand::DecayItem { item } => {
-                let (messages, commands) =
+                let (msgs, commands) =
                     item_action::decay_item(&mut self.map, &self.item_configs, item, self.tick);
-                self.apply_broadcasts(messages);
+                broadcast_messages.extend(msgs);
                 self.apply_commands(commands);
                 Ok(())
             }
@@ -370,6 +370,7 @@ impl WorldActor {
         &mut self,
         agent_key: AgentKey,
         session: SessionActorHandle,
+        broadcast_messages: &mut Vec<BroadcastMessage>,
     ) -> Result<()> {
         let Some(agent) = self.map.get_agent(agent_key) else {
             return Ok(());
@@ -397,17 +398,23 @@ impl WorldActor {
             "Player {:?} logged out cleanly at tick {}",
             agent_key, self.tick
         );
-        self.add_broadcast(BroadcastMessage::PlayerDespawned {
+        broadcast_messages.push(BroadcastMessage::PlayerDespawned {
             agent_key,
             snapshot,
         });
         Ok(())
     }
 
-    async fn spawn_player(&mut self, agent: Agent, session: SessionActorHandle) -> Result<()> {
+    async fn spawn_player(
+        &mut self,
+        agent: Agent,
+        session: SessionActorHandle,
+        tx: oneshot::Sender<(AgentKey, MessageRouterGuard)>,
+        broadcast_messages: &mut Vec<BroadcastMessage>,
+    ) -> Result<()> {
         let player = agent
             .get_player()
-            .ok_or(anyhow::anyhow!("agent {:?} is not a player", agent))?;
+            .ok_or(anyhow!("Agent {:?} is not a player", agent))?;
         let origin = player.origin.clone();
         let position = player.position.clone();
 
@@ -417,16 +424,18 @@ impl WorldActor {
             .or_else(|_| self.map.insert_agent(agent, &origin))?;
 
         let Some(spawn_pos) = self.map.agent_position(agent_key).cloned() else {
-            session.spawn_result(None).await?;
-            return Ok(());
+            let agent = self.map.remove_agent(agent_key);
+            return Err(anyhow!("Player {:?} failed to spawn", agent));
         };
 
-        if let Err(e) = session.spawn_result(Some(agent_key)).await {
+        let guard = self.message_router.subscribe(agent_key, session).await?;
+
+        if tx.send((agent_key, guard)).is_err() {
             self.map.remove_agent(agent_key);
-            return Err(e.into());
+            return Err(anyhow!("Failed to return spawned player result"));
         }
 
-        self.add_broadcast(BroadcastMessage::PlayerSpawned {
+        broadcast_messages.push(BroadcastMessage::PlayerSpawned {
             agent_key,
             position: spawn_pos,
         });

@@ -7,7 +7,6 @@ pub type CreatureKindId = String;
 
 #[derive(Clone, Debug)]
 pub struct CreatureKind {
-    pub id: CreatureKindId,
     pub name: String,
     pub life: Pool,
     pub outfit: (OutfitId, OutfitColors),

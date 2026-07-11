@@ -45,15 +45,27 @@ pub fn decide_actions(map: &GameMap, current_tick: Tick) -> Vec<CreatureAction> 
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use super::*;
-    use crate::entities::agent::Agent;
+    use crate::entities::agent::{Agent, Pool};
+    use crate::entities::creature::CreatureKind;
     use crate::entities::map::{GameMap, MapTile};
     use crate::entities::position::Position;
 
     fn map_with_creature(at: &Position, next_walk_tick: Tick) -> (GameMap, AgentKey) {
         let mut map = GameMap::new();
         map.insert_tile(at.clone(), MapTile::new());
-        let mut creature = Agent::new_creature();
+        let mut creature = Agent::from_creature_kind(&CreatureKind {
+            name: "Creature".to_string(),
+            life: Pool {
+                current: 1,
+                maximum: 1,
+            },
+            outfit: (1, (0, 0, 0, 0)),
+            speed: 1,
+            skills: HashMap::new(),
+        });
         creature.next_walk_tick = next_walk_tick;
         let key = map.insert_agent(creature, at).unwrap();
         (map, key)

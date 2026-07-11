@@ -46,7 +46,6 @@ pub fn load_creatures(
         .into_iter()
         .map(|(id, raw)| {
             let kind = CreatureKind {
-                id: id.clone(),
                 name: raw.name,
                 life: Pool {
                     current: raw.life,

@@ -9,6 +9,7 @@ use self::{persistence::PersistenceActorHandle, world::WorldActorHandle};
 pub mod auth;
 pub mod connection;
 pub mod creature_behavior;
+pub mod message_router;
 pub mod persistence;
 mod player_query;
 pub mod session;

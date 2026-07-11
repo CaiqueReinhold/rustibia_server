@@ -7,6 +7,7 @@ use crate::{
     config,
     constants::{SPEED_PARAM_A, SPEED_PARAM_B, SPEED_PARAM_C},
     entities::{
+        creature::CreatureKind,
         position::Position,
         skills::{SkillType, SkillValue},
     },
@@ -103,7 +104,7 @@ impl Agent {
         agent
     }
 
-    pub fn from_creature_kind(kind: &crate::entities::creature::CreatureKind) -> Self {
+    pub fn from_creature_kind(kind: &CreatureKind) -> Self {
         let mut agent = Self {
             inner: AgentInner::Creature,
             name: kind.name.clone(),
@@ -117,41 +118,6 @@ impl Agent {
         };
         agent.apply_modifiers();
         agent
-    }
-
-    // Testing
-    pub fn new_creature() -> Self {
-        let mut creature = Self {
-            name: "Demon".to_string(),
-            facing: Facing::South,
-            life: Pool {
-                current: 100,
-                maximum: 100,
-            },
-            outfit: (35, (0, 0, 0, 0)),
-            skills: HashMap::new(),
-            inner: AgentInner::Creature,
-            speed: 200,
-            next_use_tick: 0,
-            next_walk_tick: 0,
-        };
-        creature.skills.insert(
-            SkillType::Level,
-            SkillValue {
-                value: 1,
-                current_ticks: 0,
-                max_ticks: 100,
-            },
-        );
-        creature.skills.insert(
-            SkillType::Speed,
-            SkillValue {
-                value: 120,
-                current_ticks: 0,
-                max_ticks: 0,
-            },
-        );
-        creature
     }
 
     pub fn name(&self) -> &str {
@@ -273,7 +239,16 @@ mod tests {
 
     #[test]
     fn to_snapshot_returns_none_for_creature() {
-        let creature = Agent::new_creature();
+        let creature = Agent::from_creature_kind(&CreatureKind {
+            name: "Creature".to_string(),
+            life: Pool {
+                current: 1,
+                maximum: 1,
+            },
+            outfit: (1, (0, 0, 0, 0)),
+            speed: 1,
+            skills: HashMap::new(),
+        });
         let pos = Position {
             x: 200,
             y: 200,
@@ -323,7 +298,16 @@ mod tests {
     #[test]
     fn is_creature_distinguishes_player_and_creature() {
         let player = Agent::from_player(make_snapshot(1));
-        let creature = Agent::new_creature();
+        let creature = Agent::from_creature_kind(&CreatureKind {
+            name: "Creature".to_string(),
+            life: Pool {
+                current: 1,
+                maximum: 1,
+            },
+            outfit: (1, (0, 0, 0, 0)),
+            speed: 1,
+            skills: HashMap::new(),
+        });
         assert!(!player.is_creature());
         assert!(creature.is_creature());
     }
@@ -332,7 +316,6 @@ mod tests {
     fn from_creature_kind_produces_creature_agent_with_kind_attributes() {
         use crate::entities::creature::CreatureKind;
         let kind = CreatureKind {
-            id: "demon".to_string(),
             name: "Demon".to_string(),
             life: Pool {
                 current: 8200,
