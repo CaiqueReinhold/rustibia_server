@@ -14,20 +14,16 @@ use crate::{
     messages::ItemStack,
 };
 
-pub fn iter_visible_floors(position: &Position) -> impl Iterator<Item = u8> {
-    let (min_z, max_z) = if position.z <= 7 {
+pub fn iter_visible_floors(z: u8) -> impl Iterator<Item = u8> {
+    let (min_z, max_z) = if z <= BASE_FLOOR {
         (MIN_FLOOR, BASE_FLOOR)
     } else {
-        let min_z = if (position.z as i32) - 2 >= (BASE_FLOOR + 1) as i32 {
-            position.z
+        let min_z = if (z as i32) - 2 >= (BASE_FLOOR + 1) as i32 {
+            z
         } else {
             BASE_FLOOR + 1
         };
-        let max_z = if position.z + 2 <= MAX_FLOOR {
-            position.z
-        } else {
-            MAX_FLOOR
-        };
+        let max_z = if z + 2 <= MAX_FLOOR { z } else { MAX_FLOOR };
         (min_z, max_z)
     };
     min_z..=max_z
@@ -54,7 +50,7 @@ pub fn get_map_desc_on_viewport(
     viewport_center: &Position,
 ) -> Vec<(u8, Box<[ItemStack; VIEWPORT_SIZE]>)> {
     let mut floors = Vec::new();
-    for floor in iter_visible_floors(viewport_center) {
+    for floor in iter_visible_floors(viewport_center.z) {
         let mut tiles = [[None; MAX_VISIBLE_ITEMS]; VIEWPORT_SIZE];
         let mut found_any = false;
         for (i, pos) in iter_viewport(viewport_center, floor).enumerate() {
@@ -79,7 +75,7 @@ pub fn get_map_expansion(
     direction: &Direction,
 ) -> Vec<(u8, Box<[ItemStack]>)> {
     let mut floors = Vec::new();
-    for floor in iter_visible_floors(viewport_center) {
+    for floor in iter_visible_floors(viewport_center.z) {
         let tiles = iter_expansion(viewport_center, direction, floor)
             .map(|pos| {
                 let mut stack: ItemStack = [None; MAX_VISIBLE_ITEMS];

@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use arc_swap::ArcSwap;
 use tokio::sync::watch;
-use tracing::{error, info};
+use tracing::info;
 
 use crate::actors::world::{WorldActorHandle, WorldCommand};
 use crate::entities::map::GameMap;

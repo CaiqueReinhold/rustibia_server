@@ -29,7 +29,7 @@ pub fn walk(
         return Ok(broadcasts);
     }
 
-    let new_pos = current_pos + direction;
+    let new_pos = current_pos.clone() + direction;
     if !map.can_move(&new_pos, agent_key) {
         info!("can't move");
         broadcasts.push(BroadcastMessage::PlayerWalkDenied { agent_key });
@@ -47,12 +47,6 @@ pub fn walk(
         .unwrap()
         .calculate_walk_ticks(tile_friction, direction.is_diagonal());
 
-    info!(
-        "new pos: {:?}. tile_friction: {}. step_time_ms: {}",
-        new_pos,
-        tile_friction,
-        walk_ticks * 50
-    );
     map.get_agent_mut(agent_key).unwrap().next_walk_tick = current_tick + walk_ticks;
     map.move_agent(agent_key, &new_pos)?;
     let floor_change = map.get_floor_change(&new_pos);
@@ -60,6 +54,7 @@ pub fn walk(
     broadcasts.push(BroadcastMessage::AgentMoved {
         agent_key,
         direction,
+        from_position: current_pos,
         to_position: new_pos.clone(),
     });
 
@@ -92,7 +87,8 @@ pub fn walk(
         map.move_agent(agent_key, &position)?;
         broadcasts.push(BroadcastMessage::AgentTeleport {
             agent_key,
-            position,
+            from_position: new_pos,
+            to_position: position,
         });
     }
 
@@ -109,7 +105,12 @@ pub fn change_direction(
         && facing != current_facing
     {
         map.get_agent_mut(agent_key).unwrap().facing = facing;
-        return vec![BroadcastMessage::AgentChangedDirection { agent_key, facing }];
+        let position = map.agent_position(agent_key).cloned().unwrap_or_default();
+        return vec![BroadcastMessage::AgentChangedDirection {
+            agent_key,
+            facing,
+            position,
+        }];
     }
     vec![]
 }

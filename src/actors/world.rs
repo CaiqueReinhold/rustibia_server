@@ -317,10 +317,16 @@ impl WorldActor {
             }
             WorldCommand::DespawnPlayer { agent_key, .. } => {
                 self.map.remove_agent(agent_key);
+                let position = self
+                    .map
+                    .agent_position(agent_key)
+                    .cloned()
+                    .unwrap_or_default();
                 info!("Player {:?} despawned after disconnect", agent_key);
                 broadcast_messages.push(BroadcastMessage::PlayerDespawned {
                     agent_key,
                     snapshot: None,
+                    position,
                 });
                 Ok(())
             }
@@ -391,6 +397,7 @@ impl WorldActor {
 
         let position = self.map.agent_position(agent_key).cloned();
         let snapshot = position
+            .clone()
             .and_then(|pos| agent.to_snapshot(pos))
             .map(Arc::new);
         self.map.remove_agent(agent_key);
@@ -401,6 +408,7 @@ impl WorldActor {
         broadcast_messages.push(BroadcastMessage::PlayerDespawned {
             agent_key,
             snapshot,
+            position: position.unwrap_or_default(),
         });
         Ok(())
     }

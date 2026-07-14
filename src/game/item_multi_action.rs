@@ -191,7 +191,8 @@ fn rope(
             .map_err(|_| ItemActionError::ActionFailed)?;
         broadcasts.push(BroadcastMessage::AgentTeleport {
             agent_key,
-            position: target_pos,
+            from_position: pos.clone(),
+            to_position: target_pos,
         });
         return Ok(());
     } else if GAME_CONFIG
@@ -210,7 +211,8 @@ fn rope(
                 .map(|()| {
                     broadcasts.push(BroadcastMessage::AgentTeleport {
                         agent_key: last_agent,
-                        position: target_pos,
+                        from_position: pos.clone(),
+                        to_position: target_pos,
                     });
                 })
                 .is_err()

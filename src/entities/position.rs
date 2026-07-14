@@ -7,7 +7,7 @@ use crate::{
     entities::{agent::AgentKey, player::InventorySlot},
 };
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, serde::Deserialize)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Default, serde::Deserialize)]
 pub struct Position {
     pub x: u16,
     pub y: u16,
@@ -180,4 +180,59 @@ impl Direction {
 pub enum ItemPlacement {
     Map(Position),
     Inventory(InventorySlot, AgentKey),
+}
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
+pub struct Point {
+    pub x: u16,
+    pub y: u16,
+}
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
+pub struct Rect {
+    min: Point,
+    max: Point,
+}
+
+impl Rect {
+    pub fn new(min_x: u16, min_y: u16, max_x: u16, max_y: u16) -> Self {
+        Rect {
+            min: Point { x: min_x, y: min_y },
+            max: Point { x: max_x, y: max_y },
+        }
+    }
+
+    pub fn player_viewport(pos: &Position) -> Self {
+        let half_w = (PLAYER_VIEWPORT_WIDTH / 2) as u16;
+        let half_h = (PLAYER_VIEWPORT_HEIGHT / 2) as u16;
+        let x = pos.x;
+        let y = pos.y;
+
+        Rect {
+            min: Point {
+                x: x.saturating_sub(half_w),
+                y: y.saturating_sub(half_h),
+            },
+            max: Point {
+                x: x + half_w,
+                y: y + half_h,
+            },
+        }
+    }
+
+    pub fn min_x(&self) -> u16 {
+        self.min.x
+    }
+
+    pub fn min_y(&self) -> u16 {
+        self.min.y
+    }
+
+    pub fn max_x(&self) -> u16 {
+        self.max.x
+    }
+
+    pub fn max_y(&self) -> u16 {
+        self.max.y
+    }
 }

@@ -4,6 +4,7 @@ use anyhow::Result;
 use thiserror::Error;
 use tokio::select;
 use tokio::sync::mpsc;
+use tokio_util::sync::CancellationToken;
 use tracing::error;
 use tracing::info;
 
@@ -60,7 +61,6 @@ pub enum SessionError {
 
 #[derive(Clone, Debug)]
 pub enum SessionCommand {
-    Close,
     ReceivePlayerMessage(ClientMessage),
     ReceiveBroadcast(BroadcastMessage),
     LogoutDenied,
@@ -69,12 +69,12 @@ pub enum SessionCommand {
 #[derive(Clone, Debug)]
 pub struct SessionActorHandle {
     tx: mpsc::Sender<SessionCommand>,
+    token: CancellationToken,
 }
 
 impl SessionActorHandle {
-    pub async fn close(&self) -> Result<(), mpsc::error::SendError<SessionCommand>> {
-        self.tx.send(SessionCommand::Close).await?;
-        Ok(())
+    pub fn close(&self) {
+        self.token.cancel();
     }
 
     pub async fn receive_message(
@@ -87,11 +87,11 @@ impl SessionActorHandle {
         Ok(())
     }
 
-    pub async fn receive_broadcast(
+    pub fn receive_broadcast(
         &self,
         msg: BroadcastMessage,
-    ) -> Result<(), mpsc::error::SendError<SessionCommand>> {
-        self.tx.send(SessionCommand::ReceiveBroadcast(msg)).await?;
+    ) -> Result<(), mpsc::error::TrySendError<SessionCommand>> {
+        self.tx.try_send(SessionCommand::ReceiveBroadcast(msg))?;
         Ok(())
     }
 
@@ -104,6 +104,7 @@ impl SessionActorHandle {
 pub struct SessionActor {
     session_id: String,
     rx: mpsc::Receiver<SessionCommand>,
+    token: CancellationToken,
     connection: ConnectionActorHandle,
     world: WorldActorHandle,
     player_key: AgentKey,
@@ -124,7 +125,11 @@ impl SessionActor {
         registry_guard: RegistryGuard,
     ) -> SessionActorHandle {
         let (tx, rx) = mpsc::channel(CONFIG.max_buffered_messages);
-        let self_handle = SessionActorHandle { tx };
+        let token = CancellationToken::new();
+        let self_handle = SessionActorHandle {
+            tx,
+            token: token.clone(),
+        };
 
         let self_handle_clone = self_handle.clone();
         tokio::spawn(async move {
@@ -139,6 +144,7 @@ impl SessionActor {
                     let actor = Self {
                         session_id,
                         rx,
+                        token,
                         connection,
                         world: context.world.clone(),
                         player_key: agent_key,
@@ -188,6 +194,10 @@ impl SessionActor {
 
         loop {
             let result = select! { biased;
+                _ = self.token.cancelled() => {
+                    self.close_connection().await;
+                    break;
+                }
                 cmd = self.rx.recv() =>
                     if let Some(cmd) = cmd {
                         self.route_command(cmd).await
@@ -233,7 +243,6 @@ impl SessionActor {
             "Session received command: {:?}", cmd
         );
         match cmd {
-            SessionCommand::Close => self.close_connection().await,
             SessionCommand::ReceivePlayerMessage(msg) => self.handle_client_message(msg).await,
             SessionCommand::ReceiveBroadcast(msg) => self.route_broadcast(msg).await,
             SessionCommand::LogoutDenied => self.logout_denied().await,
@@ -564,6 +573,7 @@ impl SessionActor {
                 agent_key,
                 direction,
                 to_position,
+                ..
             } => self.agent_moved(agent_key, direction, to_position).await,
             BroadcastMessage::PlayerSpawned {
                 agent_key,
@@ -590,17 +600,19 @@ impl SessionActor {
             BroadcastMessage::UpdatePlayerCapacity { agent_key } => {
                 self.update_player_capacity(agent_key).await
             }
-            BroadcastMessage::AgentChangedDirection { agent_key, facing } => {
-                self.actor_direction_changed(agent_key, facing).await
-            }
+            BroadcastMessage::AgentChangedDirection {
+                agent_key, facing, ..
+            } => self.actor_direction_changed(agent_key, facing).await,
             BroadcastMessage::PlayerDespawned {
                 agent_key,
                 snapshot,
+                ..
             } => self.player_despawned(agent_key, snapshot).await,
             BroadcastMessage::AgentTeleport {
                 agent_key,
-                position,
-            } => self.agent_teleported(agent_key, position).await,
+                to_position,
+                ..
+            } => self.agent_teleported(agent_key, to_position).await,
         }
     }
 
@@ -987,20 +999,18 @@ impl SessionActor {
         Ok(())
     }
 
-    async fn agent_teleported(&mut self, agent_key: AgentKey, position: Position) -> Result<()> {
+    async fn agent_teleported(&mut self, agent_key: AgentKey, to_position: Position) -> Result<()> {
         if agent_key == self.player_key {
             let map = self.shared_map.load();
-            let map_desc_floors = get_map_desc_on_viewport(&map, &position);
+            let map_desc_floors = get_map_desc_on_viewport(&map, &to_position);
             for (floor, tiles) in map_desc_floors {
-                if floor >= position.z {
-                    self.connection
-                        .send_message(ServerMessage::DescribeMap {
-                            tiles,
-                            center: position.clone(),
-                            floor,
-                        })
-                        .await?;
-                }
+                self.connection
+                    .send_message(ServerMessage::DescribeMap {
+                        tiles,
+                        center: to_position.clone(),
+                        floor,
+                    })
+                    .await?;
             }
 
             self.connection
@@ -1009,7 +1019,7 @@ impl SessionActor {
                         .agents
                         .get_local(&agent_key)
                         .ok_or(SessionError::InvalidState)?,
-                    position,
+                    position: to_position,
                 })
                 .await?;
         }

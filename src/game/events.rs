@@ -17,6 +17,7 @@ pub enum BroadcastMessage {
     AgentMoved {
         agent_key: AgentKey,
         direction: Direction,
+        from_position: Position,
         to_position: Position,
     },
     TileChanged {
@@ -53,13 +54,16 @@ pub enum BroadcastMessage {
     AgentChangedDirection {
         agent_key: AgentKey,
         facing: Facing,
+        position: Position,
     },
     AgentTeleport {
         agent_key: AgentKey,
-        position: Position,
+        from_position: Position,
+        to_position: Position,
     },
     PlayerDespawned {
         agent_key: AgentKey,
+        position: Position,
         snapshot: Option<Arc<PlayerSnapshot>>,
     },
 }

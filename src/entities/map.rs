@@ -1,13 +1,13 @@
 use slotmap::SlotMap;
 use smallvec::SmallVec;
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 use thiserror::Error;
 
 use crate::constants::MAX_VISIBLE_ITEMS;
 use crate::entities::agent::{Agent, AgentKey};
 use crate::entities::items::{FloorChangeDirection, Item, ItemAttribute, ItemFlag, ItemGuid};
 use crate::entities::player::Player;
-use crate::entities::position::Position;
+use crate::entities::position::{Position, Rect};
 
 pub type RemovedItem = (Item, Option<usize>, Option<(ItemGuid, usize)>);
 
@@ -27,9 +27,52 @@ pub enum MapError {
     ContainerIsFull,
 }
 
+const CHUNK_BITS: u16 = 4;
+const CHUNK_SIDE: u16 = 1 << CHUNK_BITS;
+const CHUNK_MASK: u16 = CHUNK_SIDE - 1;
+const CHUNK_AREA: usize = (CHUNK_SIDE as usize) * (CHUNK_SIDE as usize);
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+struct ChunkCoord {
+    cx: u16,
+    cy: u16,
+    z: u8,
+}
+
+impl ChunkCoord {
+    fn from_pos(pos: &Position) -> Self {
+        ChunkCoord {
+            cx: pos.x >> CHUNK_BITS,
+            cy: pos.y >> CHUNK_BITS,
+            z: pos.z,
+        }
+    }
+}
+
+fn local_index(pos: &Position) -> usize {
+    let lx = (pos.x & CHUNK_MASK) as usize;
+    let ly = (pos.y & CHUNK_MASK) as usize;
+    ly * CHUNK_SIDE as usize + lx
+}
+
+#[derive(Debug, Clone)]
+struct Chunk {
+    tiles: Box<[Option<MapTile>]>,
+}
+
+impl Chunk {
+    fn new() -> Self {
+        let tiles = (0..CHUNK_AREA)
+            .map(|_| None)
+            .collect::<Vec<_>>()
+            .into_boxed_slice();
+        Chunk { tiles }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct GameMap {
-    tiles: HashMap<Position, MapTile>,
+    chunks: HashMap<ChunkCoord, Arc<Chunk>>,
     agents: SlotMap<AgentKey, Agent>,
     agent_positions: HashMap<AgentKey, Position>,
 }
@@ -50,38 +93,52 @@ impl MapTile {
 impl GameMap {
     pub fn new() -> Self {
         GameMap {
-            tiles: HashMap::new(),
+            chunks: HashMap::new(),
             agents: SlotMap::with_key(),
             agent_positions: HashMap::new(),
         }
     }
 
     pub fn insert_tile(&mut self, pos: Position, tile: MapTile) {
-        self.tiles.insert(pos, tile);
+        let coord = ChunkCoord::from_pos(&pos);
+        let idx = local_index(&pos);
+        let chunk = self
+            .chunks
+            .entry(coord)
+            .or_insert_with(|| Arc::new(Chunk::new()));
+        Arc::make_mut(chunk).tiles[idx] = Some(tile);
+    }
+
+    fn contains_tile(&self, pos: &Position) -> bool {
+        self.get_tile(pos).is_ok()
     }
 
     fn get_tile_mut(&mut self, pos: &Position) -> Result<&mut MapTile, MapError> {
-        if let Some(tile) = self.tiles.get_mut(pos) {
-            return Ok(tile);
-        }
-        Err(MapError::TileDoesNotExist)
+        let idx = local_index(pos);
+        let chunk = self
+            .chunks
+            .get_mut(&ChunkCoord::from_pos(pos))
+            .ok_or(MapError::TileDoesNotExist)?;
+        Arc::make_mut(chunk).tiles[idx]
+            .as_mut()
+            .ok_or(MapError::TileDoesNotExist)
     }
 
     fn get_tile(&self, pos: &Position) -> Result<&MapTile, MapError> {
-        if let Some(tile) = self.tiles.get(pos) {
-            return Ok(tile);
-        }
-        Err(MapError::TileDoesNotExist)
+        self.chunks
+            .get(&ChunkCoord::from_pos(pos))
+            .and_then(|chunk| chunk.tiles[local_index(pos)].as_ref())
+            .ok_or(MapError::TileDoesNotExist)
     }
 
     /// Insert an agent at `pos`. Maintains tile agent list and reverse index atomically.
     pub fn insert_agent(&mut self, agent: Agent, pos: &Position) -> Result<AgentKey, MapError> {
         // Validate tile exists before inserting the agent.
-        if !self.tiles.contains_key(pos) {
+        if !self.contains_tile(pos) {
             return Err(MapError::TileDoesNotExist);
         }
         let key = self.agents.insert(agent);
-        self.tiles.get_mut(pos).unwrap().agents.push(key);
+        self.get_tile_mut(pos).unwrap().agents.push(key);
         self.agent_positions.insert(key, pos.clone());
         Ok(key)
     }
@@ -89,7 +146,7 @@ impl GameMap {
     /// Remove an agent entirely. Returns the `Agent` on success.
     pub fn remove_agent(&mut self, key: AgentKey) -> Option<Agent> {
         if let Some(pos) = self.agent_positions.remove(&key)
-            && let Some(tile) = self.tiles.get_mut(&pos)
+            && let Ok(tile) = self.get_tile_mut(&pos)
             && let Some(idx) = tile.agents.iter().position(|k| *k == key)
         {
             tile.agents.remove(idx);
@@ -140,6 +197,38 @@ impl GameMap {
     ) -> Result<impl Iterator<Item = &AgentKey> + '_, MapError> {
         let tile = self.get_tile(pos)?;
         Ok(tile.agents.iter())
+    }
+
+    pub fn get_agents_at_rect(&self, rect: &Rect, z: u8) -> impl Iterator<Item = &AgentKey> {
+        let (x0, y0) = (rect.min_x(), rect.min_y());
+        let (x1, y1) = (rect.max_x(), rect.max_y());
+        let cx_range = (x0 >> CHUNK_BITS)..=(x1 >> CHUNK_BITS);
+        let cy_range = (y0 >> CHUNK_BITS)..=(y1 >> CHUNK_BITS);
+
+        cy_range
+            .flat_map(move |cy| cx_range.clone().map(move |cx| (cx, cy)))
+            .filter_map(move |(cx, cy)| {
+                self.chunks
+                    .get(&ChunkCoord { cx, cy, z })
+                    .map(|chunk| (cx, cy, chunk))
+            })
+            .flat_map(move |(cx, cy, chunk)| {
+                // Clamp the rect to this chunk's bounds, in chunk-local coords.
+                let base_x = cx << CHUNK_BITS;
+                let base_y = cy << CHUNK_BITS;
+                let lx0 = x0.max(base_x) - base_x;
+                let lx1 = x1.min(base_x + CHUNK_MASK) - base_x;
+                let ly0 = y0.max(base_y) - base_y;
+                let ly1 = y1.min(base_y + CHUNK_MASK) - base_y;
+
+                (ly0..=ly1)
+                    .flat_map(move |ly| {
+                        (lx0..=lx1).filter_map(move |lx| {
+                            chunk.tiles[ly as usize * CHUNK_SIDE as usize + lx as usize].as_ref()
+                        })
+                    })
+                    .flat_map(|tile| tile.agents.iter())
+            })
     }
 
     pub fn iter_agents(&self) -> impl Iterator<Item = (AgentKey, &Agent)> {
@@ -423,5 +512,120 @@ mod tests {
         assert!(keys.contains(&k1));
         assert!(keys.contains(&k2));
         assert_eq!(keys.len(), 2);
+    }
+
+    #[test]
+    fn insert_agent_fails_when_tile_does_not_exist() {
+        let mut map = GameMap::new();
+        let pos = Position::new(5, 5, 7);
+        assert!(matches!(
+            map.insert_agent(new_creature(), &pos),
+            Err(MapError::TileDoesNotExist)
+        ));
+    }
+
+    #[test]
+    fn tiles_sharing_a_local_index_across_chunks_do_not_alias() {
+        // (0,0) and (CHUNK_SIDE,0) map to the same local index but different chunks.
+        let a = Position::new(0, 0, 7);
+        let b = Position::new(CHUNK_SIDE, 0, 7);
+        let mut map = GameMap::new();
+        map.insert_tile(a.clone(), MapTile::new());
+        map.insert_tile(b.clone(), MapTile::new());
+
+        let key = map.insert_agent(new_creature(), &a).unwrap();
+        assert_eq!(
+            map.get_agents_at(&a).unwrap().copied().collect::<Vec<_>>(),
+            vec![key]
+        );
+        // The tile in the neighbouring chunk exists but must be unaffected.
+        assert_eq!(map.get_agents_at(&b).unwrap().count(), 0);
+    }
+
+    #[test]
+    fn move_agent_across_chunk_boundary() {
+        let from = Position::new(CHUNK_SIDE - 1, 10, 7); // last column of chunk 0
+        let to = Position::new(CHUNK_SIDE, 10, 7); // first column of chunk 1
+        let mut map = GameMap::new();
+        map.insert_tile(from.clone(), MapTile::new());
+        map.insert_tile(to.clone(), MapTile::new());
+
+        let key = map.insert_agent(new_creature(), &from).unwrap();
+        map.move_agent(key, &to).unwrap();
+
+        assert_eq!(map.agent_position(key), Some(&to));
+        assert_eq!(map.get_agents_at(&from).unwrap().count(), 0);
+        assert_eq!(map.get_agents_at(&to).unwrap().count(), 1);
+    }
+
+    #[test]
+    fn mutation_after_clone_does_not_affect_snapshot() {
+        // Validates the copy-on-write property: a published snapshot (a clone)
+        // must not observe mutations made to the live map afterwards.
+        let pos = Position::new(3, 3, 7);
+        let mut map = map_with_one_tile(&pos);
+
+        let snapshot = map.clone();
+        map.insert_agent(new_creature(), &pos).unwrap();
+
+        assert_eq!(snapshot.get_agents_at(&pos).unwrap().count(), 0);
+        assert_eq!(map.get_agents_at(&pos).unwrap().count(), 1);
+    }
+
+    #[test]
+    fn get_agents_at_rect_collects_across_chunks_and_excludes_outside() {
+        let mut map = GameMap::new();
+        let a = Position::new(2, 2, 7); // chunk (0, 0)
+        let b = Position::new(18, 3, 7); // chunk (1, 0) — across a chunk boundary
+        let outside = Position::new(40, 40, 7);
+        for p in [&a, &b, &outside] {
+            map.insert_tile(p.clone(), MapTile::new());
+        }
+        let ka = map.insert_agent(new_creature(), &a).unwrap();
+        let kb = map.insert_agent(new_creature(), &b).unwrap();
+        let ko = map.insert_agent(new_creature(), &outside).unwrap();
+
+        let rect = Rect::new(0, 0, 20, 10);
+        let found: Vec<_> = map.get_agents_at_rect(&rect, 7).copied().collect();
+
+        assert_eq!(found.len(), 2);
+        assert!(found.contains(&ka));
+        assert!(found.contains(&kb));
+        assert!(!found.contains(&ko));
+    }
+
+    #[test]
+    fn get_agents_at_rect_is_floor_scoped() {
+        let mut map = GameMap::new();
+        let pos = Position::new(5, 5, 7);
+        map.insert_tile(pos.clone(), MapTile::new());
+        map.insert_agent(new_creature(), &pos).unwrap();
+
+        let rect = Rect::new(0, 0, 15, 15);
+        assert_eq!(map.get_agents_at_rect(&rect, 7).count(), 1);
+        assert_eq!(map.get_agents_at_rect(&rect, 6).count(), 0);
+    }
+
+    #[test]
+    fn get_agents_at_rect_over_void_is_empty() {
+        let map = GameMap::new();
+        let rect = Rect::new(0, 0, 100, 100);
+        assert_eq!(map.get_agents_at_rect(&rect, 7).count(), 0);
+    }
+
+    #[test]
+    fn get_agents_at_rect_respects_inclusive_bounds_within_a_chunk() {
+        // Exercises the in-chunk clamp: max_x = 10 must include x=10 and exclude x=11.
+        let mut map = GameMap::new();
+        let inside = Position::new(10, 10, 7);
+        let just_outside = Position::new(11, 10, 7);
+        map.insert_tile(inside.clone(), MapTile::new());
+        map.insert_tile(just_outside.clone(), MapTile::new());
+        let ki = map.insert_agent(new_creature(), &inside).unwrap();
+        map.insert_agent(new_creature(), &just_outside).unwrap();
+
+        let rect = Rect::new(0, 0, 10, 10);
+        let found: Vec<_> = map.get_agents_at_rect(&rect, 7).copied().collect();
+        assert_eq!(found, vec![ki]);
     }
 }

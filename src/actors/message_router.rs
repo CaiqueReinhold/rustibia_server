@@ -1,13 +1,23 @@
 use anyhow::Result;
 use arc_swap::ArcSwap;
-use std::{collections::HashMap, sync::Arc};
-use tokio::sync::{mpsc, oneshot};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
+use tokio::sync::{
+    mpsc::{self, error::TrySendError},
+    oneshot,
+};
 
 use crate::{
     actors::session::SessionActorHandle,
     config::CONFIG,
-    entities::{agent::AgentKey, map::GameMap},
-    game::events::BroadcastMessage,
+    entities::{
+        agent::AgentKey,
+        map::GameMap,
+        position::{ItemPlacement, Rect},
+    },
+    game::{events::BroadcastMessage, map_query::iter_visible_floors},
 };
 
 #[derive(Debug)]
@@ -158,8 +168,128 @@ impl MessageRouterActor {
     }
 
     async fn broadcast(&mut self, messages: Vec<BroadcastMessage>) {
-        for _message in messages {
-            todo!("implement message routing");
+        let map = self.shared_map.load();
+        for message in messages {
+            self.route_to_recipients(&message, &map);
+        }
+    }
+
+    fn route_to_recipients(&mut self, message: &BroadcastMessage, map: &GameMap) {
+        match message {
+            BroadcastMessage::AgentChangedDirection { position, .. } => {
+                self.send_to_rect(message, map, Rect::player_viewport(position), position.z)
+            }
+            BroadcastMessage::AgentMoved {
+                from_position,
+                to_position,
+                ..
+            } => self.send_to_rect(
+                message,
+                map,
+                Rect::new(
+                    u16::min(from_position.x, to_position.x),
+                    u16::min(from_position.y, to_position.y),
+                    u16::max(from_position.x, to_position.x),
+                    u16::max(from_position.y, to_position.y),
+                ),
+                to_position.z,
+            ),
+            BroadcastMessage::AgentTeleport {
+                from_position,
+                to_position,
+                ..
+            } => {
+                // Origin and destination viewports can overlap, so dedup to
+                // avoid delivering the teleport twice to agents in the overlap.
+                self.send_to_rects(
+                    message,
+                    map,
+                    &[
+                        (Rect::player_viewport(from_position), from_position.z),
+                        (Rect::player_viewport(to_position), to_position.z),
+                    ],
+                );
+            }
+            BroadcastMessage::MoveAck { agent_key } => {
+                self.send_to(message, agent_key);
+            }
+            BroadcastMessage::MoveDenied { agent_key, .. } => {
+                self.send_to(message, agent_key);
+            }
+            BroadcastMessage::OpenContainer { agent_key, .. } => {
+                self.send_to(message, agent_key);
+            }
+            BroadcastMessage::PlayerDespawned {
+                agent_key,
+                position,
+                ..
+            } => {
+                self.send_to_rect(message, map, Rect::player_viewport(position), position.z);
+                self.send_to(message, agent_key); // player was already removed from the map, send using key.
+            }
+            BroadcastMessage::PlayerSpawned { position, .. } => {
+                self.send_to_rect(message, map, Rect::player_viewport(position), position.z);
+            }
+            BroadcastMessage::PlayerWalkDenied { agent_key } => {
+                self.send_to(message, agent_key);
+            }
+            BroadcastMessage::TileChanged { position } => {
+                self.send_to_rect(message, map, Rect::player_viewport(position), position.z);
+            }
+            BroadcastMessage::UpdateContainer { item } => match &item.placement {
+                ItemPlacement::Inventory(_slot, agent_key) => {
+                    self.send_to(message, agent_key);
+                }
+                ItemPlacement::Map(pos) => {
+                    self.send_to_rect(message, map, Rect::player_viewport(pos), pos.z);
+                }
+            },
+            BroadcastMessage::UpdateInventorySlot { agent_key, .. } => {
+                self.send_to(message, agent_key);
+            }
+            BroadcastMessage::UpdatePlayerCapacity { agent_key } => {
+                self.send_to(message, agent_key);
+            }
+            BroadcastMessage::UseItemAck { agent_key, .. } => {
+                self.send_to(message, agent_key);
+            }
+        }
+    }
+
+    fn send_to_rect(&mut self, message: &BroadcastMessage, map: &GameMap, rect: Rect, z: u8) {
+        iter_visible_floors(z)
+            .flat_map(|floor| map.get_agents_at_rect(&rect, floor))
+            .for_each(|agent_key| self.send_to(message, agent_key));
+    }
+
+    /// Deliver `message` once to every agent whose viewport intersects any of
+    /// `regions`. A single rect (or the per-floor expansion of one) can never
+    /// yield a duplicate — tiles and floors partition space — so dups only
+    /// arise where two regions overlap; the `seen` set collapses those.
+    fn send_to_rects(&mut self, message: &BroadcastMessage, map: &GameMap, regions: &[(Rect, u8)]) {
+        let mut seen: HashSet<AgentKey> = HashSet::new();
+        for (rect, z) in regions {
+            for floor in iter_visible_floors(*z) {
+                for agent_key in map.get_agents_at_rect(rect, floor) {
+                    if seen.insert(*agent_key) {
+                        self.send_to(message, agent_key);
+                    }
+                }
+            }
+        }
+    }
+
+    fn send_to(&mut self, message: &BroadcastMessage, agent_key: &AgentKey) {
+        if let Some(session) = self.session_map.get(agent_key)
+            && let Err(error) = session.receive_broadcast(message.clone())
+        {
+            match error {
+                TrySendError::Closed(..) => self.unsubscribe(*agent_key),
+                TrySendError::Full(..) => {
+                    session.close();
+                    self.unsubscribe(*agent_key);
+                }
+            }
         }
     }
 }

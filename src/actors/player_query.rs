@@ -60,7 +60,7 @@ pub fn get_agents_in_viewport<'a>(
     map: &'a GameMap,
     pos: &'a Position,
 ) -> impl Iterator<Item = (AgentKey, &'a Agent, Position)> + 'a {
-    iter_visible_floors(pos)
+    iter_visible_floors(pos.z)
         .flat_map(move |floor| iter_viewport(pos, floor))
         .flat_map(move |tile_pos| {
             let keys: Vec<AgentKey> = map

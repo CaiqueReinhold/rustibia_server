@@ -121,7 +121,7 @@ impl ConnectionActor {
             }
         }
         if let Upstream::Session(session) = self.upstream {
-            let _ = session.close().await;
+            session.close();
         }
         info!(session = self.session_id, "Connection finished");
     }
