@@ -5,7 +5,6 @@ use crate::entities::{
     position::{Direction, Position},
 };
 use anyhow::Result;
-use tracing::info;
 
 use super::events::BroadcastMessage;
 
@@ -31,13 +30,11 @@ pub fn walk(
 
     let new_pos = current_pos.clone() + direction;
     if !map.can_move(&new_pos, agent_key) {
-        info!("can't move");
         broadcasts.push(BroadcastMessage::PlayerWalkDenied { agent_key });
         return Ok(broadcasts);
     }
 
     let Some(tile_friction) = map.tile_friction(&new_pos) else {
-        info!("missing tile friction");
         broadcasts.push(BroadcastMessage::PlayerWalkDenied { agent_key });
         return Ok(broadcasts);
     };

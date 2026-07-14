@@ -56,9 +56,11 @@ pub fn get_map_desc_on_viewport(
                 continue;
             }
             let idx = row * PLAYER_VIEWPORT_WIDTH + col;
-            for (j, item) in tile.visible_items().enumerate() {
-                found_any = true;
-                tiles[idx][j] = Some((item.item_id, item.amount));
+            if let Some(tile) = tile {
+                for (j, item) in tile.visible_items().enumerate() {
+                    found_any = true;
+                    tiles[idx][j] = Some((item.item_id, item.amount));
+                }
             }
         }
         if found_any {
@@ -127,9 +129,11 @@ pub fn get_map_expansion(
             Vec::with_capacity(PLAYER_VIEWPORT_WIDTH + PLAYER_VIEWPORT_HEIGHT - 1);
         for (_, tile) in tiles {
             let mut stack: ItemStack = [None; MAX_VISIBLE_ITEMS];
-            for (i, item) in tile.visible_items().enumerate() {
-                found_any = true;
-                stack[i] = Some((item.item_id, item.amount));
+            if let Some(tile) = tile {
+                for (i, item) in tile.visible_items().enumerate() {
+                    found_any = true;
+                    stack[i] = Some((item.item_id, item.amount));
+                }
             }
             parsed_tiles.push(stack)
         }
