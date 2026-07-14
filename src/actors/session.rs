@@ -709,13 +709,10 @@ impl SessionActor {
             let Some(my_pos) = map.agent_position(self.player_key) else {
                 return Ok(());
             };
-            let Some(agent_pos) = map.agent_position(agent_key) else {
-                return Ok(());
-            };
 
-            if my_pos.in_viewport(agent_pos) {
+            if my_pos.in_viewport(&to_position) {
                 if let Some(agent_id) = self.agents.get_local(&agent_key) {
-                    let from = agent_pos.clone() - direction;
+                    let from = to_position.clone() - direction;
                     self.connection
                         .send_message(ServerMessage::MoveAgent {
                             agent_id,
@@ -730,7 +727,7 @@ impl SessionActor {
                     let agent_id = self.agents.get_or_insert(agent_key);
 
                     self.connection
-                        .send_message(get_agent_desc(agent, agent_id, agent_pos.clone()))
+                        .send_message(get_agent_desc(agent, agent_id, to_position))
                         .await?;
                 }
             } else if let Some(agent_id) = self.agents.get_local(&agent_key) {

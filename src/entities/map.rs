@@ -251,12 +251,9 @@ impl GameMap {
 
         cy_range
             .flat_map(move |cy| cx_range.clone().map(move |cx| (cx, cy)))
-            .filter_map(move |(cx, cy)| {
-                self.chunks
-                    .get(&ChunkCoord { cx, cy, z })
-                    .map(|chunk| (cx, cy, chunk))
-            })
-            .flat_map(move |(cx, cy, chunk)| {
+            .flat_map(move |(cx, cy)| {
+                let chunk = self.chunks.get(&ChunkCoord { cx, cy, z });
+
                 // Clamp the rect to this chunk's bounds, in chunk-local coords.
                 let base_x = cx << CHUNK_BITS;
                 let base_y = cy << CHUNK_BITS;
@@ -269,7 +266,10 @@ impl GameMap {
                     (lx0..=lx1).map(move |lx| {
                         (
                             Position::new(base_x + lx, base_y + ly, z),
-                            chunk.tiles[ly as usize * CHUNK_SIDE as usize + lx as usize].as_ref(),
+                            chunk.and_then(|chunk| {
+                                chunk.tiles[ly as usize * CHUNK_SIDE as usize + lx as usize]
+                                    .as_ref()
+                            }),
                         )
                     })
                 })
@@ -669,9 +669,16 @@ mod tests {
         }
 
         let rect = Rect::new(0, 0, 20, 10);
+
+        // Every position in the rect is yielded exactly once, regardless of whether
+        // its chunk exists — 21 columns * 11 rows.
+        assert_eq!(map.iter_tiles_in_rect(&rect, 7).count(), 21 * 11);
+
+        // The positions that actually carry a tile are exactly the in-rect ones
+        // (`outside` at (40, 40) falls beyond the rect).
         let mut found: Vec<Position> = map
             .iter_tiles_in_rect(&rect, 7)
-            .map(|(pos, _)| pos)
+            .filter_map(|(pos, tile)| tile.map(|_| pos))
             .collect();
         found.sort();
 
@@ -685,8 +692,22 @@ mod tests {
         map.insert_tile(pos.clone(), MapTile::new());
 
         let rect = Rect::new(0, 0, 15, 15);
-        assert_eq!(map.iter_tiles_in_rect(&rect, 7).count(), 1);
-        assert_eq!(map.iter_tiles_in_rect(&rect, 6).count(), 0);
+
+        // Both floors yield the full grid of positions (16 * 16); floor scoping
+        // shows up in *which* positions carry a tile, not in the yielded count.
+        assert_eq!(map.iter_tiles_in_rect(&rect, 7).count(), 16 * 16);
+        assert_eq!(map.iter_tiles_in_rect(&rect, 6).count(), 16 * 16);
+
+        let some_on_7 = map
+            .iter_tiles_in_rect(&rect, 7)
+            .filter(|(_, tile)| tile.is_some())
+            .count();
+        let some_on_6 = map
+            .iter_tiles_in_rect(&rect, 6)
+            .filter(|(_, tile)| tile.is_some())
+            .count();
+        assert_eq!(some_on_7, 1);
+        assert_eq!(some_on_6, 0);
     }
 
     #[test]

@@ -155,17 +155,21 @@ impl MessageRouterActor {
                 from_position,
                 to_position,
                 ..
-            } => self.send_to_rect(
-                message,
-                map,
-                Rect::new(
-                    u16::min(from_position.x, to_position.x),
-                    u16::min(from_position.y, to_position.y),
-                    u16::max(from_position.x, to_position.x),
-                    u16::max(from_position.y, to_position.y),
-                ),
-                to_position.z,
-            ),
+            } => {
+                let from_viewport = Rect::player_viewport(from_position);
+                let to_viewport = Rect::player_viewport(to_position);
+                self.send_to_rect(
+                    message,
+                    map,
+                    Rect::new(
+                        u16::min(from_viewport.min_x(), to_viewport.min_x()),
+                        u16::min(from_viewport.min_y(), to_viewport.min_y()),
+                        u16::max(from_viewport.max_x(), to_viewport.max_x()),
+                        u16::max(from_viewport.max_y(), to_viewport.max_y()),
+                    ),
+                    to_position.z,
+                )
+            }
             BroadcastMessage::AgentTeleport {
                 from_position,
                 to_position,
