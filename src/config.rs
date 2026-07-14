@@ -26,7 +26,7 @@ impl Default for ServerConfig {
         ServerConfig {
             bind_address: SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(0, 0, 0, 0), 5555)),
             tick_duration: Duration::from_millis(50),
-            max_queue_size: 2048,
+            max_queue_size: 8192,
             max_buffered_messages: 512,
             map_file_path: "assets/map.otbm".to_string(),
             items_file_path: "assets/items.yaml".to_string(),

@@ -8,7 +8,7 @@ use crate::{
         items::{ContainerId, Item, ItemGuid, ItemId, ItemRef},
         map::GameMap,
         player::InventorySlot,
-        position::{Direction, ItemPlacement, Position},
+        position::{Direction, ItemPlacement, Position, Rect},
     },
     local_id::LocalIdMap,
     messages::ItemStack,
@@ -29,7 +29,46 @@ pub fn iter_visible_floors(z: u8) -> impl Iterator<Item = u8> {
     min_z..=max_z
 }
 
-pub fn iter_viewport(pos: &Position, floor: u8) -> impl Iterator<Item = Position> {
+pub fn get_map_desc_on_viewport(
+    map: &GameMap,
+    viewport_center: &Position,
+) -> Vec<(u8, Box<[ItemStack; VIEWPORT_SIZE]>)> {
+    let half_w = (PLAYER_VIEWPORT_WIDTH / 2) as i32;
+    let half_h = (PLAYER_VIEWPORT_HEIGHT / 2) as i32;
+
+    let mut floors = Vec::new();
+    for floor in iter_visible_floors(viewport_center.z) {
+        let floor_offset = viewport_center.z as i32 - floor as i32;
+        let cx = viewport_center.x as i32 + floor_offset;
+        let cy = viewport_center.y as i32 + floor_offset;
+        let x_start = (cx - half_w).max(0) as u16;
+        let y_start = (cy - half_h).max(0) as u16;
+        let x_end = (cx + half_w).max(0) as u16;
+        let y_end = (cy + half_h).max(0) as u16;
+        let rect = Rect::new(x_start, y_start, x_end, y_end);
+
+        let mut tiles = Box::new([[None; MAX_VISIBLE_ITEMS]; VIEWPORT_SIZE]);
+        let mut found_any = false;
+        for (pos, tile) in map.iter_tiles_in_rect(&rect, floor) {
+            let col = (pos.x - x_start) as usize;
+            let row = (pos.y - y_start) as usize;
+            if col >= PLAYER_VIEWPORT_WIDTH || row >= PLAYER_VIEWPORT_HEIGHT {
+                continue;
+            }
+            let idx = row * PLAYER_VIEWPORT_WIDTH + col;
+            for (j, item) in tile.visible_items().enumerate() {
+                found_any = true;
+                tiles[idx][j] = Some((item.item_id, item.amount));
+            }
+        }
+        if found_any {
+            floors.push((floor, tiles));
+        }
+    }
+    floors
+}
+
+fn expansion_rects(pos: &Position, direction: &Direction, floor: u8) -> (Rect, Option<Rect>) {
     let floor_offset = pos.z as i16 - floor as i16;
     let half_w = (PLAYER_VIEWPORT_WIDTH / 2) as i16;
     let half_h = (PLAYER_VIEWPORT_HEIGHT / 2) as i16;
@@ -40,33 +79,34 @@ pub fn iter_viewport(pos: &Position, floor: u8) -> impl Iterator<Item = Position
     let x_end = (x + half_w + floor_offset) as u16;
     let y_start = (y - half_h + floor_offset).max(0) as u16;
     let y_end = (y + half_h + floor_offset) as u16;
-    let z = floor;
 
-    (y_start..=y_end).flat_map(move |y| (x_start..=x_end).map(move |x| Position::new(x, y, z)))
-}
-
-pub fn get_map_desc_on_viewport(
-    map: &GameMap,
-    viewport_center: &Position,
-) -> Vec<(u8, Box<[ItemStack; VIEWPORT_SIZE]>)> {
-    let mut floors = Vec::new();
-    for floor in iter_visible_floors(viewport_center.z) {
-        let mut tiles = [[None; MAX_VISIBLE_ITEMS]; VIEWPORT_SIZE];
-        let mut found_any = false;
-        for (i, pos) in iter_viewport(viewport_center, floor).enumerate() {
-            let items = map.get_visible_items(&pos);
-            if let Ok(items) = items {
-                for (j, item) in items.enumerate() {
-                    found_any = true;
-                    tiles[i][j] = Some((item.item_id, item.amount));
-                }
-            }
-        }
-        if found_any {
-            floors.push((floor, tiles.into()));
-        }
+    match direction {
+        Direction::North => (Rect::new(x_start, y_start, x_end, y_start), None),
+        Direction::South => (Rect::new(x_start, y_end, x_end, y_end), None),
+        Direction::East => (Rect::new(x_end, y_start, x_end, y_end), None),
+        Direction::West => (Rect::new(x_start, y_start, x_start, y_end), None),
+        Direction::NorthEast => (
+            Rect::new(x_start, y_start, x_end, y_start),
+            Some(Rect::new(x_end, y_start + 1, x_end, y_end)),
+        ),
+        Direction::NorthWest => (
+            Rect::new(x_start, y_start, x_end, y_start),
+            Some(Rect::new(x_start, y_start + 1, x_start, y_end)),
+        ),
+        Direction::SouthEast => (
+            Rect::new(x_start, y_end, x_end, y_end),
+            Some(Rect::new(x_end, y_start, x_end, y_end.saturating_sub(1))),
+        ),
+        Direction::SouthWest => (
+            Rect::new(x_start, y_end, x_end, y_end),
+            Some(Rect::new(
+                x_start,
+                y_start,
+                x_start,
+                y_end.saturating_sub(1),
+            )),
+        ),
     }
-    floors
 }
 
 pub fn get_map_expansion(
@@ -76,74 +116,70 @@ pub fn get_map_expansion(
 ) -> Vec<(u8, Box<[ItemStack]>)> {
     let mut floors = Vec::new();
     for floor in iter_visible_floors(viewport_center.z) {
-        let tiles = iter_expansion(viewport_center, direction, floor)
-            .map(|pos| {
-                let mut stack: ItemStack = [None; MAX_VISIBLE_ITEMS];
-                if let Ok(items) = map.get_visible_items(&pos) {
-                    for (i, item) in items.enumerate() {
-                        stack[i] = Some((item.item_id, item.amount));
-                    }
-                }
-                stack
-            })
-            .collect::<Vec<_>>()
-            .into_boxed_slice();
-        if tiles.iter().any(|t| t[0].is_some()) {
-            floors.push((floor, tiles));
+        let (rect1, rect2) = expansion_rects(viewport_center, direction, floor);
+        let tiles = [Some(rect1), rect2]
+            .into_iter()
+            .flatten()
+            .flat_map(move |rect| map.iter_tiles_in_rect(&rect, floor));
+
+        let mut found_any = false;
+        let mut parsed_tiles =
+            Vec::with_capacity(PLAYER_VIEWPORT_WIDTH + PLAYER_VIEWPORT_HEIGHT - 1);
+        for (_, tile) in tiles {
+            let mut stack: ItemStack = [None; MAX_VISIBLE_ITEMS];
+            for (i, item) in tile.visible_items().enumerate() {
+                found_any = true;
+                stack[i] = Some((item.item_id, item.amount));
+            }
+            parsed_tiles.push(stack)
+        }
+
+        if found_any {
+            floors.push((floor, parsed_tiles.into_boxed_slice()));
         }
     }
     floors
 }
 
-fn iter_expansion(
-    pos: &Position,
-    direction: &Direction,
-    floor: u8,
-) -> Box<dyn Iterator<Item = Position>> {
-    let floor_offset = pos.z as i16 - floor as i16;
-    let half_w = (PLAYER_VIEWPORT_WIDTH / 2) as i16;
-    let half_h = (PLAYER_VIEWPORT_HEIGHT / 2) as i16;
-    let x = pos.x as i16;
-    let y = pos.y as i16;
-    let z = floor;
-
-    let x_start = (x - half_w + floor_offset).max(0) as u16;
-    let x_end = (x + half_w + floor_offset) as u16;
-    let y_start = (y - half_h + floor_offset).max(0) as u16;
-    let y_end = (y + half_h + floor_offset) as u16;
-
-    let top_row = {
-        (x_start..=x_end).map(move |xi| Position {
-            x: xi,
-            y: y_start,
-            z,
+pub fn get_agents_in_viewport<'a>(
+    map: &'a GameMap,
+    position: &'a Position,
+) -> impl Iterator<Item = (AgentKey, &'a Agent, Position)> + 'a {
+    iter_visible_floors(position.z)
+        .flat_map(|floor| map.iter_agents_in_rect(&Rect::player_viewport(position), floor))
+        .flat_map(|key: &AgentKey| {
+            map.get_agent(*key).map(|agent| {
+                (
+                    *key,
+                    agent,
+                    map.agent_position(*key).cloned().unwrap_or_default(),
+                )
+            })
         })
-    };
-    let bottom_row = (x_start..=x_end).map(move |xi| Position { x: xi, y: y_end, z });
-    let left_col = {
-        (y_start..=y_end).map(move |yi| Position {
-            x: x_start,
-            y: yi,
-            z,
-        })
-    };
-    let right_col = (y_start..=y_end).map(move |yi| Position { x: x_end, y: yi, z });
+}
 
-    match direction {
-        Direction::North => Box::new(top_row),
-        Direction::South => Box::new(bottom_row),
-        Direction::East => Box::new(right_col),
-        Direction::West => Box::new(left_col),
-        // For diagonals: full edge row + edge column excluding the shared corner
-        Direction::NorthEast => Box::new(top_row.chain(right_col.skip(1))),
-        Direction::NorthWest => Box::new(top_row.chain(left_col.skip(1))),
-        Direction::SouthEast => {
-            Box::new(bottom_row.chain(right_col.take(((y_end - y_start) - 1) as usize)))
-        }
-        Direction::SouthWest => {
-            Box::new(bottom_row.chain(left_col.take(((y_end - y_start) - 1) as usize)))
-        }
-    }
+pub fn get_agents_in_expansion<'a>(
+    map: &'a GameMap,
+    position: &'a Position,
+    direction: &'a Direction,
+) -> impl Iterator<Item = (AgentKey, &'a Agent, Position)> + 'a {
+    iter_visible_floors(position.z).flat_map(move |floor| {
+        let (rect1, rect2) = expansion_rects(position, direction, floor);
+        [Some(rect1), rect2]
+            .into_iter()
+            .flatten()
+            .flat_map(move |rect| map.iter_agents_in_rect(&rect, floor))
+            .map(|key| *key)
+            .flat_map(|key| {
+                map.get_agent(key).map(|agent| {
+                    (
+                        key,
+                        agent,
+                        map.agent_position(key).cloned().unwrap_or_default(),
+                    )
+                })
+            })
+    })
 }
 
 pub fn get_tile(map: &GameMap, position: &Position) -> Box<ItemStack> {
@@ -261,7 +297,7 @@ pub enum TileEntity<'a> {
 
 pub fn get_top_entity<'a>(map: &'a GameMap, pos: &'a Position) -> Option<TileEntity<'a>> {
     if let Ok(last_agent) = map
-        .get_agents_at(pos)
+        .iter_agents_at(pos)
         .map(|mut agents_iter| agents_iter.next().cloned())
         && let Some(last_agent) = last_agent
     {

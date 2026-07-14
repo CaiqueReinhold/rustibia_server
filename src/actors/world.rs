@@ -14,6 +14,7 @@ use crate::actors::session::SessionActorHandle;
 use crate::actors::spawning::SpawningActorHandle;
 use crate::config::CONFIG;
 use crate::entities::agent::{Agent, AgentKey, Facing};
+use crate::entities::creature::CreatureKind;
 use crate::entities::items::{ItemConfig, ItemGuid, ItemId, ItemRef};
 use crate::entities::map::GameMap;
 use crate::entities::position::{Direction, ItemPlacement, Position};
@@ -55,14 +56,13 @@ pub enum WorldCommand {
         agent_key: AgentKey,
     },
     SpawnCreature {
-        kind: Arc<crate::entities::creature::CreatureKind>,
+        kind: Arc<CreatureKind>,
         position: Position,
         spawning: SpawningActorHandle,
         slot_idx: usize,
     },
     RequestLogout {
         agent_key: AgentKey,
-        session: SessionActorHandle,
     },
     DecayItem {
         item: ItemRef,
@@ -202,7 +202,8 @@ impl WorldActor {
             self.tick += 1;
             debug!("World: starting tick {}", self.tick);
 
-            let mut broadcast_messages: Vec<BroadcastMessage> = Vec::new();
+            let mut broadcast_messages: Vec<BroadcastMessage> =
+                Vec::with_capacity(CONFIG.max_queue_size);
 
             if !self.command_queue.is_empty() {
                 info!(
@@ -255,10 +256,7 @@ impl WorldActor {
                 player,
                 session,
                 tx,
-            } => {
-                self.spawn_player(player, session, tx, broadcast_messages)
-                    .await
-            }
+            } => self.spawn_player(player, session, tx, broadcast_messages),
             WorldCommand::Walk { direction, actor } => {
                 movement::walk(&mut self.map, self.tick, direction, actor)
                     .map(|msgs| broadcast_messages.extend(msgs))
@@ -355,9 +353,8 @@ impl WorldActor {
                     )),
                 }
             }
-            WorldCommand::RequestLogout { agent_key, session } => {
-                self.handle_request_logout(agent_key, session, broadcast_messages)
-                    .await
+            WorldCommand::RequestLogout { agent_key } => {
+                self.handle_request_logout(agent_key, broadcast_messages)
             }
             WorldCommand::DecayItem { item } => {
                 let (msgs, commands) =
@@ -372,10 +369,9 @@ impl WorldActor {
         }
     }
 
-    async fn handle_request_logout(
+    fn handle_request_logout(
         &mut self,
         agent_key: AgentKey,
-        session: SessionActorHandle,
         broadcast_messages: &mut Vec<BroadcastMessage>,
     ) -> Result<()> {
         let Some(agent) = self.map.get_agent(agent_key) else {
@@ -386,10 +382,7 @@ impl WorldActor {
             let next_tick = agent.next_walk_tick;
             self.command_queue.push(ScheduledCommand {
                 at_tick: next_tick,
-                command: WorldCommand::RequestLogout {
-                    agent_key,
-                    session: session.clone(),
-                },
+                command: WorldCommand::RequestLogout { agent_key },
             });
             broadcast_messages.push(BroadcastMessage::LogoutDenied { agent_key });
             return Ok(());
@@ -401,10 +394,6 @@ impl WorldActor {
             .and_then(|pos| agent.to_snapshot(pos))
             .map(Arc::new);
         self.map.remove_agent(agent_key);
-        info!(
-            "Player {:?} logged out cleanly at tick {}",
-            agent_key, self.tick
-        );
         broadcast_messages.push(BroadcastMessage::PlayerDespawned {
             agent_key,
             snapshot,
@@ -413,7 +402,7 @@ impl WorldActor {
         Ok(())
     }
 
-    async fn spawn_player(
+    fn spawn_player(
         &mut self,
         agent: Agent,
         session: SessionActorHandle,
@@ -436,7 +425,7 @@ impl WorldActor {
             return Err(anyhow!("Player {:?} failed to spawn", agent));
         };
 
-        let guard = self.message_router.subscribe(agent_key, session).await?;
+        let guard = self.message_router.subscribe(agent_key, session)?;
 
         if tx.send((agent_key, guard)).is_err() {
             self.map.remove_agent(agent_key);

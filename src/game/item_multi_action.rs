@@ -202,7 +202,7 @@ fn rope(
     {
         let down = Position::new(pos.x, pos.y, pos.z + 1);
         if let Ok(last_agent) = map
-            .get_agents_at(&down)
+            .iter_agents_at(&down)
             .map(|mut agents_iter| agents_iter.next().cloned())
             && let Some(last_agent) = last_agent
         {

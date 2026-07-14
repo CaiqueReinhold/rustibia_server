@@ -88,6 +88,10 @@ impl MapTile {
     pub fn push_item(&mut self, item: Item) {
         self.items.push(item);
     }
+
+    pub fn visible_items(&self) -> impl Iterator<Item = &Item> {
+        self.items.iter().take(MAX_VISIBLE_ITEMS)
+    }
 }
 
 impl GameMap {
@@ -191,7 +195,7 @@ impl GameMap {
         self.agents.get_mut(key)?.get_player_mut()
     }
 
-    pub fn get_agents_at(
+    pub fn iter_agents_at(
         &self,
         pos: &Position,
     ) -> Result<impl Iterator<Item = &AgentKey> + '_, MapError> {
@@ -199,7 +203,11 @@ impl GameMap {
         Ok(tile.agents.iter())
     }
 
-    pub fn get_agents_at_rect(&self, rect: &Rect, z: u8) -> impl Iterator<Item = &AgentKey> {
+    pub fn iter_agents_in_rect<'a, 'b>(
+        &'a self,
+        rect: &'b Rect,
+        z: u8,
+    ) -> impl Iterator<Item = &AgentKey> + use<'a> {
         let (x0, y0) = (rect.min_x(), rect.min_y());
         let (x1, y1) = (rect.max_x(), rect.max_y());
         let cx_range = (x0 >> CHUNK_BITS)..=(x1 >> CHUNK_BITS);
@@ -228,6 +236,42 @@ impl GameMap {
                         })
                     })
                     .flat_map(|tile| tile.agents.iter())
+            })
+    }
+
+    pub fn iter_tiles_in_rect<'a>(
+        &'a self,
+        rect: &Rect,
+        z: u8,
+    ) -> impl Iterator<Item = (Position, &'a MapTile)> + use<'a> {
+        let (x0, y0) = (rect.min_x(), rect.min_y());
+        let (x1, y1) = (rect.max_x(), rect.max_y());
+        let cx_range = (x0 >> CHUNK_BITS)..=(x1 >> CHUNK_BITS);
+        let cy_range = (y0 >> CHUNK_BITS)..=(y1 >> CHUNK_BITS);
+
+        cy_range
+            .flat_map(move |cy| cx_range.clone().map(move |cx| (cx, cy)))
+            .filter_map(move |(cx, cy)| {
+                self.chunks
+                    .get(&ChunkCoord { cx, cy, z })
+                    .map(|chunk| (cx, cy, chunk))
+            })
+            .flat_map(move |(cx, cy, chunk)| {
+                // Clamp the rect to this chunk's bounds, in chunk-local coords.
+                let base_x = cx << CHUNK_BITS;
+                let base_y = cy << CHUNK_BITS;
+                let lx0 = x0.max(base_x) - base_x;
+                let lx1 = x1.min(base_x + CHUNK_MASK) - base_x;
+                let ly0 = y0.max(base_y) - base_y;
+                let ly1 = y1.min(base_y + CHUNK_MASK) - base_y;
+
+                (ly0..=ly1).flat_map(move |ly| {
+                    (lx0..=lx1).filter_map(move |lx| {
+                        chunk.tiles[ly as usize * CHUNK_SIDE as usize + lx as usize]
+                            .as_ref()
+                            .map(|tile| (Position::new(base_x + lx, base_y + ly, z), tile))
+                    })
+                })
             })
     }
 
@@ -535,11 +579,11 @@ mod tests {
 
         let key = map.insert_agent(new_creature(), &a).unwrap();
         assert_eq!(
-            map.get_agents_at(&a).unwrap().copied().collect::<Vec<_>>(),
+            map.iter_agents_at(&a).unwrap().copied().collect::<Vec<_>>(),
             vec![key]
         );
         // The tile in the neighbouring chunk exists but must be unaffected.
-        assert_eq!(map.get_agents_at(&b).unwrap().count(), 0);
+        assert_eq!(map.iter_agents_at(&b).unwrap().count(), 0);
     }
 
     #[test]
@@ -554,8 +598,8 @@ mod tests {
         map.move_agent(key, &to).unwrap();
 
         assert_eq!(map.agent_position(key), Some(&to));
-        assert_eq!(map.get_agents_at(&from).unwrap().count(), 0);
-        assert_eq!(map.get_agents_at(&to).unwrap().count(), 1);
+        assert_eq!(map.iter_agents_at(&from).unwrap().count(), 0);
+        assert_eq!(map.iter_agents_at(&to).unwrap().count(), 1);
     }
 
     #[test]
@@ -568,8 +612,8 @@ mod tests {
         let snapshot = map.clone();
         map.insert_agent(new_creature(), &pos).unwrap();
 
-        assert_eq!(snapshot.get_agents_at(&pos).unwrap().count(), 0);
-        assert_eq!(map.get_agents_at(&pos).unwrap().count(), 1);
+        assert_eq!(snapshot.iter_agents_at(&pos).unwrap().count(), 0);
+        assert_eq!(map.iter_agents_at(&pos).unwrap().count(), 1);
     }
 
     #[test]
@@ -586,7 +630,7 @@ mod tests {
         let ko = map.insert_agent(new_creature(), &outside).unwrap();
 
         let rect = Rect::new(0, 0, 20, 10);
-        let found: Vec<_> = map.get_agents_at_rect(&rect, 7).copied().collect();
+        let found: Vec<_> = map.iter_agents_in_rect(&rect, 7).copied().collect();
 
         assert_eq!(found.len(), 2);
         assert!(found.contains(&ka));
@@ -602,15 +646,46 @@ mod tests {
         map.insert_agent(new_creature(), &pos).unwrap();
 
         let rect = Rect::new(0, 0, 15, 15);
-        assert_eq!(map.get_agents_at_rect(&rect, 7).count(), 1);
-        assert_eq!(map.get_agents_at_rect(&rect, 6).count(), 0);
+        assert_eq!(map.iter_agents_in_rect(&rect, 7).count(), 1);
+        assert_eq!(map.iter_agents_in_rect(&rect, 6).count(), 0);
     }
 
     #[test]
     fn get_agents_at_rect_over_void_is_empty() {
         let map = GameMap::new();
         let rect = Rect::new(0, 0, 100, 100);
-        assert_eq!(map.get_agents_at_rect(&rect, 7).count(), 0);
+        assert_eq!(map.iter_agents_in_rect(&rect, 7).count(), 0);
+    }
+
+    #[test]
+    fn iter_tiles_in_rect_yields_existing_tiles_with_positions() {
+        let mut map = GameMap::new();
+        let a = Position::new(2, 2, 7); // chunk (0, 0)
+        let b = Position::new(18, 3, 7); // chunk (1, 0) — across a chunk boundary
+        let outside = Position::new(40, 40, 7);
+        for p in [&a, &b, &outside] {
+            map.insert_tile(p.clone(), MapTile::new());
+        }
+
+        let rect = Rect::new(0, 0, 20, 10);
+        let mut found: Vec<Position> = map
+            .iter_tiles_in_rect(&rect, 7)
+            .map(|(pos, _)| pos)
+            .collect();
+        found.sort();
+
+        assert_eq!(found, vec![a, b]);
+    }
+
+    #[test]
+    fn iter_tiles_in_rect_is_floor_scoped() {
+        let mut map = GameMap::new();
+        let pos = Position::new(5, 5, 7);
+        map.insert_tile(pos.clone(), MapTile::new());
+
+        let rect = Rect::new(0, 0, 15, 15);
+        assert_eq!(map.iter_tiles_in_rect(&rect, 7).count(), 1);
+        assert_eq!(map.iter_tiles_in_rect(&rect, 6).count(), 0);
     }
 
     #[test]
@@ -625,7 +700,7 @@ mod tests {
         map.insert_agent(new_creature(), &just_outside).unwrap();
 
         let rect = Rect::new(0, 0, 10, 10);
-        let found: Vec<_> = map.get_agents_at_rect(&rect, 7).copied().collect();
+        let found: Vec<_> = map.iter_agents_in_rect(&rect, 7).copied().collect();
         assert_eq!(found, vec![ki]);
     }
 }

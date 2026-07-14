@@ -4,10 +4,7 @@ use std::{
     collections::{HashMap, HashSet},
     sync::Arc,
 };
-use tokio::sync::{
-    mpsc::{self, error::TrySendError},
-    oneshot,
-};
+use tokio::sync::mpsc::{self, error::TrySendError};
 
 use crate::{
     actors::session::SessionActorHandle,
@@ -25,7 +22,6 @@ pub enum MessageRouterCommand {
     Subscribe {
         agent_key: AgentKey,
         session: SessionActorHandle,
-        tx: oneshot::Sender<bool>,
     },
     Unsubscribe {
         agent_key: AgentKey,
@@ -55,31 +51,20 @@ pub struct MessageRouterActor {
 
 impl Drop for MessageRouterGuard {
     fn drop(&mut self) {
-        let handle = self.handle.clone();
-        let agent_key = self.agent_key;
-        tokio::spawn(async move {
-            let _ = handle.unsubscribe(agent_key).await;
-        });
+        self.handle.unsubscribe(self.agent_key);
     }
 }
 
 impl MessageRouterActorHandle {
-    pub async fn subscribe(
+    pub fn subscribe(
         &self,
         agent_key: AgentKey,
         session: SessionActorHandle,
     ) -> Result<MessageRouterGuard> {
-        let (tx, rx) = oneshot::channel();
         if self
             .tx
-            .send(MessageRouterCommand::Subscribe {
-                agent_key,
-                session,
-                tx,
-            })
-            .await
+            .try_send(MessageRouterCommand::Subscribe { agent_key, session })
             .is_ok()
-            && let Ok(true) = rx.await
         {
             return Ok(MessageRouterGuard {
                 agent_key,
@@ -92,11 +77,10 @@ impl MessageRouterActorHandle {
         Err(anyhow::anyhow!("Failed to subscribe"))
     }
 
-    pub async fn unsubscribe(&self, agent_key: AgentKey) {
+    pub fn unsubscribe(&self, agent_key: AgentKey) {
         let _ = self
             .tx
-            .send(MessageRouterCommand::Unsubscribe { agent_key })
-            .await;
+            .try_send(MessageRouterCommand::Unsubscribe { agent_key });
     }
 
     pub async fn broadcast(&self, messages: Vec<BroadcastMessage>) {
@@ -135,32 +119,20 @@ impl MessageRouterActor {
 
     async fn handle_command(&mut self, command: MessageRouterCommand) {
         match command {
-            MessageRouterCommand::Subscribe {
-                agent_key,
-                session,
-                tx,
-            } => self.subscribe(agent_key, session, tx),
+            MessageRouterCommand::Subscribe { agent_key, session } => {
+                self.subscribe(agent_key, session)
+            }
             MessageRouterCommand::Unsubscribe { agent_key } => self.unsubscribe(agent_key),
             MessageRouterCommand::Broadcast { messages } => self.broadcast(messages).await,
         }
     }
 
-    fn subscribe(
-        &mut self,
-        agent_key: AgentKey,
-        session: SessionActorHandle,
-        tx: oneshot::Sender<bool>,
-    ) {
+    fn subscribe(&mut self, agent_key: AgentKey, session: SessionActorHandle) {
         if self.session_map.contains_key(&agent_key) {
-            let _ = tx.send(false);
             return;
         }
 
         self.session_map.insert(agent_key, session);
-
-        if tx.send(true).is_err() {
-            self.unsubscribe(agent_key);
-        }
     }
 
     fn unsubscribe(&mut self, agent_key: AgentKey) {
@@ -261,7 +233,7 @@ impl MessageRouterActor {
 
     fn send_to_rect(&mut self, message: &BroadcastMessage, map: &GameMap, rect: Rect, z: u8) {
         iter_visible_floors(z)
-            .flat_map(|floor| map.get_agents_at_rect(&rect, floor))
+            .flat_map(|floor| map.iter_agents_in_rect(&rect, floor))
             .for_each(|agent_key| self.send_to(message, agent_key));
     }
 
@@ -273,7 +245,7 @@ impl MessageRouterActor {
         let mut seen: HashSet<AgentKey> = HashSet::new();
         for (rect, z) in regions {
             for floor in iter_visible_floors(*z) {
-                for agent_key in map.get_agents_at_rect(rect, floor) {
+                for agent_key in map.iter_agents_in_rect(rect, floor) {
                     if seen.insert(*agent_key) {
                         self.send_to(message, agent_key);
                     }

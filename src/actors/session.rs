@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::sync::Arc;
 
 use anyhow::Result;
@@ -14,7 +15,6 @@ use crate::actors::connection::ConnectionActorHandle;
 use crate::actors::persistence::PersistenceActorHandle;
 use crate::actors::player_query::client_position_to_placement;
 use crate::actors::player_query::get_agent_desc;
-use crate::actors::player_query::get_agents_in_viewport;
 use crate::actors::player_query::get_player_desc;
 use crate::actors::world::WorldActorHandle;
 use crate::config::CONFIG;
@@ -25,6 +25,8 @@ use crate::entities::player::InventorySlot;
 use crate::entities::position::ItemPlacement;
 use crate::game::description::get_look_description;
 use crate::game::events::BroadcastMessage;
+use crate::game::map_query::get_agents_in_expansion;
+use crate::game::map_query::get_agents_in_viewport;
 use crate::game::map_query::{
     find_item_in_reach, find_item_in_slot, find_parent_container, get_map_desc_on_viewport,
     get_map_expansion, get_tile, retrieve_item,
@@ -106,7 +108,6 @@ pub struct SessionActor {
     containers: LocalIdMap<ItemGuid>,
     agents: LocalIdMap<AgentKey>,
     persistence: PersistenceActorHandle,
-    self_handle: SessionActorHandle,
     logout_pending: bool,
 }
 
@@ -146,7 +147,6 @@ impl SessionActor {
                         containers: LocalIdMap::new(),
                         agents: LocalIdMap::new(),
                         persistence: context.persistence.clone(),
-                        self_handle: self_handle_clone,
                         logout_pending: false,
                     };
                     actor.run().await;
@@ -311,7 +311,6 @@ impl SessionActor {
             self.world
                 .send(WorldCommand::RequestLogout {
                     agent_key: self.player_key,
-                    session: self.self_handle.clone(),
                 })
                 .await;
         }
@@ -600,35 +599,14 @@ impl SessionActor {
     }
 
     async fn player_spawned(&mut self, agent_key: AgentKey, position: Position) -> Result<()> {
+        let map = self.shared_map.load();
         if self.player_key == agent_key {
-            let map = self.shared_map.load();
+            let self_id = self.agents.get_or_insert(self.player_key);
 
-            let map_desc_floors = get_map_desc_on_viewport(&map, &position);
-            for (floor, tiles) in map_desc_floors {
-                self.connection
-                    .send_message(ServerMessage::DescribeMap {
-                        tiles,
-                        center: position.clone(),
-                        floor,
-                    })
-                    .await?;
-            }
+            self.send_map_description(&position, &map).await?;
+            self.send_agents_description(&position, &map).await?;
 
-            for (key, agent, pos) in get_agents_in_viewport(&map, &position) {
-                if key == self.player_key {
-                    continue;
-                }
-                let agent_id = self.agents.get_or_insert(key);
-                self.connection
-                    .send_message(get_agent_desc(agent, agent_id, pos))
-                    .await?;
-            }
-
-            let player_desc = get_player_desc(
-                &map,
-                self.player_key,
-                self.agents.get_local(&self.player_key).unwrap(),
-            );
+            let player_desc = get_player_desc(&map, self.player_key, self_id);
             if let Some(pdesc_msg) = player_desc {
                 self.connection.send_message(pdesc_msg).await?;
             } else {
@@ -636,14 +614,6 @@ impl SessionActor {
             }
             Ok(())
         } else {
-            let map = self.shared_map.load();
-            let my_pos = map
-                .agent_position(self.player_key)
-                .ok_or(SessionError::NotSpawned)?;
-
-            if !my_pos.in_viewport(&position) {
-                return Ok(());
-            }
             let Some(agent) = map.get_agent(agent_key) else {
                 return Ok(());
             };
@@ -655,6 +625,39 @@ impl SessionActor {
 
             Ok(())
         }
+    }
+
+    async fn send_agents_description(
+        &mut self,
+        position: &Position,
+        map: &GameMap,
+    ) -> Result<HashSet<AgentKey>> {
+        let mut visible = HashSet::new();
+        for (key, agent, pos) in get_agents_in_viewport(map, position) {
+            if key == self.player_key {
+                continue;
+            }
+            let agent_id = self.agents.get_or_insert(key);
+            self.connection
+                .send_message(get_agent_desc(agent, agent_id, pos))
+                .await?;
+            visible.insert(key);
+        }
+        Ok(visible)
+    }
+
+    async fn send_map_description(&self, position: &Position, map: &GameMap) -> Result<()> {
+        let map_desc_floors = get_map_desc_on_viewport(map, position);
+        for (floor, tiles) in map_desc_floors {
+            self.connection
+                .send_message(ServerMessage::DescribeMap {
+                    tiles,
+                    center: position.clone(),
+                    floor,
+                })
+                .await?;
+        }
+        Ok(())
     }
 
     async fn drop_unreachble_containers(&mut self) -> Result<()> {
@@ -680,21 +683,29 @@ impl SessionActor {
         direction: Direction,
         to_position: Position,
     ) -> Result<()> {
+        let map = self.shared_map.load();
         if self.player_key == agent_key {
             self.drop_unreachble_containers().await?;
-            let map = self.shared_map.load();
-            let from_pos = to_position.clone() - direction;
-            let tiles = get_map_expansion(&map, &from_pos, &direction);
+            let tiles = {
+                let from_pos = to_position.clone() - direction;
+                get_map_expansion(&map, &from_pos, &direction)
+            };
             self.connection
                 .send_message(ServerMessage::PlayerWalkAck {
-                    position: to_position,
+                    position: to_position.clone(),
                     tiles,
                 })
                 .await?;
 
+            for (key, agent, pos) in get_agents_in_expansion(&map, &to_position, &direction) {
+                let agent_id = self.agents.get_or_insert(key);
+                self.connection
+                    .send_message(get_agent_desc(agent, agent_id, pos))
+                    .await?;
+            }
+
             Ok(())
         } else {
-            let map = self.shared_map.load();
             let Some(my_pos) = map.agent_position(self.player_key) else {
                 return Ok(());
             };
@@ -723,6 +734,7 @@ impl SessionActor {
                         .await?;
                 }
             } else if let Some(agent_id) = self.agents.get_local(&agent_key) {
+                self.agents.remove_by_local(agent_id);
                 self.connection
                     .send_message(ServerMessage::RemoveAgent { agent_id })
                     .await?;
@@ -983,6 +995,7 @@ impl SessionActor {
             }
             return Ok(());
         }
+
         if let Some(agent_id) = self.agents.get_local(&agent_key) {
             self.agents.remove_by_local(agent_id);
             self.connection
@@ -993,29 +1006,71 @@ impl SessionActor {
     }
 
     async fn agent_teleported(&mut self, agent_key: AgentKey, to_position: Position) -> Result<()> {
+        let map = self.shared_map.load();
         if agent_key == self.player_key {
-            let map = self.shared_map.load();
-            let map_desc_floors = get_map_desc_on_viewport(&map, &to_position);
-            for (floor, tiles) in map_desc_floors {
+            self.send_map_description(&to_position, &map).await?;
+            let visible = self.send_agents_description(&to_position, &map).await?;
+            self.remove_agents_not_in_reach(visible).await?;
+
+            let self_id = self
+                .agents
+                .get_local(&self.player_key)
+                .ok_or(SessionError::InvalidState)?;
+            self.connection
+                .send_message(ServerMessage::TeleportAgent {
+                    agent_id: self_id,
+                    position: to_position.clone(),
+                })
+                .await?;
+
+            Ok(())
+        } else {
+            let Some(my_pos) = map.agent_position(self.player_key) else {
+                return Ok(());
+            };
+
+            if my_pos.in_viewport(&to_position) {
+                if let Some(agent_id) = self.agents.get_local(&agent_key) {
+                    self.connection
+                        .send_message(ServerMessage::TeleportAgent {
+                            agent_id,
+                            position: to_position,
+                        })
+                        .await?;
+                } else {
+                    let Some(agent) = map.get_agent(agent_key) else {
+                        return Ok(());
+                    };
+                    let agent_id = self.agents.get_or_insert(agent_key);
+                    self.connection
+                        .send_message(get_agent_desc(agent, agent_id, to_position))
+                        .await?;
+                }
+            } else if let Some(agent_id) = self.agents.get_local(&agent_key) {
+                self.agents.remove_by_local(agent_id);
                 self.connection
-                    .send_message(ServerMessage::DescribeMap {
-                        tiles,
-                        center: to_position.clone(),
-                        floor,
-                    })
+                    .send_message(ServerMessage::RemoveAgent { agent_id })
                     .await?;
             }
 
-            self.connection
-                .send_message(ServerMessage::TeleportAgent {
-                    agent_id: self
-                        .agents
-                        .get_local(&agent_key)
-                        .ok_or(SessionError::InvalidState)?,
-                    position: to_position,
-                })
-                .await?;
+            Ok(())
         }
+    }
+
+    async fn remove_agents_not_in_reach(&mut self, visible: HashSet<AgentKey>) -> Result<()> {
+        for agent_id in self
+            .agents
+            .iter_global()
+            .filter(|key| **key != self.player_key && !visible.contains(key))
+            .filter_map(|key| self.agents.get_local(key))
+            .collect::<Vec<_>>()
+        {
+            self.connection
+                .send_message(ServerMessage::RemoveAgent { agent_id })
+                .await?;
+            self.agents.remove_by_local(agent_id);
+        }
+
         Ok(())
     }
 }
