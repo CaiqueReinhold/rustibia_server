@@ -253,6 +253,9 @@ impl MessageRouterActor {
             BroadcastMessage::UseItemAck { agent_key, .. } => {
                 self.send_to(message, agent_key);
             }
+            BroadcastMessage::LogoutDenied { agent_key } => {
+                self.send_to(message, agent_key);
+            }
         }
     }
 

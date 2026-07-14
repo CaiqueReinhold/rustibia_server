@@ -63,7 +63,6 @@ pub enum SessionError {
 pub enum SessionCommand {
     ReceivePlayerMessage(ClientMessage),
     ReceiveBroadcast(BroadcastMessage),
-    LogoutDenied,
 }
 
 #[derive(Clone, Debug)]
@@ -92,11 +91,6 @@ impl SessionActorHandle {
         msg: BroadcastMessage,
     ) -> Result<(), mpsc::error::TrySendError<SessionCommand>> {
         self.tx.try_send(SessionCommand::ReceiveBroadcast(msg))?;
-        Ok(())
-    }
-
-    pub async fn logout_denied(&self) -> Result<(), mpsc::error::SendError<SessionCommand>> {
-        self.tx.send(SessionCommand::LogoutDenied).await?;
         Ok(())
     }
 }
@@ -237,6 +231,10 @@ impl SessionActor {
             .await;
     }
 
+    async fn close_connection(&self) {
+        let _ = self.connection.close().await;
+    }
+
     async fn route_command(&mut self, cmd: SessionCommand) -> Result<()> {
         info!(
             session = self.session_id,
@@ -245,23 +243,7 @@ impl SessionActor {
         match cmd {
             SessionCommand::ReceivePlayerMessage(msg) => self.handle_client_message(msg).await,
             SessionCommand::ReceiveBroadcast(msg) => self.route_broadcast(msg).await,
-            SessionCommand::LogoutDenied => self.logout_denied().await,
         }
-    }
-
-    async fn logout_denied(&self) -> Result<()> {
-        self.connection
-            .send_message(ServerMessage::TextMessage {
-                text: "You may not logout during an action.".to_string(),
-                message_type: TextMessageType::ActionDenied,
-            })
-            .await?;
-        Ok(())
-    }
-
-    async fn close_connection(&self) -> Result<()> {
-        self.connection.close().await?;
-        Ok(())
     }
 
     async fn pong(&self) -> Result<()> {
@@ -613,6 +595,7 @@ impl SessionActor {
                 to_position,
                 ..
             } => self.agent_teleported(agent_key, to_position).await,
+            BroadcastMessage::LogoutDenied { .. } => self.logout_denied().await,
         }
     }
 
@@ -966,6 +949,16 @@ impl SessionActor {
                 .send_message(ServerMessage::AgentChangedDirection { agent_id, facing })
                 .await?;
         }
+        Ok(())
+    }
+
+    async fn logout_denied(&self) -> Result<()> {
+        self.connection
+            .send_message(ServerMessage::TextMessage {
+                text: "You may not logout during an action.".to_string(),
+                message_type: TextMessageType::ActionDenied,
+            })
+            .await?;
         Ok(())
     }
 

@@ -66,4 +66,7 @@ pub enum BroadcastMessage {
         position: Position,
         snapshot: Option<Arc<PlayerSnapshot>>,
     },
+    LogoutDenied {
+        agent_key: AgentKey,
+    },
 }

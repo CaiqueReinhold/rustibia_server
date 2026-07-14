@@ -391,7 +391,7 @@ impl WorldActor {
                     session: session.clone(),
                 },
             });
-            let _ = session.logout_denied().await;
+            broadcast_messages.push(BroadcastMessage::LogoutDenied { agent_key });
             return Ok(());
         }
 
