@@ -203,11 +203,11 @@ impl GameMap {
         Ok(tile.agents.iter())
     }
 
-    pub fn iter_agents_in_rect<'a, 'b>(
+    pub fn iter_agents_in_rect<'a>(
         &'a self,
-        rect: &'b Rect,
+        rect: &Rect,
         z: u8,
-    ) -> impl Iterator<Item = &AgentKey> + use<'a> {
+    ) -> impl Iterator<Item = &'a AgentKey> + use<'a> {
         let (x0, y0) = (rect.min_x(), rect.min_y());
         let (x1, y1) = (rect.max_x(), rect.max_y());
         let cx_range = (x0 >> CHUNK_BITS)..=(x1 >> CHUNK_BITS);

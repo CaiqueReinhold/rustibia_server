@@ -169,7 +169,7 @@ pub fn get_agents_in_expansion<'a>(
             .into_iter()
             .flatten()
             .flat_map(move |rect| map.iter_agents_in_rect(&rect, floor))
-            .map(|key| *key)
+            .copied()
             .flat_map(|key| {
                 map.get_agent(key).map(|agent| {
                     (
