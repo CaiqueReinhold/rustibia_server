@@ -152,6 +152,7 @@ impl MessageRouterActor {
                 self.send_to_rect(message, map, Rect::player_viewport(position), position.z)
             }
             BroadcastMessage::AgentMoved {
+                agent_key,
                 from_position,
                 to_position,
                 ..
@@ -168,7 +169,14 @@ impl MessageRouterActor {
                         u16::max(from_viewport.max_y(), to_viewport.max_y()),
                     ),
                     to_position.z,
-                )
+                );
+
+                {
+                    let map = self.shared_map.load();
+                    if map.agent_position(*agent_key) != Some(to_position) {
+                        self.send_to(message, agent_key);
+                    }
+                }
             }
             BroadcastMessage::AgentTeleport {
                 from_position,
@@ -186,10 +194,7 @@ impl MessageRouterActor {
                     ],
                 );
             }
-            BroadcastMessage::MoveAck { agent_key } => {
-                self.send_to(message, agent_key);
-            }
-            BroadcastMessage::MoveDenied { agent_key, .. } => {
+            BroadcastMessage::MoveItemDenied { agent_key, .. } => {
                 self.send_to(message, agent_key);
             }
             BroadcastMessage::OpenContainer { agent_key, .. } => {
@@ -206,7 +211,7 @@ impl MessageRouterActor {
             BroadcastMessage::PlayerSpawned { position, .. } => {
                 self.send_to_rect(message, map, Rect::player_viewport(position), position.z);
             }
-            BroadcastMessage::PlayerWalkDenied { agent_key } => {
+            BroadcastMessage::AgentWalkDenied { agent_key } => {
                 self.send_to(message, agent_key);
             }
             BroadcastMessage::TileChanged { position } => {
@@ -226,7 +231,7 @@ impl MessageRouterActor {
             BroadcastMessage::UpdatePlayerCapacity { agent_key } => {
                 self.send_to(message, agent_key);
             }
-            BroadcastMessage::UseItemAck { agent_key, .. } => {
+            BroadcastMessage::UseItemDenied { agent_key, .. } => {
                 self.send_to(message, agent_key);
             }
             BroadcastMessage::LogoutDenied { agent_key } => {

@@ -23,25 +23,22 @@ pub enum BroadcastMessage {
     TileChanged {
         position: Position,
     },
-    MoveDenied {
+    MoveItemDenied {
         agent_key: AgentKey,
         message: String,
-    },
-    MoveAck {
-        agent_key: AgentKey,
     },
     OpenContainer {
         agent_key: AgentKey,
         item: ItemRef,
     },
-    UseItemAck {
+    UseItemDenied {
         agent_key: AgentKey,
-        success: bool,
+        message: String,
     },
     UpdateContainer {
         item: ItemRef,
     },
-    PlayerWalkDenied {
+    AgentWalkDenied {
         agent_key: AgentKey,
     },
     UpdateInventorySlot {

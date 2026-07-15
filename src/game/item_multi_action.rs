@@ -28,12 +28,9 @@ pub fn use_item_with(
     target: ItemRef,
     current_tick: Tick,
 ) -> (Vec<BroadcastMessage>, Vec<ScheduledCommand>) {
-    let use_item_failed = || {
+    let use_item_failed = |message| {
         (
-            vec![BroadcastMessage::UseItemAck {
-                agent_key,
-                success: false,
-            }],
+            vec![BroadcastMessage::UseItemDenied { agent_key, message }],
             vec![],
         )
     };
@@ -43,12 +40,12 @@ pub fn use_item_with(
         .map(|agent| agent.next_use_tick > current_tick)
         .unwrap_or(false)
     {
-        return use_item_failed();
+        return use_item_failed("Can't use that fast".to_owned());
     }
 
     let source_item = find_item_in_placement(map, &source);
     let Some(source_item) = source_item else {
-        return use_item_failed();
+        return use_item_failed("Item was not found".to_owned());
     };
 
     if map
@@ -56,15 +53,15 @@ pub fn use_item_with(
         .filter(|player_pos| player_pos.placement_is_adjacent(&source.placement))
         .is_none()
     {
-        return use_item_failed();
+        return use_item_failed("Item is too fat".to_owned());
     }
 
     if !source_item.config.has_flag(ItemFlag::Usable) {
-        return use_item_failed();
+        return use_item_failed("Can't use that".to_owned());
     }
 
     if find_item_in_placement(map, &target).is_none() {
-        return use_item_failed();
+        return use_item_failed("Item was not found".to_owned());
     };
 
     let action = source_item.get_multi_action();
@@ -78,24 +75,21 @@ pub fn use_item_with(
             &target,
             current_tick,
         ) {
-            Ok((mut action_broadcasts, scheduled_commands)) => {
+            Ok((action_broadcasts, scheduled_commands)) => {
                 map.get_agent_mut(agent_key).unwrap().next_use_tick =
                     current_tick + GAME_CONFIG.action.use_item_cooldown_ticks;
-                action_broadcasts.push(BroadcastMessage::UseItemAck {
-                    agent_key,
-                    success: true,
-                });
+
                 (action_broadcasts, scheduled_commands)
             }
             Err(e) => {
                 if let ItemActionError::InvalidState = e {
                     warn!("{e}");
                 }
-                use_item_failed()
+                use_item_failed("Can't use that".to_owned())
             }
         }
     } else {
-        use_item_failed()
+        use_item_failed("Can't use that".to_owned())
     }
 }
 

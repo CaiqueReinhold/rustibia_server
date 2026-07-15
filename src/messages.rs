@@ -84,21 +84,18 @@ const SRV_TILE_CHANGED: u8 = 3;
 const SRV_PLAYER_WALK_ACK: u8 = 4;
 const SRV_PLAYER_POS: u8 = 5;
 const SRV_DESCRIBE_PLAYER: u8 = 6;
-const SRV_MOVE_ITEM_ACK: u8 = 7;
-const SRV_MOVE_ITEM_DENIED: u8 = 8;
-const SRV_TEXT_MESSAGE: u8 = 9;
-const SRV_USE_ITEM_ACK: u8 = 10;
-const SRV_OPEN_CONTAINER: u8 = 11;
-const SRV_UPDATE_CONTAINER: u8 = 12;
-const SRV_CONTAINER_CLOSED: u8 = 13;
-const SRV_PLAYER_WALK_DENIED: u8 = 14;
-const SRV_INVETORY_SLOT_UPDATED: u8 = 15;
-const SRV_PLAYER_CAPACITY_UPDATED: u8 = 16;
-const SRV_AGENT_DIRECTION_CHANGED: u8 = 17;
-const SRV_REMOVE_AGENT: u8 = 18;
-const SRV_MOVE_AGENT: u8 = 19;
-const SRV_SPAWN_AGENT: u8 = 20;
-const SRV_TELEPORT_AGENT: u8 = 21;
+const SRV_TEXT_MESSAGE: u8 = 7;
+const SRV_OPEN_CONTAINER: u8 = 8;
+const SRV_UPDATE_CONTAINER: u8 = 9;
+const SRV_CONTAINER_CLOSED: u8 = 10;
+const SRV_PLAYER_WALK_DENIED: u8 = 11;
+const SRV_INVETORY_SLOT_UPDATED: u8 = 12;
+const SRV_PLAYER_CAPACITY_UPDATED: u8 = 13;
+const SRV_AGENT_DIRECTION_CHANGED: u8 = 14;
+const SRV_REMOVE_AGENT: u8 = 15;
+const SRV_MOVE_AGENT: u8 = 16;
+const SRV_SPAWN_AGENT: u8 = 17;
+const SRV_TELEPORT_AGENT: u8 = 18;
 
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
@@ -148,13 +145,10 @@ pub enum ServerMessage {
     PlayerPosition {
         position: Position,
     },
-    MoveItemAck,
-    MoveItemDenied,
     TextMessage {
         text: String,
         message_type: TextMessageType,
     },
-    UseItemAck,
     OpenContainer {
         container_id: ContainerId,
         capacity: u8,
@@ -426,12 +420,6 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u8(SRV_PLAYER_POS);
                 encode_position(position, dst);
             }
-            ServerMessage::MoveItemAck => {
-                dst.put_u8(SRV_MOVE_ITEM_ACK);
-            }
-            ServerMessage::MoveItemDenied => {
-                dst.put_u8(SRV_MOVE_ITEM_DENIED);
-            }
             ServerMessage::TextMessage { text, message_type } => {
                 dst.put_u8(SRV_TEXT_MESSAGE);
                 let text_bytes = text.as_bytes();
@@ -439,7 +427,6 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_slice(text_bytes);
                 dst.put_u8(encode_text_message_type(message_type));
             }
-            ServerMessage::UseItemAck => dst.put_u8(SRV_USE_ITEM_ACK),
             ServerMessage::OpenContainer {
                 container_id,
                 capacity,

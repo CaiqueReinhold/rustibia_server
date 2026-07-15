@@ -112,12 +112,9 @@ pub fn use_item(
     item_ref: ItemRef,
     current_tick: Tick,
 ) -> (Vec<BroadcastMessage>, Vec<ScheduledCommand>) {
-    let use_item_failed = || {
+    let use_item_failed = |message| {
         (
-            vec![BroadcastMessage::UseItemAck {
-                agent_key,
-                success: false,
-            }],
+            vec![BroadcastMessage::UseItemDenied { agent_key, message }],
             vec![],
         )
     };
@@ -126,7 +123,7 @@ pub fn use_item(
         .map(|agent| agent.next_use_tick > current_tick)
         .unwrap_or(false)
     {
-        return use_item_failed();
+        return use_item_failed("Can't use that fast".to_owned());
     }
 
     if map
@@ -134,15 +131,15 @@ pub fn use_item(
         .filter(|player_pos| player_pos.placement_is_adjacent(&item_ref.placement))
         .is_none()
     {
-        return use_item_failed();
+        return use_item_failed("Item is too far".to_owned());
     }
 
     let Some(item) = find_item_in_placement(map, &item_ref) else {
-        return use_item_failed();
+        return use_item_failed("Item was not found".to_owned());
     };
 
     if !item.config.has_flag(ItemFlag::Usable) {
-        return use_item_failed();
+        return use_item_failed("Can't use that".to_owned());
     }
 
     let is_container = item.config.has_flag(ItemFlag::Container);
@@ -150,16 +147,10 @@ pub fn use_item(
 
     if is_container {
         return (
-            vec![
-                BroadcastMessage::UseItemAck {
-                    agent_key,
-                    success: true,
-                },
-                BroadcastMessage::OpenContainer {
-                    agent_key,
-                    item: item_ref,
-                },
-            ],
+            vec![BroadcastMessage::OpenContainer {
+                agent_key,
+                item: item_ref,
+            }],
             vec![],
         );
     } else if let Some(action) = action {
@@ -171,13 +162,9 @@ pub fn use_item(
             &item_ref,
             current_tick,
         ) {
-            Ok((mut action_broadcasts, scheduled_commands)) => {
+            Ok((action_broadcasts, scheduled_commands)) => {
                 map.get_agent_mut(agent_key).unwrap().next_use_tick =
                     current_tick + GAME_CONFIG.action.use_item_cooldown_ticks;
-                action_broadcasts.push(BroadcastMessage::UseItemAck {
-                    agent_key,
-                    success: true,
-                });
                 return (action_broadcasts, scheduled_commands);
             }
             Err(e) => {
@@ -187,7 +174,7 @@ pub fn use_item(
             }
         }
     }
-    use_item_failed()
+    use_item_failed("Can't use that".to_owned())
 }
 
 pub fn route_action(

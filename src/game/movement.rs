@@ -24,18 +24,18 @@ pub fn walk(
     };
 
     if agent.next_walk_tick > current_tick {
-        broadcasts.push(BroadcastMessage::PlayerWalkDenied { agent_key });
+        broadcasts.push(BroadcastMessage::AgentWalkDenied { agent_key });
         return Ok(broadcasts);
     }
 
     let new_pos = current_pos.clone() + direction;
     if !map.can_move(&new_pos, agent_key) {
-        broadcasts.push(BroadcastMessage::PlayerWalkDenied { agent_key });
+        broadcasts.push(BroadcastMessage::AgentWalkDenied { agent_key });
         return Ok(broadcasts);
     }
 
     let Some(tile_friction) = map.tile_friction(&new_pos) else {
-        broadcasts.push(BroadcastMessage::PlayerWalkDenied { agent_key });
+        broadcasts.push(BroadcastMessage::AgentWalkDenied { agent_key });
         return Ok(broadcasts);
     };
 

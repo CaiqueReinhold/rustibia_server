@@ -172,9 +172,9 @@ pub fn move_item(
     if let ItemPlacement::Map(pos) = &source.placement
         && !player_pos.is_adjacent(pos)
     {
-        broadcasts.push(BroadcastMessage::MoveDenied {
+        broadcasts.push(BroadcastMessage::MoveItemDenied {
             agent_key: agent,
-            message: "Item not in reach".to_string(),
+            message: "Item is too far".to_string(),
         });
         return broadcasts;
     }
@@ -191,7 +191,7 @@ pub fn move_item(
         if let Some(item) = item
             && (item.config.has_flag(ItemFlag::Unmove) || item.amount < amount)
         {
-            broadcasts.push(BroadcastMessage::MoveDenied {
+            broadcasts.push(BroadcastMessage::MoveItemDenied {
                 agent_key: agent,
                 message: "Can't move this".to_string(),
             });
@@ -203,7 +203,7 @@ pub fn move_item(
     match (&to, target_container.as_ref()) {
         (ItemPlacement::Map(pos), None) => {
             if !map.can_drop_item(pos) || !player_pos.in_viewport(pos) {
-                broadcasts.push(BroadcastMessage::MoveDenied {
+                broadcasts.push(BroadcastMessage::MoveItemDenied {
                     agent_key: agent,
                     message: "Can't drop here".to_string(),
                 });
@@ -227,7 +227,7 @@ pub fn move_item(
                 })
                 .unwrap_or(false);
             if !compatible {
-                broadcasts.push(BroadcastMessage::MoveDenied {
+                broadcasts.push(BroadcastMessage::MoveItemDenied {
                     agent_key: agent,
                     message: "Can't equip this here".to_string(),
                 });
@@ -246,7 +246,7 @@ pub fn move_item(
                 .map(|it| it.config.has_flag(ItemFlag::Take))
                 .unwrap_or(false);
             if !take_ok || container_guid == &source.guid {
-                broadcasts.push(BroadcastMessage::MoveDenied {
+                broadcasts.push(BroadcastMessage::MoveItemDenied {
                     agent_key: agent,
                     message: "Can't move this".to_string(),
                 });
@@ -259,7 +259,7 @@ pub fn move_item(
     let Ok((source_item, source_index, source_container)) =
         remove_item_at(&mut broadcasts, map, &source, amount)
     else {
-        broadcasts.push(BroadcastMessage::MoveDenied {
+        broadcasts.push(BroadcastMessage::MoveItemDenied {
             agent_key: agent,
             message: "Can't move this".to_string(),
         });
@@ -310,7 +310,7 @@ pub fn move_item(
             );
         }
 
-        broadcasts.push(BroadcastMessage::MoveDenied {
+        broadcasts.push(BroadcastMessage::MoveItemDenied {
             agent_key: agent,
             message: match error {
                 ItemMovementError::ItemNotInPosition | ItemMovementError::TileDoesNotExist => {
@@ -329,7 +329,6 @@ pub fn move_item(
         player.capacity.current = player.inventory.carried_weight;
         broadcasts.push(BroadcastMessage::UpdatePlayerCapacity { agent_key: agent });
     }
-    broadcasts.push(BroadcastMessage::MoveAck { agent_key: agent });
     broadcasts
 }
 
