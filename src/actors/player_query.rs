@@ -61,16 +61,21 @@ pub fn client_position_to_placement(
     map: &GameMap,
     containers: &LocalIdMap<ItemGuid>,
     agent_key: AgentKey,
-) -> Option<ItemPlacement> {
+) -> Option<(ItemPlacement, Option<ItemGuid>)> {
     if position.is_container_coord() {
         let container_id = position.y as ContainerId;
         let guid = containers.get_global(container_id)?;
-        let (_, placement) = find_item_in_reach(map, guid, agent_key)?;
-        Some(placement)
+        let (item, placement) = find_item_in_reach(map, guid, agent_key)?;
+        let guid = item
+            .content
+            .as_ref()
+            .and_then(|content| content.get(position.z as usize))
+            .map(|item| item.guid.clone());
+        Some((placement, guid))
     } else if position.is_inventory_coord() {
         let slot = InventorySlot::from_id(position.y)?;
-        Some(ItemPlacement::Inventory(slot, agent_key))
+        Some((ItemPlacement::Inventory(slot, agent_key), None))
     } else {
-        Some(ItemPlacement::Map(position))
+        Some((ItemPlacement::Map(position), None))
     }
 }

@@ -33,6 +33,9 @@ pub fn decide_actions(map: &GameMap, current_tick: Tick) -> Vec<CreatureAction> 
         if agent.next_walk_tick > current_tick {
             continue;
         }
+        if agent.next_wander_tick > current_tick {
+            continue;
+        }
         if let Some(direction) = WANDER_DIRECTIONS.choose(&mut rng).copied() {
             actions.push(CreatureAction::Walk {
                 agent_key,

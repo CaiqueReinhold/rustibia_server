@@ -1,8 +1,11 @@
-use crate::entities::{
-    agent::{AgentKey, Facing},
-    items::FloorChangeDirection,
-    map::GameMap,
-    position::{Direction, Position},
+use crate::{
+    entities::{
+        agent::{AgentKey, Facing},
+        items::FloorChangeDirection,
+        map::GameMap,
+        position::{Direction, Position},
+    },
+    game::game_config::GAME_CONFIG,
 };
 use anyhow::Result;
 
@@ -44,7 +47,11 @@ pub fn walk(
         .unwrap()
         .calculate_walk_ticks(tile_friction, direction.is_diagonal());
 
-    map.get_agent_mut(agent_key).unwrap().next_walk_tick = current_tick + walk_ticks;
+    let agent = map.get_agent_mut(agent_key).unwrap();
+    agent.next_walk_tick = current_tick + walk_ticks;
+    if agent.is_creature() {
+        agent.next_wander_tick = current_tick + GAME_CONFIG.movement.wander_ticks;
+    }
     map.move_agent(agent_key, &new_pos)?;
     let floor_change = map.get_floor_change(&new_pos);
 

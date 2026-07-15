@@ -2,3 +2,6 @@ spawns:
   - position: { x: 1029, y: 1028, z: 7 }
     kind: demon
     respawn_ticks: 6000
+  - position: { x: 1027, y: 1023, z: 6 }
+    kind: demon
+    respawn_ticks: 6000

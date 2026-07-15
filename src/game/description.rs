@@ -1,7 +1,7 @@
 use crate::{
     entities::{
         agent::Agent,
-        items::Item,
+        items::{Item, ItemGuid},
         map::GameMap,
         position::{ItemPlacement, Position},
     },
@@ -12,6 +12,7 @@ use std::fmt::{Error, Write};
 pub fn get_look_description(
     map: &GameMap,
     placement: &ItemPlacement,
+    guid: Option<ItemGuid>,
     player_pos: &Position,
 ) -> String {
     let desc = match placement {
@@ -26,7 +27,13 @@ pub fn get_look_description(
             .get_player(*agent_key)
             .map(|player| player.inventory.get(slot))
             .unwrap_or(None)
-            .map(|item| get_item_description(item, true)),
+            .map(|item| {
+                guid.and_then(|guid| {
+                    item.find_by_guid(&guid)
+                        .map(|it| get_item_description(it, true))
+                })
+                .unwrap_or(get_item_description(item, true))
+            }),
     };
 
     desc.and_then(|e| e.ok())
@@ -57,5 +64,9 @@ fn get_item_description(item: &Item, show_weight: bool) -> Result<String, Error>
 }
 
 fn get_agent_description(agent: &Agent) -> Result<String, Error> {
-    Ok(format!("You see {}", agent.name()))
+    if agent.is_creature() {
+        Ok(format!("You see a {}", agent.name()))
+    } else {
+        Ok(format!("You see {}", agent.name()))
+    }
 }

@@ -280,7 +280,7 @@ impl GameMap {
         self.agents.iter()
     }
 
-    pub fn can_move(&self, pos: &Position, _key: AgentKey) -> bool {
+    pub fn can_move(&self, pos: &Position, agent_key: AgentKey) -> bool {
         let tile = self.get_tile(pos);
         if tile.is_err() {
             return false;
@@ -294,6 +294,7 @@ impl GameMap {
         if !has_ground {
             return false;
         }
+
         let unpass = tile
             .items
             .iter()
@@ -302,7 +303,25 @@ impl GameMap {
             return false;
         }
 
-        // TODO: check agent colision
+        if !tile.agents.is_empty() {
+            return false;
+        }
+
+        if let Some(agent) = self.get_agent(agent_key)
+            && agent.is_creature()
+        {
+            if self.get_floor_change(pos).is_some() {
+                return false;
+            }
+
+            let avoid = tile
+                .items
+                .iter()
+                .any(|i| i.config.has_flag(ItemFlag::Avoid));
+            if avoid {
+                return false;
+            }
+        }
 
         true
     }

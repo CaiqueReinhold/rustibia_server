@@ -11,6 +11,12 @@ pub static GAME_CONFIG: Lazy<GameConfig> = Lazy::new(read_from_file);
 pub struct GameConfig {
     pub multi_action: MultiActionConfig,
     pub action: ItemActionConfig,
+    pub movement: MovementConfig,
+}
+
+#[derive(Deserialize)]
+pub struct MovementConfig {
+    pub wander_ticks: Tick,
 }
 
 #[derive(Deserialize)]

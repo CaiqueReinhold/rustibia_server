@@ -150,15 +150,15 @@ fn firt_available_position_up(
     pos: &Position,
     agent_key: AgentKey,
 ) -> Option<Position> {
-    for y in [pos.y - 1, pos.y + 1] {
-        for x in [pos.x - 1, pos.x + 1] {
-            let try_pos = Position::new(x, y, pos.z - 1);
-            if map.can_move(&try_pos, agent_key) {
-                return Some(try_pos);
-            }
-        }
-    }
-    None
+    [
+        Position::new(pos.x, pos.y.saturating_sub(1), pos.z - 1),
+        Position::new(pos.x, pos.y.saturating_add(1), pos.z - 1),
+        Position::new(pos.x.saturating_sub(1), pos.y, pos.z - 1),
+        Position::new(pos.x.saturating_add(1), pos.y, pos.z - 1),
+    ]
+    .iter()
+    .find(|try_pos| map.can_move(try_pos, agent_key))
+    .cloned()
 }
 
 fn rope(

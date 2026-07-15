@@ -53,6 +53,7 @@ fn parse_flag(s: &str) -> Option<ItemFlag> {
         "bottom" => Some(ItemFlag::Bottom),
         "container" => Some(ItemFlag::Container),
         "usable" => Some(ItemFlag::Usable),
+        "avoid" => Some(ItemFlag::Avoid),
         _ => None,
     }
 }

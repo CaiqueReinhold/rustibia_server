@@ -526,12 +526,12 @@ impl SessionActor {
         let player_pos = map
             .agent_position(self.player_key)
             .ok_or(SessionError::InvalidState)?;
-        let Some(placement) =
+        let Some((placement, guid)) =
             client_position_to_placement(position, &map, &self.containers, self.player_key)
         else {
             return Ok(());
         };
-        let desc = get_look_description(&map, &placement, player_pos);
+        let desc = get_look_description(&map, &placement, guid, player_pos);
         self.connection
             .send_message(ServerMessage::TextMessage {
                 text: desc,
@@ -561,9 +561,7 @@ impl SessionActor {
                 self.move_item_denied(message).await
             }
             BroadcastMessage::TileChanged { position } => self.tile_changed(position).await,
-            BroadcastMessage::UseItemDenied { agent_key, message } => {
-                self.use_item_denied(message).await
-            }
+            BroadcastMessage::UseItemDenied { message, .. } => self.use_item_denied(message).await,
             BroadcastMessage::OpenContainer { item, .. } => self.open_container(item).await,
             BroadcastMessage::UpdateContainer { item } => self.update_container(item).await,
             BroadcastMessage::AgentWalkDenied { .. } => self.walk_denied().await,

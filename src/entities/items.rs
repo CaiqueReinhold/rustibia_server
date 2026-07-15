@@ -35,6 +35,7 @@ pub enum ItemFlag {
     Cumulative,
     Container,
     Usable,
+    Avoid,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]

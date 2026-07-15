@@ -59,6 +59,8 @@ pub struct Agent {
     pub facing: Facing,
     pub next_walk_tick: Tick,
     pub next_use_tick: Tick,
+
+    pub next_wander_tick: Tick,
 }
 
 impl Agent {
@@ -99,6 +101,7 @@ impl Agent {
             speed: 0,
             next_walk_tick: 0,
             next_use_tick: 0,
+            next_wander_tick: 0,
         };
         agent.apply_modifiers();
         agent
@@ -115,6 +118,7 @@ impl Agent {
             facing: Facing::South,
             next_walk_tick: 0,
             next_use_tick: 0,
+            next_wander_tick: 0,
         };
         agent.apply_modifiers();
         agent

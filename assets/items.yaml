@@ -357,6 +357,7 @@ items:
     article: a
     flags:
       - take
+      - avoid
     attributes:
       weight: 1800
       capacity: 10

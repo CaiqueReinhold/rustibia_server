@@ -148,9 +148,13 @@ impl MessageRouterActor {
 
     fn route_to_recipients(&mut self, message: &BroadcastMessage, map: &GameMap) {
         match message {
-            BroadcastMessage::AgentChangedDirection { position, .. } => {
-                self.send_to_rect(message, map, Rect::player_viewport(position), position.z)
-            }
+            BroadcastMessage::AgentChangedDirection { position, .. } => self.send_to_rect(
+                message,
+                map,
+                Rect::player_viewport(position),
+                position.z,
+                None,
+            ),
             BroadcastMessage::AgentMoved {
                 agent_key,
                 from_position,
@@ -169,14 +173,10 @@ impl MessageRouterActor {
                         u16::max(from_viewport.max_y(), to_viewport.max_y()),
                     ),
                     to_position.z,
+                    Some(*agent_key),
                 );
 
-                {
-                    let map = self.shared_map.load();
-                    if map.agent_position(*agent_key) != Some(to_position) {
-                        self.send_to(message, agent_key);
-                    }
-                }
+                self.send_to(message, agent_key);
             }
             BroadcastMessage::AgentTeleport {
                 from_position,
@@ -205,24 +205,42 @@ impl MessageRouterActor {
                 position,
                 ..
             } => {
-                self.send_to_rect(message, map, Rect::player_viewport(position), position.z);
+                self.send_to_rect(
+                    message,
+                    map,
+                    Rect::player_viewport(position),
+                    position.z,
+                    None,
+                );
                 self.send_to(message, agent_key); // player was already removed from the map, send using key.
             }
             BroadcastMessage::PlayerSpawned { position, .. } => {
-                self.send_to_rect(message, map, Rect::player_viewport(position), position.z);
+                self.send_to_rect(
+                    message,
+                    map,
+                    Rect::player_viewport(position),
+                    position.z,
+                    None,
+                );
             }
             BroadcastMessage::AgentWalkDenied { agent_key } => {
                 self.send_to(message, agent_key);
             }
             BroadcastMessage::TileChanged { position } => {
-                self.send_to_rect(message, map, Rect::player_viewport(position), position.z);
+                self.send_to_rect(
+                    message,
+                    map,
+                    Rect::player_viewport(position),
+                    position.z,
+                    None,
+                );
             }
             BroadcastMessage::UpdateContainer { item } => match &item.placement {
                 ItemPlacement::Inventory(_slot, agent_key) => {
                     self.send_to(message, agent_key);
                 }
                 ItemPlacement::Map(pos) => {
-                    self.send_to_rect(message, map, Rect::player_viewport(pos), pos.z);
+                    self.send_to_rect(message, map, Rect::player_viewport(pos), pos.z, None);
                 }
             },
             BroadcastMessage::UpdateInventorySlot { agent_key, .. } => {
@@ -240,10 +258,21 @@ impl MessageRouterActor {
         }
     }
 
-    fn send_to_rect(&mut self, message: &BroadcastMessage, map: &GameMap, rect: Rect, z: u8) {
+    fn send_to_rect(
+        &mut self,
+        message: &BroadcastMessage,
+        map: &GameMap,
+        rect: Rect,
+        z: u8,
+        originator: Option<AgentKey>,
+    ) {
         iter_visible_floors(z)
             .flat_map(|floor| map.iter_agents_in_rect(&rect, floor))
-            .for_each(|agent_key| self.send_to(message, agent_key));
+            .for_each(|agent_key| {
+                if Some(*agent_key) != originator {
+                    self.send_to(message, agent_key)
+                }
+            });
     }
 
     /// Deliver `message` once to every agent whose viewport intersects any of
