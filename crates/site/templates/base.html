@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Rustibia{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="page">
+    <div class="banner">RUSTIBIA</div>
+    <div class="layout">
+      <nav class="sidebar">
+        <div class="navgroup">GAME</div>
+        <a class="navitem" href="/">News</a>
+        <a class="navitem" href="/download">Download Client</a>
+        <a class="navitem" href="/rules">Rules</a>
+        <a class="navitem" href="/support">Support</a>
+
+        <div class="navgroup">COMMUNITY</div>
+        <a class="navitem" href="/characters">Characters</a>
+        <a class="navitem" href="/online">Who Is Online</a>
+        <a class="navitem" href="/highscores">Highscores</a>
+
+        <div class="navgroup">ACCOUNT</div>
+        {% if logged_in %}
+        <a class="navitem" href="/account">Account Dashboard</a>
+        <a class="navitem" href="/logout">Log Out</a>
+        {% else %}
+        <a class="navitem" href="/login">Log In</a>
+        <a class="navitem" href="/register">Create Account</a>
+        {% endif %}
+
+        {% if is_admin %}
+        <div class="navgroup">ADMIN</div>
+        <a class="navitem" href="/admin/news">Post News</a>
+        {% endif %}
+      </nav>
+      <main class="content">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+    <div class="footer">Rustibia is a non-commercial fan project.</div>
+  </div>
+</body>
+</html>

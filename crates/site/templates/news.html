@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Rustibia{% endblock %}
+{% block content %}
+<div class="panel">
+  <div class="panel-header">Latest News</div>
+  {% if posts.is_empty() %}
+  <div class="panel-body"><p>No news yet.</p></div>
+  {% else %}
+  {% for post in posts %}
+  <div class="panel-body">
+    <p><strong>{{ post.title }}</strong></p>
+    <p style="white-space: pre-wrap">{{ post.body }}</p>
+  </div>
+  {% endfor %}
+  {% endif %}
+</div>
+{% endblock %}

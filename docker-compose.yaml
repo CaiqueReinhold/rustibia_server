@@ -15,8 +15,23 @@ services:
       timeout: 5s
       retries: 5
 
+  site:
+    build:
+      context: .
+      dockerfile: crates/site/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://rustibia:rustibia@db/rustibia?sslmode=disable
+      BIND_ADDRESS: 0.0.0.0:8080
+    ports:
+      - "8080:8080"
+
   server:
-    build: .
+    build:
+      context: .
+      dockerfile: crates/server/Dockerfile
     depends_on:
       db:
         condition: service_healthy

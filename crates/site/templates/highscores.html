@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Highscores — Rustibia{% endblock %}
+{% block content %}
+<div class="panel">
+  <div class="panel-header">Highscores</div>
+  {% if entries.is_empty() %}
+  <div class="panel-body"><p>No characters yet.</p></div>
+  {% else %}
+  <table>
+    <tr><th>Rank</th><th>Name</th><th>Vocation</th><th>Level</th></tr>
+    {% for entry in entries %}
+    <tr>
+      <td>{{ entry.rank }}</td>
+      <td><a href="/characters/{{ entry.name }}">{{ entry.name }}</a></td>
+      <td>{{ entry.vocation.name() }}</td>
+      <td>{{ entry.level }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+</div>
+{% endblock %}

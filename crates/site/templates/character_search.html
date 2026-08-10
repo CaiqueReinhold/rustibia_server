@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Characters — Rustibia{% endblock %}
+{% block content %}
+<div class="panel">
+  <div class="panel-header">Search Characters</div>
+  <div class="panel-body">
+    {% if let Some(error) = error %}<p class="error">{{ error }}</p>{% endif %}
+    <form method="get" action="/characters">
+      <label for="name">Character Name</label>
+      <input type="text" id="name" name="name" value="{{ name }}" required>
+      <p><button type="submit">Search</button></p>
+    </form>
+  </div>
+</div>
+{% endblock %}

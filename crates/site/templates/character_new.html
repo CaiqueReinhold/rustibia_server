@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Create Character — Rustibia{% endblock %}
+{% block content %}
+<div class="panel">
+  <div class="panel-header">Create Character</div>
+  <div class="panel-body">
+    {% if let Some(error) = error %}<p class="error">{{ error }}</p>{% endif %}
+    <form method="post" action="/account/characters/new">
+      <label for="name">Name</label>
+      <input type="text" id="name" name="name" value="{{ name }}" required>
+
+      <label for="sex">Sex</label>
+      <select id="sex" name="sex">
+        {% for option in sexes %}
+        <option value="{{ option.as_i16() }}">{{ option.name() }}</option>
+        {% endfor %}
+      </select>
+
+      <label for="vocation">Vocation</label>
+      <select id="vocation" name="vocation">
+        {% for option in vocations %}
+        <option value="{{ option.as_i16() }}">{{ option.name() }}</option>
+        {% endfor %}
+      </select>
+
+      <p><button type="submit">Create Character</button></p>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -11,3 +11,5 @@ docs/
 .claude
 .worktrees
 .wolf
+graphify-out/
+.superpowers/

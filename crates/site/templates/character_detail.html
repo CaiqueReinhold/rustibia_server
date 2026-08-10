@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ character.name }} — Rustibia{% endblock %}
+{% block content %}
+<div class="panel">
+  <div class="panel-header">Character Information</div>
+  {% if character.deleted %}
+  <div class="panel-body"><p class="error">This character has been deleted.</p></div>
+  {% endif %}
+  <table>
+    <tr><td><strong>Name</strong></td><td>{{ character.name }}</td></tr>
+    <tr><td><strong>Sex</strong></td><td>{{ character.sex.name() }}</td></tr>
+    <tr><td><strong>Vocation</strong></td><td>{{ character.vocation.name() }}</td></tr>
+    <tr><td><strong>Level</strong></td><td>{{ character.level }}</td></tr>
+    <tr><td><strong>Status</strong></td><td>{% if character.online %}Online{% else %}Offline{% endif %}</td></tr>
+    <tr><td><strong>Created</strong></td><td>{{ created }}</td></tr>
+  </table>
+</div>
+{% endblock %}

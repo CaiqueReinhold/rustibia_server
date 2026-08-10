@@ -1,0 +1,20 @@
+session_ttl_days: 7
+auth_token_ttl_seconds: 60
+min_password_length: 8
+new_character:
+  pos_x: 1028
+  pos_y: 1028
+  pos_z: 7
+  facing: 2
+  life: 150
+  mana: 0
+  capacity: 400
+  outfit_id_female: 136
+  outfit_id_male: 128
+  outfit_head: 78
+  outfit_body: 69
+  outfit_legs: 58
+  outfit_feet: 76
+  starting_skills:
+    - { skill_type: 0, value: 1, current_ticks: 0, max_ticks: 0 }
+    - { skill_type: 1, value: 220, current_ticks: 0, max_ticks: 0 }

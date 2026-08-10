@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Who Is Online — Rustibia{% endblock %}
+{% block content %}
+<div class="panel">
+  <div class="panel-header">Who Is Online</div>
+  <div class="panel-body"><p><strong>{{ characters.len() }}</strong> player(s) currently online.</p></div>
+  {% if !characters.is_empty() %}
+  <table>
+    <tr><th>Name</th><th>Vocation</th><th>Level</th></tr>
+    {% for character in characters %}
+    <tr>
+      <td><a href="/characters/{{ character.name }}">{{ character.name }}</a></td>
+      <td>{{ character.vocation.name() }}</td>
+      <td>{{ character.level }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+</div>
+{% endblock %}
