@@ -57,11 +57,18 @@ pub async fn post_character_token(
     let valid_until =
         OffsetDateTime::now_utc() + Duration::seconds(state.config.auth_token_ttl_seconds);
 
+    // Upsert, so the previous ticket for this character is replaced rather than joined.
+    // The conflict clause is deliberately unconditional on `valid_until`: replacing an
+    // expired row as readily as a live one is what keeps stale rows from accumulating
+    // without a scheduled reaper.
     sqlx::query(
-        "INSERT INTO auth_tokens (token_hash, account_id, valid_until) VALUES ($1, $2, $3)",
+        "INSERT INTO game_tokens (token_hash, character_id, valid_until) \
+         VALUES ($1, $2, $3) \
+         ON CONFLICT (character_id) DO UPDATE \
+            SET token_hash = EXCLUDED.token_hash, valid_until = EXCLUDED.valid_until",
     )
     .bind(crate::auth::token::hash_token(&token))
-    .bind(account.account_id)
+    .bind(character_id)
     .bind(valid_until)
     .execute(&state.pool)
     .await?;
@@ -225,9 +232,10 @@ mod tests {
         let auth_token = body["auth_token"].as_str().unwrap();
         assert_eq!(auth_token.len(), 64);
 
-        // The lookup `db::login::redeem` performs: by digest, not by the token itself.
+        // The lookup `db::login::redeem` performs: by digest, and returning the
+        // character rather than the account.
         let resolved: Option<(i32,)> = sqlx::query_as(
-            "SELECT account_id FROM auth_tokens WHERE token_hash = $1 AND valid_until > NOW()",
+            "SELECT character_id FROM game_tokens WHERE token_hash = $1 AND valid_until > NOW()",
         )
         .bind(crate::auth::token::hash_token(auth_token))
         .fetch_optional(&pool)
@@ -236,13 +244,13 @@ mod tests {
 
         assert_eq!(
             resolved.map(|r| r.0),
-            Some(account_id),
-            "the issued token must resolve through the redemption path's own lookup"
+            Some(character_id),
+            "the issued token must name the character it was minted for"
         );
     }
 
     /// The reason the column changed. A token that reaches a client must leave no copy
-    /// behind that would let a reader of the table log in as that account.
+    /// behind that would let a reader of the table log in as that character.
     #[sqlx::test(migrations = "./migrations")]
     async fn the_issued_token_is_not_recoverable_from_the_table(pool: PgPool) {
         let (account_id, session) = account_with_session(&pool, "player@example.com").await;
@@ -255,7 +263,7 @@ mod tests {
         .await;
         let auth_token = body["auth_token"].as_str().unwrap();
 
-        let stored: Vec<String> = sqlx::query_scalar("SELECT token_hash FROM auth_tokens")
+        let stored: Vec<String> = sqlx::query_scalar("SELECT token_hash FROM game_tokens")
             .fetch_all(&pool)
             .await
             .unwrap();
@@ -266,6 +274,125 @@ mod tests {
             "the plaintext token must not be what is stored"
         );
         assert_eq!(stored[0], crate::auth::token::hash_token(auth_token));
+    }
+
+    /// Last click wins. Two "play" clicks must not leave two working tickets behind.
+    #[sqlx::test(migrations = "./migrations")]
+    async fn a_second_mint_supersedes_the_first(pool: PgPool) {
+        let (account_id, session) = account_with_session(&pool, "player@example.com").await;
+        let character_id = a_character(&pool, account_id, "Rizael").await;
+
+        let (_, first) = send(
+            test_app(pool.clone()),
+            post_token_req(character_id, Some(&session)),
+        )
+        .await;
+        let (status, second) = send(
+            test_app(pool.clone()),
+            post_token_req(character_id, Some(&session)),
+        )
+        .await;
+
+        assert_eq!(status, StatusCode::OK);
+
+        let rows: i64 = sqlx::query_scalar("SELECT count(*) FROM game_tokens")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+        assert_eq!(rows, 1, "a character must hold at most one ticket");
+
+        let live: Option<String> =
+            sqlx::query_scalar("SELECT token_hash FROM game_tokens WHERE token_hash = $1")
+                .bind(crate::auth::token::hash_token(
+                    first["auth_token"].as_str().unwrap(),
+                ))
+                .fetch_optional(&pool)
+                .await
+                .unwrap();
+        assert_eq!(live, None, "the superseded token must be gone");
+
+        let current: Option<String> =
+            sqlx::query_scalar("SELECT token_hash FROM game_tokens WHERE token_hash = $1")
+                .bind(crate::auth::token::hash_token(
+                    second["auth_token"].as_str().unwrap(),
+                ))
+                .fetch_optional(&pool)
+                .await
+                .unwrap();
+        assert!(current.is_some(), "the newest token must be the live one");
+    }
+
+    /// Supersede is scoped to the character, not the account. Two characters must be
+    /// able to hold live tickets at once, or an account cannot run two clients.
+    #[sqlx::test(migrations = "./migrations")]
+    async fn minting_for_one_character_leaves_anothers_token_alone(pool: PgPool) {
+        let (account_id, session) = account_with_session(&pool, "player@example.com").await;
+        let first_id = a_character(&pool, account_id, "Rizael").await;
+        let second_id = a_character(&pool, account_id, "Anaia").await;
+
+        let (_, first) = send(
+            test_app(pool.clone()),
+            post_token_req(first_id, Some(&session)),
+        )
+        .await;
+        send(
+            test_app(pool.clone()),
+            post_token_req(second_id, Some(&session)),
+        )
+        .await;
+
+        let survives: Option<String> =
+            sqlx::query_scalar("SELECT token_hash FROM game_tokens WHERE token_hash = $1")
+                .bind(crate::auth::token::hash_token(
+                    first["auth_token"].as_str().unwrap(),
+                ))
+                .fetch_optional(&pool)
+                .await
+                .unwrap();
+
+        assert!(
+            survives.is_some(),
+            "minting for one character must not revoke another's ticket"
+        );
+    }
+
+    /// The stale-row cleanup that makes a scheduled reaper unnecessary: an expired row
+    /// is replaced rather than colliding with the new one.
+    #[sqlx::test(migrations = "./migrations")]
+    async fn minting_over_an_expired_token_replaces_it(pool: PgPool) {
+        let (account_id, session) = account_with_session(&pool, "player@example.com").await;
+        let character_id = a_character(&pool, account_id, "Rizael").await;
+
+        sqlx::query(
+            "INSERT INTO game_tokens (token_hash, character_id, valid_until) \
+             VALUES ('stale-hash', $1, NOW() - INTERVAL '1 hour')",
+        )
+        .bind(character_id)
+        .execute(&pool)
+        .await
+        .unwrap();
+
+        let (status, _) = send(
+            test_app(pool.clone()),
+            post_token_req(character_id, Some(&session)),
+        )
+        .await;
+
+        assert_eq!(
+            status,
+            StatusCode::OK,
+            "an expired row must not block a mint"
+        );
+
+        let rows: Vec<String> = sqlx::query_scalar("SELECT token_hash FROM game_tokens")
+            .fetch_all(&pool)
+            .await
+            .unwrap();
+        assert_eq!(rows.len(), 1);
+        assert_ne!(
+            rows[0], "stale-hash",
+            "the stale row must have been replaced"
+        );
     }
 
     #[sqlx::test(migrations = "./migrations")]
@@ -281,13 +408,53 @@ mod tests {
         .await;
 
         assert_eq!(status, StatusCode::NOT_FOUND);
-        let count: i64 = sqlx::query_scalar("SELECT count(*) FROM auth_tokens")
+        let count: i64 = sqlx::query_scalar("SELECT count(*) FROM game_tokens")
             .fetch_one(&pool)
             .await
             .unwrap();
         assert_eq!(
             count, 0,
-            "no token may be minted for someone else's character"
+            "no token may be minted for someone else's character. This is now the only \
+             place ownership is decided anywhere in the system: redemption reads the \
+             character off the token and never re-checks who owns it."
+        );
+    }
+
+    /// The upsert is a blind overwrite of whatever row holds that `character_id`, so the
+    /// only thing stopping a stranger from clobbering a live ticket is that the ownership
+    /// check runs *before* the write. That ordering is currently just the order of two
+    /// statements in one function; this pins the consequence, so a refactor that moved
+    /// the check after the query would fail here rather than silently hand strangers a
+    /// way to knock players offline.
+    #[sqlx::test(migrations = "./migrations")]
+    async fn a_failed_mint_leaves_the_owners_token_untouched(pool: PgPool) {
+        let (owner_id, owner_session) = account_with_session(&pool, "owner@example.com").await;
+        let (_, stranger_session) = account_with_session(&pool, "stranger@example.com").await;
+        let character_id = a_character(&pool, owner_id, "Rizael").await;
+
+        let (_, minted) = send(
+            test_app(pool.clone()),
+            post_token_req(character_id, Some(&owner_session)),
+        )
+        .await;
+        let owners_hash = crate::auth::token::hash_token(minted["auth_token"].as_str().unwrap());
+
+        let (status, _) = send(
+            test_app(pool.clone()),
+            post_token_req(character_id, Some(&stranger_session)),
+        )
+        .await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
+
+        let live: Vec<String> = sqlx::query_scalar("SELECT token_hash FROM game_tokens")
+            .fetch_all(&pool)
+            .await
+            .unwrap();
+
+        assert_eq!(
+            live,
+            vec![owners_hash],
+            "the stranger's refused mint must leave the owner's ticket the live one"
         );
     }
 

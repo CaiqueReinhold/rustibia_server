@@ -15,7 +15,6 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RedeemRequest {
     pub auth_token: String,
-    pub character_id: i32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -237,12 +236,10 @@ mod tests {
     fn redeem_request_round_trips() {
         let json = serde_json::to_string(&RedeemRequest {
             auth_token: "abc".to_string(),
-            character_id: 12,
         })
         .unwrap();
         let back: RedeemRequest = serde_json::from_str(&json).unwrap();
 
         assert_eq!(back.auth_token, "abc");
-        assert_eq!(back.character_id, 12);
     }
 }

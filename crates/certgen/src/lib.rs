@@ -1,5 +1,5 @@
 //! Generates the private CA and the two leaf certificates that protect
-//! `POST /internal/sessions/redeem`.
+//! `POST /internal/game-tokens/redeem`.
 //!
 //! Three certificates, one job each:
 //!

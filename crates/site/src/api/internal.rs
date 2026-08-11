@@ -10,14 +10,14 @@ pub async fn post_redeem(
     State(state): State<AppState>,
     Json(request): Json<RedeemRequest>,
 ) -> Result<Json<CharacterRecord>, AppError> {
-    match login::redeem(&state.pool, &request.auth_token, request.character_id).await? {
+    match login::redeem(&state.pool, &request.auth_token).await? {
         Some(record) => Ok(Json(record)),
         None => Err(AppError::NotFound),
     }
 }
 
 pub fn router() -> axum::Router<AppState> {
-    axum::Router::new().route("/sessions/redeem", axum::routing::post(post_redeem))
+    axum::Router::new().route("/game-tokens/redeem", axum::routing::post(post_redeem))
 }
 
 #[cfg(test)]
@@ -48,15 +48,14 @@ mod tests {
             .with_state(AppState { pool, config })
     }
 
-    fn redeem_req(token: &str, character_id: i32) -> Request<Body> {
+    fn redeem_req(token: &str) -> Request<Body> {
         Request::builder()
             .method("POST")
-            .uri("/internal/sessions/redeem")
+            .uri("/internal/game-tokens/redeem")
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 serde_json::to_vec(&RedeemRequest {
                     auth_token: token.to_string(),
-                    character_id,
                 })
                 .unwrap(),
             ))
@@ -94,13 +93,13 @@ mod tests {
         .unwrap()
     }
 
-    async fn a_token(pool: &PgPool, account_id: i32) -> String {
+    async fn a_token(pool: &PgPool, character_id: i32) -> String {
         let token = format!("token-{}", uuid::Uuid::now_v7());
         sqlx::query(
-            "INSERT INTO auth_tokens (token_hash, account_id, valid_until) VALUES ($1, $2, $3)",
+            "INSERT INTO game_tokens (token_hash, character_id, valid_until) VALUES ($1, $2, $3)",
         )
         .bind(crate::auth::token::hash_token(&token))
-        .bind(account_id)
+        .bind(character_id)
         .bind(OffsetDateTime::now_utc() + Duration::seconds(60))
         .execute(pool)
         .await
@@ -112,9 +111,9 @@ mod tests {
     async fn a_valid_redemption_returns_the_record(pool: PgPool) {
         let account_id = an_account(&pool, "player@example.com").await;
         let character_id = a_character(&pool, account_id, "Rizael").await;
-        let token = a_token(&pool, account_id).await;
+        let token = a_token(&pool, character_id).await;
 
-        let (status, body) = send(test_app(pool), redeem_req(&token, character_id)).await;
+        let (status, body) = send(test_app(pool), redeem_req(&token)).await;
 
         assert_eq!(status, StatusCode::OK);
         assert_eq!(body["id"], character_id);
@@ -130,21 +129,35 @@ mod tests {
     async fn the_body_deserializes_as_the_contract_type(pool: PgPool) {
         let account_id = an_account(&pool, "player@example.com").await;
         let character_id = a_character(&pool, account_id, "Rizael").await;
-        let token = a_token(&pool, account_id).await;
+        let token = a_token(&pool, character_id).await;
 
-        let (_, body) = send(test_app(pool), redeem_req(&token, character_id)).await;
+        let (_, body) = send(test_app(pool), redeem_req(&token)).await;
 
         let record: CharacterRecord = serde_json::from_value(body)
             .expect("the response must satisfy rustibia_contract::CharacterRecord");
         assert_eq!(record.id, character_id);
     }
 
+    /// What used to be the id-oracle test. A caller can no longer name a character, so
+    /// there is no pair of refusals to compare; what is left to prove is that the token
+    /// alone decides, and that it decides correctly with more than one candidate.
+    #[sqlx::test(migrations = "./migrations")]
+    async fn the_token_alone_decides_which_character_loads(pool: PgPool) {
+        let account_id = an_account(&pool, "player@example.com").await;
+        let first_id = a_character(&pool, account_id, "Rizael").await;
+        let second_id = a_character(&pool, account_id, "Anaia").await;
+        let second_token = a_token(&pool, second_id).await;
+
+        let (status, body) = send(test_app(pool), redeem_req(&second_token)).await;
+
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(body["id"], second_id);
+        assert_ne!(body["id"], first_id);
+    }
+
     #[sqlx::test(migrations = "./migrations")]
     async fn an_unknown_token_is_404(pool: PgPool) {
-        let account_id = an_account(&pool, "player@example.com").await;
-        let character_id = a_character(&pool, account_id, "Rizael").await;
-
-        let (status, _) = send(test_app(pool), redeem_req("never-issued", character_id)).await;
+        let (status, _) = send(test_app(pool), redeem_req("never-issued")).await;
 
         assert_eq!(status, StatusCode::NOT_FOUND);
     }
@@ -153,48 +166,22 @@ mod tests {
     async fn a_second_redemption_of_the_same_token_is_404(pool: PgPool) {
         let account_id = an_account(&pool, "player@example.com").await;
         let character_id = a_character(&pool, account_id, "Rizael").await;
-        let token = a_token(&pool, account_id).await;
+        let token = a_token(&pool, character_id).await;
 
-        let (first, _) = send(test_app(pool.clone()), redeem_req(&token, character_id)).await;
-        let (second, _) = send(test_app(pool), redeem_req(&token, character_id)).await;
+        let (first, _) = send(test_app(pool.clone()), redeem_req(&token)).await;
+        let (second, _) = send(test_app(pool), redeem_req(&token)).await;
 
         assert_eq!(first, StatusCode::OK);
         assert_eq!(second, StatusCode::NOT_FOUND);
-    }
-
-    /// The id-oracle property: a bad token and a character that isn't yours must be
-    /// byte-identical answers, or one valid token is enough to map out which character
-    /// ids exist.
-    #[sqlx::test(migrations = "./migrations")]
-    async fn a_bad_token_and_someone_elses_character_are_indistinguishable(pool: PgPool) {
-        let owner_id = an_account(&pool, "owner@example.com").await;
-        let stranger_id = an_account(&pool, "stranger@example.com").await;
-        let character_id = a_character(&pool, owner_id, "Rizael").await;
-        let stranger_token = a_token(&pool, stranger_id).await;
-
-        let (bad_token_status, bad_token_body) = send(
-            test_app(pool.clone()),
-            redeem_req("never-issued", character_id),
-        )
-        .await;
-        let (wrong_owner_status, wrong_owner_body) =
-            send(test_app(pool), redeem_req(&stranger_token, character_id)).await;
-
-        assert_eq!(bad_token_status, StatusCode::NOT_FOUND);
-        assert_eq!(wrong_owner_status, StatusCode::NOT_FOUND);
-        assert_eq!(
-            bad_token_body, wrong_owner_body,
-            "the two refusals must be indistinguishable"
-        );
     }
 
     #[sqlx::test(migrations = "./migrations")]
     async fn a_malformed_body_is_rejected(pool: PgPool) {
         let request = Request::builder()
             .method("POST")
-            .uri("/internal/sessions/redeem")
+            .uri("/internal/game-tokens/redeem")
             .header(header::CONTENT_TYPE, "application/json")
-            .body(Body::from(r#"{"auth_token":"abc"}"#))
+            .body(Body::from(r#"{}"#))
             .unwrap();
 
         let (status, _) = send(test_app(pool), request).await;
@@ -202,7 +189,7 @@ mod tests {
         assert_eq!(
             status,
             StatusCode::UNPROCESSABLE_ENTITY,
-            "a request missing character_id must not be treated as character 0"
+            "a request missing auth_token must not be treated as the empty token"
         );
     }
 }

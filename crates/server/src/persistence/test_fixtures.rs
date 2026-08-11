@@ -55,9 +55,9 @@ pub async fn insert_character(pool: &PgPool, account_id: i32) -> i32 {
     .unwrap()
 }
 
-/// A live auth token for `account_id`, as the site would have minted.
-pub async fn insert_token(pool: &PgPool, account_id: i32) -> String {
-    insert_token_valid_for(pool, account_id, "1 hour").await
+/// A live game token for `character_id`, as the site would have minted.
+pub async fn insert_token(pool: &PgPool, character_id: i32) -> String {
+    insert_token_valid_for(pool, character_id, "1 hour").await
 }
 
 /// `interval` is Postgres interval syntax, and may be negative (`"-1 hour"`) for an
@@ -66,14 +66,14 @@ pub async fn insert_token(pool: &PgPool, account_id: i32) -> String {
 /// Stores the digest and returns the plaintext, exactly as the site's mint path does —
 /// inserting the plaintext here would make the load tests pass against a lookup that
 /// production could never satisfy.
-pub async fn insert_token_valid_for(pool: &PgPool, account_id: i32, interval: &str) -> String {
+pub async fn insert_token_valid_for(pool: &PgPool, character_id: i32, interval: &str) -> String {
     let token = format!("token-{}", uuid::Uuid::now_v7());
     sqlx::query(&format!(
-        "INSERT INTO auth_tokens (token_hash, account_id, valid_until) \
+        "INSERT INTO game_tokens (token_hash, character_id, valid_until) \
          VALUES ($1, $2, NOW() + INTERVAL '{interval}')"
     ))
     .bind(super::login::hash_token_for_tests(&token))
-    .bind(account_id)
+    .bind(character_id)
     .execute(pool)
     .await
     .unwrap();
@@ -81,7 +81,7 @@ pub async fn insert_token_valid_for(pool: &PgPool, account_id: i32, interval: &s
 }
 
 pub async fn token_count(pool: &PgPool) -> i64 {
-    sqlx::query_scalar("SELECT count(*) FROM auth_tokens")
+    sqlx::query_scalar("SELECT count(*) FROM game_tokens")
         .fetch_one(pool)
         .await
         .unwrap()

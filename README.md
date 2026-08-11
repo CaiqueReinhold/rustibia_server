@@ -69,10 +69,10 @@ access should not learn the page exists.
 | `GET /api/characters` | `Authorization: Bearer <session_token>` | `[{id, name, level, vocation}]` |
 | `POST /api/characters/{id}/token` | same | `{auth_token, expires_at}` |
 
-The third writes a row into `auth_tokens`. That token is short-lived **and single-use** —
+The third writes a row into `game_tokens`. That token is short-lived **and single-use** —
 it is deleted the moment the game server redeems it.
 
-**No bearer token is stored in the clear.** `sessions` and `auth_tokens` hold
+**No bearer token is stored in the clear.** `sessions` and `game_tokens` hold
 `token_hash`, the hex SHA-256 of the token; the token itself exists only in the response
 above and in the client's cookie. SHA-256 rather than Argon2 because these are 32 bytes of
 OS randomness — there is no dictionary to defend against, and a per-row salt would make
@@ -82,7 +82,7 @@ lookup-by-token a table scan instead of one index probe.
 
 | Endpoint | Auth | Returns |
 |---|---|---|
-| `POST /internal/sessions/redeem` | client certificate (mTLS) | `CharacterRecord`, or 404 |
+| `POST /internal/game-tokens/redeem` | client certificate (mTLS) | `CharacterRecord`, or 404 |
 
 Served on its own listener (`INTERNAL_BIND_ADDRESS`, default `127.0.0.1:8443`), never on
 the public one — requiring client certificates on port 8080 would make every browser
@@ -102,7 +102,7 @@ downgrade would look like success in the logs.
 
 ## The contract with the game server
 
-Login is HTTP: the server no longer reads `auth_tokens` or `players` to authenticate.
+Login is HTTP: the server no longer reads `game_tokens` or `players` to authenticate.
 The request and response types live in `crates/contract`, which both crates link and
 neither can avoid — a field added on one side and missing on the other is a deserialize
 error, not a silent zero.

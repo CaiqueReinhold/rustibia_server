@@ -82,11 +82,8 @@ impl<L: LoginRepository + 'static> AuthActor<L> {
             None => return Err(ConnectionError::ConnectionClosed.into()),
         };
 
-        let (character_id, auth_token) = match msg {
-            ClientMessage::Login {
-                character_id,
-                auth_token,
-            } => (character_id, auth_token),
+        let auth_token = match msg {
+            ClientMessage::Login { auth_token } => auth_token,
             msg => {
                 info!("{:?}", msg);
                 let _ = connection.send_message(ServerMessage::LoginError).await;
@@ -94,7 +91,7 @@ impl<L: LoginRepository + 'static> AuthActor<L> {
             }
         };
 
-        let player = match self.login_repo.redeem(&auth_token, character_id).await {
+        let player = match self.login_repo.redeem(&auth_token).await {
             Ok(p) => p,
             Err(e) => {
                 match &e {
@@ -111,8 +108,7 @@ impl<L: LoginRepository + 'static> AuthActor<L> {
             }
         };
 
-        // Reject duplicate logins
-        let registry_guard = match self.world_ctx.online_registry.try_register(character_id) {
+        let registry_guard = match self.world_ctx.online_registry.try_register(player.id) {
             Some(guard) => guard,
             None => {
                 info!(
@@ -120,9 +116,7 @@ impl<L: LoginRepository + 'static> AuthActor<L> {
                     "Character {} is already online.", player.name
                 );
                 let _ = connection.send_message(ServerMessage::LoginError).await;
-                return Err(anyhow::anyhow!(
-                    "Character {character_id} is already online"
-                ));
+                return Err(anyhow::anyhow!("Character {} is already online", player.id));
             }
         };
 
@@ -177,11 +171,7 @@ mod tests {
     }
 
     impl LoginRepository for FakeLogin {
-        async fn redeem(
-            &self,
-            _auth_token: &str,
-            _character_id: crate::entities::player::PlayerId,
-        ) -> Result<PlayerSnapshot, LoginError> {
+        async fn redeem(&self, _auth_token: &str) -> Result<PlayerSnapshot, LoginError> {
             match &self.answer {
                 Ok(snapshot) => Ok(snapshot.clone()),
                 Err(LoginError::Rejected) => Err(LoginError::Rejected),
@@ -245,9 +235,8 @@ mod tests {
         commands
     }
 
-    fn a_login(character_id: u32) -> ClientMessage {
+    fn a_login() -> ClientMessage {
         ClientMessage::Login {
-            character_id,
             auth_token: "a-token".to_string(),
         }
     }
@@ -256,7 +245,7 @@ mod tests {
     async fn a_successful_login_hands_the_connection_a_session() {
         let (ctx, _world_rx, _persistence_rx) = a_context();
 
-        let commands = authenticate_with(FakeLogin::accepting(7), ctx, a_login(7)).await;
+        let commands = authenticate_with(FakeLogin::accepting(7), ctx, a_login()).await;
 
         assert!(
             commands
@@ -278,7 +267,7 @@ mod tests {
         let (ctx, _world_rx, _persistence_rx) = a_context();
 
         let commands =
-            authenticate_with(FakeLogin::failing(LoginError::Rejected), ctx, a_login(7)).await;
+            authenticate_with(FakeLogin::failing(LoginError::Rejected), ctx, a_login()).await;
 
         assert!(
             commands.iter().any(|c| matches!(
@@ -305,7 +294,7 @@ mod tests {
         let commands = authenticate_with(
             FakeLogin::failing(LoginError::Unavailable("connection refused".into())),
             ctx,
-            a_login(7),
+            a_login(),
         )
         .await;
 
@@ -349,7 +338,7 @@ mod tests {
             .try_register(7)
             .expect("the first registration must succeed");
 
-        let commands = authenticate_with(FakeLogin::accepting(7), ctx.clone(), a_login(7)).await;
+        let commands = authenticate_with(FakeLogin::accepting(7), ctx.clone(), a_login()).await;
 
         assert!(
             commands.iter().any(|c| matches!(
@@ -363,6 +352,36 @@ mod tests {
                 .iter()
                 .any(|c| matches!(c, ConnectionCommand::SetSession(_))),
             "a character cannot be online twice, got {commands:?}"
+        );
+    }
+
+    /// The registry key comes from the loaded character, not from anything the client
+    /// said. Before the token carried a character these were forced equal by the site's
+    /// ownership check; now the client has no say at all, and this pins that.
+    #[tokio::test]
+    async fn the_session_registers_the_character_the_repository_returned() {
+        let (ctx, _world_rx, _persistence_rx) = a_context();
+
+        // Occupy the slot the repository's character will want.
+        let _held = ctx
+            .online_registry
+            .try_register(7)
+            .expect("the slot must start free");
+
+        let commands = authenticate_with(FakeLogin::accepting(7), ctx, a_login()).await;
+
+        assert!(
+            commands.iter().any(|c| matches!(
+                c,
+                ConnectionCommand::SendPlayerMessage(ServerMessage::LoginError)
+            )),
+            "a second login for the repository's character must be refused, got {commands:?}"
+        );
+        assert!(
+            !commands
+                .iter()
+                .any(|c| matches!(c, ConnectionCommand::SetSession(_))),
+            "got {commands:?}"
         );
     }
 }

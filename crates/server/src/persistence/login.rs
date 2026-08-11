@@ -1,15 +1,4 @@
 //! Turning an auth token into a loaded player.
-//!
-//! This is the seam. Behind `LoginRepository` there are two implementations: the HTTP one
-//! that calls the site, which is what runs, and the SQL one that talks to the database
-//! directly, kept as a rollback path and used by tests that want a login without a
-//! network. Both must behave identically, including spending the token — a rollback path
-//! with different semantics is not one.
-//!
-//! Everything a `CharacterRecord` has to become is domain-typed, so the mapping is the
-//! one place where the wire's `i16`s and `i32`s meet `Facing`, `Position` and `Item`.
-//! Both implementations share it, which is why a bug there cannot show up on one path
-//! only.
 
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -23,7 +12,7 @@ use tracing::warn;
 use crate::entities::{
     agent::Pool,
     items::{Item, ItemConfig, ItemId},
-    player::{InventorySlot, PlayerId},
+    player::InventorySlot,
     position::Position,
     skills::{SkillType, SkillValue},
 };
@@ -42,24 +31,15 @@ pub enum LoginError {
 }
 
 pub trait LoginRepository: Send + Sync {
-    /// Spends `auth_token` and returns the character it entitles the bearer to.
-    ///
+    /// Spends `auth_token` and returns the character it names.
     /// Returns `Rejected` for every refusal without distinguishing them — the caller has
     /// no use for the difference and the site deliberately does not report it.
     fn redeem(
         &self,
         auth_token: &str,
-        character_id: PlayerId,
     ) -> impl Future<Output = Result<PlayerSnapshot, LoginError>> + Send;
 }
 
-/// The one place a wire record becomes domain types.
-///
-/// Every failure here is `Unavailable` rather than `Rejected`, deliberately. By the time
-/// this runs the token has already been spent, so the player cannot retry this token and
-/// telling them "invalid token" would be a lie. A record that will not map means the
-/// stored row is out of range or the two sides disagree about an encoding — both are
-/// operator problems, and both should be loud.
 pub fn snapshot_from_record(
     record: CharacterRecord,
     items: &HashMap<ItemId, Arc<ItemConfig>>,
@@ -160,7 +140,7 @@ fn malformed(detail: impl std::fmt::Display) -> LoginError {
     LoginError::Unavailable(format!("unusable character record: {detail}"))
 }
 
-/// The value stored in `auth_tokens.token_hash`: SHA-256 of the token, hex-encoded.
+/// The value stored in `game_tokens.token_hash`: SHA-256 of the token, hex-encoded.
 ///
 /// Used only by `SqlLoginRepository`, which is the only part of this process that still
 /// looks a token up in the database — the HTTP path sends the token to the site and the
@@ -238,11 +218,7 @@ impl SqlLoginRepository {
         Self { pool, items }
     }
 
-    async fn redeem_inner(
-        &self,
-        auth_token: &str,
-        character_id: PlayerId,
-    ) -> Result<PlayerSnapshot, LoginError> {
+    async fn redeem_inner(&self, auth_token: &str) -> Result<PlayerSnapshot, LoginError> {
         use sqlx::Row;
 
         let mut tx = self
@@ -251,16 +227,16 @@ impl SqlLoginRepository {
             .await
             .map_err(|e| LoginError::Unavailable(e.to_string()))?;
 
-        let account_id: Option<i32> = sqlx::query_scalar(
-            "DELETE FROM auth_tokens WHERE token_hash = $1 AND valid_until > NOW() \
-             RETURNING account_id",
+        let character_id: Option<i32> = sqlx::query_scalar(
+            "DELETE FROM game_tokens WHERE token_hash = $1 AND valid_until > NOW() \
+             RETURNING character_id",
         )
         .bind(hash_token(auth_token))
         .fetch_optional(&mut *tx)
         .await
         .map_err(|e| LoginError::Unavailable(e.to_string()))?;
 
-        let Some(account_id) = account_id else {
+        let Some(character_id) = character_id else {
             return Err(LoginError::Rejected);
         };
 
@@ -268,10 +244,9 @@ impl SqlLoginRepository {
             "SELECT id, account_id, name, pos_x, pos_y, pos_z, origin_x, origin_y, origin_z, \
              facing, life_cur, life_max, mana_cur, mana_max, cap_cur, cap_max, \
              outfit_id, outfit_head, outfit_body, outfit_legs, outfit_feet, inventory \
-             FROM players WHERE id = $1 AND account_id = $2 AND deleted_at IS NULL",
+             FROM players WHERE id = $1 AND deleted_at IS NULL",
         )
-        .bind(character_id as i32)
-        .bind(account_id)
+        .bind(character_id)
         .fetch_optional(&mut *tx)
         .await
         .map_err(|e| LoginError::Unavailable(e.to_string()))?;
@@ -286,7 +261,7 @@ impl SqlLoginRepository {
             "SELECT skill_type, value, current_ticks, max_ticks FROM player_skills \
              WHERE player_id = $1",
         )
-        .bind(character_id as i32)
+        .bind(character_id)
         .fetch_all(&mut *tx)
         .await
         .map_err(|e| LoginError::Unavailable(e.to_string()))?;
@@ -359,9 +334,8 @@ impl LoginRepository for SqlLoginRepository {
     fn redeem(
         &self,
         auth_token: &str,
-        character_id: PlayerId,
     ) -> impl Future<Output = Result<PlayerSnapshot, LoginError>> + Send {
-        self.redeem_inner(auth_token, character_id)
+        self.redeem_inner(auth_token)
     }
 }
 
@@ -389,7 +363,7 @@ impl HttpLoginRepository {
         Self {
             client,
             redeem_url: format!(
-                "{}/internal/sessions/redeem",
+                "{}/internal/game-tokens/redeem",
                 base_url.trim_end_matches('/')
             ),
             items,
@@ -422,14 +396,9 @@ impl HttpLoginRepository {
             .map_err(ClientError::Build)
     }
 
-    async fn redeem_inner(
-        &self,
-        auth_token: &str,
-        character_id: PlayerId,
-    ) -> Result<PlayerSnapshot, LoginError> {
+    async fn redeem_inner(&self, auth_token: &str) -> Result<PlayerSnapshot, LoginError> {
         let request = RedeemRequest {
             auth_token: auth_token.to_string(),
-            character_id: character_id as i32,
         };
 
         let response = self
@@ -462,9 +431,8 @@ impl LoginRepository for HttpLoginRepository {
     fn redeem(
         &self,
         auth_token: &str,
-        character_id: PlayerId,
     ) -> impl Future<Output = Result<PlayerSnapshot, LoginError>> + Send {
-        self.redeem_inner(auth_token, character_id)
+        self.redeem_inner(auth_token)
     }
 }
 
@@ -682,10 +650,10 @@ mod tests {
     async fn sql_redeem_loads_the_character(pool: PgPool) {
         let account_id = insert_account(&pool).await;
         let character_id = insert_character(&pool, account_id).await;
-        let token = insert_token(&pool, account_id).await;
+        let token = insert_token(&pool, character_id).await;
 
         let repo = SqlLoginRepository::new(pool, no_items());
-        let snapshot = repo.redeem(&token, character_id as u32).await.unwrap();
+        let snapshot = repo.redeem(&token).await.unwrap();
 
         assert_eq!(snapshot.id, character_id as u32);
         assert_eq!(snapshot.account_id, account_id);
@@ -701,21 +669,36 @@ mod tests {
         assert_eq!(snapshot.life.maximum, 150);
     }
 
+    /// The seam's half of "the token decides". The site proves this against its own
+    /// query; the rollback path has to make the same promise or it is not a rollback
+    /// path.
+    #[sqlx::test(migrations = "../site/migrations")]
+    async fn sql_redeem_loads_the_token_s_character_and_no_other(pool: PgPool) {
+        let account_id = insert_account(&pool).await;
+        let first_id = insert_character(&pool, account_id).await;
+        let second_id = insert_character(&pool, account_id).await;
+        let second_token = insert_token(&pool, second_id).await;
+        insert_token(&pool, first_id).await;
+
+        let repo = SqlLoginRepository::new(pool, no_items());
+        let snapshot = repo.redeem(&second_token).await.unwrap();
+
+        assert_eq!(snapshot.id, second_id as u32);
+        assert_ne!(snapshot.id, first_id as u32);
+    }
+
     #[sqlx::test(migrations = "../site/migrations")]
     async fn sql_redeem_spends_the_token(pool: PgPool) {
         let account_id = insert_account(&pool).await;
         let character_id = insert_character(&pool, account_id).await;
-        let token = insert_token(&pool, account_id).await;
+        let token = insert_token(&pool, character_id).await;
 
         let repo = SqlLoginRepository::new(pool.clone(), no_items());
-        repo.redeem(&token, character_id as u32).await.unwrap();
+        repo.redeem(&token).await.unwrap();
 
         assert_eq!(token_count(&pool).await, 0);
         assert!(
-            matches!(
-                repo.redeem(&token, character_id as u32).await,
-                Err(LoginError::Rejected)
-            ),
+            matches!(repo.redeem(&token).await, Err(LoginError::Rejected)),
             "a redeemed token must not work twice"
         );
     }
@@ -725,7 +708,7 @@ mod tests {
         let repo = SqlLoginRepository::new(pool, no_items());
 
         assert!(matches!(
-            repo.redeem("never-issued", 1).await,
+            repo.redeem("never-issued").await,
             Err(LoginError::Rejected)
         ));
     }
@@ -734,27 +717,37 @@ mod tests {
     async fn sql_redeem_rejects_an_expired_token(pool: PgPool) {
         let account_id = insert_account(&pool).await;
         let character_id = insert_character(&pool, account_id).await;
-        let token = insert_token_valid_for(&pool, account_id, "-1 hour").await;
+        let token = insert_token_valid_for(&pool, character_id, "-1 hour").await;
 
         let repo = SqlLoginRepository::new(pool, no_items());
 
         assert!(matches!(
-            repo.redeem(&token, character_id as u32).await,
+            repo.redeem(&token).await,
             Err(LoginError::Rejected)
         ));
     }
 
     /// The property that makes single use safe. Both implementations of the trait must
     /// have it, which is why the SQL one runs the same transaction as the site.
+    ///
+    /// A soft delete is the only way in now: the foreign key means a token cannot exist
+    /// for a character that was never there, and a hard delete would cascade the token
+    /// away with it.
     #[sqlx::test(migrations = "../site/migrations")]
     async fn sql_redeem_leaves_the_token_unspent_when_the_load_fails(pool: PgPool) {
         let account_id = insert_account(&pool).await;
-        let token = insert_token(&pool, account_id).await;
+        let character_id = insert_character(&pool, account_id).await;
+        let token = insert_token(&pool, character_id).await;
+        sqlx::query("UPDATE players SET deleted_at = NOW() WHERE id = $1")
+            .bind(character_id)
+            .execute(&pool)
+            .await
+            .unwrap();
 
         let repo = SqlLoginRepository::new(pool.clone(), no_items());
 
         assert!(matches!(
-            repo.redeem(&token, 999_999).await,
+            repo.redeem(&token).await,
             Err(LoginError::Rejected)
         ));
         assert_eq!(
@@ -762,22 +755,6 @@ mod tests {
             1,
             "a character that cannot be loaded must not cost the player their token"
         );
-    }
-
-    #[sqlx::test(migrations = "../site/migrations")]
-    async fn sql_redeem_rejects_a_character_on_another_account(pool: PgPool) {
-        let owner_id = insert_account(&pool).await;
-        let stranger_id = insert_account(&pool).await;
-        let character_id = insert_character(&pool, owner_id).await;
-        let token = insert_token(&pool, stranger_id).await;
-
-        let repo = SqlLoginRepository::new(pool.clone(), no_items());
-
-        assert!(matches!(
-            repo.redeem(&token, character_id as u32).await,
-            Err(LoginError::Rejected)
-        ));
-        assert_eq!(token_count(&pool).await, 1);
     }
 
     #[sqlx::test(migrations = "../site/migrations")]
@@ -789,15 +766,12 @@ mod tests {
             .execute(&pool)
             .await
             .unwrap();
-        let token = insert_token(&pool, account_id).await;
+        let token = insert_token(&pool, character_id).await;
 
         let repo = SqlLoginRepository::new(pool, no_items());
 
         assert!(
-            matches!(
-                repo.redeem(&token, character_id as u32).await,
-                Err(LoginError::Rejected)
-            ),
+            matches!(repo.redeem(&token).await, Err(LoginError::Rejected)),
             "a deleted character must not be able to log in"
         );
     }
@@ -822,9 +796,9 @@ mod tests {
             .await
             .unwrap();
 
-        let token = insert_token(&pool, account_id).await;
+        let token = insert_token(&pool, character_id).await;
         let loaded = SqlLoginRepository::new(pool, no_items())
-            .redeem(&token, character_id as u32)
+            .redeem(&token)
             .await
             .unwrap();
 
@@ -880,7 +854,7 @@ mod http_tests {
     async fn responding(status: u16, body: serde_json::Value) -> MockServer {
         let server = MockServer::start().await;
         Mock::given(method("POST"))
-            .and(path("/internal/sessions/redeem"))
+            .and(path("/internal/game-tokens/redeem"))
             .respond_with(ResponseTemplate::new(status).set_body_json(body))
             .mount(&server)
             .await;
@@ -891,7 +865,7 @@ mod http_tests {
     async fn a_200_becomes_a_snapshot() {
         let server = responding(200, a_record_json()).await;
 
-        let snapshot = repo(&server).redeem("a-token", 7).await.unwrap();
+        let snapshot = repo(&server).redeem("a-token").await.unwrap();
 
         assert_eq!(snapshot.id, 7);
         assert_eq!(snapshot.name, "Rizael");
@@ -899,22 +873,19 @@ mod http_tests {
         assert_eq!(snapshot.skills[&SkillType::Speed].value, 220);
     }
 
-    /// The request shape is half the contract. If the field names drifted, the site would
+    /// The request shape is half the contract. If the field name drifted, the site would
     /// answer 422 and every test above would still pass on its own mock.
     #[tokio::test]
-    async fn the_request_carries_the_token_and_character_id() {
+    async fn the_request_carries_the_token_and_nothing_else() {
         let server = MockServer::start().await;
         Mock::given(method("POST"))
-            .and(path("/internal/sessions/redeem"))
-            .and(body_json(serde_json::json!({
-                "auth_token": "a-token",
-                "character_id": 7
-            })))
+            .and(path("/internal/game-tokens/redeem"))
+            .and(body_json(serde_json::json!({ "auth_token": "a-token" })))
             .respond_with(ResponseTemplate::new(200).set_body_json(a_record_json()))
             .mount(&server)
             .await;
 
-        assert!(repo(&server).redeem("a-token", 7).await.is_ok());
+        assert!(repo(&server).redeem("a-token").await.is_ok());
     }
 
     #[tokio::test]
@@ -922,7 +893,7 @@ mod http_tests {
         let server = responding(404, serde_json::json!({ "error": "not found" })).await;
 
         assert!(matches!(
-            repo(&server).redeem("a-token", 7).await,
+            repo(&server).redeem("a-token").await,
             Err(LoginError::Rejected)
         ));
     }
@@ -931,7 +902,7 @@ mod http_tests {
     async fn a_500_is_unavailable_and_never_rejected() {
         let server = responding(500, serde_json::json!({ "error": "boom" })).await;
 
-        let err = repo(&server).redeem("a-token", 7).await.unwrap_err();
+        let err = repo(&server).redeem("a-token").await.unwrap_err();
 
         assert!(
             matches!(err, LoginError::Unavailable(_)),
@@ -946,7 +917,7 @@ mod http_tests {
         let server = responding(401, serde_json::json!({ "error": "no certificate" })).await;
 
         assert!(matches!(
-            repo(&server).redeem("a-token", 7).await,
+            repo(&server).redeem("a-token").await,
             Err(LoginError::Unavailable(_))
         ));
     }
@@ -957,7 +928,7 @@ mod http_tests {
         body.as_object_mut().unwrap().remove("facing");
         let server = responding(200, body).await;
 
-        let err = repo(&server).redeem("a-token", 7).await.unwrap_err();
+        let err = repo(&server).redeem("a-token").await.unwrap_err();
 
         assert!(
             matches!(err, LoginError::Unavailable(_)),
@@ -974,7 +945,7 @@ mod http_tests {
             .await;
 
         assert!(matches!(
-            repo(&server).redeem("a-token", 7).await,
+            repo(&server).redeem("a-token").await,
             Err(LoginError::Unavailable(_))
         ));
     }
@@ -998,7 +969,7 @@ mod http_tests {
         );
 
         assert!(matches!(
-            repo.redeem("a-token", 7).await,
+            repo.redeem("a-token").await,
             Err(LoginError::Unavailable(_))
         ));
     }
@@ -1013,7 +984,7 @@ mod http_tests {
 
         assert_eq!(
             repo.redeem_url,
-            "https://localhost:8443/internal/sessions/redeem"
+            "https://localhost:8443/internal/game-tokens/redeem"
         );
     }
 

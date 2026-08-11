@@ -34,7 +34,6 @@ const CLI_LOOK: u8 = 11;
 pub enum ClientMessage {
     Ping,
     Login {
-        character_id: u32,
         auth_token: String,
     },
     MovePlayer {
@@ -223,19 +222,27 @@ impl Decoder for GameMessageCodec {
             return Ok(None);
         }
 
+        // A payload always carries at least its message-type byte, so a declared length
+        // of zero is malformed rather than merely incomplete. Rejecting it here is what
+        // keeps the two lines below total: `get_u8` would panic on the empty buffer a
+        // two-byte frame leaves behind, and any arm computing `payload_len - 1` would
+        // underflow — panicking in debug, or wrapping to `usize::MAX` in release and
+        // panicking inside `split_to`'s bounds check instead. Both are reachable from a
+        // hand-crafted frame, so this is a guard against hostile input, not a tidy-up.
+        if payload_len == 0 {
+            return Err(MessageDecodeError::WrongSequence);
+        }
+
         buf.advance(2);
 
         match buf.get_u8() {
             CLI_PING => Ok(Some(ClientMessage::Ping)),
             CLI_LOGIN => {
-                let character_id = buf.get_u32_le();
-                let token_len = payload_len - 1 - 4; // subtract msg type byte and character_id
+                // Cannot underflow: `payload_len` is at least 1, checked above.
+                let token_len = payload_len - 1; // subtract the message type byte
                 let auth_token = String::from_utf8(buf.split_to(token_len).to_vec())
                     .map_err(|_| MessageDecodeError::WrongSequence)?;
-                Ok(Some(ClientMessage::Login {
-                    character_id,
-                    auth_token,
-                }))
+                Ok(Some(ClientMessage::Login { auth_token }))
             }
             CLI_MOVE_PLAYER => {
                 let direction = decode_direction(buf.get_u8())?;
@@ -595,5 +602,91 @@ mod tests {
         let msg = codec.decode(&mut buf).unwrap().unwrap();
         assert!(matches!(msg, ClientMessage::Logout));
         assert!(buf.is_empty());
+    }
+
+    /// The frame the client now sends: length, type byte, then the token and nothing
+    /// else. The character is no longer the client's to name.
+    #[test]
+    fn decode_login_message() {
+        let mut codec = GameMessageCodec {};
+        let mut buf = BytesMut::new();
+        let token = b"a-token";
+        let payload_len = (1 + token.len()) as u16;
+
+        buf.extend_from_slice(&payload_len.to_le_bytes());
+        buf.extend_from_slice(&[CLI_LOGIN]);
+        buf.extend_from_slice(token);
+
+        let msg = codec.decode(&mut buf).unwrap().unwrap();
+
+        match msg {
+            ClientMessage::Login { auth_token } => assert_eq!(auth_token, "a-token"),
+            other => panic!("expected Login, got {other:?}"),
+        }
+        assert!(buf.is_empty(), "the frame must be fully consumed");
+    }
+
+    /// A frame in the old layout is not rejected structurally — `token_len` comes from
+    /// the frame length, so the 4-byte id is simply eaten as part of the token. Whether
+    /// that yields a junk token (refused later, at redemption) or a decode error
+    /// depends on the id's bytes. Both are fine. What must not happen is a panic in
+    /// `from_utf8` or on a short buffer.
+    #[test]
+    fn an_old_format_login_frame_fails_without_panicking() {
+        let mut codec = GameMessageCodec {};
+        let mut buf = BytesMut::new();
+        let token = b"a-token";
+        let payload_len = (1 + 4 + token.len()) as u16;
+
+        buf.extend_from_slice(&payload_len.to_le_bytes());
+        buf.extend_from_slice(&[CLI_LOGIN]);
+        buf.extend_from_slice(&7u32.to_le_bytes());
+        buf.extend_from_slice(token);
+
+        match codec.decode(&mut buf) {
+            Ok(Some(ClientMessage::Login { auth_token })) => assert_ne!(
+                auth_token, "a-token",
+                "the id bytes must land inside the token, not be silently skipped"
+            ),
+            Err(MessageDecodeError::WrongSequence) => {}
+            other => panic!("expected a junk token or WrongSequence, got {other:?}"),
+        }
+    }
+
+    /// A two-byte frame declaring a zero-length payload. Before the length guard this
+    /// panicked in `get_u8` on the empty buffer `advance(2)` left behind — reachable by
+    /// anyone who can open a socket, and for every message type, not just login.
+    #[test]
+    fn a_zero_length_payload_is_rejected_and_does_not_panic() {
+        let mut codec = GameMessageCodec {};
+        let mut buf = BytesMut::new();
+        buf.extend_from_slice(&0u16.to_le_bytes());
+
+        assert!(
+            matches!(
+                codec.decode(&mut buf),
+                Err(MessageDecodeError::WrongSequence)
+            ),
+            "a zero-length payload must be a decode error, never a panic"
+        );
+    }
+
+    /// The same malformed length, but with a type byte present so the old code reached
+    /// `payload_len - 1`. That subtraction underflowed: a panic in debug, and in release
+    /// a wrap to `usize::MAX` that panicked inside `split_to`'s bounds check instead.
+    #[test]
+    fn a_login_frame_claiming_zero_length_does_not_underflow() {
+        let mut codec = GameMessageCodec {};
+        let mut buf = BytesMut::new();
+        buf.extend_from_slice(&0u16.to_le_bytes());
+        buf.extend_from_slice(&[CLI_LOGIN]);
+
+        assert!(
+            matches!(
+                codec.decode(&mut buf),
+                Err(MessageDecodeError::WrongSequence)
+            ),
+            "a zero-length login payload must be a decode error, never a panic"
+        );
     }
 }

@@ -103,7 +103,10 @@ mod tests {
 
     #[test]
     fn credential_failure_is_401() {
-        assert_eq!(AppError::InvalidCredentials.status(), StatusCode::UNAUTHORIZED);
+        assert_eq!(
+            AppError::InvalidCredentials.status(),
+            StatusCode::UNAUTHORIZED
+        );
     }
 
     #[test]
@@ -118,7 +121,10 @@ mod tests {
     fn database_errors_never_leak_their_detail() {
         let err = AppError::Database(sqlx::Error::RowNotFound);
         assert_eq!(err.status(), StatusCode::INTERNAL_SERVER_ERROR);
-        assert_eq!(err.public_message(), "Something went wrong. Please try again.");
+        assert_eq!(
+            err.public_message(),
+            "Something went wrong. Please try again."
+        );
         assert!(!err.public_message().contains("RowNotFound"));
     }
 

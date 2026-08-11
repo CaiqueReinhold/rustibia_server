@@ -257,37 +257,45 @@ mod tests {
             .unwrap()
     }
 
-    /// One account with one character, returning both ids.
-    async fn a_character(pool: &PgPool) -> (i32, i32) {
+    /// One account with two characters. Two, because the mTLS tests need a token for a
+    /// liveness probe *and* a token under test at the same moment, and a character can
+    /// hold only one ticket.
+    async fn a_character(pool: &PgPool) -> (i32, i32, i32) {
         use crate::db::{accounts::create_account, characters};
 
         let account = create_account(pool, "player@example.com", "hunter2hunter2")
             .await
             .unwrap();
         let template = SiteConfig::load("config.yaml").unwrap().new_character;
-        let character_id = characters::create(
-            pool,
-            account.id,
-            "Rizael",
-            crate::domain::vocation::Vocation::Paladin,
-            crate::domain::sex::Sex::Male,
-            &template,
-        )
-        .await
-        .unwrap();
 
-        (account.id, character_id)
+        let mut ids = Vec::new();
+        for name in ["Rizael", "Anaia"] {
+            ids.push(
+                characters::create(
+                    pool,
+                    account.id,
+                    name,
+                    crate::domain::vocation::Vocation::Paladin,
+                    crate::domain::sex::Sex::Male,
+                    &template,
+                )
+                .await
+                .unwrap(),
+            );
+        }
+
+        (account.id, ids[0], ids[1])
     }
 
-    async fn a_token(pool: &PgPool, account_id: i32) -> String {
+    async fn a_token(pool: &PgPool, character_id: i32) -> String {
         use time::{Duration, OffsetDateTime};
 
         let token = format!("token-{}", uuid::Uuid::now_v7());
         sqlx::query(
-            "INSERT INTO auth_tokens (token_hash, account_id, valid_until) VALUES ($1, $2, $3)",
+            "INSERT INTO game_tokens (token_hash, character_id, valid_until) VALUES ($1, $2, $3)",
         )
         .bind(crate::auth::token::hash_token(&token))
-        .bind(account_id)
+        .bind(character_id)
         .bind(OffsetDateTime::now_utc() + Duration::seconds(60))
         .execute(pool)
         .await
@@ -296,23 +304,20 @@ mod tests {
     }
 
     fn redeem_url(addr: SocketAddr) -> String {
-        format!("https://localhost:{}/internal/sessions/redeem", addr.port())
+        format!(
+            "https://localhost:{}/internal/game-tokens/redeem",
+            addr.port()
+        )
     }
 
     /// Proves the listener is actually accepting before a test concludes that a client
     /// was *rejected*. Without this, a server that failed to start makes every negative
     /// TLS test pass — which is exactly what happened the first time these were written.
-    async fn assert_the_listener_is_live(
-        addr: SocketAddr,
-        certs: &Certs,
-        token: &str,
-        character_id: i32,
-    ) {
+    async fn assert_the_listener_is_live(addr: SocketAddr, certs: &Certs, token: &str) {
         let response = client_with_identity(certs)
             .post(redeem_url(addr))
             .json(&rustibia_contract::RedeemRequest {
                 auth_token: token.to_string(),
-                character_id,
             })
             .send()
             .await
@@ -326,16 +331,13 @@ mod tests {
     #[sqlx::test(migrations = "./migrations")]
     async fn a_client_with_our_certificate_can_redeem_over_tls(pool: PgPool) {
         let certs = Certs::generate("e2e-ok");
-        let (account_id, character_id) = a_character(&pool).await;
-        let token = a_token(&pool, account_id).await;
+        let (_account_id, character_id, _spare_id) = a_character(&pool).await;
+        let token = a_token(&pool, character_id).await;
         let addr = serve_internal(pool, &certs).await;
 
         let response = client_with_identity(&certs)
             .post(redeem_url(addr))
-            .json(&rustibia_contract::RedeemRequest {
-                auth_token: token,
-                character_id,
-            })
+            .json(&rustibia_contract::RedeemRequest { auth_token: token })
             .send()
             .await
             .expect("the handshake and request must both succeed");
@@ -351,12 +353,12 @@ mod tests {
     #[sqlx::test(migrations = "./migrations")]
     async fn a_client_without_a_certificate_is_rejected_by_tls(pool: PgPool) {
         let certs = Certs::generate("e2e-no-cert");
-        let (account_id, character_id) = a_character(&pool).await;
-        let liveness_token = a_token(&pool, account_id).await;
-        let token = a_token(&pool, account_id).await;
+        let (_account_id, character_id, liveness_id) = a_character(&pool).await;
+        let liveness_token = a_token(&pool, liveness_id).await;
+        let token = a_token(&pool, character_id).await;
         let addr = serve_internal(pool.clone(), &certs).await;
 
-        assert_the_listener_is_live(addr, &certs, &liveness_token, character_id).await;
+        assert_the_listener_is_live(addr, &certs, &liveness_token).await;
 
         // Trusts our CA, so the *server* verifies fine; it simply has no identity of
         // its own to present. That isolates client authentication as the thing failing.
@@ -373,7 +375,6 @@ mod tests {
             .post(redeem_url(addr))
             .json(&rustibia_contract::RedeemRequest {
                 auth_token: token.clone(),
-                character_id,
             })
             .send()
             .await;
@@ -385,7 +386,7 @@ mod tests {
 
         let hash = crate::auth::token::hash_token(&token);
         let remaining: Option<String> =
-            sqlx::query_scalar("SELECT token_hash FROM auth_tokens WHERE token_hash = $1")
+            sqlx::query_scalar("SELECT token_hash FROM game_tokens WHERE token_hash = $1")
                 .bind(&hash)
                 .fetch_optional(&pool)
                 .await
@@ -404,12 +405,12 @@ mod tests {
     async fn a_certificate_from_another_ca_is_rejected(pool: PgPool) {
         let ours = Certs::generate("e2e-foreign-ours");
         let theirs = Certs::generate("e2e-foreign-theirs");
-        let (account_id, character_id) = a_character(&pool).await;
-        let liveness_token = a_token(&pool, account_id).await;
-        let token = a_token(&pool, account_id).await;
+        let (_account_id, character_id, liveness_id) = a_character(&pool).await;
+        let liveness_token = a_token(&pool, liveness_id).await;
+        let token = a_token(&pool, character_id).await;
         let addr = serve_internal(pool, &ours).await;
 
-        assert_the_listener_is_live(addr, &ours, &liveness_token, character_id).await;
+        assert_the_listener_is_live(addr, &ours, &liveness_token).await;
 
         // Presents `theirs`, but still trusts *our* CA for the server side, so only the
         // client certificate is foreign.
@@ -427,10 +428,7 @@ mod tests {
 
         let result = impostor
             .post(redeem_url(addr))
-            .json(&rustibia_contract::RedeemRequest {
-                auth_token: token,
-                character_id,
-            })
+            .json(&rustibia_contract::RedeemRequest { auth_token: token })
             .send()
             .await;
 
