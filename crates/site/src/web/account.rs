@@ -8,7 +8,7 @@ use axum::{
 use serde::Deserialize;
 
 use crate::{
-    auth::{extractor::CurrentAccount, password::verify_password},
+    auth::{extractor::CurrentAccount, password::verify_password, viewer::Viewer},
     db::{accounts, characters, characters::Character},
     domain::{character_name, sex::Sex, vocation::Vocation},
     error::{AppError, Surface, SurfacedError},
@@ -19,8 +19,7 @@ use crate::{
 #[derive(Template)]
 #[template(path = "account.html")]
 pub struct AccountPage {
-    pub logged_in: bool,
-    pub is_admin: bool,
+    pub viewer: Viewer,
     pub email: String,
     pub characters: Vec<Character>,
     pub error: Option<String>,
@@ -28,9 +27,10 @@ pub struct AccountPage {
 
 pub async fn get_account(
     State(state): State<AppState>,
+    viewer: Viewer,
     account: CurrentAccount,
 ) -> Result<impl IntoResponse, SurfacedError> {
-    render_account(&state, account.account_id, None)
+    render_account(&state, viewer, account.account_id, None)
         .await
         .map_err(|e| SurfacedError(Surface::Page, e))
 }
@@ -39,6 +39,7 @@ pub async fn get_account(
 /// with an error rather than redirecting to a bare failure.
 pub(super) async fn render_account(
     state: &AppState,
+    viewer: Viewer,
     account_id: i32,
     error: Option<String>,
 ) -> Result<HtmlTemplate<AccountPage>, AppError> {
@@ -50,8 +51,7 @@ pub(super) async fn render_account(
     let characters = characters::list_for_account(&state.pool, account_id).await?;
 
     Ok(HtmlTemplate(AccountPage {
-        logged_in: true,
-        is_admin: false,
+        viewer,
         email,
         characters,
         error,
@@ -61,8 +61,7 @@ pub(super) async fn render_account(
 #[derive(Template)]
 #[template(path = "character_new.html")]
 pub struct CharacterNewPage {
-    pub logged_in: bool,
-    pub is_admin: bool,
+    pub viewer: Viewer,
     pub error: Option<String>,
     pub name: String,
     pub sexes: Vec<Sex>,
@@ -70,10 +69,9 @@ pub struct CharacterNewPage {
 }
 
 impl CharacterNewPage {
-    fn new(error: Option<String>, name: String) -> Self {
+    fn new(viewer: Viewer, error: Option<String>, name: String) -> Self {
         Self {
-            logged_in: true,
-            is_admin: false,
+            viewer,
             error,
             name,
             sexes: Sex::ALL.to_vec(),
@@ -89,19 +87,24 @@ pub struct CreateCharacterForm {
     pub vocation: i16,
 }
 
-pub async fn get_character_new(_account: CurrentAccount) -> impl IntoResponse {
-    HtmlTemplate(CharacterNewPage::new(None, String::new()))
+pub async fn get_character_new(viewer: Viewer, _account: CurrentAccount) -> impl IntoResponse {
+    HtmlTemplate(CharacterNewPage::new(viewer, None, String::new()))
 }
 
 pub async fn post_character_new(
     State(state): State<AppState>,
+    viewer: Viewer,
     account: CurrentAccount,
     Form(form): Form<CreateCharacterForm>,
 ) -> Response {
     let rerender = |message: String, name: &str| {
         (
             StatusCode::UNPROCESSABLE_ENTITY,
-            HtmlTemplate(CharacterNewPage::new(Some(message), name.to_string())),
+            HtmlTemplate(CharacterNewPage::new(
+                viewer,
+                Some(message),
+                name.to_string(),
+            )),
         )
             .into_response()
     };
@@ -148,13 +151,21 @@ pub async fn post_character_new(
 /// is cleaner than trying to evict a live session from the persistence path.
 pub async fn post_character_delete(
     State(state): State<AppState>,
+    viewer: Viewer,
     account: CurrentAccount,
     Path(character_id): Path<i32>,
 ) -> Response {
     let fail = |message: &'static str| {
         let state = state.clone();
         async move {
-            match render_account(&state, account.account_id, Some(message.to_string())).await {
+            match render_account(
+                &state,
+                viewer,
+                account.account_id,
+                Some(message.to_string()),
+            )
+            .await
+            {
                 Ok(page) => (StatusCode::UNPROCESSABLE_ENTITY, page).into_response(),
                 Err(err) => SurfacedError(Surface::Page, err).into_response(),
             }
@@ -194,8 +205,7 @@ pub async fn post_character_delete(
 #[derive(Template)]
 #[template(path = "password.html")]
 pub struct PasswordPage {
-    pub logged_in: bool,
-    pub is_admin: bool,
+    pub viewer: Viewer,
     pub error: Option<String>,
     pub changed: bool,
 }
@@ -207,12 +217,17 @@ pub struct ChangePasswordForm {
     pub new_password_confirm: String,
 }
 
-pub async fn get_password(_account: CurrentAccount) -> impl IntoResponse {
-    HtmlTemplate(PasswordPage { logged_in: true, is_admin: false, error: None, changed: false })
+pub async fn get_password(viewer: Viewer, _account: CurrentAccount) -> impl IntoResponse {
+    HtmlTemplate(PasswordPage {
+        viewer,
+        error: None,
+        changed: false,
+    })
 }
 
 pub async fn post_password(
     State(state): State<AppState>,
+    viewer: Viewer,
     account: CurrentAccount,
     Form(form): Form<ChangePasswordForm>,
 ) -> Response {
@@ -220,8 +235,7 @@ pub async fn post_password(
         (
             StatusCode::UNPROCESSABLE_ENTITY,
             HtmlTemplate(PasswordPage {
-                logged_in: true,
-                is_admin: false,
+                viewer,
                 error: Some(message.to_string()),
                 changed: false,
             }),
@@ -254,12 +268,15 @@ pub async fn post_password(
 
     let keep = account.session_token.clone();
 
-    match accounts::update_password(&state.pool, account.account_id, &form.new_password, &keep).await
+    match accounts::update_password(&state.pool, account.account_id, &form.new_password, &keep)
+        .await
     {
-        Ok(()) => {
-            HtmlTemplate(PasswordPage { logged_in: true, is_admin: false, error: None, changed: true })
-                .into_response()
-        }
+        Ok(()) => HtmlTemplate(PasswordPage {
+            viewer,
+            error: None,
+            changed: true,
+        })
+        .into_response(),
         Err(err) => {
             tracing::error!("password change failed: {err}");
             rerender("Something went wrong. Please try again.")
@@ -318,12 +335,22 @@ mod tests {
     async fn creating_a_character_redirects_to_the_dashboard(pool: PgPool) {
         let (account_id, token) = logged_in_session(&pool, "player@example.com").await;
 
-        let response = post_create(test_app(pool.clone()), &token, "name=Rizael&sex=1&vocation=0").await;
+        let response = post_create(
+            test_app(pool.clone()),
+            &token,
+            "name=Rizael&sex=1&vocation=0",
+        )
+        .await;
 
         assert_eq!(response.status(), StatusCode::SEE_OTHER);
-        assert_eq!(response.headers().get(header::LOCATION).unwrap(), "/account");
+        assert_eq!(
+            response.headers().get(header::LOCATION).unwrap(),
+            "/account"
+        );
 
-        let listed = characters::list_for_account(&pool, account_id).await.unwrap();
+        let listed = characters::list_for_account(&pool, account_id)
+            .await
+            .unwrap();
         assert_eq!(listed.len(), 1);
         assert_eq!(listed[0].name, "Rizael");
         assert_eq!(listed[0].vocation, Vocation::Knight);
@@ -333,32 +360,62 @@ mod tests {
     async fn an_invalid_name_is_rejected_without_creating_anything(pool: PgPool) {
         let (account_id, token) = logged_in_session(&pool, "player@example.com").await;
 
-        let response = post_create(test_app(pool.clone()), &token, "name=Riz4el&sex=1&vocation=0").await;
+        let response = post_create(
+            test_app(pool.clone()),
+            &token,
+            "name=Riz4el&sex=1&vocation=0",
+        )
+        .await;
 
         assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
-        assert!(characters::list_for_account(&pool, account_id).await.unwrap().is_empty());
+        assert!(
+            characters::list_for_account(&pool, account_id)
+                .await
+                .unwrap()
+                .is_empty()
+        );
     }
 
     #[sqlx::test(migrations = "./migrations")]
     async fn an_out_of_range_vocation_is_rejected(pool: PgPool) {
         let (account_id, token) = logged_in_session(&pool, "player@example.com").await;
 
-        let response = post_create(test_app(pool.clone()), &token, "name=Rizael&sex=1&vocation=9").await;
+        let response = post_create(
+            test_app(pool.clone()),
+            &token,
+            "name=Rizael&sex=1&vocation=9",
+        )
+        .await;
 
         assert_eq!(
             response.status(),
             StatusCode::UNPROCESSABLE_ENTITY,
             "a hand-crafted POST must not write an unknown vocation the game server will trust"
         );
-        assert!(characters::list_for_account(&pool, account_id).await.unwrap().is_empty());
+        assert!(
+            characters::list_for_account(&pool, account_id)
+                .await
+                .unwrap()
+                .is_empty()
+        );
     }
 
     #[sqlx::test(migrations = "./migrations")]
     async fn a_duplicate_name_is_rejected(pool: PgPool) {
         let (_, token) = logged_in_session(&pool, "player@example.com").await;
-        post_create(test_app(pool.clone()), &token, "name=Rizael&sex=1&vocation=0").await;
+        post_create(
+            test_app(pool.clone()),
+            &token,
+            "name=Rizael&sex=1&vocation=0",
+        )
+        .await;
 
-        let response = post_create(test_app(pool.clone()), &token, "name=RIZAEL&sex=0&vocation=3").await;
+        let response = post_create(
+            test_app(pool.clone()),
+            &token,
+            "name=RIZAEL&sex=0&vocation=3",
+        )
+        .await;
 
         assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
     }
@@ -366,7 +423,12 @@ mod tests {
     #[sqlx::test(migrations = "./migrations")]
     async fn the_dashboard_requires_a_session(pool: PgPool) {
         let response = test_app(pool)
-            .oneshot(Request::builder().uri("/account").body(Body::empty()).unwrap())
+            .oneshot(
+                Request::builder()
+                    .uri("/account")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
             .await
             .unwrap();
 
@@ -377,9 +439,16 @@ mod tests {
     async fn the_dashboard_lists_the_accounts_characters(pool: PgPool) {
         let (account_id, token) = logged_in_session(&pool, "player@example.com").await;
         let template = SiteConfig::load("config.yaml").unwrap().new_character;
-        characters::create(&pool, account_id, "Rizael", Vocation::Druid, Sex::Female, &template)
-            .await
-            .unwrap();
+        characters::create(
+            &pool,
+            account_id,
+            "Rizael",
+            Vocation::Druid,
+            Sex::Female,
+            &template,
+        )
+        .await
+        .unwrap();
 
         let response = test_app(pool)
             .oneshot(
@@ -393,9 +462,14 @@ mod tests {
             .unwrap();
 
         assert_eq!(response.status(), StatusCode::OK);
-        let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
         let html = String::from_utf8_lossy(&body);
-        assert!(html.contains("Rizael"), "the dashboard must list the character");
+        assert!(
+            html.contains("Rizael"),
+            "the dashboard must list the character"
+        );
         assert!(html.contains("Druid"), "and show its vocation");
         assert!(html.contains("player@example.com"), "and the account email");
     }
@@ -427,9 +501,16 @@ mod tests {
 
     async fn a_character(pool: &PgPool, account_id: i32, name: &str) -> i32 {
         let template = SiteConfig::load("config.yaml").unwrap().new_character;
-        characters::create(pool, account_id, name, Vocation::Knight, Sex::Male, &template)
-            .await
-            .unwrap()
+        characters::create(
+            pool,
+            account_id,
+            name,
+            Vocation::Knight,
+            Sex::Male,
+            &template,
+        )
+        .await
+        .unwrap()
     }
 
     #[sqlx::test(migrations = "./migrations")]
@@ -440,7 +521,12 @@ mod tests {
         let response = post_delete(full_app(pool.clone()), &token, id).await;
 
         assert_eq!(response.status(), StatusCode::SEE_OTHER);
-        assert!(characters::list_for_account(&pool, account_id).await.unwrap().is_empty());
+        assert!(
+            characters::list_for_account(&pool, account_id)
+                .await
+                .unwrap()
+                .is_empty()
+        );
     }
 
     #[sqlx::test(migrations = "./migrations")]
@@ -458,7 +544,10 @@ mod tests {
 
         assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
         assert_eq!(
-            characters::list_for_account(&pool, account_id).await.unwrap().len(),
+            characters::list_for_account(&pool, account_id)
+                .await
+                .unwrap()
+                .len(),
             1,
             "an online character must survive the deletion attempt"
         );
@@ -474,7 +563,10 @@ mod tests {
 
         assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
         assert_eq!(
-            characters::list_for_account(&pool, owner_id).await.unwrap().len(),
+            characters::list_for_account(&pool, owner_id)
+                .await
+                .unwrap()
+                .len(),
             1,
             "the owner's character must be untouched"
         );
@@ -496,8 +588,12 @@ mod tests {
 
         assert_eq!(online_response.status(), absent_response.status());
 
-        let online_body = axum::body::to_bytes(online_response.into_body(), usize::MAX).await.unwrap();
-        let absent_body = axum::body::to_bytes(absent_response.into_body(), usize::MAX).await.unwrap();
+        let online_body = axum::body::to_bytes(online_response.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        let absent_body = axum::body::to_bytes(absent_response.into_body(), usize::MAX)
+            .await
+            .unwrap();
         assert_eq!(
             online_body, absent_body,
             "a character you do not own must look identical whether it is online or \
@@ -532,7 +628,10 @@ mod tests {
 
         assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
 
-        let stored = crate::db::accounts::find_by_id(&pool, account_id).await.unwrap().unwrap();
+        let stored = crate::db::accounts::find_by_id(&pool, account_id)
+            .await
+            .unwrap()
+            .unwrap();
         assert!(
             crate::auth::password::verify_password("hunter2hunter2", &stored.password_hash),
             "the original password must still work"
@@ -552,8 +651,14 @@ mod tests {
 
         assert_eq!(response.status(), StatusCode::OK);
 
-        let stored = crate::db::accounts::find_by_id(&pool, account_id).await.unwrap().unwrap();
-        assert!(crate::auth::password::verify_password("a-brand-new-password", &stored.password_hash));
+        let stored = crate::db::accounts::find_by_id(&pool, account_id)
+            .await
+            .unwrap()
+            .unwrap();
+        assert!(crate::auth::password::verify_password(
+            "a-brand-new-password",
+            &stored.password_hash
+        ));
     }
 
     #[sqlx::test(migrations = "./migrations")]
@@ -588,7 +693,9 @@ mod tests {
             "the caller must not be logged out of the tab they used"
         );
         assert_eq!(
-            sessions::account_for_token(&pool, &other.token).await.unwrap(),
+            sessions::account_for_token(&pool, &other.token)
+                .await
+                .unwrap(),
             None,
             "every other session must be revoked"
         );
@@ -622,7 +729,9 @@ mod tests {
             "a bearer-authenticated caller must keep the session they authenticated with"
         );
         assert_eq!(
-            sessions::account_for_token(&pool, &other.token).await.unwrap(),
+            sessions::account_for_token(&pool, &other.token)
+                .await
+                .unwrap(),
             None,
             "every other session must still be revoked"
         );

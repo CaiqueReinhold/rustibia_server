@@ -31,6 +31,8 @@ impl FromRequestParts<AppState> for AdminAccount {
             return Err(AppError::NotFound);
         }
 
-        Ok(AdminAccount { account_id: current.account_id })
+        Ok(AdminAccount {
+            account_id: current.account_id,
+        })
     }
 }

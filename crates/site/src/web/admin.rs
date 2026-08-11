@@ -1,16 +1,24 @@
 use askama::Template;
-use axum::{Form, extract::State, http::StatusCode, response::{IntoResponse, Response}};
+use axum::{
+    Form,
+    extract::State,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 use serde::Deserialize;
 
 use crate::{
-    auth::admin::AdminAccount, db::news, error::AppError, state::AppState, template::HtmlTemplate,
+    auth::{admin::AdminAccount, viewer::Viewer},
+    db::news,
+    error::AppError,
+    state::AppState,
+    template::HtmlTemplate,
 };
 
 #[derive(Template)]
 #[template(path = "admin_news.html")]
 pub struct AdminNewsPage {
-    pub logged_in: bool,
-    pub is_admin: bool,
+    pub viewer: Viewer,
     pub error: Option<String>,
     pub posted: bool,
     pub title: String,
@@ -18,10 +26,13 @@ pub struct AdminNewsPage {
 }
 
 impl AdminNewsPage {
+    /// Only `AdminAccount` reaches this page, so the nav is known without asking.
     fn blank() -> Self {
         Self {
-            logged_in: true,
-            is_admin: true,
+            viewer: Viewer {
+                logged_in: true,
+                is_admin: true,
+            },
             error: None,
             posted: false,
             title: String::new(),
@@ -46,17 +57,18 @@ pub async fn post_admin_news(
     Form(form): Form<NewsForm>,
 ) -> Response {
     match news::create(&state.pool, &form.title, &form.body, admin.account_id).await {
-        Ok(_) => HtmlTemplate(AdminNewsPage { posted: true, ..AdminNewsPage::blank() })
-            .into_response(),
+        Ok(_) => HtmlTemplate(AdminNewsPage {
+            posted: true,
+            ..AdminNewsPage::blank()
+        })
+        .into_response(),
         Err(AppError::Validation(message)) => (
             StatusCode::UNPROCESSABLE_ENTITY,
             HtmlTemplate(AdminNewsPage {
-                logged_in: true,
-                is_admin: true,
                 error: Some(message),
-                posted: false,
                 title: form.title,
                 body: form.body,
+                ..AdminNewsPage::blank()
             }),
         )
             .into_response(),
@@ -65,12 +77,10 @@ pub async fn post_admin_news(
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 HtmlTemplate(AdminNewsPage {
-                    logged_in: true,
-                    is_admin: true,
                     error: Some("Something went wrong. Please try again.".to_string()),
-                    posted: false,
                     title: form.title,
                     body: form.body,
+                    ..AdminNewsPage::blank()
                 }),
             )
                 .into_response()
@@ -85,7 +95,12 @@ mod tests {
         config::SiteConfig,
         db::{accounts::create_account, sessions},
     };
-    use axum::{Router, body::Body, http::{Request, header}, routing::get};
+    use axum::{
+        Router,
+        body::Body,
+        http::{Request, header},
+        routing::get,
+    };
     use sqlx::PgPool;
     use tower::ServiceExt;
 
@@ -113,7 +128,10 @@ mod tests {
         if let Some(t) = token {
             b = b.header(header::COOKIE, format!("session={t}"));
         }
-        app.oneshot(b.body(Body::empty()).unwrap()).await.unwrap().status()
+        app.oneshot(b.body(Body::empty()).unwrap())
+            .await
+            .unwrap()
+            .status()
     }
 
     async fn post_news(app: Router, token: &str, body: &str) -> StatusCode {
@@ -150,14 +168,22 @@ mod tests {
 
     #[sqlx::test(migrations = "./migrations")]
     async fn an_anonymous_visitor_is_401(pool: PgPool) {
-        assert_eq!(get_page(test_app(pool), None).await, StatusCode::UNAUTHORIZED);
+        assert_eq!(
+            get_page(test_app(pool), None).await,
+            StatusCode::UNAUTHORIZED
+        );
     }
 
     #[sqlx::test(migrations = "./migrations")]
     async fn an_admin_can_publish(pool: PgPool) {
         let token = session_for(&pool, "admin@example.com", true).await;
 
-        let status = post_news(test_app(pool.clone()), &token, "title=Server+is+open&body=Come+and+play.").await;
+        let status = post_news(
+            test_app(pool.clone()),
+            &token,
+            "title=Server+is+open&body=Come+and+play.",
+        )
+        .await;
 
         assert_eq!(status, StatusCode::OK);
         let posts = news::list_recent(&pool, 10).await.unwrap();
@@ -190,7 +216,9 @@ mod tests {
 
     #[sqlx::test(migrations = "./migrations")]
     async fn revoking_admin_takes_effect_immediately(pool: PgPool) {
-        let account = create_account(&pool, "admin@example.com", "hunter2hunter2").await.unwrap();
+        let account = create_account(&pool, "admin@example.com", "hunter2hunter2")
+            .await
+            .unwrap();
         sqlx::query("UPDATE accounts SET is_admin = TRUE WHERE id = $1")
             .bind(account.id)
             .execute(&pool)
@@ -198,7 +226,10 @@ mod tests {
             .unwrap();
         let token = sessions::issue(&pool, account.id, 7).await.unwrap().token;
 
-        assert_eq!(get_page(test_app(pool.clone()), Some(&token)).await, StatusCode::OK);
+        assert_eq!(
+            get_page(test_app(pool.clone()), Some(&token)).await,
+            StatusCode::OK
+        );
 
         sqlx::query("UPDATE accounts SET is_admin = FALSE WHERE id = $1")
             .bind(account.id)

@@ -10,9 +10,6 @@ use crate::{db::sessions, error::AppError, state::AppState};
 #[derive(Debug, Clone)]
 pub struct CurrentAccount {
     pub account_id: i32,
-    /// The token this request authenticated with, cookie or bearer. Handlers that
-    /// need to keep the caller's own session alive use this rather than re-deriving
-    /// it — re-deriving is how the two paths drifted apart.
     pub session_token: String,
 }
 
@@ -31,7 +28,10 @@ impl FromRequestParts<AppState> for CurrentAccount {
             .await?
             .ok_or(AppError::Unauthenticated)?;
 
-        Ok(CurrentAccount { account_id, session_token: token })
+        Ok(CurrentAccount {
+            account_id,
+            session_token: token,
+        })
     }
 }
 

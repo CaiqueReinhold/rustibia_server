@@ -7,6 +7,7 @@ use axum::{
 use serde::Deserialize;
 
 use crate::{
+    auth::viewer::Viewer,
     db::{
         characters::{
             Character, HighscoreEntry, OnlineCharacter, find_character_by_name, highscores,
@@ -22,19 +23,33 @@ use crate::{
 const NEWS_ON_HOMEPAGE: i64 = 10;
 const HIGHSCORE_LIMIT: i64 = 100;
 
+pub struct NewsItem {
+    pub title: String,
+    pub body: String,
+    pub posted_at: String,
+}
+
+fn format_posted_at(at: time::OffsetDateTime) -> String {
+    const FORMAT: &[time::format_description::BorrowedFormatItem] = time::macros::format_description!(
+        "[day padding:none] [month repr:long] [year], [hour]:[minute] UTC"
+    );
+
+    at.to_offset(time::UtcOffset::UTC)
+        .format(FORMAT)
+        .unwrap_or_default()
+}
+
 #[derive(Template)]
 #[template(path = "news.html")]
 pub struct NewsPage {
-    pub logged_in: bool,
-    pub is_admin: bool,
-    pub posts: Vec<news::NewsPost>,
+    pub viewer: Viewer,
+    pub posts: Vec<NewsItem>,
 }
 
 #[derive(Template)]
 #[template(path = "character_search.html")]
 pub struct CharacterSearchPage {
-    pub logged_in: bool,
-    pub is_admin: bool,
+    pub viewer: Viewer,
     pub name: String,
     pub error: Option<String>,
 }
@@ -42,8 +57,7 @@ pub struct CharacterSearchPage {
 #[derive(Template)]
 #[template(path = "character_detail.html")]
 pub struct CharacterDetailPage {
-    pub logged_in: bool,
-    pub is_admin: bool,
+    pub viewer: Viewer,
     pub character: Character,
     pub created: String,
 }
@@ -51,54 +65,55 @@ pub struct CharacterDetailPage {
 #[derive(Template)]
 #[template(path = "online.html")]
 pub struct OnlinePage {
-    pub logged_in: bool,
-    pub is_admin: bool,
+    pub viewer: Viewer,
     pub characters: Vec<OnlineCharacter>,
 }
 
 #[derive(Template)]
 #[template(path = "highscores.html")]
 pub struct HighscoresPage {
-    pub logged_in: bool,
-    pub is_admin: bool,
+    pub viewer: Viewer,
     pub entries: Vec<HighscoreEntry>,
 }
 
 #[derive(Template)]
 #[template(path = "download.html")]
 pub struct DownloadPage {
-    pub logged_in: bool,
-    pub is_admin: bool,
+    pub viewer: Viewer,
 }
 
 #[derive(Template)]
 #[template(path = "rules.html")]
 pub struct RulesPage {
-    pub logged_in: bool,
-    pub is_admin: bool,
+    pub viewer: Viewer,
 }
 
 #[derive(Template)]
 #[template(path = "support.html")]
 pub struct SupportPage {
-    pub logged_in: bool,
-    pub is_admin: bool,
+    pub viewer: Viewer,
 }
 
 fn page_error(err: AppError) -> SurfacedError {
     SurfacedError(Surface::Page, err)
 }
 
-pub async fn get_news(State(state): State<AppState>) -> Result<impl IntoResponse, SurfacedError> {
+pub async fn get_news(
+    State(state): State<AppState>,
+    viewer: Viewer,
+) -> Result<impl IntoResponse, SurfacedError> {
     let posts = news::list_recent(&state.pool, NEWS_ON_HOMEPAGE)
         .await
-        .map_err(page_error)?;
+        .map_err(page_error)?
+        .into_iter()
+        .map(|post| NewsItem {
+            title: post.title,
+            body: post.body,
+            posted_at: format_posted_at(post.posted_at),
+        })
+        .collect();
 
-    Ok(HtmlTemplate(NewsPage {
-        logged_in: false,
-        is_admin: false,
-        posts,
-    }))
+    Ok(HtmlTemplate(NewsPage { viewer, posts }))
 }
 
 #[derive(Debug, Deserialize)]
@@ -109,6 +124,7 @@ pub struct CharacterQuery {
 /// Exact-name lookup, redirecting to the detail page on a hit.
 pub async fn get_character_search(
     State(state): State<AppState>,
+    viewer: Viewer,
     Query(query): Query<CharacterQuery>,
 ) -> Result<Response, SurfacedError> {
     let Some(name) = query
@@ -118,8 +134,7 @@ pub async fn get_character_search(
         .filter(|n| !n.is_empty())
     else {
         return Ok(HtmlTemplate(CharacterSearchPage {
-            logged_in: false,
-            is_admin: false,
+            viewer,
             name: String::new(),
             error: None,
         })
@@ -136,8 +151,7 @@ pub async fn get_character_search(
         None => Ok((
             StatusCode::NOT_FOUND,
             HtmlTemplate(CharacterSearchPage {
-                logged_in: false,
-                is_admin: false,
+                viewer,
                 name: name.to_string(),
                 error: Some("Character not found.".to_string()),
             }),
@@ -148,6 +162,7 @@ pub async fn get_character_search(
 
 pub async fn get_character_detail(
     State(state): State<AppState>,
+    viewer: Viewer,
     Path(name): Path<String>,
 ) -> Result<Response, SurfacedError> {
     let Some(character) = find_character_by_name(&state.pool, &name)
@@ -157,8 +172,7 @@ pub async fn get_character_detail(
         return Ok((
             StatusCode::NOT_FOUND,
             HtmlTemplate(CharacterSearchPage {
-                logged_in: false,
-                is_admin: false,
+                viewer,
                 name,
                 error: Some("Character not found.".to_string()),
             }),
@@ -172,55 +186,41 @@ pub async fn get_character_detail(
         .unwrap_or_default();
 
     Ok(HtmlTemplate(CharacterDetailPage {
-        logged_in: false,
-        is_admin: false,
+        viewer,
         character,
         created,
     })
     .into_response())
 }
 
-pub async fn get_online(State(state): State<AppState>) -> Result<impl IntoResponse, SurfacedError> {
+pub async fn get_online(
+    State(state): State<AppState>,
+    viewer: Viewer,
+) -> Result<impl IntoResponse, SurfacedError> {
     let characters = who_is_online(&state.pool).await.map_err(page_error)?;
-    Ok(HtmlTemplate(OnlinePage {
-        logged_in: false,
-        is_admin: false,
-        characters,
-    }))
+    Ok(HtmlTemplate(OnlinePage { viewer, characters }))
 }
 
 pub async fn get_highscores(
     State(state): State<AppState>,
+    viewer: Viewer,
 ) -> Result<impl IntoResponse, SurfacedError> {
     let entries = highscores(&state.pool, HIGHSCORE_LIMIT)
         .await
         .map_err(page_error)?;
-    Ok(HtmlTemplate(HighscoresPage {
-        logged_in: false,
-        is_admin: false,
-        entries,
-    }))
+    Ok(HtmlTemplate(HighscoresPage { viewer, entries }))
 }
 
-pub async fn get_download() -> impl IntoResponse {
-    HtmlTemplate(DownloadPage {
-        logged_in: false,
-        is_admin: false,
-    })
+pub async fn get_download(viewer: Viewer) -> impl IntoResponse {
+    HtmlTemplate(DownloadPage { viewer })
 }
 
-pub async fn get_rules() -> impl IntoResponse {
-    HtmlTemplate(RulesPage {
-        logged_in: false,
-        is_admin: false,
-    })
+pub async fn get_rules(viewer: Viewer) -> impl IntoResponse {
+    HtmlTemplate(RulesPage { viewer })
 }
 
-pub async fn get_support() -> impl IntoResponse {
-    HtmlTemplate(SupportPage {
-        logged_in: false,
-        is_admin: false,
-    })
+pub async fn get_support(viewer: Viewer) -> impl IntoResponse {
+    HtmlTemplate(SupportPage { viewer })
 }
 
 #[cfg(test)]
@@ -255,8 +255,22 @@ mod tests {
     }
 
     async fn fetch(app: Router, uri: &str) -> (StatusCode, String, Option<String>) {
+        fetch_as(app, uri, None).await
+    }
+
+    /// `fetch`, but carrying a session cookie — the public pages render the navigation,
+    /// so what they show depends on who is asking.
+    async fn fetch_as(
+        app: Router,
+        uri: &str,
+        token: Option<&str>,
+    ) -> (StatusCode, String, Option<String>) {
+        let mut builder = Request::builder().uri(uri);
+        if let Some(token) = token {
+            builder = builder.header(header::COOKIE, format!("session={token}"));
+        }
         let response = app
-            .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
+            .oneshot(builder.body(Body::empty()).unwrap())
             .await
             .unwrap();
         let status = response.status();
@@ -269,6 +283,21 @@ mod tests {
             .await
             .unwrap();
         (status, String::from_utf8_lossy(&body).to_string(), location)
+    }
+
+    async fn session_for(pool: &PgPool, email: &str, admin: bool) -> String {
+        let account = create_account(pool, email, "hunter2hunter2").await.unwrap();
+        if admin {
+            sqlx::query("UPDATE accounts SET is_admin = TRUE WHERE id = $1")
+                .bind(account.id)
+                .execute(pool)
+                .await
+                .unwrap();
+        }
+        crate::db::sessions::issue(pool, account.id, 7)
+            .await
+            .unwrap()
+            .token
     }
 
     async fn a_character(pool: &PgPool, email: &str, name: &str) -> i32 {
@@ -428,5 +457,95 @@ mod tests {
             assert_eq!(status, StatusCode::OK, "{uri} must render");
             assert!(body.contains("RUSTIBIA"), "{uri} must use the retro frame");
         }
+    }
+
+    #[test]
+    fn a_posted_at_date_reads_as_prose_not_rfc_3339() {
+        let at = time::macros::datetime!(2026-08-10 14:03:22 UTC);
+        assert_eq!(format_posted_at(at), "10 August 2026, 14:03 UTC");
+    }
+
+    /// The stored offset must not change which day a post claims to be from.
+    #[test]
+    fn a_posted_at_date_is_normalised_to_utc() {
+        let at = time::macros::datetime!(2026-08-10 01:30:00 +05:00);
+        assert_eq!(format_posted_at(at), "9 August 2026, 20:30 UTC");
+    }
+
+    #[sqlx::test(migrations = "./migrations")]
+    async fn a_post_shows_when_it_was_posted(pool: PgPool) {
+        let account = create_account(&pool, "admin@example.com", "hunter2hunter2")
+            .await
+            .unwrap();
+        crate::db::news::create(&pool, "Server is open", "Come and play.", account.id)
+            .await
+            .unwrap();
+        sqlx::query("UPDATE news_posts SET posted_at = '2026-08-10 14:03:22+00'")
+            .execute(&pool)
+            .await
+            .unwrap();
+
+        let (_, body, _) = fetch(test_app(pool), "/").await;
+
+        assert!(body.contains("Posted at: 10 August 2026, 14:03 UTC"));
+    }
+
+    #[sqlx::test(migrations = "./migrations")]
+    async fn a_public_page_shows_the_logged_out_menu_to_a_stranger(pool: PgPool) {
+        let (_, body, _) = fetch(test_app(pool), "/").await;
+
+        assert!(body.contains(r#"href="/login""#));
+        assert!(body.contains(r#"href="/register""#));
+        assert!(!body.contains(r#"href="/logout""#));
+    }
+
+    #[sqlx::test(migrations = "./migrations")]
+    async fn a_public_page_shows_the_logged_in_menu_to_a_player(pool: PgPool) {
+        let token = session_for(&pool, "player@example.com", false).await;
+
+        for uri in ["/", "/online", "/highscores", "/characters", "/rules"] {
+            let (status, body, _) = fetch_as(test_app(pool.clone()), uri, Some(&token)).await;
+
+            assert_eq!(status, StatusCode::OK, "{uri} must render");
+            assert!(
+                body.contains(r#"href="/logout""#),
+                "{uri} must offer Log Out to a logged-in player"
+            );
+            assert!(
+                !body.contains(r#"href="/login""#),
+                "{uri} must not invite a logged-in player to log in again"
+            );
+            assert!(
+                !body.contains("Post News"),
+                "{uri} must not show a player the admin menu"
+            );
+        }
+    }
+
+    #[sqlx::test(migrations = "./migrations")]
+    async fn a_public_page_shows_the_admin_menu_to_an_admin(pool: PgPool) {
+        let token = session_for(&pool, "admin@example.com", true).await;
+
+        let (_, body, _) = fetch_as(test_app(pool), "/", Some(&token)).await;
+
+        assert!(body.contains(r#"href="/logout""#));
+        assert!(body.contains("Post News"), "an admin keeps the admin menu");
+    }
+
+    /// A stale cookie must not cost a reader the page — the nav degrades instead.
+    #[sqlx::test(migrations = "./migrations")]
+    async fn an_expired_session_still_renders_the_page(pool: PgPool) {
+        let account = create_account(&pool, "player@example.com", "hunter2hunter2")
+            .await
+            .unwrap();
+        let token = crate::db::sessions::issue(&pool, account.id, -1)
+            .await
+            .unwrap()
+            .token;
+
+        let (status, body, _) = fetch_as(test_app(pool), "/", Some(&token)).await;
+
+        assert_eq!(status, StatusCode::OK);
+        assert!(body.contains(r#"href="/login""#));
     }
 }

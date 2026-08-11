@@ -8,7 +8,7 @@ use axum::{
 use serde::Deserialize;
 
 use crate::{
-    auth::password::verify_password,
+    auth::{password::verify_password, viewer::Viewer},
     db::{accounts, sessions},
     state::AppState,
     template::HtmlTemplate,
@@ -17,8 +17,7 @@ use crate::{
 #[derive(Template)]
 #[template(path = "register.html")]
 pub struct RegisterPage {
-    pub logged_in: bool,
-    pub is_admin: bool,
+    pub viewer: Viewer,
     pub error: Option<String>,
     pub email: String,
 }
@@ -26,8 +25,7 @@ pub struct RegisterPage {
 #[derive(Template)]
 #[template(path = "login.html")]
 pub struct LoginPage {
-    pub logged_in: bool,
-    pub is_admin: bool,
+    pub viewer: Viewer,
     pub error: Option<String>,
     pub email: String,
 }
@@ -45,17 +43,20 @@ pub struct LoginForm {
     pub password: String,
 }
 
-pub async fn get_register() -> impl IntoResponse {
+pub async fn get_register(viewer: Viewer) -> impl IntoResponse {
     HtmlTemplate(RegisterPage {
-        logged_in: false,
-        is_admin: false,
+        viewer,
         error: None,
         email: String::new(),
     })
 }
 
-pub async fn get_login() -> impl IntoResponse {
-    HtmlTemplate(LoginPage { logged_in: false, is_admin: false, error: None, email: String::new() })
+pub async fn get_login(viewer: Viewer) -> impl IntoResponse {
+    HtmlTemplate(LoginPage {
+        viewer,
+        error: None,
+        email: String::new(),
+    })
 }
 
 /// Builds the `Set-Cookie` header for a session token. `SameSite=Lax` allows the
@@ -79,8 +80,9 @@ pub async fn post_register(
         (
             StatusCode::UNPROCESSABLE_ENTITY,
             HtmlTemplate(RegisterPage {
-                logged_in: false,
-                is_admin: false,
+                // A failed registration is by definition not authenticated, so the
+                // anonymous nav is correct here regardless of what cookie was sent.
+                viewer: Viewer::ANONYMOUS,
                 error: Some(error.to_string()),
                 email: email.to_string(),
             }),
@@ -136,8 +138,7 @@ pub async fn post_login(State(state): State<AppState>, Form(form): Form<LoginFor
         (
             StatusCode::UNAUTHORIZED,
             HtmlTemplate(LoginPage {
-                logged_in: false,
-                is_admin: false,
+                viewer: Viewer::ANONYMOUS,
                 error: Some("Invalid email or password.".to_string()),
                 email: form.email.clone(),
             }),
@@ -175,12 +176,11 @@ pub async fn post_login(State(state): State<AppState>, Form(form): Form<LoginFor
 pub async fn get_logout(State(state): State<AppState>, headers: HeaderMap) -> Response {
     if let Some(cookies) = headers.get(header::COOKIE).and_then(|v| v.to_str().ok()) {
         for pair in cookies.split(';') {
-            if let Some((name, value)) = pair.split_once('=') {
-                if name.trim() == "session" {
-                    if let Err(err) = sessions::revoke(&state.pool, value.trim()).await {
-                        tracing::error!("failed to revoke session on logout: {err}");
-                    }
-                }
+            if let Some((name, value)) = pair.split_once('=')
+                && name.trim() == "session"
+                && let Err(err) = sessions::revoke(&state.pool, value.trim()).await
+            {
+                tracing::error!("failed to revoke session on logout: {err}");
             }
         }
     }
@@ -188,7 +188,9 @@ pub async fn get_logout(State(state): State<AppState>, headers: HeaderMap) -> Re
     let mut out = HeaderMap::new();
     out.insert(
         header::SET_COOKIE,
-        cleared_cookie().parse().expect("cookie is valid header value"),
+        cleared_cookie()
+            .parse()
+            .expect("cookie is valid header value"),
     );
     (out, Redirect::to("/login")).into_response()
 }
@@ -234,7 +236,10 @@ mod tests {
         .await;
 
         assert_eq!(response.status(), StatusCode::SEE_OTHER);
-        assert_eq!(response.headers().get(header::LOCATION).unwrap(), "/account");
+        assert_eq!(
+            response.headers().get(header::LOCATION).unwrap(),
+            "/account"
+        );
 
         let cookie = response
             .headers()
@@ -243,11 +248,17 @@ mod tests {
             .to_str()
             .unwrap();
         assert!(cookie.starts_with("session="));
-        assert!(cookie.contains("HttpOnly"), "session cookie must be HttpOnly");
+        assert!(
+            cookie.contains("HttpOnly"),
+            "session cookie must be HttpOnly"
+        );
         assert!(cookie.contains("SameSite=Lax"));
 
         assert!(
-            accounts::find_by_email(&pool, "player@example.com").await.unwrap().is_some(),
+            accounts::find_by_email(&pool, "player@example.com")
+                .await
+                .unwrap()
+                .is_some(),
             "the account must exist afterwards"
         );
     }
@@ -263,7 +274,10 @@ mod tests {
 
         assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
         assert!(
-            accounts::find_by_email(&pool, "player@example.com").await.unwrap().is_none(),
+            accounts::find_by_email(&pool, "player@example.com")
+                .await
+                .unwrap()
+                .is_none(),
             "no account may be created when validation fails"
         );
     }
@@ -278,7 +292,12 @@ mod tests {
         .await;
 
         assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
-        assert!(accounts::find_by_email(&pool, "player@example.com").await.unwrap().is_none());
+        assert!(
+            accounts::find_by_email(&pool, "player@example.com")
+                .await
+                .unwrap()
+                .is_none()
+        );
     }
 
     #[sqlx::test(migrations = "./migrations")]
@@ -291,7 +310,12 @@ mod tests {
         .await;
 
         assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
-        assert!(accounts::find_by_email(&pool, "notanemail").await.unwrap().is_none());
+        assert!(
+            accounts::find_by_email(&pool, "notanemail")
+                .await
+                .unwrap()
+                .is_none()
+        );
     }
 
     #[sqlx::test(migrations = "./migrations")]
@@ -317,8 +341,12 @@ mod tests {
             .await
             .unwrap();
 
-        let response =
-            post_form(test_app(pool), "/login", "email=player%40example.com&password=wrong").await;
+        let response = post_form(
+            test_app(pool),
+            "/login",
+            "email=player%40example.com&password=wrong",
+        )
+        .await;
 
         assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
         assert!(
@@ -352,8 +380,18 @@ mod tests {
             "an unknown email must not set a session cookie"
         );
 
-        let wrong_body = wrong_password.into_body().collect().await.unwrap().to_bytes();
-        let unknown_body = unknown_email.into_body().collect().await.unwrap().to_bytes();
+        let wrong_body = wrong_password
+            .into_body()
+            .collect()
+            .await
+            .unwrap()
+            .to_bytes();
+        let unknown_body = unknown_email
+            .into_body()
+            .collect()
+            .await
+            .unwrap()
+            .to_bytes();
         let wrong_text = String::from_utf8_lossy(&wrong_body);
         let unknown_text = String::from_utf8_lossy(&unknown_body);
 
@@ -393,7 +431,9 @@ mod tests {
 
         assert_eq!(response.status(), StatusCode::SEE_OTHER);
         assert_eq!(
-            sessions::account_for_token(&pool, &session.token).await.unwrap(),
+            sessions::account_for_token(&pool, &session.token)
+                .await
+                .unwrap(),
             None,
             "clearing the cookie is not enough — the session row must be gone, \
              or the token keeps working after logout"

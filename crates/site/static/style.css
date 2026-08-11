@@ -74,6 +74,14 @@ button {
   cursor: pointer;
 }
 .error { color: #7a3020; font-weight: bold; }
+.posted-at {
+  margin: 8px 0 0;
+  padding-top: 6px;
+  border-top: 1px solid #b8a97e;
+  color: #6b6355;
+  font-size: 10px;
+  font-style: italic;
+}
 .footer {
   margin-top: 10px;
   text-align: center;

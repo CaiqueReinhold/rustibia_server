@@ -9,7 +9,7 @@ use crate::{
 #[derive(Debug, Clone)]
 pub struct Session {
     pub token: String,
-    pub account_id: i32,
+    // pub account_id: i32,
     pub valid_until: OffsetDateTime,
 }
 
@@ -26,7 +26,7 @@ pub async fn issue(pool: &PgPool, account_id: i32, ttl_days: i64) -> Result<Sess
 
     Ok(Session {
         token,
-        account_id,
+        // account_id,
         valid_until,
     })
 }

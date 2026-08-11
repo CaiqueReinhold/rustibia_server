@@ -22,7 +22,7 @@
         <a class="navitem" href="/highscores">Highscores</a>
 
         <div class="navgroup">ACCOUNT</div>
-        {% if logged_in %}
+        {% if viewer.logged_in %}
         <a class="navitem" href="/account">Account Dashboard</a>
         <a class="navitem" href="/logout">Log Out</a>
         {% else %}
@@ -30,7 +30,7 @@
         <a class="navitem" href="/register">Create Account</a>
         {% endif %}
 
-        {% if is_admin %}
+        {% if viewer.is_admin %}
         <div class="navgroup">ADMIN</div>
         <a class="navitem" href="/admin/news">Post News</a>
         {% endif %}

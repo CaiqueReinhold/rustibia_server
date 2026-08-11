@@ -7,11 +7,12 @@ use axum::{Router, routing::get};
 
 use crate::state::AppState;
 
-/// Routes that accept credentials. Kept separate from the public pages that plan 3
-/// adds, because Task 13 rate-limits everything in this router.
 pub fn credential_router() -> Router<AppState> {
     Router::new()
-        .route("/register", get(pages::get_register).post(pages::post_register))
+        .route(
+            "/register",
+            get(pages::get_register).post(pages::post_register),
+        )
         .route("/login", get(pages::get_login).post(pages::post_login))
         .route("/logout", get(pages::get_logout))
 }

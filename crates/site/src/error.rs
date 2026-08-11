@@ -6,13 +6,12 @@ use axum::{
 };
 use serde_json::json;
 
-use crate::template::HtmlTemplate;
+use crate::{auth::viewer::Viewer, template::HtmlTemplate};
 
 #[derive(Template)]
 #[template(path = "error.html")]
 pub struct ErrorPage {
-    pub logged_in: bool,
-    pub is_admin: bool,
+    pub viewer: Viewer,
     pub message: String,
 }
 
@@ -77,9 +76,15 @@ impl IntoResponse for SurfacedError {
 
         match surface {
             Surface::Api => (status, Json(json!({ "error": message }))).into_response(),
+            // The anonymous nav, not the caller's: by the time an error renders there
+            // is no request left to resolve a viewer from. Same reason `Surface` has to
+            // be chosen when the error is built.
             Surface::Page => (
                 status,
-                HtmlTemplate(ErrorPage { logged_in: false, is_admin: false, message }),
+                HtmlTemplate(ErrorPage {
+                    viewer: Viewer::ANONYMOUS,
+                    message,
+                }),
             )
                 .into_response(),
         }
