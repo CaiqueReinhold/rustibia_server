@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 anyhow = { workspace = true }
+rustibia-contract = { path = "../contract" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 sqlx = { workspace = true }
@@ -17,7 +18,13 @@ uuid = { workspace = true }
 argon2 = "0.5"
 askama = "0.14"
 axum = { version = "0.8", features = ["macros"] }
+# `-no-provider` so the provider comes from our own rustls pin rather than being pulled
+# in a second time; see the note in the workspace manifest.
+axum-server = { version = "0.8", features = ["tls-rustls-no-provider"] }
+rustls = { workspace = true }
+rustls-pemfile = { workspace = true }
 serde_yaml = "0.9"
+sha2 = { workspace = true }
 time = { version = "0.3", features = ["serde", "formatting", "parsing"] }
 tower = "0.5"
 tower-http = { version = "0.6", features = ["fs", "trace"] }
@@ -26,3 +33,7 @@ tower_governor = "0.7"
 [dev-dependencies]
 http-body-util = "0.1"
 tower = { version = "0.5", features = ["util"] }
+# The internal listener's tests need real certificates and a real TLS client. Neither
+# belongs in the running site: it generates no certificates and makes no outbound calls.
+rustibia-certgen = { path = "../certgen" }
+reqwest = { workspace = true }

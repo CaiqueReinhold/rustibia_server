@@ -53,6 +53,12 @@ pub struct ConnectionActorHandle {
 }
 
 impl ConnectionActorHandle {
+    #[cfg(test)]
+    pub fn for_test() -> (Self, mpsc::Receiver<ConnectionCommand>) {
+        let (tx, rx) = mpsc::channel(16);
+        (Self { tx }, rx)
+    }
+
     pub async fn close(&self) -> Result<(), mpsc::error::SendError<ConnectionCommand>> {
         self.tx.send(ConnectionCommand::Close).await?;
         Ok(())

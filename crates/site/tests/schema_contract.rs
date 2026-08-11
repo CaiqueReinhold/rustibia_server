@@ -1,12 +1,15 @@
-//! Asserts the database shape that `game_server` depends on.
+//! Asserts the database shape that `crates/server` still depends on.
 //!
-//! `game_server` keeps its own row structs and its own SQL; nothing at compile time
-//! connects the two repositories. These tests are that connection. If one fails, a
-//! schema change here is about to break the game server at runtime.
+//! Shrinking, deliberately. Login now goes through `POST /internal/sessions/redeem`, so
+//! the `auth_tokens` columns and the token lookup are asserted by the site's own code and
+//! by `rustibia-contract`'s types — a compile error there beats a runtime assertion here.
+//! What remains is what the game server continues to reach for directly:
 //!
-//! Sources in `game_server` this mirrors:
-//!   - `src/persistence/player.rs`  — players + player_skills columns
-//!   - `src/persistence/auth.rs`    — auth_tokens columns
+//!   - `crates/server/src/persistence/player.rs` — `save`: players + player_skills
+//!   - `crates/server/src/persistence/online.rs` — online_players
+//!   - `crates/server/src/persistence/login.rs`  — `SqlLoginRepository`, the rollback path
+//!
+//! These go away when saving and online tracking move to REST as well.
 
 use sqlx::{PgPool, Row};
 
@@ -41,7 +44,13 @@ async fn players_has_every_column_the_game_server_reads(pool: PgPool) {
         assert_column(&pool, "players", column, "integer").await;
     }
     for column in [
-        "pos_z", "origin_z", "facing", "outfit_id", "outfit_head", "outfit_body", "outfit_legs",
+        "pos_z",
+        "origin_z",
+        "facing",
+        "outfit_id",
+        "outfit_head",
+        "outfit_body",
+        "outfit_legs",
         "outfit_feet",
     ] {
         assert_column(&pool, "players", column, "smallint").await;
@@ -67,13 +76,6 @@ async fn player_skills_has_every_column_the_game_server_reads(pool: PgPool) {
 }
 
 #[sqlx::test(migrations = "./migrations")]
-async fn auth_tokens_has_every_column_the_game_server_reads(pool: PgPool) {
-    assert_column(&pool, "auth_tokens", "token", "text").await;
-    assert_column(&pool, "auth_tokens", "account_id", "integer").await;
-    assert_column(&pool, "auth_tokens", "valid_until", "timestamp with time zone").await;
-}
-
-#[sqlx::test(migrations = "./migrations")]
 async fn online_players_has_the_columns_the_game_server_writes(pool: PgPool) {
     assert_column(&pool, "online_players", "character_id", "integer").await;
     assert_column(&pool, "online_players", "since", "timestamp with time zone").await;
@@ -81,8 +83,9 @@ async fn online_players_has_the_columns_the_game_server_writes(pool: PgPool) {
 
 #[sqlx::test(migrations = "./migrations")]
 async fn the_game_servers_player_select_still_executes(pool: PgPool) {
-    // Verbatim from game_server/src/persistence/player.rs:65-69, plus the
-    // `deleted_at IS NULL` clause added by task 17 of this plan.
+    // Verbatim from `SqlLoginRepository::redeem_inner` in
+    // crates/server/src/persistence/login.rs. The site runs the same SELECT in
+    // `db::login::redeem`; this asserts the game server's rollback path stays valid too.
     let result = sqlx::query(
         "SELECT id, account_id, name, pos_x, pos_y, pos_z, origin_x, origin_y, origin_z, \
          facing, life_cur, life_max, mana_cur, mana_max, cap_cur, cap_max, \
@@ -94,18 +97,42 @@ async fn the_game_servers_player_select_still_executes(pool: PgPool) {
     .fetch_optional(&pool)
     .await;
 
-    assert!(result.is_ok(), "the game server's SELECT must still be valid: {result:?}");
+    assert!(
+        result.is_ok(),
+        "the game server's SELECT must still be valid: {result:?}"
+    );
 }
 
+/// Both `db::login::redeem` here and `SqlLoginRepository` in the game server spend a
+/// token with this statement. It is the one place single-use redemption is implemented,
+/// so it earns an assertion that it still compiles against the schema.
 #[sqlx::test(migrations = "./migrations")]
-async fn the_game_servers_auth_token_select_still_executes(pool: PgPool) {
-    // Verbatim from game_server/src/persistence/auth.rs:29-32.
+async fn the_single_use_token_delete_still_executes(pool: PgPool) {
     let result = sqlx::query(
-        "SELECT account_id FROM auth_tokens WHERE token = $1 AND valid_until > NOW()",
+        "DELETE FROM auth_tokens WHERE token_hash = $1 AND valid_until > NOW() \
+         RETURNING account_id",
     )
     .bind("anything")
     .fetch_optional(&pool)
     .await;
 
-    assert!(result.is_ok(), "the game server's token lookup must still be valid: {result:?}");
+    assert!(
+        result.is_ok(),
+        "the redemption statement must still be valid: {result:?}"
+    );
+}
+
+/// Tokens are stored hashed, so a plaintext `token` column must not come back — via a
+/// reverted migration, a merge, or a hand-applied fix. If it does, some code path is
+/// storing a credential again.
+#[sqlx::test(migrations = "./migrations")]
+async fn no_token_table_has_a_plaintext_token_column(pool: PgPool) {
+    for table in ["sessions", "auth_tokens"] {
+        assert_eq!(
+            column_type(&pool, table, "token").await,
+            None,
+            "{table}.token must not exist; only its SHA-256 digest is stored"
+        );
+        assert_column(&pool, table, "token_hash", "text").await;
+    }
 }

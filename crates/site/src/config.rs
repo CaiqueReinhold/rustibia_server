@@ -9,7 +9,6 @@ pub struct StartingSkill {
     pub max_ticks: i64,
 }
 
-/// Every new character starts identical regardless of vocation, per the design.
 #[derive(Debug, Deserialize, Clone)]
 pub struct NewCharacterConfig {
     pub pos_x: i32,

@@ -9,8 +9,11 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow = { workspace = true }
+reqwest = { workspace = true }
+rustibia-contract = { path = "../contract" }
 serde = { workspace = true }
 serde_json = { workspace = true }
+sha2 = { workspace = true }
 sqlx = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
@@ -29,3 +32,7 @@ slotmap = "1.1.1"
 smallvec = "1.15.1"
 tokio-stream = "0.1.18"
 tokio-util = { version = "0.7", features = ["codec"] }
+
+[dev-dependencies]
+rustibia-certgen = { path = "../certgen" }
+wiremock = "0.6"

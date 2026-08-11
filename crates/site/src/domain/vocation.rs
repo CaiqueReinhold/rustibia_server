@@ -26,8 +26,6 @@ impl Vocation {
         self as i16
     }
 
-    /// Rejects anything outside the enum, so a hand-crafted form POST cannot write
-    /// `vocation = 9` into a NOT NULL column the game server will later trust.
     pub fn from_i16(value: i16) -> Result<Self, AppError> {
         match value {
             0 => Ok(Vocation::Knight),
@@ -69,8 +67,14 @@ mod tests {
 
     #[test]
     fn rejects_an_out_of_range_value() {
-        assert!(matches!(Vocation::from_i16(9), Err(AppError::Validation(_))));
-        assert!(matches!(Vocation::from_i16(-1), Err(AppError::Validation(_))));
+        assert!(matches!(
+            Vocation::from_i16(9),
+            Err(AppError::Validation(_))
+        ));
+        assert!(matches!(
+            Vocation::from_i16(-1),
+            Err(AppError::Validation(_))
+        ));
     }
 
     #[test]

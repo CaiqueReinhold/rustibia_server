@@ -11,6 +11,7 @@ use uuid::{NoContext, Timestamp};
 use crate::{
     Context,
     actors::{auth::AuthActor, connection::ConnectionActor},
+    persistence::login::LoginRepository,
 };
 
 pub struct Listener {
@@ -23,7 +24,7 @@ impl Listener {
         Ok(Self { inner })
     }
 
-    pub async fn listen(&self, context: Context) {
+    pub async fn listen<L: LoginRepository + 'static>(&self, context: Context<L>) {
         loop {
             match self.inner.accept().await {
                 Ok((stream, addr)) => {
@@ -39,15 +40,17 @@ impl Listener {
         }
     }
 
-    async fn accept_connection(stream: TcpStream, context: &Context) -> Result<()> {
+    async fn accept_connection<L: LoginRepository + 'static>(
+        stream: TcpStream,
+        context: &Context<L>,
+    ) -> Result<()> {
         let session_id = uuid::Uuid::new_v7(Timestamp::now(NoContext)).to_string();
         let (conn_tx, conn_rx) = oneshot::channel();
 
         let auth = AuthActor::start(
             session_id.clone(),
             conn_rx,
-            context.player_repo.clone(),
-            context.auth_repo.clone(),
+            context.login_repo.clone(),
             context.shared_ctx.clone(),
         );
         let connection = ConnectionActor::start(session_id, stream, auth);

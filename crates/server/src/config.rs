@@ -19,6 +19,15 @@ pub struct ServerConfig {
     pub player_despawn_delay: Duration,
     pub database_url: String,
     pub save_interval: Duration,
+    /// The site's internal origin. Login is a call to this; there is no SQL fallback, so
+    /// if the site is unreachable nobody can log in until it returns.
+    pub site_internal_url: String,
+    /// The client identity and CA for that call. All three must load or the process
+    /// refuses to start — a game server that cannot authenticate to the site can do
+    /// nothing useful, and failing at boot beats failing at each player's first login.
+    pub internal_tls_cert: String,
+    pub internal_tls_key: String,
+    pub internal_tls_ca: String,
 }
 
 impl Default for ServerConfig {
@@ -37,6 +46,14 @@ impl Default for ServerConfig {
             database_url: std::env::var("DATABASE_URL")
                 .unwrap_or_else(|_| "postgres://localhost/rustibia".to_string()),
             save_interval: Duration::from_secs(60),
+            site_internal_url: std::env::var("SITE_INTERNAL_URL")
+                .unwrap_or_else(|_| "https://localhost:8443".to_string()),
+            internal_tls_cert: std::env::var("INTERNAL_TLS_CERT")
+                .unwrap_or_else(|_| "certs/server.crt".to_string()),
+            internal_tls_key: std::env::var("INTERNAL_TLS_KEY")
+                .unwrap_or_else(|_| "certs/server.key".to_string()),
+            internal_tls_ca: std::env::var("INTERNAL_TLS_CA")
+                .unwrap_or_else(|_| "certs/ca.crt".to_string()),
         }
     }
 }

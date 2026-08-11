@@ -1,14 +1,14 @@
+//! Writing a player back to the database.
+
 use std::collections::HashMap;
-use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use thiserror::Error;
-use tracing::warn;
 
 use crate::entities::{
     agent::{Facing, OutfitColors, OutfitId, Pool},
-    items::{Item, ItemConfig, ItemId},
+    items::Item,
     player::{InventorySlot, PlayerId},
     position::Position,
     skills::{SkillType, SkillValue},
@@ -48,108 +48,11 @@ struct StoredItem {
 
 pub struct PlayerRepository {
     pool: PgPool,
-    items: Arc<HashMap<ItemId, Arc<ItemConfig>>>,
 }
 
 impl PlayerRepository {
-    pub fn new(pool: PgPool, items: Arc<HashMap<ItemId, Arc<ItemConfig>>>) -> Self {
-        Self { pool, items }
-    }
-
-    pub async fn get_by_id_for_account(
-        &self,
-        id: PlayerId,
-        account_id: i32,
-    ) -> Result<PlayerSnapshot, PlayerRepositoryError> {
-        use sqlx::Row;
-
-        let row = sqlx::query(
-            "SELECT id, account_id, name, pos_x, pos_y, pos_z, origin_x, origin_y, origin_z, \
-             facing, life_cur, life_max, mana_cur, mana_max, cap_cur, cap_max, \
-             outfit_id, outfit_head, outfit_body, outfit_legs, outfit_feet, inventory \
-             FROM players WHERE id = $1 AND account_id = $2 AND deleted_at IS NULL",
-        )
-        .bind(id as i32)
-        .bind(account_id)
-        .fetch_optional(&self.pool)
-        .await?
-        .ok_or(PlayerRepositoryError::NotFound)?;
-
-        let skill_rows = sqlx::query(
-            "SELECT skill_type, value, current_ticks, max_ticks \
-             FROM player_skills WHERE player_id = $1",
-        )
-        .bind(id as i32)
-        .fetch_all(&self.pool)
-        .await?;
-
-        let skills: HashMap<SkillType, SkillValue> = skill_rows
-            .iter()
-            .filter_map(|r| {
-                let skill_type = i16_to_skill_type(r.try_get::<i16, _>("skill_type").ok()?)?;
-                let value = SkillValue {
-                    value: r.try_get::<i16, _>("value").ok()? as u16,
-                    current_ticks: r.try_get::<i64, _>("current_ticks").ok()? as u64,
-                    max_ticks: r.try_get::<i64, _>("max_ticks").ok()? as u64,
-                };
-                Some((skill_type, value))
-            })
-            .collect();
-
-        let stored_inventory: sqlx::types::Json<HashMap<String, StoredItem>> =
-            row.try_get("inventory")?;
-
-        let inventory: HashMap<InventorySlot, Item> = stored_inventory
-            .0
-            .into_iter()
-            .filter_map(|(slot_str, stored)| {
-                let slot_id: u16 = slot_str.parse().ok()?;
-                let slot = InventorySlot::from_id(slot_id)?;
-                let item = self.restore_item(stored)?;
-                Some((slot, item))
-            })
-            .collect();
-
-        Ok(PlayerSnapshot {
-            id: row.try_get::<i32, _>("id")? as u32,
-            account_id: row.try_get::<i32, _>("account_id")?,
-            name: row.try_get("name")?,
-            position: Position {
-                x: row.try_get::<i32, _>("pos_x")? as u16,
-                y: row.try_get::<i32, _>("pos_y")? as u16,
-                z: row.try_get::<i16, _>("pos_z")? as u8,
-            },
-            origin: Position {
-                x: row.try_get::<i32, _>("origin_x")? as u16,
-                y: row.try_get::<i32, _>("origin_y")? as u16,
-                z: row.try_get::<i16, _>("origin_z")? as u8,
-            },
-            facing: i16_to_facing(row.try_get::<i16, _>("facing")?)
-                .ok_or(sqlx::Error::Decode("unknown facing discriminant".into()))?,
-            life: Pool {
-                current: row.try_get::<i32, _>("life_cur")? as u32,
-                maximum: row.try_get::<i32, _>("life_max")? as u32,
-            },
-            mana: Pool {
-                current: row.try_get::<i32, _>("mana_cur")? as u32,
-                maximum: row.try_get::<i32, _>("mana_max")? as u32,
-            },
-            capacity: Pool {
-                current: row.try_get::<i32, _>("cap_cur")? as u32,
-                maximum: row.try_get::<i32, _>("cap_max")? as u32,
-            },
-            outfit: (
-                row.try_get::<i16, _>("outfit_id")? as u16,
-                (
-                    row.try_get::<i16, _>("outfit_head")? as u8,
-                    row.try_get::<i16, _>("outfit_body")? as u8,
-                    row.try_get::<i16, _>("outfit_legs")? as u8,
-                    row.try_get::<i16, _>("outfit_feet")? as u8,
-                ),
-            ),
-            skills,
-            inventory,
-        })
+    pub fn new(pool: PgPool) -> Self {
+        Self { pool }
     }
 
     pub async fn save(&self, snapshot: &PlayerSnapshot) -> Result<(), PlayerRepositoryError> {
@@ -220,28 +123,6 @@ impl PlayerRepository {
         tx.commit().await?;
         Ok(())
     }
-
-    fn restore_item(&self, stored: StoredItem) -> Option<Item> {
-        let config = match self.items.get(&stored.item_id) {
-            Some(c) => c.clone(),
-            None => {
-                warn!(
-                    item_id = stored.item_id,
-                    "skipping unknown item_id during inventory restore"
-                );
-                return None;
-            }
-        };
-        let mut item = Item::new(stored.item_id, config, stored.amount);
-        if let Some(children) = stored.content {
-            let restored: Vec<Item> = children
-                .into_iter()
-                .filter_map(|c| self.restore_item(c))
-                .collect();
-            item.content = Some(restored);
-        }
-        Some(item)
-    }
 }
 
 fn serialize_inventory(inventory: &HashMap<InventorySlot, Item>) -> HashMap<String, StoredItem> {
@@ -262,6 +143,11 @@ fn serialize_item(item: &Item) -> StoredItem {
     }
 }
 
+// The four functions below are two inverse pairs, and the `_to_i16` half of each is what
+// `save` writes. Keep them adjacent: the `i16_to_` half is read by `login.rs` when a
+// `CharacterRecord` becomes a `PlayerSnapshot`, and changing one direction without the
+// other silently rewrites every stored value on the next save.
+
 fn facing_to_i16(f: Facing) -> i16 {
     match f {
         Facing::North => 0,
@@ -271,7 +157,7 @@ fn facing_to_i16(f: Facing) -> i16 {
     }
 }
 
-fn i16_to_facing(n: i16) -> Option<Facing> {
+pub(crate) fn i16_to_facing(n: i16) -> Option<Facing> {
     match n {
         0 => Some(Facing::North),
         1 => Some(Facing::East),
@@ -288,7 +174,7 @@ fn skill_type_to_i16(s: &SkillType) -> i16 {
     }
 }
 
-fn i16_to_skill_type(n: i16) -> Option<SkillType> {
+pub(crate) fn i16_to_skill_type(n: i16) -> Option<SkillType> {
     match n {
         0 => Some(SkillType::Level),
         1 => Some(SkillType::Speed),
@@ -299,6 +185,8 @@ fn i16_to_skill_type(n: i16) -> Option<SkillType> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::entities::items::Item;
+    use crate::persistence::test_fixtures::{a_test_snapshot, insert_account, insert_character};
 
     #[test]
     fn stored_item_omits_content_when_none() {
@@ -335,11 +223,34 @@ mod tests {
         assert_eq!(children[0].amount, 10);
     }
 
+    /// The site reads this column back through `rustibia_contract::StoredItemRecord`, so
+    /// what `save` writes has to satisfy that type. Asserting it here is the compile-time
+    /// half of the agreement the contract crate exists to enforce.
+    #[test]
+    fn what_save_writes_deserializes_as_the_contract_type() {
+        let json = serde_json::to_string(&StoredItem {
+            item_id: 2148,
+            amount: 1,
+            content: Some(vec![StoredItem {
+                item_id: 2360,
+                amount: 10,
+                content: None,
+            }]),
+        })
+        .unwrap();
+
+        let record: rustibia_contract::StoredItemRecord = serde_json::from_str(&json)
+            .expect("the site must be able to read what this module writes");
+
+        assert_eq!(record.item_id, 2148);
+        assert_eq!(record.content.unwrap()[0].item_id, 2360);
+    }
+
     #[test]
     fn serialize_inventory_uses_slot_id_as_key() {
         use crate::entities::items::ItemConfig;
-        use crate::entities::player::InventorySlot;
         use std::collections::HashSet;
+        use std::sync::Arc;
 
         let config = Arc::new(ItemConfig::new(
             "sword".to_string(),
@@ -362,136 +273,12 @@ mod tests {
         assert_eq!(stored["5"].amount, 1);
     }
 
-    /// The snapshot used by every save/load test. `id` and `account_id` are
-    /// parameters now because both come from identity sequences rather than literals.
-    fn a_test_snapshot(id: u32, account_id: i32) -> PlayerSnapshot {
-        use crate::entities::agent::{Facing, Pool};
-        use crate::entities::position::Position;
-
-        PlayerSnapshot {
-            id,
-            account_id,
-            name: "Rizael".to_string(),
-            position: Position {
-                x: 1028,
-                y: 1028,
-                z: 7,
-            },
-            origin: Position {
-                x: 1028,
-                y: 1028,
-                z: 7,
-            },
-            facing: Facing::South,
-            life: Pool {
-                current: 100,
-                maximum: 100,
-            },
-            mana: Pool {
-                current: 100,
-                maximum: 100,
-            },
-            capacity: Pool {
-                current: 0,
-                maximum: 40000,
-            },
-            outfit: (133, (1, 2, 3, 4)),
-            skills: {
-                let mut m = HashMap::new();
-                m.insert(
-                    SkillType::Level,
-                    SkillValue {
-                        value: 1,
-                        current_ticks: 0,
-                        max_ticks: 100,
-                    },
-                );
-                m.insert(
-                    SkillType::Speed,
-                    SkillValue {
-                        value: 120,
-                        current_ticks: 0,
-                        max_ticks: 0,
-                    },
-                );
-                m
-            },
-            inventory: HashMap::new(),
-        }
-    }
-
-    async fn insert_account(pool: &PgPool) -> i32 {
-        sqlx::query_scalar::<_, i32>(
-            "INSERT INTO accounts (email, password_hash) VALUES ($1, $2) RETURNING id",
-        )
-        .bind(format!("fixture-{}@example.com", uuid::Uuid::now_v7()))
-        .bind("not-a-real-hash")
-        .fetch_one(pool)
-        .await
-        .unwrap()
-    }
-
-    /// Creates the character row. The game server can no longer do this itself —
-    /// `players.id` is GENERATED ALWAYS and `save` is now an UPDATE.
-    async fn insert_character(pool: &PgPool, account_id: i32) -> i32 {
-        sqlx::query_scalar::<_, i32>(
-            "INSERT INTO players \
-             (account_id, name, vocation, sex, pos_x, pos_y, pos_z, origin_x, origin_y, origin_z, \
-              facing, life_cur, life_max, mana_cur, mana_max, cap_cur, cap_max, \
-              outfit_id, outfit_head, outfit_body, outfit_legs, outfit_feet) \
-             VALUES ($1, $2, 0, 1, 1028, 1028, 7, 1028, 1028, 7, \
-                     2, 150, 150, 0, 0, 400, 400, 133, 1, 2, 3, 4) \
-             RETURNING id",
-        )
-        .bind(account_id)
-        .bind(format!("Rizael{}", uuid::Uuid::now_v7().as_u128() % 100000))
-        .fetch_one(pool)
-        .await
-        .unwrap()
-    }
-
-    #[sqlx::test(migrations = "../site/migrations")]
-    async fn get_by_id_for_account_returns_not_found_for_missing_player(pool: PgPool) {
-        let items = Arc::new(HashMap::new());
-        let repo = PlayerRepository::new(pool, items);
-        let result = repo.get_by_id_for_account(9999, 1).await;
-        assert!(
-            matches!(result, Err(PlayerRepositoryError::NotFound)),
-            "expected NotFound, got: {result:?}"
-        );
-    }
-
-    #[sqlx::test(migrations = "../site/migrations")]
-    async fn save_and_get_by_id_roundtrip(pool: PgPool) {
-        let account_id = insert_account(&pool).await;
-        let character_id = insert_character(&pool, account_id).await;
-
-        let items = Arc::new(HashMap::new());
-        let repo = PlayerRepository::new(pool, Arc::clone(&items));
-
-        let snapshot = a_test_snapshot(character_id as u32, account_id);
-        repo.save(&snapshot).await.unwrap();
-
-        let loaded = repo
-            .get_by_id_for_account(character_id as u32, account_id)
-            .await
-            .unwrap();
-
-        assert_eq!(loaded.account_id, account_id);
-        assert_eq!(loaded.position.x, 1028);
-        assert_eq!(loaded.skills.len(), 2);
-    }
-
     #[sqlx::test(migrations = "../site/migrations")]
     async fn save_returns_not_found_when_the_character_does_not_exist(pool: PgPool) {
         let account_id = insert_account(&pool).await;
+        let repo = PlayerRepository::new(pool);
 
-        let items = Arc::new(HashMap::new());
-        let repo = PlayerRepository::new(pool, Arc::clone(&items));
-
-        let snapshot = a_test_snapshot(999_999, account_id);
-
-        let result = repo.save(&snapshot).await;
+        let result = repo.save(&a_test_snapshot(999_999, account_id)).await;
 
         assert!(
             matches!(result, Err(PlayerRepositoryError::NotFound)),
@@ -499,87 +286,28 @@ mod tests {
         );
     }
 
+    /// Skills are deleted and reinserted on every save, so a save that drops one has to
+    /// leave the table consistent rather than half-written.
     #[sqlx::test(migrations = "../site/migrations")]
-    async fn soft_deleted_characters_cannot_be_loaded(pool: PgPool) {
+    async fn save_replaces_the_skill_rows_rather_than_accumulating_them(pool: PgPool) {
         let account_id = insert_account(&pool).await;
         let character_id = insert_character(&pool, account_id).await;
+        let repo = PlayerRepository::new(pool.clone());
 
-        sqlx::query("UPDATE players SET deleted_at = NOW() WHERE id = $1")
-            .bind(character_id)
-            .execute(&pool)
-            .await
-            .unwrap();
-
-        let items = Arc::new(HashMap::new());
-        let repo = PlayerRepository::new(pool, Arc::clone(&items));
-
-        let result = repo
-            .get_by_id_for_account(character_id as u32, account_id)
-            .await;
-
-        assert!(
-            matches!(result, Err(PlayerRepositoryError::NotFound)),
-            "a deleted character must not be able to log in, got {result:?}"
-        );
-    }
-
-    #[sqlx::test(migrations = "../site/migrations")]
-    async fn save_overwrites_existing_player(pool: PgPool) {
-        use crate::entities::position::Position;
-
-        let account_id = insert_account(&pool).await;
-        let character_id = insert_character(&pool, account_id).await;
-
-        let items = Arc::new(HashMap::new());
-        let repo = PlayerRepository::new(pool, Arc::clone(&items));
-
-        let mut snapshot = a_test_snapshot(character_id as u32, account_id);
-        snapshot.position = Position {
-            x: 100,
-            y: 100,
-            z: 7,
-        };
-        snapshot.life.current = 80;
+        let snapshot = a_test_snapshot(character_id as u32, account_id);
+        repo.save(&snapshot).await.unwrap();
         repo.save(&snapshot).await.unwrap();
 
-        snapshot.position = Position {
-            x: 200,
-            y: 300,
-            z: 5,
-        };
-        snapshot.life.current = 60;
-        repo.save(&snapshot).await.unwrap();
+        let count: i64 =
+            sqlx::query_scalar("SELECT count(*) FROM player_skills WHERE player_id = $1")
+                .bind(character_id)
+                .fetch_one(&pool)
+                .await
+                .unwrap();
 
-        let loaded = repo
-            .get_by_id_for_account(character_id as u32, account_id)
-            .await
-            .unwrap();
-
-        assert_eq!(loaded.position.x, 200);
-        assert_eq!(loaded.position.y, 300);
-        assert_eq!(loaded.position.z, 5);
-        assert_eq!(loaded.life.current, 60);
-    }
-
-    #[sqlx::test(migrations = "../site/migrations")]
-    async fn get_by_id_for_account_rejects_wrong_account(pool: PgPool) {
-        let account_id = insert_account(&pool).await;
-        let character_id = insert_character(&pool, account_id).await;
-
-        let items = Arc::new(HashMap::new());
-        let repo = PlayerRepository::new(pool, Arc::clone(&items));
-
-        repo.save(&a_test_snapshot(character_id as u32, account_id))
-            .await
-            .unwrap();
-
-        let result = repo
-            .get_by_id_for_account(character_id as u32, account_id + 999)
-            .await;
-
-        assert!(
-            matches!(result, Err(PlayerRepositoryError::NotFound)),
-            "a character must not load for an account that does not own it, got: {result:?}"
+        assert_eq!(
+            count, 2,
+            "two saves of two skills must leave two rows, not four"
         );
     }
 }

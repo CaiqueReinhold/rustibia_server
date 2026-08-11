@@ -68,7 +68,11 @@ mod tests {
             .with_state(AppState { pool, config })
     }
 
-    async fn post_json(app: Router, uri: &str, body: serde_json::Value) -> (StatusCode, serde_json::Value) {
+    async fn post_json(
+        app: Router,
+        uri: &str,
+        body: serde_json::Value,
+    ) -> (StatusCode, serde_json::Value) {
         let response = app
             .oneshot(
                 Request::builder()
@@ -101,12 +105,17 @@ mod tests {
         .await;
 
         assert_eq!(status, StatusCode::OK);
-        let token = body["session_token"].as_str().expect("session_token present");
+        let token = body["session_token"]
+            .as_str()
+            .expect("session_token present");
         assert_eq!(token.len(), 64);
         assert!(body["expires_at"].as_str().unwrap().contains('T'));
 
         let resolved = sessions::account_for_token(&pool, token).await.unwrap();
-        assert!(resolved.is_some(), "returned token must resolve to an account");
+        assert!(
+            resolved.is_some(),
+            "returned token must resolve to an account"
+        );
     }
 
     #[sqlx::test(migrations = "./migrations")]

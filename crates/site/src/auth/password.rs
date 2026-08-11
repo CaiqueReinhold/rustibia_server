@@ -8,14 +8,8 @@ use argon2::{
 /// An argon2id hash of a fixed string, used to spend the same work on a login attempt
 /// for an unknown email as for a known one. Without it, response timing tells an
 /// attacker which emails are registered.
-///
-/// Computed at first use rather than hardcoded as a literal. A hand-written PHC string
-/// that fails to parse would make `verify_password` return early without doing any
-/// argon2 work at all, silently removing the protection this exists to provide.
-/// Deriving it from `hash_password` makes it valid by construction.
 static DUMMY_HASH: LazyLock<String> = LazyLock::new(|| {
-    hash_password("timing equalisation placeholder")
-        .expect("hashing a fixed string cannot fail")
+    hash_password("timing equalisation placeholder").expect("hashing a fixed string cannot fail")
 });
 
 #[derive(Debug, thiserror::Error)]

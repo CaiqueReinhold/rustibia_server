@@ -18,25 +18,47 @@ services:
   site:
     build:
       context: .
-      dockerfile: crates/site/Dockerfile
+      dockerfile: Dockerfile
+    command: ["cargo", "run"]
+    working_dir: /app/crates/site
     depends_on:
       db:
         condition: service_healthy
     environment:
       DATABASE_URL: postgres://rustibia:rustibia@db/rustibia?sslmode=disable
       BIND_ADDRESS: 0.0.0.0:8080
+      INTERNAL_BIND_ADDRESS: 0.0.0.0:8443
+      INTERNAL_TLS_CERT: /certs/site.crt
+      INTERNAL_TLS_KEY: /certs/site.key
+      INTERNAL_TLS_CLIENT_CA: /certs/ca.crt
+    volumes:
+      - ./certs:/certs:ro
+      - ./crates/site:/app/crates/site
+    # 8443 is deliberately not published to the host: the internal API is reachable only
+    # from the compose network, and mTLS is the second lock rather than the only one.
     ports:
       - "8080:8080"
 
   server:
     build:
       context: .
-      dockerfile: crates/server/Dockerfile
+      dockerfile: Dockerfile
+    command: ["cargo", "run"]
+    working_dir: /app/crates/server
     depends_on:
       db:
         condition: service_healthy
     environment:
       DATABASE_URL: postgres://rustibia:rustibia@db/rustibia?sslmode=disable
+      # `site` matches a SAN on the site's leaf certificate, so this name must stay in
+      # step with `SITE_SANS` in crates/certgen.
+      SITE_INTERNAL_URL: https://site:8443
+      INTERNAL_TLS_CERT: /certs/server.crt
+      INTERNAL_TLS_KEY: /certs/server.key
+      INTERNAL_TLS_CA: /certs/ca.crt
+    volumes:
+      - ./certs:/certs:ro
+      - ./crates/server:/app/crates/server
     ports:
       - "5555:5555"
 

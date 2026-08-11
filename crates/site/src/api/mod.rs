@@ -1,5 +1,6 @@
 pub mod auth;
 pub mod characters;
+pub mod internal;
 
 use axum::{
     Router,
@@ -12,5 +13,8 @@ pub fn router() -> Router<AppState> {
     Router::new()
         .route("/auth", post(auth::post_auth))
         .route("/characters", get(characters::get_characters))
-        .route("/characters/{id}/token", post(characters::post_character_token))
+        .route(
+            "/characters/{id}/token",
+            post(characters::post_character_token),
+        )
 }

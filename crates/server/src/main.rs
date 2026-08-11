@@ -27,12 +27,16 @@ use crate::{
     },
     game::game_config::GAME_CONFIG,
     online_registry::OnlineRegistry,
-    persistence::{auth::AuthRepository, player::PlayerRepository},
+    persistence::{
+        login::{HttpLoginRepository, LoginRepository},
+        player::PlayerRepository,
+    },
 };
 
-pub struct Context {
-    player_repo: Arc<PlayerRepository>,
-    auth_repo: Arc<AuthRepository>,
+/// Generic over the login repository so the HTTP implementation can be swapped for the
+/// SQL one without touching the listener; see `persistence::login`.
+pub struct Context<L: LoginRepository> {
+    login_repo: Arc<L>,
     shared_ctx: SharedContext,
 }
 
@@ -65,6 +69,20 @@ async fn main() -> Result<()> {
 
     CreatureBehaviorActor::start(world.clone(), shared_map.clone(), tick_rx);
 
+    // Before the database and before the listener: without a usable client identity this
+    // process cannot authenticate any player, so there is nothing to be gained by
+    // starting. Failing here names the missing file; failing later would only produce a
+    // stream of confused players.
+    let internal_client = HttpLoginRepository::build_client(
+        &CONFIG.internal_tls_cert,
+        &CONFIG.internal_tls_key,
+        &CONFIG.internal_tls_ca,
+    )
+    .context(
+        "building the internal mTLS client — run `cargo run -p rustibia-certgen` to \
+         generate certs/, or point INTERNAL_TLS_CERT/_KEY/_CA at existing ones",
+    )?;
+
     let pool = PgPoolOptions::new()
         .max_connections(5)
         .connect(&CONFIG.database_url)
@@ -76,13 +94,17 @@ async fn main() -> Result<()> {
         .await
         .context("clearing stale online_players rows")?;
 
-    let player_repo = Arc::new(PlayerRepository::new(pool.clone(), Arc::clone(&items)));
-    let auth_repo = Arc::new(AuthRepository::new(pool));
+    // The pool remains only for saving and online tracking. Login no longer touches it.
+    let player_repo = Arc::new(PlayerRepository::new(pool));
+    let login_repo = Arc::new(HttpLoginRepository::new(
+        &CONFIG.site_internal_url,
+        internal_client,
+        Arc::clone(&items),
+    ));
     let persistence = PersistenceActor::start(Arc::clone(&player_repo), Arc::clone(&online_repo));
 
     let context = Context {
-        player_repo,
-        auth_repo,
+        login_repo,
         shared_ctx: SharedContext {
             world,
             shared_map,

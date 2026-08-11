@@ -4,7 +4,6 @@ use axum::{
     response::{Html, IntoResponse, Response},
 };
 
-/// Wraps any askama template so it can be returned directly from a handler.
 pub struct HtmlTemplate<T>(pub T);
 
 impl<T: Template> IntoResponse for HtmlTemplate<T> {

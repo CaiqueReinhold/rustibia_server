@@ -10,10 +10,7 @@ use crate::{
     config::CONFIG,
     entities::agent::Agent,
     messages::{ClientMessage, ServerMessage},
-    persistence::{
-        auth::{AccountId, AuthRepository},
-        player::PlayerRepository,
-    },
+    persistence::login::{LoginError, LoginRepository},
 };
 
 #[derive(Clone, Debug)]
@@ -36,20 +33,18 @@ impl AuthActorHandle {
     }
 }
 
-pub struct AuthActor {
+pub struct AuthActor<L: LoginRepository> {
     session_id: String,
     rx: mpsc::Receiver<AuthCommand>,
     world_ctx: SharedContext,
-    player_repo: Arc<PlayerRepository>,
-    auth_repo: Arc<AuthRepository>,
+    login_repo: Arc<L>,
 }
 
-impl AuthActor {
+impl<L: LoginRepository + 'static> AuthActor<L> {
     pub fn start(
         session_id: String,
         conn_rx: oneshot::Receiver<ConnectionActorHandle>,
-        player_repo: Arc<PlayerRepository>,
-        auth_repo: Arc<AuthRepository>,
+        login_repo: Arc<L>,
         world_ctx: SharedContext,
     ) -> AuthActorHandle {
         let (tx, rx) = mpsc::channel(CONFIG.max_buffered_messages);
@@ -59,8 +54,7 @@ impl AuthActor {
                 session_id,
                 rx,
                 world_ctx,
-                player_repo,
-                auth_repo,
+                login_repo,
             };
             actor.run(conn_rx).await;
         });
@@ -100,23 +94,18 @@ impl AuthActor {
             }
         };
 
-        let account_id: AccountId = match self.auth_repo.validate_token(&auth_token).await {
-            Ok(id) => id,
-            Err(e) => {
-                info!(session = self.session_id, "Token validation failed: {e}");
-                let _ = connection.send_message(ServerMessage::LoginError).await;
-                return Err(e.into());
-            }
-        };
-
-        let player = match self
-            .player_repo
-            .get_by_id_for_account(character_id, account_id)
-            .await
-        {
+        let player = match self.login_repo.redeem(&auth_token, character_id).await {
             Ok(p) => p,
             Err(e) => {
-                error!(session = self.session_id, "Player lookup failed: {e}");
+                match &e {
+                    LoginError::Rejected => {
+                        info!(session = self.session_id, "Login rejected: {e}")
+                    }
+                    LoginError::Unavailable(detail) => error!(
+                        session = self.session_id,
+                        "Login service unavailable, refusing the login: {detail}"
+                    ),
+                }
                 let _ = connection.send_message(ServerMessage::LoginError).await;
                 return Err(e.into());
             }
@@ -126,7 +115,10 @@ impl AuthActor {
         let registry_guard = match self.world_ctx.online_registry.try_register(character_id) {
             Some(guard) => guard,
             None => {
-                info!(session = self.session_id, "Character is already online.");
+                info!(
+                    session = self.session_id,
+                    "Character {} is already online.", player.name
+                );
                 let _ = connection.send_message(ServerMessage::LoginError).await;
                 return Err(anyhow::anyhow!(
                     "Character {character_id} is already online"
@@ -149,5 +141,228 @@ impl AuthActor {
             "Auth complete, session handed off"
         );
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::actors::connection::ConnectionCommand;
+    use crate::actors::persistence::PersistenceActorHandle;
+    use crate::actors::world::WorldActorHandle;
+    use crate::entities::map::GameMap;
+    use crate::online_registry::OnlineRegistry;
+    use crate::persistence::player::PlayerSnapshot;
+    use crate::persistence::test_fixtures::a_test_snapshot;
+    use arc_swap::ArcSwap;
+    use std::time::Duration;
+    use tokio::sync::mpsc::Receiver;
+
+    /// A `LoginRepository` that answers from a script. No database, no network — the
+    /// point of the seam is that this actor can be tested without either.
+    struct FakeLogin {
+        answer: Result<PlayerSnapshot, LoginError>,
+    }
+
+    impl FakeLogin {
+        fn accepting(character_id: u32) -> Self {
+            Self {
+                answer: Ok(a_test_snapshot(character_id, 1)),
+            }
+        }
+
+        fn failing(error: LoginError) -> Self {
+            Self { answer: Err(error) }
+        }
+    }
+
+    impl LoginRepository for FakeLogin {
+        async fn redeem(
+            &self,
+            _auth_token: &str,
+            _character_id: crate::entities::player::PlayerId,
+        ) -> Result<PlayerSnapshot, LoginError> {
+            match &self.answer {
+                Ok(snapshot) => Ok(snapshot.clone()),
+                Err(LoginError::Rejected) => Err(LoginError::Rejected),
+                Err(LoginError::Unavailable(d)) => Err(LoginError::Unavailable(d.clone())),
+            }
+        }
+    }
+
+    /// Everything `AuthActor` needs besides the login repository. The receivers come back
+    /// so the caller can keep them alive; a dropped receiver turns every send into a
+    /// silent no-op and would make these tests pass regardless of behaviour.
+    #[allow(clippy::type_complexity)]
+    fn a_context() -> (
+        SharedContext,
+        Receiver<(
+            crate::actors::world::WorldCommand,
+            Option<crate::game::Tick>,
+        )>,
+        Receiver<crate::actors::persistence::PersistenceCommand>,
+    ) {
+        let (world, world_rx) = WorldActorHandle::for_test();
+        let (persistence, persistence_rx) = PersistenceActorHandle::for_test(16);
+
+        (
+            SharedContext {
+                world,
+                shared_map: Arc::new(ArcSwap::from_pointee(GameMap::new())),
+                persistence: persistence.clone(),
+                online_registry: OnlineRegistry::new(persistence),
+            },
+            world_rx,
+            persistence_rx,
+        )
+    }
+
+    /// Runs the handshake with `first_message` and returns what the connection was told.
+    async fn authenticate_with<L: LoginRepository + 'static>(
+        login: L,
+        ctx: SharedContext,
+        first_message: ClientMessage,
+    ) -> Vec<ConnectionCommand> {
+        let (connection, mut connection_rx) = ConnectionActorHandle::for_test();
+        let (conn_tx, conn_rx) = oneshot::channel();
+
+        let handle = AuthActor::start("test-session".to_string(), conn_rx, Arc::new(login), ctx);
+        conn_tx.send(connection).ok().unwrap();
+        handle.receive_message(first_message).await.unwrap();
+
+        // The actor sends, then exits; a short drain is enough and bounded so a
+        // regression that sends nothing fails rather than hangs.
+        let mut commands = Vec::new();
+        let deadline = tokio::time::Instant::now() + Duration::from_secs(2);
+        while tokio::time::Instant::now() < deadline {
+            match tokio::time::timeout(Duration::from_millis(50), connection_rx.recv()).await {
+                Ok(Some(command)) => commands.push(command),
+                Ok(None) => break,
+                Err(_) if !commands.is_empty() => break,
+                Err(_) => continue,
+            }
+        }
+        commands
+    }
+
+    fn a_login(character_id: u32) -> ClientMessage {
+        ClientMessage::Login {
+            character_id,
+            auth_token: "a-token".to_string(),
+        }
+    }
+
+    #[tokio::test]
+    async fn a_successful_login_hands_the_connection_a_session() {
+        let (ctx, _world_rx, _persistence_rx) = a_context();
+
+        let commands = authenticate_with(FakeLogin::accepting(7), ctx, a_login(7)).await;
+
+        assert!(
+            commands
+                .iter()
+                .any(|c| matches!(c, ConnectionCommand::SetSession(_))),
+            "the connection must be switched to the session actor, got {commands:?}"
+        );
+        assert!(
+            !commands.iter().any(|c| matches!(
+                c,
+                ConnectionCommand::SendPlayerMessage(ServerMessage::LoginError)
+            )),
+            "a successful login must not also send LoginError, got {commands:?}"
+        );
+    }
+
+    #[tokio::test]
+    async fn a_rejected_login_sends_login_error_and_no_session() {
+        let (ctx, _world_rx, _persistence_rx) = a_context();
+
+        let commands =
+            authenticate_with(FakeLogin::failing(LoginError::Rejected), ctx, a_login(7)).await;
+
+        assert!(
+            commands.iter().any(|c| matches!(
+                c,
+                ConnectionCommand::SendPlayerMessage(ServerMessage::LoginError)
+            )),
+            "got {commands:?}"
+        );
+        assert!(
+            !commands
+                .iter()
+                .any(|c| matches!(c, ConnectionCommand::SetSession(_))),
+            "a rejected login must not reach the world, got {commands:?}"
+        );
+    }
+
+    /// Fail closed: the site being down must refuse the login rather than let the player
+    /// in unauthenticated. The client is told the same thing as for a bad token, because
+    /// it can do nothing with the difference.
+    #[tokio::test]
+    async fn an_unavailable_login_service_also_refuses_the_login() {
+        let (ctx, _world_rx, _persistence_rx) = a_context();
+
+        let commands = authenticate_with(
+            FakeLogin::failing(LoginError::Unavailable("connection refused".into())),
+            ctx,
+            a_login(7),
+        )
+        .await;
+
+        assert!(
+            commands.iter().any(|c| matches!(
+                c,
+                ConnectionCommand::SendPlayerMessage(ServerMessage::LoginError)
+            )),
+            "got {commands:?}"
+        );
+        assert!(
+            !commands
+                .iter()
+                .any(|c| matches!(c, ConnectionCommand::SetSession(_))),
+            "there is no SQL fallback, so this must not produce a session: {commands:?}"
+        );
+    }
+
+    #[tokio::test]
+    async fn a_first_message_that_is_not_login_is_refused() {
+        let (ctx, _world_rx, _persistence_rx) = a_context();
+
+        let commands = authenticate_with(FakeLogin::accepting(7), ctx, ClientMessage::Ping).await;
+
+        assert!(
+            commands.iter().any(|c| matches!(
+                c,
+                ConnectionCommand::SendPlayerMessage(ServerMessage::LoginError)
+            )),
+            "the protocol requires Login first, got {commands:?}"
+        );
+    }
+
+    /// The duplicate-login guard sits after the redeem call, so a valid token for a
+    /// character already in the world must still be refused.
+    #[tokio::test]
+    async fn a_character_already_online_is_refused() {
+        let (ctx, _world_rx, _persistence_rx) = a_context();
+        let _guard = ctx
+            .online_registry
+            .try_register(7)
+            .expect("the first registration must succeed");
+
+        let commands = authenticate_with(FakeLogin::accepting(7), ctx.clone(), a_login(7)).await;
+
+        assert!(
+            commands.iter().any(|c| matches!(
+                c,
+                ConnectionCommand::SendPlayerMessage(ServerMessage::LoginError)
+            )),
+            "got {commands:?}"
+        );
+        assert!(
+            !commands
+                .iter()
+                .any(|c| matches!(c, ConnectionCommand::SetSession(_))),
+            "a character cannot be online twice, got {commands:?}"
+        );
     }
 }

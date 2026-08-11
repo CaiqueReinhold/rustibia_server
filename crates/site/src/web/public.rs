@@ -7,21 +7,20 @@ use axum::{
 use serde::Deserialize;
 
 use crate::{
-    db::{news, public},
+    db::{
+        characters::{
+            Character, HighscoreEntry, OnlineCharacter, find_character_by_name, highscores,
+            who_is_online,
+        },
+        news,
+    },
     error::{AppError, Surface, SurfacedError},
     state::AppState,
     template::HtmlTemplate,
 };
 
-/// How many news posts the homepage shows.
 const NEWS_ON_HOMEPAGE: i64 = 10;
-/// Spec §8: top 100, no pagination.
 const HIGHSCORE_LIMIT: i64 = 100;
-
-// Every page struct carries `is_admin` from the start. A later task adds an Admin
-// group to `base.html` that reads it; declaring the field now means that task edits
-// one template instead of rewriting eight structs. Askama does not mind a field the
-// template does not yet reference.
 
 #[derive(Template)]
 #[template(path = "news.html")]
@@ -45,7 +44,7 @@ pub struct CharacterSearchPage {
 pub struct CharacterDetailPage {
     pub logged_in: bool,
     pub is_admin: bool,
-    pub character: public::CharacterDetail,
+    pub character: Character,
     pub created: String,
 }
 
@@ -54,7 +53,7 @@ pub struct CharacterDetailPage {
 pub struct OnlinePage {
     pub logged_in: bool,
     pub is_admin: bool,
-    pub characters: Vec<public::OnlineCharacter>,
+    pub characters: Vec<OnlineCharacter>,
 }
 
 #[derive(Template)]
@@ -62,7 +61,7 @@ pub struct OnlinePage {
 pub struct HighscoresPage {
     pub logged_in: bool,
     pub is_admin: bool,
-    pub entries: Vec<public::HighscoreEntry>,
+    pub entries: Vec<HighscoreEntry>,
 }
 
 #[derive(Template)]
@@ -95,7 +94,11 @@ pub async fn get_news(State(state): State<AppState>) -> Result<impl IntoResponse
         .await
         .map_err(page_error)?;
 
-    Ok(HtmlTemplate(NewsPage { logged_in: false, is_admin: false, posts }))
+    Ok(HtmlTemplate(NewsPage {
+        logged_in: false,
+        is_admin: false,
+        posts,
+    }))
 }
 
 #[derive(Debug, Deserialize)]
@@ -104,15 +107,16 @@ pub struct CharacterQuery {
 }
 
 /// Exact-name lookup, redirecting to the detail page on a hit.
-///
-/// Deliberately not a partial or prefix search: the name column is unique and the
-/// point is to reach one character, so a substring search would only serve to
-/// enumerate the player base.
 pub async fn get_character_search(
     State(state): State<AppState>,
     Query(query): Query<CharacterQuery>,
 ) -> Result<Response, SurfacedError> {
-    let Some(name) = query.name.as_deref().map(str::trim).filter(|n| !n.is_empty()) else {
+    let Some(name) = query
+        .name
+        .as_deref()
+        .map(str::trim)
+        .filter(|n| !n.is_empty())
+    else {
         return Ok(HtmlTemplate(CharacterSearchPage {
             logged_in: false,
             is_admin: false,
@@ -122,8 +126,13 @@ pub async fn get_character_search(
         .into_response());
     };
 
-    match public::find_character_by_name(&state.pool, name).await.map_err(page_error)? {
-        Some(character) => Ok(Redirect::to(&format!("/characters/{}", character.name)).into_response()),
+    match find_character_by_name(&state.pool, name)
+        .await
+        .map_err(page_error)?
+    {
+        Some(character) => {
+            Ok(Redirect::to(&format!("/characters/{}", character.name)).into_response())
+        }
         None => Ok((
             StatusCode::NOT_FOUND,
             HtmlTemplate(CharacterSearchPage {
@@ -141,7 +150,7 @@ pub async fn get_character_detail(
     State(state): State<AppState>,
     Path(name): Path<String>,
 ) -> Result<Response, SurfacedError> {
-    let Some(character) = public::find_character_by_name(&state.pool, &name)
+    let Some(character) = find_character_by_name(&state.pool, &name)
         .await
         .map_err(page_error)?
     else {
@@ -162,34 +171,56 @@ pub async fn get_character_detail(
         .format(&time::format_description::well_known::Rfc3339)
         .unwrap_or_default();
 
-    Ok(HtmlTemplate(CharacterDetailPage { logged_in: false, is_admin: false, character, created })
-        .into_response())
+    Ok(HtmlTemplate(CharacterDetailPage {
+        logged_in: false,
+        is_admin: false,
+        character,
+        created,
+    })
+    .into_response())
 }
 
 pub async fn get_online(State(state): State<AppState>) -> Result<impl IntoResponse, SurfacedError> {
-    let characters = public::who_is_online(&state.pool).await.map_err(page_error)?;
-    Ok(HtmlTemplate(OnlinePage { logged_in: false, is_admin: false, characters }))
+    let characters = who_is_online(&state.pool).await.map_err(page_error)?;
+    Ok(HtmlTemplate(OnlinePage {
+        logged_in: false,
+        is_admin: false,
+        characters,
+    }))
 }
 
 pub async fn get_highscores(
     State(state): State<AppState>,
 ) -> Result<impl IntoResponse, SurfacedError> {
-    let entries = public::highscores(&state.pool, HIGHSCORE_LIMIT)
+    let entries = highscores(&state.pool, HIGHSCORE_LIMIT)
         .await
         .map_err(page_error)?;
-    Ok(HtmlTemplate(HighscoresPage { logged_in: false, is_admin: false, entries }))
+    Ok(HtmlTemplate(HighscoresPage {
+        logged_in: false,
+        is_admin: false,
+        entries,
+    }))
 }
 
 pub async fn get_download() -> impl IntoResponse {
-    HtmlTemplate(DownloadPage { logged_in: false, is_admin: false })
+    HtmlTemplate(DownloadPage {
+        logged_in: false,
+        is_admin: false,
+    })
 }
 
 pub async fn get_rules() -> impl IntoResponse {
-    HtmlTemplate(RulesPage { logged_in: false, is_admin: false })
+    HtmlTemplate(RulesPage {
+        logged_in: false,
+        is_admin: false,
+    })
 }
 
 pub async fn get_support() -> impl IntoResponse {
-    HtmlTemplate(SupportPage { logged_in: false, is_admin: false })
+    HtmlTemplate(SupportPage {
+        logged_in: false,
+        is_admin: false,
+    })
 }
 
 #[cfg(test)]
@@ -200,7 +231,12 @@ mod tests {
         db::{accounts::create_account, characters},
         domain::{sex::Sex, vocation::Vocation},
     };
-    use axum::{Router, body::Body, http::{Request, header}, routing::get};
+    use axum::{
+        Router,
+        body::Body,
+        http::{Request, header},
+        routing::get,
+    };
     use sqlx::PgPool;
     use tower::ServiceExt;
 
@@ -229,16 +265,25 @@ mod tests {
             .get(header::LOCATION)
             .and_then(|v| v.to_str().ok())
             .map(str::to_string);
-        let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
         (status, String::from_utf8_lossy(&body).to_string(), location)
     }
 
     async fn a_character(pool: &PgPool, email: &str, name: &str) -> i32 {
         let template = SiteConfig::load("config.yaml").unwrap().new_character;
         let account = create_account(pool, email, "hunter2hunter2").await.unwrap();
-        characters::create(pool, account.id, name, Vocation::Druid, Sex::Female, &template)
-            .await
-            .unwrap()
+        characters::create(
+            pool,
+            account.id,
+            name,
+            Vocation::Druid,
+            Sex::Female,
+            &template,
+        )
+        .await
+        .unwrap()
     }
 
     #[sqlx::test(migrations = "./migrations")]
@@ -251,7 +296,9 @@ mod tests {
 
     #[sqlx::test(migrations = "./migrations")]
     async fn the_homepage_shows_a_post(pool: PgPool) {
-        let account = create_account(&pool, "admin@example.com", "hunter2hunter2").await.unwrap();
+        let account = create_account(&pool, "admin@example.com", "hunter2hunter2")
+            .await
+            .unwrap();
         crate::db::news::create(&pool, "Server is open", "Come and play.", account.id)
             .await
             .unwrap();
@@ -265,17 +312,25 @@ mod tests {
 
     #[sqlx::test(migrations = "./migrations")]
     async fn a_news_post_cannot_inject_markup(pool: PgPool) {
-        let account = create_account(&pool, "admin@example.com", "hunter2hunter2").await.unwrap();
+        let account = create_account(&pool, "admin@example.com", "hunter2hunter2")
+            .await
+            .unwrap();
         crate::db::news::create(&pool, "<script>x</script>", "<b>bold</b>", account.id)
             .await
             .unwrap();
 
         let (_, body, _) = fetch(test_app(pool), "/").await;
 
-        assert!(!body.contains("<script>x</script>"), "askama must escape the title");
+        assert!(
+            !body.contains("<script>x</script>"),
+            "askama must escape the title"
+        );
         assert!(!body.contains("<b>bold</b>"), "askama must escape the body");
         // askama 0.14 escapes to numeric entities (`&#60;`), not named ones (`&lt;`).
-        assert!(body.contains("&#60;script&#62;"), "and render it as text instead");
+        assert!(
+            body.contains("&#60;script&#62;"),
+            "and render it as text instead"
+        );
     }
 
     #[sqlx::test(migrations = "./migrations")]

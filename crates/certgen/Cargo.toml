@@ -1,0 +1,21 @@
+[package]
+name = "rustibia-certgen"
+version = "0.1.0"
+edition = "2024"
+
+# A development tool, not part of either process. It is a workspace member so the two
+# crates can use it as a dev-dependency and generate throwaway certificates in tests —
+# that is what keeps every test independent of the git-ignored `certs/` directory, and
+# keeps `rcgen` out of both production dependency trees.
+
+[[bin]]
+name = "gen-certs"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+rcgen = "0.14"
+
+# Only the tests parse certificates back; generation itself never needs to.
+[dev-dependencies]
+x509-parser = { version = "0.18", features = ["verify"] }

@@ -69,17 +69,48 @@ access should not learn the page exists.
 | `GET /api/characters` | `Authorization: Bearer <session_token>` | `[{id, name, level, vocation}]` |
 | `POST /api/characters/{id}/token` | same | `{auth_token, expires_at}` |
 
-The third writes a row into `auth_tokens`, which the game server already reads via
-`AuthRepository::validate_token` — so issuing a playable token needs no game-server
-change at all. That token is short-lived and **not** single-use.
+The third writes a row into `auth_tokens`. That token is short-lived **and single-use** —
+it is deleted the moment the game server redeems it.
+
+**No bearer token is stored in the clear.** `sessions` and `auth_tokens` hold
+`token_hash`, the hex SHA-256 of the token; the token itself exists only in the response
+above and in the client's cookie. SHA-256 rather than Argon2 because these are 32 bytes of
+OS randomness — there is no dictionary to defend against, and a per-row salt would make
+lookup-by-token a table scan instead of one index probe.
+
+## The API the game server calls
+
+| Endpoint | Auth | Returns |
+|---|---|---|
+| `POST /internal/sessions/redeem` | client certificate (mTLS) | `CharacterRecord`, or 404 |
+
+Served on its own listener (`INTERNAL_BIND_ADDRESS`, default `127.0.0.1:8443`), never on
+the public one — requiring client certificates on port 8080 would make every browser
+prompt for one, and a separate port makes the internal router unreachable from the public
+side by construction. The 404 is identical for an unknown token and for a character on
+another account, so a caller cannot use it to enumerate character ids.
+
+Generate the certificates before starting either process:
+
+```sh
+cargo run -p rustibia-certgen     # writes certs/ (git-ignored)
+```
+
+Both processes **refuse to start** without them. That is deliberate: serving
+`/internal/*` unprotected would expose every player's stored character, and a silent
+downgrade would look like success in the logs.
 
 ## The contract with the game server
 
-The site owns the schema; the server reads and writes `players`, `player_skills`,
-`auth_tokens` and `online_players` with its own SQL. In one workspace the server's
-tests build their schema from `crates/site/migrations` directly, so there is no
-vendored copy to drift. `crates/site/tests/schema_contract.rs` still asserts the
-columns the server depends on — cheap, and it documents the dependency.
+Login is HTTP: the server no longer reads `auth_tokens` or `players` to authenticate.
+The request and response types live in `crates/contract`, which both crates link and
+neither can avoid — a field added on one side and missing on the other is a deserialize
+error, not a silent zero.
+
+Saving is still SQL. The server writes `players`, `player_skills` and `online_players`
+with its own statements, so `crates/site/tests/schema_contract.rs` still asserts the
+columns those depend on. The server's tests build their schema from
+`crates/site/migrations` directly, so there is no vendored copy to drift.
 
 ## Adding a starting skill
 

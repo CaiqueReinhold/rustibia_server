@@ -1,16 +1,17 @@
 [workspace]
 resolver = "3"
-members = ["crates/server", "crates/site"]
+members = ["crates/certgen", "crates/contract", "crates/server", "crates/site"]
 
-# Shared pins live here so the two processes cannot drift apart. Two different sqlx
-# versions operating on one `_sqlx_migrations` table is precisely the failure this
-# architecture exists to avoid, and nothing else prevents it.
 [workspace.dependencies]
 anyhow = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sqlx = { version = "0.8.6", features = ["runtime-tokio", "tls-rustls", "postgres", "migrate", "json", "time"] }
 thiserror = "2"
+sha2 = "0.10"
+rustls = { version = "0.23", default-features = false, features = ["ring", "logging", "std", "tls12"] }
+rustls-pemfile = "2"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls-manual-roots"] }
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"

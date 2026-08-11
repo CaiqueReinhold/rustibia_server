@@ -1,0 +1,13 @@
+[package]
+name = "rustibia-contract"
+version = "0.1.0"
+edition = "2024"
+
+# Deliberately serde and nothing else. This crate is linked by both processes, so every
+# dependency added here is a dependency both of them inherit — and anything with logic
+# in it belongs on one side of the boundary, not in the middle.
+[dependencies]
+serde = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

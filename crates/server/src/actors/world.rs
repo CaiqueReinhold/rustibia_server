@@ -107,6 +107,15 @@ pub struct WorldActorHandle {
 }
 
 impl WorldActorHandle {
+    /// A handle backed by a channel the caller owns. The receiver must be kept alive:
+    /// dropping it makes every `send` fail silently, which is indistinguishable from a
+    /// working world from the sender's side.
+    #[cfg(test)]
+    pub fn for_test() -> (Self, mpsc::Receiver<(WorldCommand, Option<Tick>)>) {
+        let (tx, rx) = mpsc::channel(64);
+        (Self { tx }, rx)
+    }
+
     pub async fn send(&self, command: WorldCommand) {
         let _ = self.tx.send((command, None)).await;
     }
