@@ -1,3 +1,4 @@
+pub mod chat;
 pub mod creature_ai;
 pub mod description;
 pub mod events;
