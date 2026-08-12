@@ -1272,34 +1272,54 @@ mod tests {
     use crate::entities::position::Position;
     use crate::persistence::test_fixtures::a_test_snapshot;
 
-    fn map_with_player(at: &Position) -> (GameMap, AgentKey) {
-        let mut map = GameMap::new();
+    fn seat_player(map: &mut GameMap, at: &Position, id: u32) -> AgentKey {
         map.insert_tile(at.clone(), MapTile::new());
-        let key = map
-            .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), at)
-            .unwrap();
-        (map, key)
+        map.insert_agent(Agent::from_player(a_test_snapshot(id, 1)), at)
+            .unwrap()
     }
 
     #[tokio::test]
     async fn an_author_is_introduced_exactly_once() {
-        let pos = Position::new(100, 100, 7);
-        let (map, key) = map_with_player(&pos);
-        let (mut session, mut connection_rx, _tick_tx) = SessionActor::for_test(key, map);
+        let mut map = GameMap::new();
+        let author_a = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let author_b = seat_player(&mut map, &Position::new(101, 100, 7), 2);
+        let (mut session, mut connection_rx, _tick_tx) = SessionActor::for_test(author_a, map);
 
-        let first = session.introduce(key).await.unwrap();
-        let second = session.introduce(key).await.unwrap();
+        // Hearing from B in between is what makes the third call meaningful: a session
+        // that forgot A would hand out a different id for A the second time round.
+        let first_a = session.introduce(author_a).await.unwrap();
+        let b = session.introduce(author_b).await.unwrap();
+        let second_a = session.introduce(author_a).await.unwrap();
 
-        assert_eq!(first, second, "the same author keeps the same local id");
-        assert!(matches!(
-            connection_rx.try_recv(),
-            Ok(ConnectionCommand::SendPlayerMessage(
-                ServerMessage::IntroducePlayer { .. }
-            ))
-        ));
+        assert_ne!(
+            first_a, b,
+            "two authors heard from in the same session must hold distinct local ids"
+        );
+        assert_eq!(
+            first_a, second_a,
+            "hearing from another author in between must not renumber the first"
+        );
+        assert!(
+            matches!(
+                connection_rx.try_recv(),
+                Ok(ConnectionCommand::SendPlayerMessage(
+                    ServerMessage::IntroducePlayer { .. }
+                ))
+            ),
+            "the first author is named over the wire"
+        );
+        assert!(
+            matches!(
+                connection_rx.try_recv(),
+                Ok(ConnectionCommand::SendPlayerMessage(
+                    ServerMessage::IntroducePlayer { .. }
+                ))
+            ),
+            "the second author is named over the wire"
+        );
         assert!(
             connection_rx.try_recv().is_err(),
-            "a second introduce must not go back over the wire"
+            "re-introducing a known author must not go back over the wire"
         );
     }
 
