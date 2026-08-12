@@ -348,4 +348,38 @@ mod tests {
             "a member the router could not reach must be dropped"
         );
     }
+
+    /// `undeliverable_members_are_pruned` kills every member, so it cannot tell a
+    /// targeted `retain` from a wholesale `clear`. This one can: only one of the two
+    /// members is reported dead. It matters because the prune is the *only* membership
+    /// cleanup in the design — an over-reaching one would silently empty every channel
+    /// on every message.
+    #[tokio::test]
+    async fn pruning_removes_only_the_unreachable_members() {
+        let (mut actor, mut router_rx) = a_chat_actor();
+        let (live, dead) = two_distinct_keys();
+        actor.add_player_to_channel(live, 1);
+        actor.add_player_to_channel(dead, 1);
+
+        // Stand in for the router: report exactly one recipient as unreachable.
+        let router_task = tokio::spawn(async move {
+            match router_rx.recv().await.unwrap() {
+                MessageRouterCommand::DeliverChannelMessage { tx, .. } => {
+                    tx.send(vec![dead]).unwrap();
+                }
+                other => panic!("expected DeliverChannelMessage, got {other:?}"),
+            }
+        });
+
+        actor
+            .send_channel_message(live, 1, "hello".to_owned())
+            .await;
+        router_task.await.unwrap();
+
+        assert_eq!(
+            actor.channels[&1].members,
+            vec![live],
+            "the prune must drop the unreachable member and keep the reachable one"
+        );
+    }
 }
