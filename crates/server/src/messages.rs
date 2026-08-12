@@ -103,6 +103,8 @@ const SRV_MOVE_AGENT: u8 = 16;
 const SRV_SPAWN_AGENT: u8 = 17;
 const SRV_TELEPORT_AGENT: u8 = 18;
 const SRV_CHAT_MESSAGE: u8 = 19;
+const SRV_CHANNEL_LIST: u8 = 20;
+const SRV_INTRODUCE_PLAYER: u8 = 21;
 
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
@@ -208,6 +210,13 @@ pub enum ServerMessage {
         message_type: ChatMessageType,
         channel: u16,
         message: String,
+    },
+    ChannelList {
+        channels: Vec<(ChannelId, String)>,
+    },
+    IntroducePlayer {
+        local_id: AgentId,
+        name: String,
     },
 }
 
@@ -549,6 +558,23 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u16_le(message_bytes.len() as u16);
                 dst.put_slice(message_bytes);
             }
+            ServerMessage::ChannelList { channels } => {
+                dst.put_u8(SRV_CHANNEL_LIST);
+                dst.put_u16_le(channels.len() as u16);
+                for (id, name) in channels.iter() {
+                    dst.put_u16_le(*id);
+                    let name_bytes = name.as_bytes();
+                    dst.put_u16_le(name_bytes.len() as u16);
+                    dst.put_slice(name_bytes);
+                }
+            }
+            ServerMessage::IntroducePlayer { local_id, name } => {
+                dst.put_u8(SRV_INTRODUCE_PLAYER);
+                dst.put_u16_le(local_id);
+                let name_bytes = name.as_bytes();
+                dst.put_u16_le(name_bytes.len() as u16);
+                dst.put_slice(name_bytes);
+            }
         }
 
         let payload_len = (dst.len() - len_offset - 2) as u16;
@@ -628,6 +654,7 @@ mod tests {
     use super::*;
     use tokio_util::bytes::BytesMut;
     use tokio_util::codec::Decoder;
+    use tokio_util::codec::Encoder;
 
     #[test]
     fn decode_logout_message() {
@@ -724,5 +751,55 @@ mod tests {
             ),
             "a zero-length login payload must be a decode error, never a panic"
         );
+    }
+
+    #[test]
+    fn encode_introduce_player() {
+        let mut codec = GameMessageCodec {};
+        let mut buf = BytesMut::new();
+
+        codec
+            .encode(
+                ServerMessage::IntroducePlayer {
+                    local_id: 3,
+                    name: "Rizael".to_owned(),
+                },
+                &mut buf,
+            )
+            .unwrap();
+
+        let payload_len = u16::from_le_bytes([buf[0], buf[1]]) as usize;
+        assert_eq!(
+            payload_len,
+            buf.len() - 2,
+            "length prefix must cover the payload"
+        );
+        assert_eq!(buf[2], SRV_INTRODUCE_PLAYER);
+        assert_eq!(u16::from_le_bytes([buf[3], buf[4]]), 3);
+        assert_eq!(u16::from_le_bytes([buf[5], buf[6]]), 6);
+        assert_eq!(&buf[7..], b"Rizael");
+    }
+
+    #[test]
+    fn encode_channel_list() {
+        let mut codec = GameMessageCodec {};
+        let mut buf = BytesMut::new();
+
+        codec
+            .encode(
+                ServerMessage::ChannelList {
+                    channels: vec![(1, "World Chat".to_owned())],
+                },
+                &mut buf,
+            )
+            .unwrap();
+
+        let payload_len = u16::from_le_bytes([buf[0], buf[1]]) as usize;
+        assert_eq!(payload_len, buf.len() - 2);
+        assert_eq!(buf[2], SRV_CHANNEL_LIST);
+        assert_eq!(u16::from_le_bytes([buf[3], buf[4]]), 1, "channel count");
+        assert_eq!(u16::from_le_bytes([buf[5], buf[6]]), 1, "channel id");
+        assert_eq!(u16::from_le_bytes([buf[7], buf[8]]), 10, "name length");
+        assert_eq!(&buf[9..], b"World Chat");
     }
 }
