@@ -6,7 +6,7 @@ use std::{
 };
 use tokio::sync::mpsc::{self, error::TrySendError};
 use tokio::sync::oneshot;
-use tracing::info;
+use tracing::{info, warn};
 
 use crate::{
     actors::session::{SessionActorHandle, SessionCommand},
@@ -145,9 +145,16 @@ impl MessageRouterActorHandle {
             .await
             .is_err()
         {
+            warn!("Router is gone; channel message dropped and no members pruned");
             return Vec::new();
         }
-        rx.await.unwrap_or_default()
+        match rx.await {
+            Ok(dead) => dead,
+            Err(_) => {
+                warn!("Router dropped the reply for a channel message; no members pruned");
+                Vec::new()
+            }
+        }
     }
 
     #[cfg(test)]
@@ -195,7 +202,7 @@ impl MessageRouterActor {
                 author,
                 recipient,
                 message,
-            } => self.deliver_private(author, recipient, message),
+            } => self.deliver_private_message(author, recipient, message),
             MessageRouterCommand::DeliverChannelMessage {
                 author,
                 recipients,
@@ -203,7 +210,7 @@ impl MessageRouterActor {
                 message,
                 tx,
             } => {
-                let dead = self.deliver_channel(author, recipients, channel_id, message);
+                let dead = self.deliver_channel_message(author, recipients, channel_id, message);
                 let _ = tx.send(dead);
             }
         }
@@ -382,6 +389,7 @@ impl MessageRouterActor {
     fn handle_send_result(
         &mut self,
         agent_key: AgentKey,
+        session: &SessionActorHandle,
         result: Result<(), TrySendError<SessionCommand>>,
     ) -> bool {
         match result {
@@ -391,9 +399,7 @@ impl MessageRouterActor {
                 false
             }
             Err(TrySendError::Full(..)) => {
-                if let Some(session) = self.session_map.get(&agent_key) {
-                    session.close();
-                }
+                session.close();
                 self.unsubscribe(agent_key);
                 false
             }
@@ -405,19 +411,19 @@ impl MessageRouterActor {
             return;
         };
         let result = session.receive_broadcast(message.clone());
-        self.handle_send_result(*agent_key, result);
+        self.handle_send_result(*agent_key, &session, result);
     }
 
-    fn deliver_private(&mut self, author: AgentKey, recipient: AgentKey, message: String) {
+    fn deliver_private_message(&mut self, author: AgentKey, recipient: AgentKey, message: String) {
         let Some(session) = self.session_map.get(&recipient).cloned() else {
             return;
         };
         let result = session.receive_chat_private(author, message);
-        self.handle_send_result(recipient, result);
+        self.handle_send_result(recipient, &session, result);
     }
 
     /// Returns the recipients that could not be reached.
-    fn deliver_channel(
+    fn deliver_channel_message(
         &mut self,
         author: AgentKey,
         recipients: Vec<AgentKey>,
@@ -431,7 +437,7 @@ impl MessageRouterActor {
                 continue;
             };
             let result = session.receive_chat_channel(author, channel_id, message.clone());
-            if !self.handle_send_result(recipient, result) {
+            if !self.handle_send_result(recipient, &session, result) {
                 dead.push(recipient);
             }
         }
