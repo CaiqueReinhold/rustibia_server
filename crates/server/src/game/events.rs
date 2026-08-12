@@ -66,4 +66,8 @@ pub enum BroadcastMessage {
     LogoutDenied {
         agent_key: AgentKey,
     },
+    AgentSaid {
+        agent_key: AgentKey,
+        message: String,
+    },
 }

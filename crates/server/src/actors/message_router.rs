@@ -5,12 +5,14 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::mpsc::{self, error::TrySendError};
+use tracing::info;
 
 use crate::{
     actors::session::SessionActorHandle,
     config::CONFIG,
     entities::{
         agent::AgentKey,
+        chat::ChannelId,
         map::GameMap,
         position::{ItemPlacement, Rect},
     },
@@ -28,6 +30,17 @@ pub enum MessageRouterCommand {
     },
     Broadcast {
         messages: Vec<BroadcastMessage>,
+    },
+    DeliverPrivateMessage {
+        author: AgentKey,
+        recipient: AgentKey,
+        message: String,
+    },
+    DeliverChannelMessage {
+        author: AgentKey,
+        recipient: AgentKey,
+        channel_id: ChannelId,
+        message: String,
     },
 }
 
@@ -108,6 +121,7 @@ impl MessageRouterActor {
     }
 
     pub async fn run(mut self) {
+        info!("Message router actor started");
         loop {
             let command = self.rx.recv().await;
             match command {
@@ -254,6 +268,9 @@ impl MessageRouterActor {
             }
             BroadcastMessage::LogoutDenied { agent_key } => {
                 self.send_to(message, agent_key);
+            }
+            BroadcastMessage::AgentSaid { agent_key, message } => {
+                todo!()
             }
         }
     }

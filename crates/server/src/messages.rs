@@ -8,6 +8,7 @@ use crate::{
     constants::{MAX_VISIBLE_ITEMS, VIEWPORT_SIZE},
     entities::{
         agent::{AgentId, Facing, OutfitColors, OutfitId, Pool},
+        chat::{ChannelId, ChatMessageType},
         items::{ContainerId, ItemId},
         player::InventorySlot,
         position::{Direction, Position},
@@ -29,6 +30,7 @@ const CLI_CHANGE_DIRECTION: u8 = 8;
 const CLI_LOGOUT: u8 = 9;
 const CLI_USE_ITEM_WITH: u8 = 10;
 const CLI_LOOK: u8 = 11;
+const CLI_SAY: u8 = 12;
 
 #[derive(Clone, Debug)]
 pub enum ClientMessage {
@@ -73,6 +75,11 @@ pub enum ClientMessage {
     Look {
         position: Position,
     },
+    Say {
+        message: String,
+        message_type: ChatMessageType,
+        target: u16,
+    },
 }
 
 // server
@@ -95,6 +102,7 @@ const SRV_REMOVE_AGENT: u8 = 15;
 const SRV_MOVE_AGENT: u8 = 16;
 const SRV_SPAWN_AGENT: u8 = 17;
 const SRV_TELEPORT_AGENT: u8 = 18;
+const SRV_CHAT_MESSAGE: u8 = 19;
 
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
@@ -194,6 +202,12 @@ pub enum ServerMessage {
     TeleportAgent {
         agent_id: AgentId,
         position: Position,
+    },
+    ChatMessage {
+        author: AgentId,
+        message_type: ChatMessageType,
+        channel: u16,
+        message: String,
     },
 }
 
@@ -521,6 +535,20 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u16_le(agent_id);
                 encode_position(position, dst);
             }
+            ServerMessage::ChatMessage {
+                author,
+                message_type,
+                channel,
+                message,
+            } => {
+                dst.put_u8(SRV_CHAT_MESSAGE);
+                dst.put_u16_le(author);
+                dst.put_u8(encode_chat_message_type(message_type));
+                dst.put_u16_le(channel);
+                let message_bytes = message.as_bytes();
+                dst.put_u16_le(message_bytes.len() as u16);
+                dst.put_slice(message_bytes);
+            }
         }
 
         let payload_len = (dst.len() - len_offset - 2) as u16;
@@ -584,6 +612,14 @@ fn encode_optional_item(item_id: Option<ItemId>, dst: &mut BytesMut) {
         dst.put_u16_le(item_id);
     } else {
         dst.put_u16_le(0xFFFF);
+    }
+}
+
+fn encode_chat_message_type(message_type: ChatMessageType) -> u8 {
+    match message_type {
+        ChatMessageType::Local => 0x01,
+        ChatMessageType::Private => 0x02,
+        ChatMessageType::Channel => 0x03,
     }
 }
 

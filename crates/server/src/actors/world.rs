@@ -67,6 +67,10 @@ pub enum WorldCommand {
     DecayItem {
         item: ItemRef,
     },
+    Say {
+        agent_key: AgentKey,
+        message: String,
+    },
 }
 
 #[derive(Debug)]
@@ -107,9 +111,6 @@ pub struct WorldActorHandle {
 }
 
 impl WorldActorHandle {
-    /// A handle backed by a channel the caller owns. The receiver must be kept alive:
-    /// dropping it makes every `send` fail silently, which is indistinguishable from a
-    /// working world from the sender's side.
     #[cfg(test)]
     pub fn for_test() -> (Self, mpsc::Receiver<(WorldCommand, Option<Tick>)>) {
         let (tx, rx) = mpsc::channel(64);
@@ -371,6 +372,9 @@ impl WorldActor {
                 broadcast_messages.extend(msgs);
                 self.apply_commands(commands);
                 Ok(())
+            }
+            WorldCommand::Say { agent_key, message } => {
+                todo!();
             }
         };
         if let Err(e) = result {

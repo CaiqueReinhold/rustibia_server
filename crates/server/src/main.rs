@@ -21,7 +21,7 @@ use arc_swap::ArcSwap;
 
 use crate::{
     actors::{
-        SharedContext, creature_behavior::CreatureBehaviorActor,
+        SharedContext, chat::ChatActor, creature_behavior::CreatureBehaviorActor,
         message_router::MessageRouterActor, persistence::PersistenceActor, spawning::SpawningActor,
         world::WorldActor,
     },
@@ -56,27 +56,27 @@ async fn main() -> Result<()> {
     let shared_map = Arc::new(ArcSwap::from_pointee(map.clone()));
 
     let message_router = MessageRouterActor::start(shared_map.clone());
-    let (world, tick_rx) =
-        WorldActor::start(map, Arc::clone(&items), shared_map.clone(), message_router);
+    let (world, tick_rx) = WorldActor::start(
+        map,
+        Arc::clone(&items),
+        shared_map.clone(),
+        message_router.clone(),
+    );
+    let chat = ChatActor::start(message_router);
 
-    let _spawning = SpawningActor::start(
+    SpawningActor::start(
         spawns,
         Arc::clone(&creatures),
         world.clone(),
         shared_map.clone(),
         tick_rx.clone(),
     );
-
     CreatureBehaviorActor::start(world.clone(), shared_map.clone(), tick_rx);
 
-    // Before the database and before the listener: without a usable client identity this
-    // process cannot authenticate any player, so there is nothing to be gained by
-    // starting. Failing here names the missing file; failing later would only produce a
-    // stream of confused players.
     let internal_client = HttpLoginRepository::build_client(
-        &CONFIG.internal_tls_cert,
-        &CONFIG.internal_tls_key,
-        &CONFIG.internal_tls_ca,
+        CONFIG.internal_tls_cert.as_str(),
+        CONFIG.internal_tls_key.as_str(),
+        CONFIG.internal_tls_ca.as_str(),
     )
     .context(
         "building the internal mTLS client — run `cargo run -p rustibia-certgen` to \
@@ -110,6 +110,7 @@ async fn main() -> Result<()> {
             shared_map,
             persistence: persistence.clone(),
             online_registry: OnlineRegistry::new(persistence),
+            chat,
         },
     };
 

@@ -11,6 +11,7 @@ use tracing::info;
 
 use super::world::WorldCommand;
 use crate::actors::SharedContext;
+use crate::actors::chat::ChatActorHandle;
 use crate::actors::connection::ConnectionActorHandle;
 use crate::actors::persistence::PersistenceActorHandle;
 use crate::actors::player_query::client_position_to_placement;
@@ -20,6 +21,8 @@ use crate::actors::world::WorldActorHandle;
 use crate::config::CONFIG;
 use crate::entities::agent::Agent;
 use crate::entities::agent::Facing;
+use crate::entities::chat::ChannelId;
+use crate::entities::chat::ChatMessageType;
 use crate::entities::items::{ContainerId, ItemAttribute, ItemFlag, ItemGuid, ItemRef};
 use crate::entities::player::InventorySlot;
 use crate::entities::position::ItemPlacement;
@@ -65,6 +68,15 @@ pub enum SessionError {
 pub enum SessionCommand {
     ReceivePlayerMessage(ClientMessage),
     ReceiveBroadcast(BroadcastMessage),
+    ReceiveChatPrivate {
+        author: AgentKey,
+        message: String,
+    },
+    ReceiveChatChannel {
+        author: AgentKey,
+        channel: ChannelId,
+        message: String,
+    },
 }
 
 #[derive(Clone, Debug)]
@@ -107,7 +119,9 @@ pub struct SessionActor {
     shared_map: Arc<ArcSwap<GameMap>>,
     containers: LocalIdMap<ItemGuid>,
     agents: LocalIdMap<AgentKey>,
+    player_pms: LocalIdMap<AgentKey>,
     persistence: PersistenceActorHandle,
+    chat: ChatActorHandle,
     logout_pending: bool,
 }
 
@@ -141,11 +155,13 @@ impl SessionActor {
                         rx,
                         token,
                         connection,
+                        chat: context.chat.clone(),
                         world: context.world.clone(),
                         player_key: agent_key,
                         shared_map: context.shared_map.clone(),
                         containers: LocalIdMap::new(),
                         agents: LocalIdMap::new(),
+                        player_pms: LocalIdMap::new(),
                         persistence: context.persistence.clone(),
                         logout_pending: false,
                     };
@@ -243,11 +259,32 @@ impl SessionActor {
         match cmd {
             SessionCommand::ReceivePlayerMessage(msg) => self.handle_client_message(msg).await,
             SessionCommand::ReceiveBroadcast(msg) => self.route_broadcast(msg).await,
+            SessionCommand::ReceiveChatPrivate { author, message } => {
+                self.receive_private_message(author, message).await
+            }
+            SessionCommand::ReceiveChatChannel {
+                author,
+                channel,
+                message,
+            } => self.receive_channel_message(author, channel, message).await,
         }
     }
 
     async fn pong(&self) -> Result<()> {
         self.connection.send_message(ServerMessage::Pong).await?;
+        Ok(())
+    }
+
+    async fn receive_private_message(&mut self, author: AgentKey, message: String) -> Result<()> {
+        Ok(())
+    }
+
+    async fn receive_channel_message(
+        &mut self,
+        author: AgentKey,
+        channel: ChannelId,
+        message: String,
+    ) -> Result<()> {
         Ok(())
     }
 
@@ -302,6 +339,11 @@ impl SessionActor {
                 .await
             }
             ClientMessage::Look { position } => self.handle_look(position).await,
+            ClientMessage::Say {
+                message,
+                message_type,
+                target,
+            } => self.handle_say(message, message_type, target).await,
         }
     }
 
@@ -541,6 +583,38 @@ impl SessionActor {
         Ok(())
     }
 
+    async fn handle_say(
+        &self,
+        message: String,
+        message_type: ChatMessageType,
+        target: u16,
+    ) -> Result<()> {
+        match message_type {
+            ChatMessageType::Local => {
+                self.world
+                    .send(WorldCommand::Say {
+                        agent_key: self.player_key,
+                        message,
+                    })
+                    .await;
+            }
+            ChatMessageType::Private => {
+                let other_player_key = self.agents.get_global(target);
+                if let Some(other_player_key) = other_player_key {
+                    self.chat
+                        .message_player(self.player_key, *other_player_key, message)
+                        .await;
+                }
+            }
+            ChatMessageType::Channel => {
+                self.chat
+                    .message_channel(self.player_key, target, message)
+                    .await;
+            }
+        }
+        Ok(())
+    }
+
     async fn route_broadcast(&mut self, msg: BroadcastMessage) -> Result<()> {
         info!(
             session = self.session_id,
@@ -585,6 +659,9 @@ impl SessionActor {
                 ..
             } => self.agent_teleported(agent_key, to_position).await,
             BroadcastMessage::LogoutDenied { .. } => self.logout_denied().await,
+            BroadcastMessage::AgentSaid { agent_key, message } => {
+                self.agent_said(agent_key, message).await
+            }
         }
     }
 
@@ -1032,6 +1109,19 @@ impl SessionActor {
             self.agents.remove_by_local(agent_id);
         }
 
+        Ok(())
+    }
+
+    async fn agent_said(&mut self, agent_key: AgentKey, message: String) -> Result<()> {
+        let author = self.player_pms.get_or_insert(agent_key);
+        self.connection
+            .send_message(ServerMessage::ChatMessage {
+                author,
+                message_type: ChatMessageType::Local,
+                channel: 0,
+                message,
+            })
+            .await?;
         Ok(())
     }
 }

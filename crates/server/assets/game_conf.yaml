@@ -8,3 +8,12 @@ action:
 
 movement:
   wander_ticks: 40
+
+chat:
+  server_channels:
+    - id: 1
+      name: World Chat
+    - id: 2
+      name: Advertising
+    - id: 3
+      name: Help

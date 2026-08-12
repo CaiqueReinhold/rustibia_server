@@ -141,6 +141,7 @@ impl<L: LoginRepository + 'static> AuthActor<L> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::actors::chat::ChatActorHandle;
     use crate::actors::connection::ConnectionCommand;
     use crate::actors::persistence::PersistenceActorHandle;
     use crate::actors::world::WorldActorHandle;
@@ -194,6 +195,7 @@ mod tests {
     ) {
         let (world, world_rx) = WorldActorHandle::for_test();
         let (persistence, persistence_rx) = PersistenceActorHandle::for_test(16);
+        let (chat, _chat_rx) = ChatActorHandle::for_test();
 
         (
             SharedContext {
@@ -201,6 +203,7 @@ mod tests {
                 shared_map: Arc::new(ArcSwap::from_pointee(GameMap::new())),
                 persistence: persistence.clone(),
                 online_registry: OnlineRegistry::new(persistence),
+                chat,
             },
             world_rx,
             persistence_rx,
