@@ -31,6 +31,10 @@ const CLI_LOGOUT: u8 = 9;
 const CLI_USE_ITEM_WITH: u8 = 10;
 const CLI_LOOK: u8 = 11;
 const CLI_SAY: u8 = 12;
+const CLI_REQUEST_CHANNELS: u8 = 13;
+const CLI_OPEN_CHANNEL: u8 = 14;
+const CLI_CLOSE_CHANNEL: u8 = 15;
+const CLI_OPEN_PM_CHAT: u8 = 16;
 
 #[derive(Clone, Debug)]
 pub enum ClientMessage {
@@ -79,6 +83,16 @@ pub enum ClientMessage {
         message: String,
         message_type: ChatMessageType,
         target: u16,
+    },
+    RequestChannels,
+    OpenChannel {
+        channel: ChannelId,
+    },
+    CloseChannel {
+        channel: ChannelId,
+    },
+    OpenPmChat {
+        name: String,
     },
 }
 
@@ -312,6 +326,36 @@ impl Decoder for GameMessageCodec {
             CLI_LOOK => Ok(Some(ClientMessage::Look {
                 position: decode_position(buf),
             })),
+            CLI_SAY => {
+                // opcode + message type + 2 target bytes. Guard before subtracting: a
+                // hand-crafted short frame would otherwise wrap to `usize::MAX` in
+                // release and panic inside `split_to`.
+                if payload_len < 4 {
+                    return Err(MessageDecodeError::WrongSequence);
+                }
+                let message_type = decode_chat_message_type(buf.get_u8())?;
+                let target = buf.get_u16_le();
+                let message = String::from_utf8(buf.split_to(payload_len - 4).to_vec())
+                    .map_err(|_| MessageDecodeError::WrongSequence)?;
+                Ok(Some(ClientMessage::Say {
+                    message,
+                    message_type,
+                    target,
+                }))
+            }
+            CLI_REQUEST_CHANNELS => Ok(Some(ClientMessage::RequestChannels)),
+            CLI_OPEN_CHANNEL => Ok(Some(ClientMessage::OpenChannel {
+                channel: buf.get_u16_le(),
+            })),
+            CLI_CLOSE_CHANNEL => Ok(Some(ClientMessage::CloseChannel {
+                channel: buf.get_u16_le(),
+            })),
+            CLI_OPEN_PM_CHAT => {
+                // Cannot underflow: `payload_len` is at least 1, checked above.
+                let name = String::from_utf8(buf.split_to(payload_len - 1).to_vec())
+                    .map_err(|_| MessageDecodeError::WrongSequence)?;
+                Ok(Some(ClientMessage::OpenPmChat { name }))
+            }
             _ => Err(MessageDecodeError::WrongSequence),
         }
     }
@@ -345,6 +389,15 @@ fn decode_facing(b: u8) -> Result<Facing, MessageDecodeError> {
         2 => Ok(Facing::East),
         3 => Ok(Facing::South),
         4 => Ok(Facing::West),
+        _ => Err(MessageDecodeError::WrongSequence),
+    }
+}
+
+fn decode_chat_message_type(b: u8) -> Result<ChatMessageType, MessageDecodeError> {
+    match b {
+        0x01 => Ok(ChatMessageType::Local),
+        0x02 => Ok(ChatMessageType::Private),
+        0x03 => Ok(ChatMessageType::Channel),
         _ => Err(MessageDecodeError::WrongSequence),
     }
 }
@@ -873,5 +926,136 @@ mod tests {
             buf.len(),
             "buffer must be fully consumed: nothing trailing after the last name"
         );
+    }
+
+    #[test]
+    fn decode_local_say_message() {
+        let mut codec = GameMessageCodec {};
+        let mut buf = BytesMut::new();
+        let text = b"hello";
+        let payload_len = (1 + 1 + 2 + text.len()) as u16;
+
+        buf.extend_from_slice(&payload_len.to_le_bytes());
+        buf.extend_from_slice(&[CLI_SAY, 0x01]);
+        buf.extend_from_slice(&0u16.to_le_bytes());
+        buf.extend_from_slice(text);
+
+        match codec.decode(&mut buf).unwrap().unwrap() {
+            ClientMessage::Say {
+                message,
+                message_type,
+                target,
+            } => {
+                assert_eq!(message, "hello");
+                assert!(matches!(message_type, ChatMessageType::Local));
+                assert_eq!(target, 0);
+            }
+            other => panic!("expected Say, got {other:?}"),
+        }
+        assert!(buf.is_empty(), "the frame must be fully consumed");
+    }
+
+    #[test]
+    fn decode_channel_say_carries_the_channel_in_target() {
+        let mut codec = GameMessageCodec {};
+        let mut buf = BytesMut::new();
+        let text = b"hi all";
+        let payload_len = (1 + 1 + 2 + text.len()) as u16;
+
+        buf.extend_from_slice(&payload_len.to_le_bytes());
+        buf.extend_from_slice(&[CLI_SAY, 0x03]);
+        buf.extend_from_slice(&7u16.to_le_bytes());
+        buf.extend_from_slice(text);
+
+        match codec.decode(&mut buf).unwrap().unwrap() {
+            ClientMessage::Say {
+                message_type,
+                target,
+                ..
+            } => {
+                assert!(matches!(message_type, ChatMessageType::Channel));
+                assert_eq!(target, 7);
+            }
+            other => panic!("expected Say, got {other:?}"),
+        }
+    }
+
+    /// A truncated Say frame must not underflow `payload_len - 4`.
+    #[test]
+    fn a_short_say_frame_is_rejected_without_panicking() {
+        let mut codec = GameMessageCodec {};
+        let mut buf = BytesMut::new();
+        buf.extend_from_slice(&2u16.to_le_bytes());
+        buf.extend_from_slice(&[CLI_SAY, 0x01]);
+
+        assert!(matches!(
+            codec.decode(&mut buf),
+            Err(MessageDecodeError::WrongSequence)
+        ));
+    }
+
+    #[test]
+    fn decode_unknown_chat_message_type_is_rejected() {
+        let mut codec = GameMessageCodec {};
+        let mut buf = BytesMut::new();
+        let payload_len = (1 + 1 + 2) as u16;
+
+        buf.extend_from_slice(&payload_len.to_le_bytes());
+        buf.extend_from_slice(&[CLI_SAY, 0x09]);
+        buf.extend_from_slice(&0u16.to_le_bytes());
+
+        assert!(matches!(
+            codec.decode(&mut buf),
+            Err(MessageDecodeError::WrongSequence)
+        ));
+    }
+
+    #[test]
+    fn decode_open_pm_chat_message() {
+        let mut codec = GameMessageCodec {};
+        let mut buf = BytesMut::new();
+        let name = b"Rizael";
+        let payload_len = (1 + name.len()) as u16;
+
+        buf.extend_from_slice(&payload_len.to_le_bytes());
+        buf.extend_from_slice(&[CLI_OPEN_PM_CHAT]);
+        buf.extend_from_slice(name);
+
+        match codec.decode(&mut buf).unwrap().unwrap() {
+            ClientMessage::OpenPmChat { name } => assert_eq!(name, "Rizael"),
+            other => panic!("expected OpenPmChat, got {other:?}"),
+        }
+        assert!(buf.is_empty());
+    }
+
+    #[test]
+    fn decode_channel_control_messages() {
+        let mut codec = GameMessageCodec {};
+
+        let mut buf = BytesMut::new();
+        buf.extend_from_slice(&1u16.to_le_bytes());
+        buf.extend_from_slice(&[CLI_REQUEST_CHANNELS]);
+        assert!(matches!(
+            codec.decode(&mut buf).unwrap().unwrap(),
+            ClientMessage::RequestChannels
+        ));
+
+        let mut buf = BytesMut::new();
+        buf.extend_from_slice(&3u16.to_le_bytes());
+        buf.extend_from_slice(&[CLI_OPEN_CHANNEL]);
+        buf.extend_from_slice(&2u16.to_le_bytes());
+        match codec.decode(&mut buf).unwrap().unwrap() {
+            ClientMessage::OpenChannel { channel } => assert_eq!(channel, 2),
+            other => panic!("expected OpenChannel, got {other:?}"),
+        }
+
+        let mut buf = BytesMut::new();
+        buf.extend_from_slice(&3u16.to_le_bytes());
+        buf.extend_from_slice(&[CLI_CLOSE_CHANNEL]);
+        buf.extend_from_slice(&2u16.to_le_bytes());
+        match codec.decode(&mut buf).unwrap().unwrap() {
+            ClientMessage::CloseChannel { channel } => assert_eq!(channel, 2),
+            other => panic!("expected CloseChannel, got {other:?}"),
+        }
     }
 }
