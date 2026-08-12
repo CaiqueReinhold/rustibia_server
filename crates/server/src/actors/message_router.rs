@@ -344,8 +344,17 @@ impl MessageRouterActor {
             BroadcastMessage::LogoutDenied { agent_key } => {
                 self.send_to(message, agent_key);
             }
-            BroadcastMessage::AgentSaid { agent_key, message } => {
-                todo!()
+            BroadcastMessage::AgentSaid { agent_key, .. } => {
+                // `originator: None` is deliberate — a speaker hears themselves.
+                if let Some(position) = map.agent_position(*agent_key) {
+                    self.send_to_rect(
+                        message,
+                        map,
+                        Rect::player_viewport(position),
+                        position.z,
+                        None,
+                    );
+                }
             }
         }
     }
@@ -469,6 +478,58 @@ mod tests {
         let agent = Agent::from_player(a_test_snapshot(1, 1));
         let key = map.insert_agent(agent, at).unwrap();
         (map, key)
+    }
+
+    #[test]
+    fn speech_reaches_the_speaker_and_a_nearby_listener() {
+        let pos = Position::new(100, 100, 7);
+        let (mut map, speaker) = map_with_player(&pos);
+
+        let listener_pos = Position::new(101, 100, 7);
+        map.insert_tile(listener_pos.clone(), MapTile::new());
+        let listener = map
+            .insert_agent(Agent::from_player(a_test_snapshot(2, 1)), &listener_pos)
+            .unwrap();
+
+        let mut router = a_router();
+        let (speaker_handle, mut speaker_rx) = SessionActorHandle::for_test();
+        let (listener_handle, mut listener_rx) = SessionActorHandle::for_test();
+        router.session_map.insert(speaker, speaker_handle);
+        router.session_map.insert(listener, listener_handle);
+
+        let message = BroadcastMessage::AgentSaid {
+            agent_key: speaker,
+            message: "hello".to_owned(),
+        };
+        router.route_to_recipients(&message, &map);
+
+        assert!(
+            speaker_rx.try_recv().is_ok(),
+            "a speaker must hear their own speech"
+        );
+        assert!(
+            listener_rx.try_recv().is_ok(),
+            "a listener in the viewport must hear the speech"
+        );
+    }
+
+    #[test]
+    fn speech_from_a_departed_agent_is_dropped() {
+        let mut router = a_router();
+        let (handle, mut rx) = SessionActorHandle::for_test();
+        let ghost = AgentKey::default();
+        router.session_map.insert(ghost, handle);
+
+        let message = BroadcastMessage::AgentSaid {
+            agent_key: ghost,
+            message: "hello".to_owned(),
+        };
+        router.route_to_recipients(&message, &GameMap::new());
+
+        assert!(
+            rx.try_recv().is_err(),
+            "an agent with no position on the map has no viewport to fan out to"
+        );
     }
 
     #[test]
