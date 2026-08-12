@@ -444,3 +444,48 @@ impl MessageRouterActor {
         dead
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::entities::agent::Agent;
+    use crate::entities::map::MapTile;
+    use crate::entities::position::Position;
+    use crate::persistence::test_fixtures::a_test_snapshot;
+
+    fn a_router() -> MessageRouterActor {
+        let (_tx, rx) = mpsc::channel(64);
+        MessageRouterActor {
+            rx,
+            shared_map: Arc::new(ArcSwap::from_pointee(GameMap::new())),
+            session_map: HashMap::new(),
+        }
+    }
+
+    /// A map with one player standing at `at`, plus the tile under them.
+    fn map_with_player(at: &Position) -> (GameMap, AgentKey) {
+        let mut map = GameMap::new();
+        map.insert_tile(at.clone(), MapTile::new());
+        let agent = Agent::from_player(a_test_snapshot(1, 1));
+        let key = map.insert_agent(agent, at).unwrap();
+        (map, key)
+    }
+
+    #[test]
+    fn a_closed_session_is_unsubscribed_and_reported_dead() {
+        let mut router = a_router();
+        let (handle, rx) = SessionActorHandle::for_test();
+        let key = AgentKey::default();
+        router.session_map.insert(key, handle);
+
+        drop(rx); // the session actor is gone
+
+        let dead = router.deliver_channel_message(key, vec![key], 1, "hello".to_owned());
+
+        assert_eq!(dead, vec![key], "a closed session must be reported dead");
+        assert!(
+            !router.session_map.contains_key(&key),
+            "a closed session must also be unsubscribed"
+        );
+    }
+}
