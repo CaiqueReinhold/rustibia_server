@@ -5,6 +5,7 @@ use anyhow::Result;
 use thiserror::Error;
 use tokio::select;
 use tokio::sync::mpsc;
+use tokio::sync::watch;
 use tokio_util::sync::CancellationToken;
 use tracing::error;
 use tracing::info;
@@ -26,6 +27,7 @@ use crate::entities::chat::ChatMessageType;
 use crate::entities::items::{ContainerId, ItemAttribute, ItemFlag, ItemGuid, ItemRef};
 use crate::entities::player::InventorySlot;
 use crate::entities::position::ItemPlacement;
+use crate::game::Tick;
 use crate::game::description::get_look_description;
 use crate::game::events::BroadcastMessage;
 use crate::game::map_query::get_agents_in_expansion;
@@ -41,6 +43,7 @@ use crate::persistence::player::PlayerSnapshot;
 use arc_swap::ArcSwap;
 
 use crate::entities::{
+    agent::AgentId,
     agent::AgentKey,
     items::ItemId,
     map::GameMap,
@@ -161,6 +164,8 @@ pub struct SessionActor {
     player_pms: LocalIdMap<AgentKey>,
     persistence: PersistenceActorHandle,
     chat: ChatActorHandle,
+    tick_rx: watch::Receiver<Tick>,
+    next_chat_tick: Tick,
     logout_pending: bool,
 }
 
@@ -202,6 +207,8 @@ impl SessionActor {
                         agents: LocalIdMap::new(),
                         player_pms: LocalIdMap::new(),
                         persistence: context.persistence.clone(),
+                        tick_rx: context.tick_rx.clone(),
+                        next_chat_tick: 0,
                         logout_pending: false,
                     };
                     actor.run().await;
@@ -314,8 +321,65 @@ impl SessionActor {
         Ok(())
     }
 
-    async fn receive_private_message(&mut self, author: AgentKey, message: String) -> Result<()> {
+    /// Resolves `agent_key` to a session-local chat id, sending `IntroducePlayer` the
+    /// first time this session hears from them. `player_pms` is never pruned by the
+    /// viewport, so a conversation survives the other party walking out of view.
+    /// Returns `None` if the agent has left the map and can no longer be named.
+    async fn introduce(&mut self, agent_key: AgentKey) -> Result<Option<AgentId>> {
+        if let Some(local_id) = self.player_pms.get_local(&agent_key) {
+            return Ok(Some(local_id));
+        }
+
+        // Scoped so the snapshot guard is released before the await below.
+        let name = {
+            let map = self.shared_map.load();
+            match map.get_agent(agent_key) {
+                Some(agent) => agent.name().to_owned(),
+                None => return Ok(None),
+            }
+        };
+
+        let local_id = self.player_pms.get_or_insert(agent_key);
+        self.connection
+            .send_message(ServerMessage::IntroducePlayer { local_id, name })
+            .await?;
+        Ok(Some(local_id))
+    }
+
+    async fn deny(&self, text: &str) -> Result<()> {
+        self.connection
+            .send_message(ServerMessage::TextMessage {
+                text: text.to_owned(),
+                message_type: TextMessageType::ActionDenied,
+            })
+            .await?;
         Ok(())
+    }
+
+    async fn send_chat(
+        &mut self,
+        author: AgentKey,
+        message_type: ChatMessageType,
+        channel: ChannelId,
+        message: String,
+    ) -> Result<()> {
+        let Some(author) = self.introduce(author).await? else {
+            return Ok(());
+        };
+        self.connection
+            .send_message(ServerMessage::ChatMessage {
+                author,
+                message_type,
+                channel,
+                message,
+            })
+            .await?;
+        Ok(())
+    }
+
+    async fn receive_private_message(&mut self, author: AgentKey, message: String) -> Result<()> {
+        self.send_chat(author, ChatMessageType::Private, 0, message)
+            .await
     }
 
     async fn receive_channel_message(
@@ -324,7 +388,8 @@ impl SessionActor {
         channel: ChannelId,
         message: String,
     ) -> Result<()> {
-        Ok(())
+        self.send_chat(author, ChatMessageType::Channel, channel, message)
+            .await
     }
 
     async fn handle_client_message(&mut self, command: ClientMessage) -> Result<()> {
@@ -1152,15 +1217,97 @@ impl SessionActor {
     }
 
     async fn agent_said(&mut self, agent_key: AgentKey, message: String) -> Result<()> {
-        let author = self.player_pms.get_or_insert(agent_key);
-        self.connection
-            .send_message(ServerMessage::ChatMessage {
-                author,
-                message_type: ChatMessageType::Local,
-                channel: 0,
-                message,
-            })
-            .await?;
-        Ok(())
+        self.send_chat(agent_key, ChatMessageType::Local, 0, message)
+            .await
+    }
+
+    #[cfg(test)]
+    fn for_test(
+        player_key: AgentKey,
+        map: GameMap,
+    ) -> (
+        Self,
+        mpsc::Receiver<crate::actors::connection::ConnectionCommand>,
+        watch::Sender<Tick>,
+    ) {
+        use crate::actors::chat::ChatActorHandle;
+        use crate::actors::world::WorldActorHandle;
+
+        let (_tx, rx) = mpsc::channel(64);
+        let (connection, connection_rx) = ConnectionActorHandle::for_test();
+        let (world, _world_rx) = WorldActorHandle::for_test();
+        let (chat, _chat_rx) = ChatActorHandle::for_test();
+        let (persistence, _persistence_rx) = PersistenceActorHandle::for_test(16);
+        let (tick_tx, tick_rx) = watch::channel(0);
+
+        (
+            Self {
+                session_id: "test".to_owned(),
+                rx,
+                token: CancellationToken::new(),
+                connection,
+                world,
+                chat,
+                player_key,
+                shared_map: Arc::new(ArcSwap::from_pointee(map)),
+                containers: LocalIdMap::new(),
+                agents: LocalIdMap::new(),
+                player_pms: LocalIdMap::new(),
+                persistence,
+                tick_rx,
+                next_chat_tick: 0,
+                logout_pending: false,
+            },
+            connection_rx,
+            tick_tx,
+        )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::actors::connection::ConnectionCommand;
+    use crate::entities::map::MapTile;
+    use crate::entities::position::Position;
+    use crate::persistence::test_fixtures::a_test_snapshot;
+
+    fn map_with_player(at: &Position) -> (GameMap, AgentKey) {
+        let mut map = GameMap::new();
+        map.insert_tile(at.clone(), MapTile::new());
+        let key = map
+            .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), at)
+            .unwrap();
+        (map, key)
+    }
+
+    #[tokio::test]
+    async fn an_author_is_introduced_exactly_once() {
+        let pos = Position::new(100, 100, 7);
+        let (map, key) = map_with_player(&pos);
+        let (mut session, mut connection_rx, _tick_tx) = SessionActor::for_test(key, map);
+
+        let first = session.introduce(key).await.unwrap();
+        let second = session.introduce(key).await.unwrap();
+
+        assert_eq!(first, second, "the same author keeps the same local id");
+        assert!(matches!(
+            connection_rx.try_recv(),
+            Ok(ConnectionCommand::SendPlayerMessage(
+                ServerMessage::IntroducePlayer { .. }
+            ))
+        ));
+        assert!(
+            connection_rx.try_recv().is_err(),
+            "a second introduce must not go back over the wire"
+        );
+    }
+
+    #[tokio::test]
+    async fn an_author_no_longer_on_the_map_is_not_introduced() {
+        let (mut session, _connection_rx, _tick_tx) =
+            SessionActor::for_test(AgentKey::default(), GameMap::new());
+
+        assert_eq!(session.introduce(AgentKey::default()).await.unwrap(), None);
     }
 }
