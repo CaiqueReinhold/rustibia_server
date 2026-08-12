@@ -5,10 +5,11 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::mpsc::{self, error::TrySendError};
+use tokio::sync::oneshot;
 use tracing::info;
 
 use crate::{
-    actors::session::SessionActorHandle,
+    actors::session::{SessionActorHandle, SessionCommand},
     config::CONFIG,
     entities::{
         agent::AgentKey,
@@ -38,9 +39,10 @@ pub enum MessageRouterCommand {
     },
     DeliverChannelMessage {
         author: AgentKey,
-        recipient: AgentKey,
+        recipients: Vec<AgentKey>,
         channel_id: ChannelId,
         message: String,
+        tx: oneshot::Sender<Vec<AgentKey>>,
     },
 }
 
@@ -102,6 +104,57 @@ impl MessageRouterActorHandle {
             .send(MessageRouterCommand::Broadcast { messages })
             .await;
     }
+
+    pub async fn deliver_private_message(
+        &self,
+        author: AgentKey,
+        recipient: AgentKey,
+        message: String,
+    ) {
+        let _ = self
+            .tx
+            .send(MessageRouterCommand::DeliverPrivateMessage {
+                author,
+                recipient,
+                message,
+            })
+            .await;
+    }
+
+    /// Delivers one channel message to every recipient and returns the keys it could not
+    /// reach, so the caller can prune them. Batched on purpose: this actor is also the
+    /// fan-out path for every world broadcast, so one round-trip per message keeps chat
+    /// traffic off the critical path for movement and tile updates.
+    pub async fn deliver_channel_message(
+        &self,
+        author: AgentKey,
+        recipients: Vec<AgentKey>,
+        channel_id: ChannelId,
+        message: String,
+    ) -> Vec<AgentKey> {
+        let (tx, rx) = oneshot::channel();
+        if self
+            .tx
+            .send(MessageRouterCommand::DeliverChannelMessage {
+                author,
+                recipients,
+                channel_id,
+                message,
+                tx,
+            })
+            .await
+            .is_err()
+        {
+            return Vec::new();
+        }
+        rx.await.unwrap_or_default()
+    }
+
+    #[cfg(test)]
+    pub fn for_test() -> (Self, mpsc::Receiver<MessageRouterCommand>) {
+        let (tx, rx) = mpsc::channel(64);
+        (Self { tx }, rx)
+    }
 }
 
 impl MessageRouterActor {
@@ -138,6 +191,21 @@ impl MessageRouterActor {
             }
             MessageRouterCommand::Unsubscribe { agent_key } => self.unsubscribe(agent_key),
             MessageRouterCommand::Broadcast { messages } => self.broadcast(messages).await,
+            MessageRouterCommand::DeliverPrivateMessage {
+                author,
+                recipient,
+                message,
+            } => self.deliver_private(author, recipient, message),
+            MessageRouterCommand::DeliverChannelMessage {
+                author,
+                recipients,
+                channel_id,
+                message,
+                tx,
+            } => {
+                let dead = self.deliver_channel(author, recipients, channel_id, message);
+                let _ = tx.send(dead);
+            }
         }
     }
 
@@ -309,17 +377,64 @@ impl MessageRouterActor {
         }
     }
 
-    fn send_to(&mut self, message: &BroadcastMessage, agent_key: &AgentKey) {
-        if let Some(session) = self.session_map.get(agent_key)
-            && let Err(error) = session.receive_broadcast(message.clone())
-        {
-            match error {
-                TrySendError::Closed(..) => self.unsubscribe(*agent_key),
-                TrySendError::Full(..) => {
+    /// The single place a failed send to a session is interpreted. Returns whether the
+    /// message was delivered, so callers that track membership can prune.
+    fn handle_send_result(
+        &mut self,
+        agent_key: AgentKey,
+        result: Result<(), TrySendError<SessionCommand>>,
+    ) -> bool {
+        match result {
+            Ok(()) => true,
+            Err(TrySendError::Closed(..)) => {
+                self.unsubscribe(agent_key);
+                false
+            }
+            Err(TrySendError::Full(..)) => {
+                if let Some(session) = self.session_map.get(&agent_key) {
                     session.close();
-                    self.unsubscribe(*agent_key);
                 }
+                self.unsubscribe(agent_key);
+                false
             }
         }
+    }
+
+    fn send_to(&mut self, message: &BroadcastMessage, agent_key: &AgentKey) {
+        let Some(session) = self.session_map.get(agent_key).cloned() else {
+            return;
+        };
+        let result = session.receive_broadcast(message.clone());
+        self.handle_send_result(*agent_key, result);
+    }
+
+    fn deliver_private(&mut self, author: AgentKey, recipient: AgentKey, message: String) {
+        let Some(session) = self.session_map.get(&recipient).cloned() else {
+            return;
+        };
+        let result = session.receive_chat_private(author, message);
+        self.handle_send_result(recipient, result);
+    }
+
+    /// Returns the recipients that could not be reached.
+    fn deliver_channel(
+        &mut self,
+        author: AgentKey,
+        recipients: Vec<AgentKey>,
+        channel_id: ChannelId,
+        message: String,
+    ) -> Vec<AgentKey> {
+        let mut dead = Vec::new();
+        for recipient in recipients {
+            let Some(session) = self.session_map.get(&recipient).cloned() else {
+                dead.push(recipient);
+                continue;
+            };
+            let result = session.receive_chat_channel(author, channel_id, message.clone());
+            if !self.handle_send_result(recipient, result) {
+                dead.push(recipient);
+            }
+        }
+        dead
     }
 }
