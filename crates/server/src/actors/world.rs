@@ -19,7 +19,7 @@ use crate::entities::items::{ItemConfig, ItemGuid, ItemId, ItemRef};
 use crate::entities::map::GameMap;
 use crate::entities::position::{Direction, ItemPlacement, Position};
 use crate::game::events::BroadcastMessage;
-use crate::game::{Tick, item_action, item_movement, item_multi_action, movement};
+use crate::game::{Tick, chat, item_action, item_movement, item_multi_action, movement};
 
 #[derive(Debug)]
 pub enum WorldCommand {
@@ -374,7 +374,9 @@ impl WorldActor {
                 Ok(())
             }
             WorldCommand::Say { agent_key, message } => {
-                todo!();
+                let msgs = chat::say(&self.map, agent_key, message);
+                broadcast_messages.extend(msgs);
+                Ok(())
             }
         };
         if let Err(e) = result {
