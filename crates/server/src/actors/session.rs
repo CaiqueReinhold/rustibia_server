@@ -30,6 +30,7 @@ use crate::entities::position::ItemPlacement;
 use crate::game::Tick;
 use crate::game::description::get_look_description;
 use crate::game::events::BroadcastMessage;
+use crate::game::game_config::GAME_CONFIG;
 use crate::game::map_query::get_agents_in_expansion;
 use crate::game::map_query::get_agents_in_viewport;
 use crate::game::map_query::{
@@ -448,6 +449,10 @@ impl SessionActor {
                 message_type,
                 target,
             } => self.handle_say(message, message_type, target).await,
+            ClientMessage::RequestChannels => self.handle_request_channels().await,
+            ClientMessage::OpenChannel { channel } => self.handle_open_channel(channel).await,
+            ClientMessage::CloseChannel { channel } => self.handle_close_channel(channel).await,
+            ClientMessage::OpenPmChat { name } => self.handle_open_pm_chat(name).await,
         }
     }
 
@@ -688,11 +693,22 @@ impl SessionActor {
     }
 
     async fn handle_say(
-        &self,
+        &mut self,
         message: String,
         message_type: ChatMessageType,
         target: u16,
     ) -> Result<()> {
+        if message.len() > GAME_CONFIG.chat.max_message_length {
+            return self.deny("Your message is too long.").await;
+        }
+
+        // Dropped silently on purpose: replying to a flood would itself be traffic.
+        let now = *self.tick_rx.borrow();
+        if now < self.next_chat_tick {
+            return Ok(());
+        }
+        self.next_chat_tick = now + GAME_CONFIG.chat.message_cooldown_ticks;
+
         match message_type {
             ChatMessageType::Local => {
                 self.world
@@ -703,10 +719,11 @@ impl SessionActor {
                     .await;
             }
             ChatMessageType::Private => {
-                let other_player_key = self.agents.get_global(target);
-                if let Some(other_player_key) = other_player_key {
+                // `target` is a `player_pms` id: the client got it from an
+                // `IntroducePlayer`, either by opening the chat or by receiving a message.
+                if let Some(recipient) = self.player_pms.get_global(target).copied() {
                     self.chat
-                        .message_player(self.player_key, *other_player_key, message)
+                        .message_player(self.player_key, recipient, message)
                         .await;
                 }
             }
@@ -716,6 +733,47 @@ impl SessionActor {
                     .await;
             }
         }
+        Ok(())
+    }
+
+    /// Resolves a name to a chat id so the client can start a conversation. The map
+    /// snapshot is the only name index there is — `OnlineRegistry` holds character ids
+    /// and nothing else.
+    async fn handle_open_pm_chat(&mut self, name: String) -> Result<()> {
+        let target = {
+            let map = self.shared_map.load();
+            map.iter_agents()
+                .find(|(_, agent)| !agent.is_creature() && agent.name().eq_ignore_ascii_case(&name))
+                .map(|(key, _)| key)
+        };
+
+        let Some(target) = target else {
+            return self.deny("A player with this name is not online.").await;
+        };
+
+        self.introduce(target).await?;
+        Ok(())
+    }
+
+    async fn handle_request_channels(&self) -> Result<()> {
+        let channels = self
+            .chat
+            .get_available_channels()
+            .map(|(id, name)| (id, name.to_owned()))
+            .collect();
+        self.connection
+            .send_message(ServerMessage::ChannelList { channels })
+            .await?;
+        Ok(())
+    }
+
+    async fn handle_open_channel(&self, channel: ChannelId) -> Result<()> {
+        self.chat.join_channel(self.player_key, channel).await;
+        Ok(())
+    }
+
+    async fn handle_close_channel(&self, channel: ChannelId) -> Result<()> {
+        self.chat.leave_channel(self.player_key, channel).await;
         Ok(())
     }
 
@@ -1329,5 +1387,92 @@ mod tests {
             SessionActor::for_test(AgentKey::default(), GameMap::new());
 
         assert_eq!(session.introduce(AgentKey::default()).await.unwrap(), None);
+    }
+
+    #[tokio::test]
+    async fn an_over_length_message_is_denied() {
+        let mut map = GameMap::new();
+        let key = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let (mut session, mut connection_rx, _tick_tx) = SessionActor::for_test(key, map);
+
+        let too_long = "x".repeat(GAME_CONFIG.chat.max_message_length + 1);
+        session
+            .handle_say(too_long, ChatMessageType::Local, 0)
+            .await
+            .unwrap();
+
+        assert!(
+            matches!(
+                connection_rx.try_recv(),
+                Ok(ConnectionCommand::SendPlayerMessage(
+                    ServerMessage::TextMessage { .. }
+                ))
+            ),
+            "an over-length message must be refused, not truncated"
+        );
+    }
+
+    #[tokio::test]
+    async fn a_second_message_inside_the_cooldown_is_dropped() {
+        let mut map = GameMap::new();
+        let key = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let (mut session, mut connection_rx, _tick_tx) = SessionActor::for_test(key, map);
+
+        session
+            .handle_say("one".to_owned(), ChatMessageType::Local, 0)
+            .await
+            .unwrap();
+        session
+            .handle_say("two".to_owned(), ChatMessageType::Local, 0)
+            .await
+            .unwrap();
+
+        assert!(
+            connection_rx.try_recv().is_err(),
+            "flood control must drop silently — it must not itself generate traffic"
+        );
+        assert!(
+            session.next_chat_tick > 0,
+            "the cooldown must have been armed"
+        );
+    }
+
+    #[tokio::test]
+    async fn opening_a_pm_chat_with_an_offline_name_is_denied() {
+        let mut map = GameMap::new();
+        let key = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let (mut session, mut connection_rx, _tick_tx) = SessionActor::for_test(key, map);
+
+        session
+            .handle_open_pm_chat("Nobody".to_owned())
+            .await
+            .unwrap();
+
+        assert!(matches!(
+            connection_rx.try_recv(),
+            Ok(ConnectionCommand::SendPlayerMessage(
+                ServerMessage::TextMessage { .. }
+            ))
+        ));
+    }
+
+    #[tokio::test]
+    async fn opening_a_pm_chat_introduces_the_target() {
+        let mut map = GameMap::new();
+        let key = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let (mut session, mut connection_rx, _tick_tx) = SessionActor::for_test(key, map);
+
+        // `a_test_snapshot` names the character "Rizael"; matching is case-insensitive.
+        session
+            .handle_open_pm_chat("rizael".to_owned())
+            .await
+            .unwrap();
+
+        assert!(matches!(
+            connection_rx.try_recv(),
+            Ok(ConnectionCommand::SendPlayerMessage(
+                ServerMessage::IntroducePlayer { .. }
+            ))
+        ));
     }
 }
