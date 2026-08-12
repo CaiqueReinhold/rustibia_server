@@ -170,6 +170,18 @@ pub struct SessionActor {
     logout_pending: bool,
 }
 
+/// What `SessionActor::for_test` hands back: the actor, plus the receiving end of every
+/// channel it writes to and the tick sender. Every receiver has to stay *bound* for the
+/// life of the test — dropping one turns the matching send into a silent no-op, which
+/// would let an assertion about "nothing was sent" pass for the wrong reason.
+#[cfg(test)]
+type TestSession = (
+    SessionActor,
+    mpsc::Receiver<crate::actors::connection::ConnectionCommand>,
+    mpsc::Receiver<(WorldCommand, Option<Tick>)>,
+    watch::Sender<Tick>,
+);
+
 impl SessionActor {
     pub fn start(
         session_id: String,
@@ -1280,20 +1292,13 @@ impl SessionActor {
     }
 
     #[cfg(test)]
-    fn for_test(
-        player_key: AgentKey,
-        map: GameMap,
-    ) -> (
-        Self,
-        mpsc::Receiver<crate::actors::connection::ConnectionCommand>,
-        watch::Sender<Tick>,
-    ) {
+    fn for_test(player_key: AgentKey, map: GameMap) -> TestSession {
         use crate::actors::chat::ChatActorHandle;
         use crate::actors::world::WorldActorHandle;
 
         let (_tx, rx) = mpsc::channel(64);
         let (connection, connection_rx) = ConnectionActorHandle::for_test();
-        let (world, _world_rx) = WorldActorHandle::for_test();
+        let (world, world_rx) = WorldActorHandle::for_test();
         let (chat, _chat_rx) = ChatActorHandle::for_test();
         let (persistence, _persistence_rx) = PersistenceActorHandle::for_test(16);
         let (tick_tx, tick_rx) = watch::channel(0);
@@ -1317,6 +1322,7 @@ impl SessionActor {
                 logout_pending: false,
             },
             connection_rx,
+            world_rx,
             tick_tx,
         )
     }
@@ -1341,7 +1347,8 @@ mod tests {
         let mut map = GameMap::new();
         let author_a = seat_player(&mut map, &Position::new(100, 100, 7), 1);
         let author_b = seat_player(&mut map, &Position::new(101, 100, 7), 2);
-        let (mut session, mut connection_rx, _tick_tx) = SessionActor::for_test(author_a, map);
+        let (mut session, mut connection_rx, _world_rx, _tick_tx) =
+            SessionActor::for_test(author_a, map);
 
         // Hearing from B in between is what makes the third call meaningful: a session
         // that forgot A would hand out a different id for A the second time round.
@@ -1383,7 +1390,7 @@ mod tests {
 
     #[tokio::test]
     async fn an_author_no_longer_on_the_map_is_not_introduced() {
-        let (mut session, _connection_rx, _tick_tx) =
+        let (mut session, _connection_rx, _world_rx, _tick_tx) =
             SessionActor::for_test(AgentKey::default(), GameMap::new());
 
         assert_eq!(session.introduce(AgentKey::default()).await.unwrap(), None);
@@ -1393,7 +1400,8 @@ mod tests {
     async fn an_over_length_message_is_denied() {
         let mut map = GameMap::new();
         let key = seat_player(&mut map, &Position::new(100, 100, 7), 1);
-        let (mut session, mut connection_rx, _tick_tx) = SessionActor::for_test(key, map);
+        let (mut session, mut connection_rx, _world_rx, _tick_tx) =
+            SessionActor::for_test(key, map);
 
         let too_long = "x".repeat(GAME_CONFIG.chat.max_message_length + 1);
         session
@@ -1405,27 +1413,44 @@ mod tests {
             matches!(
                 connection_rx.try_recv(),
                 Ok(ConnectionCommand::SendPlayerMessage(
-                    ServerMessage::TextMessage { .. }
+                    ServerMessage::TextMessage {
+                        message_type: TextMessageType::ActionDenied,
+                        ..
+                    }
                 ))
             ),
             "an over-length message must be refused, not truncated"
         );
     }
 
+    /// Asserts on the *world* receiver, not the connection: local speech is forwarded to
+    /// `WorldCommand::Say` and never echoed back down the connection, so watching
+    /// `connection_rx` here would be satisfied whether the message was dropped or
+    /// forwarded. The world receiver is the only place the difference is observable.
     #[tokio::test]
     async fn a_second_message_inside_the_cooldown_is_dropped() {
         let mut map = GameMap::new();
         let key = seat_player(&mut map, &Position::new(100, 100, 7), 1);
-        let (mut session, mut connection_rx, _tick_tx) = SessionActor::for_test(key, map);
+        let (mut session, mut connection_rx, mut world_rx, tick_tx) =
+            SessionActor::for_test(key, map);
 
         session
             .handle_say("one".to_owned(), ChatMessageType::Local, 0)
             .await
             .unwrap();
+        assert!(
+            matches!(world_rx.try_recv(), Ok((WorldCommand::Say { .. }, _))),
+            "the first message must reach the world"
+        );
+
         session
             .handle_say("two".to_owned(), ChatMessageType::Local, 0)
             .await
             .unwrap();
+        assert!(
+            world_rx.try_recv().is_err(),
+            "a second message inside the cooldown must not reach the world"
+        );
 
         assert!(
             connection_rx.try_recv().is_err(),
@@ -1435,13 +1460,28 @@ mod tests {
             session.next_chat_tick > 0,
             "the cooldown must have been armed"
         );
+
+        // Once the cooldown elapses the same message does get through, so what is being
+        // pinned is a delay and not a permanent mute.
+        tick_tx
+            .send(GAME_CONFIG.chat.message_cooldown_ticks)
+            .unwrap();
+        session
+            .handle_say("three".to_owned(), ChatMessageType::Local, 0)
+            .await
+            .unwrap();
+        assert!(
+            matches!(world_rx.try_recv(), Ok((WorldCommand::Say { .. }, _))),
+            "a message sent after the cooldown elapses must reach the world"
+        );
     }
 
     #[tokio::test]
     async fn opening_a_pm_chat_with_an_offline_name_is_denied() {
         let mut map = GameMap::new();
         let key = seat_player(&mut map, &Position::new(100, 100, 7), 1);
-        let (mut session, mut connection_rx, _tick_tx) = SessionActor::for_test(key, map);
+        let (mut session, mut connection_rx, _world_rx, _tick_tx) =
+            SessionActor::for_test(key, map);
 
         session
             .handle_open_pm_chat("Nobody".to_owned())
@@ -1460,7 +1500,8 @@ mod tests {
     async fn opening_a_pm_chat_introduces_the_target() {
         let mut map = GameMap::new();
         let key = seat_player(&mut map, &Position::new(100, 100, 7), 1);
-        let (mut session, mut connection_rx, _tick_tx) = SessionActor::for_test(key, map);
+        let (mut session, mut connection_rx, _world_rx, _tick_tx) =
+            SessionActor::for_test(key, map);
 
         // `a_test_snapshot` names the character "Rizael"; matching is case-insensitive.
         session
