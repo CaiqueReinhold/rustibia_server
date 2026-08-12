@@ -107,6 +107,45 @@ impl SessionActorHandle {
         self.tx.try_send(SessionCommand::ReceiveBroadcast(msg))?;
         Ok(())
     }
+
+    pub fn receive_chat_private(
+        &self,
+        author: AgentKey,
+        message: String,
+    ) -> Result<(), mpsc::error::TrySendError<SessionCommand>> {
+        self.tx
+            .try_send(SessionCommand::ReceiveChatPrivate { author, message })?;
+        Ok(())
+    }
+
+    pub fn receive_chat_channel(
+        &self,
+        author: AgentKey,
+        channel: ChannelId,
+        message: String,
+    ) -> Result<(), mpsc::error::TrySendError<SessionCommand>> {
+        self.tx.try_send(SessionCommand::ReceiveChatChannel {
+            author,
+            channel,
+            message,
+        })?;
+        Ok(())
+    }
+
+    /// A handle backed by a channel the caller owns. The receiver must be kept alive:
+    /// dropping it turns every send into a `Closed` error, which the router reads as a
+    /// dead session.
+    #[cfg(test)]
+    pub fn for_test() -> (Self, mpsc::Receiver<SessionCommand>) {
+        let (tx, rx) = mpsc::channel(64);
+        (
+            Self {
+                tx,
+                token: CancellationToken::new(),
+            },
+            rx,
+        )
+    }
 }
 
 pub struct SessionActor {
