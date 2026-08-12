@@ -71,7 +71,7 @@ async fn main() -> Result<()> {
         shared_map.clone(),
         tick_rx.clone(),
     );
-    CreatureBehaviorActor::start(world.clone(), shared_map.clone(), tick_rx);
+    CreatureBehaviorActor::start(world.clone(), shared_map.clone(), tick_rx.clone());
 
     let internal_client = HttpLoginRepository::build_client(
         CONFIG.internal_tls_cert.as_str(),
@@ -111,6 +111,7 @@ async fn main() -> Result<()> {
             persistence: persistence.clone(),
             online_registry: OnlineRegistry::new(persistence),
             chat,
+            tick_rx,
         },
     };
 

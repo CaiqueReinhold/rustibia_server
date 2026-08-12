@@ -1,9 +1,11 @@
 use std::sync::Arc;
 
 use arc_swap::ArcSwap;
+use tokio::sync::watch;
 
 use crate::{
-    actors::chat::ChatActorHandle, entities::map::GameMap, online_registry::OnlineRegistry,
+    actors::chat::ChatActorHandle, entities::map::GameMap, game::Tick,
+    online_registry::OnlineRegistry,
 };
 
 use self::{persistence::PersistenceActorHandle, world::WorldActorHandle};
@@ -26,4 +28,5 @@ pub struct SharedContext {
     pub persistence: PersistenceActorHandle,
     pub online_registry: OnlineRegistry,
     pub chat: ChatActorHandle,
+    pub tick_rx: watch::Receiver<Tick>,
 }

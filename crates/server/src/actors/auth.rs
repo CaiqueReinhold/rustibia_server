@@ -196,6 +196,7 @@ mod tests {
         let (world, world_rx) = WorldActorHandle::for_test();
         let (persistence, persistence_rx) = PersistenceActorHandle::for_test(16);
         let (chat, _chat_rx) = ChatActorHandle::for_test();
+        let (_tick_tx, tick_rx) = tokio::sync::watch::channel(0);
 
         (
             SharedContext {
@@ -204,6 +205,7 @@ mod tests {
                 persistence: persistence.clone(),
                 online_registry: OnlineRegistry::new(persistence),
                 chat,
+                tick_rx,
             },
             world_rx,
             persistence_rx,
