@@ -70,13 +70,13 @@ pub enum SessionError {
 
 #[derive(Clone, Debug)]
 pub enum SessionCommand {
-    ReceivePlayerMessage(ClientMessage),
-    ReceiveBroadcast(BroadcastMessage),
-    ReceiveChatPrivate {
+    PlayerMessage(ClientMessage),
+    Broadcast(BroadcastMessage),
+    ChatPrivate {
         author: AgentKey,
         message: String,
     },
-    ReceiveChatChannel {
+    ChatChannel {
         author: AgentKey,
         channel: ChannelId,
         message: String,
@@ -98,9 +98,7 @@ impl SessionActorHandle {
         &self,
         msg: ClientMessage,
     ) -> Result<(), mpsc::error::SendError<SessionCommand>> {
-        self.tx
-            .send(SessionCommand::ReceivePlayerMessage(msg))
-            .await?;
+        self.tx.send(SessionCommand::PlayerMessage(msg)).await?;
         Ok(())
     }
 
@@ -108,7 +106,7 @@ impl SessionActorHandle {
         &self,
         msg: BroadcastMessage,
     ) -> Result<(), mpsc::error::TrySendError<SessionCommand>> {
-        self.tx.try_send(SessionCommand::ReceiveBroadcast(msg))?;
+        self.tx.try_send(SessionCommand::Broadcast(msg))?;
         Ok(())
     }
 
@@ -118,7 +116,7 @@ impl SessionActorHandle {
         message: String,
     ) -> Result<(), mpsc::error::TrySendError<SessionCommand>> {
         self.tx
-            .try_send(SessionCommand::ReceiveChatPrivate { author, message })?;
+            .try_send(SessionCommand::ChatPrivate { author, message })?;
         Ok(())
     }
 
@@ -128,7 +126,7 @@ impl SessionActorHandle {
         channel: ChannelId,
         message: String,
     ) -> Result<(), mpsc::error::TrySendError<SessionCommand>> {
-        self.tx.try_send(SessionCommand::ReceiveChatChannel {
+        self.tx.try_send(SessionCommand::ChatChannel {
             author,
             channel,
             message,
@@ -316,12 +314,12 @@ impl SessionActor {
             "Session received command: {:?}", cmd
         );
         match cmd {
-            SessionCommand::ReceivePlayerMessage(msg) => self.handle_client_message(msg).await,
-            SessionCommand::ReceiveBroadcast(msg) => self.route_broadcast(msg).await,
-            SessionCommand::ReceiveChatPrivate { author, message } => {
+            SessionCommand::PlayerMessage(msg) => self.handle_client_message(msg).await,
+            SessionCommand::Broadcast(msg) => self.route_broadcast(msg).await,
+            SessionCommand::ChatPrivate { author, message } => {
                 self.receive_private_message(author, message).await
             }
-            SessionCommand::ReceiveChatChannel {
+            SessionCommand::ChatChannel {
                 author,
                 channel,
                 message,
@@ -710,14 +708,15 @@ impl SessionActor {
         message_type: ChatMessageType,
         target: u16,
     ) -> Result<()> {
-        if message.len() > GAME_CONFIG.chat.max_message_length {
+        // Characters, not bytes, so the client's input-field cap measures the same thing
+        // and no message the player could compose is refused for length.
+        if message.chars().count() > GAME_CONFIG.chat.max_message_length {
             return self.deny("Your message is too long.").await;
         }
 
-        // Dropped silently on purpose: replying to a flood would itself be traffic.
         let now = *self.tick_rx.borrow();
         if now < self.next_chat_tick {
-            return Ok(());
+            return self.deny("You are sending messages too fast.").await;
         }
         self.next_chat_tick = now + GAME_CONFIG.chat.message_cooldown_ticks;
 
@@ -1423,10 +1422,43 @@ mod tests {
         );
     }
 
-    /// Asserts on the *world* receiver, not the connection: local speech is forwarded to
-    /// `WorldCommand::Say` and never echoed back down the connection, so watching
-    /// `connection_rx` here would be satisfied whether the message was dropped or
-    /// forwarded. The world receiver is the only place the difference is observable.
+    /// The limit counts characters, not bytes, so that the client's input-field cap
+    /// measures the same thing. `"é"` is two bytes, so a message of exactly the limit is
+    /// over the limit by the old byte rule and within it by the current one — an
+    /// all-ASCII test cannot tell the two apart.
+    #[tokio::test]
+    async fn the_length_limit_counts_characters_not_bytes() {
+        let mut map = GameMap::new();
+        let key = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let (mut session, mut connection_rx, mut world_rx, _tick_tx) =
+            SessionActor::for_test(key, map);
+
+        let at_limit = "é".repeat(GAME_CONFIG.chat.max_message_length);
+        assert!(
+            at_limit.len() > GAME_CONFIG.chat.max_message_length,
+            "the fixture must exceed the limit in bytes, or it proves nothing"
+        );
+
+        session
+            .handle_say(at_limit, ChatMessageType::Local, 0)
+            .await
+            .unwrap();
+
+        assert!(
+            connection_rx.try_recv().is_err(),
+            "a message at the character limit must not be denied"
+        );
+        assert!(
+            matches!(world_rx.try_recv(), Ok((WorldCommand::Say { .. }, _))),
+            "a message at the character limit must reach the world"
+        );
+    }
+
+    /// Enforcement is pinned on the *world* receiver, not the connection. Local speech is
+    /// forwarded to `WorldCommand::Say` and never echoed back down the connection, so a
+    /// denial arriving on `connection_rx` says the guard fired but not that the message
+    /// was actually withheld — only the world receiver shows that. Both are asserted: one
+    /// for enforcement, one for the player-facing feedback.
     #[tokio::test]
     async fn a_second_message_inside_the_cooldown_is_dropped() {
         let mut map = GameMap::new();
@@ -1453,8 +1485,16 @@ mod tests {
         );
 
         assert!(
-            connection_rx.try_recv().is_err(),
-            "flood control must drop silently — it must not itself generate traffic"
+            matches!(
+                connection_rx.try_recv(),
+                Ok(ConnectionCommand::SendPlayerMessage(
+                    ServerMessage::TextMessage {
+                        message_type: TextMessageType::ActionDenied,
+                        ..
+                    }
+                ))
+            ),
+            "the player must be told why the message did not go through"
         );
         assert!(
             session.next_chat_tick > 0,

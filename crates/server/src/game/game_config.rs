@@ -48,8 +48,12 @@ pub struct ChannelConfig {
 #[derive(Deserialize)]
 pub struct ChatConfig {
     pub server_channels: Vec<ChannelConfig>,
-    /// Bytes, not characters. The `SRV_CHAT_MESSAGE` encoder writes `len() as u16`, so an
-    /// unbounded message would truncate the length prefix and corrupt the stream.
+    /// Characters, not bytes — the client caps its input field by character count, and
+    /// measuring the same thing on both sides means no composable message is refused.
+    ///
+    /// This still protects the `SRV_CHAT_MESSAGE` encoder, which writes `len() as u16`:
+    /// an unbounded message would truncate that prefix and corrupt the stream, and the
+    /// worst case here is 4 bytes per character, so the guard only lapses above ~16383.
     pub max_message_length: usize,
     pub message_cooldown_ticks: Tick,
 }
