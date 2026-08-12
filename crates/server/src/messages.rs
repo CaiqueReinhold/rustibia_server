@@ -802,4 +802,76 @@ mod tests {
         assert_eq!(u16::from_le_bytes([buf[7], buf[8]]), 10, "name length");
         assert_eq!(&buf[9..], b"World Chat");
     }
+
+    /// `encode_channel_list` above only ever supplies one channel, so it pins the shape
+    /// of a single `(id, name)` entry and the leading count but proves nothing about the
+    /// loop: a `break` after the first iteration, a count field that disagrees with the
+    /// number of entries actually written, or a wrong per-entry stride would all still
+    /// pass it. This test walks a moving cursor across three entries with different-length
+    /// names (so a fixed-stride bug can't hide) and a deliberately non-contiguous third id
+    /// (so an implementation that emits a loop index instead of the real id fails too).
+    #[test]
+    fn encode_channel_list_writes_every_entry_in_order() {
+        let mut codec = GameMessageCodec {};
+        let mut buf = BytesMut::new();
+
+        let channels = vec![
+            (1u16, "World Chat".to_owned()),
+            (2u16, "Advertising".to_owned()),
+            (7u16, "Help".to_owned()),
+        ];
+
+        codec
+            .encode(
+                ServerMessage::ChannelList {
+                    channels: channels.clone(),
+                },
+                &mut buf,
+            )
+            .unwrap();
+
+        let payload_len = u16::from_le_bytes([buf[0], buf[1]]) as usize;
+        assert_eq!(
+            payload_len,
+            buf.len() - 2,
+            "length prefix must cover exactly the payload"
+        );
+        assert_eq!(buf[2], SRV_CHANNEL_LIST);
+
+        fn read_u16(buf: &BytesMut, cursor: &mut usize) -> u16 {
+            let value = u16::from_le_bytes([buf[*cursor], buf[*cursor + 1]]);
+            *cursor += 2;
+            value
+        }
+
+        let mut cursor = 3;
+        let count = read_u16(&buf, &mut cursor);
+        assert_eq!(count, channels.len() as u16, "channel count");
+
+        for (expected_id, expected_name) in channels.iter() {
+            let id = read_u16(&buf, &mut cursor);
+            assert_eq!(id, *expected_id, "channel id for {expected_name}");
+
+            let name_len = read_u16(&buf, &mut cursor) as usize;
+            assert_eq!(
+                name_len,
+                expected_name.len(),
+                "name length for id {expected_id}"
+            );
+
+            let name_bytes = &buf[cursor..cursor + name_len];
+            assert_eq!(
+                name_bytes,
+                expected_name.as_bytes(),
+                "name bytes for id {expected_id}"
+            );
+            cursor += name_len;
+        }
+
+        assert_eq!(
+            cursor,
+            buf.len(),
+            "buffer must be fully consumed: nothing trailing after the last name"
+        );
+    }
 }
