@@ -17,3 +17,5 @@ chat:
       name: Advertising
     - id: 3
       name: Help
+  max_message_length: 255
+  message_cooldown_ticks: 10
