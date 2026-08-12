@@ -54,31 +54,54 @@ impl ChatActorHandle {
         )
     }
 
-    fn get_available_channels(&self) -> impl Iterator<Item = (ChannelId, &str)> {
+    pub fn get_available_channels(&self) -> impl Iterator<Item = (ChannelId, &str)> {
         self.available_channels.iter().map(|t| (t.0, t.1.as_str()))
     }
 
     fn is_server_channel(&self, channel: ChannelId) -> bool {
-        self.available_channels
-            .iter()
-            .find(|t| t.0 == channel)
-            .is_some()
+        self.available_channels.iter().any(|t| t.0 == channel)
     }
 
     pub async fn join_channel(&self, player: AgentKey, channel: ChannelId) {
-        todo!();
+        if !self.is_server_channel(channel) {
+            return;
+        }
+        let _ = self
+            .tx
+            .send(ChatCommand::JoinChannel { player, channel })
+            .await;
     }
 
     pub async fn leave_channel(&self, player: AgentKey, channel: ChannelId) {
-        todo!();
+        let _ = self
+            .tx
+            .send(ChatCommand::LeaveChannel { player, channel })
+            .await;
     }
 
     pub async fn message_channel(&self, player: AgentKey, channel: ChannelId, message: String) {
-        todo!();
+        if !self.is_server_channel(channel) {
+            return;
+        }
+        let _ = self
+            .tx
+            .send(ChatCommand::SendChannelMessage {
+                player,
+                channel,
+                message,
+            })
+            .await;
     }
 
     pub async fn message_player(&self, from: AgentKey, to: AgentKey, message: String) {
-        todo!();
+        let _ = self
+            .tx
+            .send(ChatCommand::SendPrivateMessage {
+                sender: from,
+                receiver: to,
+                message,
+            })
+            .await;
     }
 }
 
@@ -156,7 +179,9 @@ impl ChatActor {
     }
 
     fn add_player_to_channel(&mut self, player: AgentKey, channel_id: ChannelId) {
-        if let Some(channel) = self.channels.get_mut(&channel_id) {
+        if let Some(channel) = self.channels.get_mut(&channel_id)
+            && !channel.members.contains(&player)
+        {
             channel.members.push(player);
         }
     }
@@ -167,8 +192,160 @@ impl ChatActor {
         }
     }
 
-    async fn send_channel_message(&self, player: AgentKey, channel_id: ChannelId, message: String) {
+    /// Fans one message out to the channel and prunes whoever the router could not
+    /// reach. This lazy prune is the only membership cleanup there is: a player who logs
+    /// out of a channel that then goes quiet stays in `members` until the next message.
+    /// Harmless — `AgentKey` is a versioned slotmap key, so a recycled key can never
+    /// receive a stranger's message.
+    async fn send_channel_message(
+        &mut self,
+        player: AgentKey,
+        channel_id: ChannelId,
+        message: String,
+    ) {
+        let Some(channel) = self.channels.get(&channel_id) else {
+            return;
+        };
+        if !channel.members.contains(&player) {
+            return;
+        }
+        let recipients = channel.members.clone();
+
+        let dead = self
+            .router
+            .deliver_channel_message(player, recipients, channel_id, message)
+            .await;
+
+        if dead.is_empty() {
+            return;
+        }
+        if let Some(channel) = self.channels.get_mut(&channel_id) {
+            channel.members.retain(|key| !dead.contains(key));
+        }
     }
 
-    async fn send_private_message(&self, sender: AgentKey, receiver: AgentKey, message: String) {}
+    async fn send_private_message(&self, sender: AgentKey, receiver: AgentKey, message: String) {
+        self.router
+            .deliver_private_message(sender, receiver, message)
+            .await;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::actors::message_router::MessageRouterCommand;
+    use slotmap::SlotMap;
+    use std::time::Duration;
+
+    /// `AgentKey::default()` is the slotmap null key, so it is the *only* key reachable
+    /// without a slotmap — and two of them are the same key. Mint real, distinct ones.
+    fn two_distinct_keys() -> (AgentKey, AgentKey) {
+        let mut keys: SlotMap<AgentKey, ()> = SlotMap::with_key();
+        (keys.insert(()), keys.insert(()))
+    }
+
+    fn a_chat_actor() -> (ChatActor, mpsc::Receiver<MessageRouterCommand>) {
+        let (_tx, rx) = mpsc::channel(64);
+        let (router, router_rx) = MessageRouterActorHandle::for_test();
+        let mut channels = HashMap::new();
+        channels.insert(
+            1,
+            Channel {
+                id: 1,
+                name: "World Chat".to_owned(),
+                members: Vec::new(),
+            },
+        );
+        (
+            ChatActor {
+                rx,
+                router,
+                channels,
+            },
+            router_rx,
+        )
+    }
+
+    #[test]
+    fn joining_twice_does_not_duplicate_membership() {
+        let (mut actor, _rx) = a_chat_actor();
+        let player = AgentKey::default();
+
+        actor.add_player_to_channel(player, 1);
+        actor.add_player_to_channel(player, 1);
+
+        assert_eq!(actor.channels[&1].members.len(), 1);
+    }
+
+    #[test]
+    fn joining_an_unknown_channel_is_ignored() {
+        let (mut actor, _rx) = a_chat_actor();
+        actor.add_player_to_channel(AgentKey::default(), 999);
+        assert_eq!(actor.channels.len(), 1);
+    }
+
+    #[tokio::test]
+    async fn a_non_member_cannot_post_to_a_channel() {
+        let (mut actor, mut router_rx) = a_chat_actor();
+
+        actor
+            .send_channel_message(AgentKey::default(), 1, "hello".to_owned())
+            .await;
+
+        assert!(
+            router_rx.try_recv().is_err(),
+            "a non-member's message must never reach the router"
+        );
+    }
+
+    /// `a_non_member_cannot_post_to_a_channel` posts to an *empty* channel, so it cannot
+    /// tell a real membership check from a `members.is_empty()` short-circuit. This one
+    /// can: the channel has a member, and a different key does the posting.
+    #[tokio::test]
+    async fn a_stranger_cannot_post_to_a_channel_that_has_members() {
+        let (mut actor, mut router_rx) = a_chat_actor();
+        let (member, stranger) = two_distinct_keys();
+        actor.add_player_to_channel(member, 1);
+
+        // A rejected send returns immediately; a wrongly-accepted one blocks forever on a
+        // oneshot nobody answers. The timeout turns that deadlock into a clean assertion.
+        let _ = tokio::time::timeout(
+            Duration::from_millis(200),
+            actor.send_channel_message(stranger, 1, "hello".to_owned()),
+        )
+        .await;
+
+        assert!(
+            router_rx.try_recv().is_err(),
+            "a non-member's message must never reach the router"
+        );
+    }
+
+    #[tokio::test]
+    async fn undeliverable_members_are_pruned() {
+        let (mut actor, mut router_rx) = a_chat_actor();
+        let player = AgentKey::default();
+        actor.add_player_to_channel(player, 1);
+
+        // Stand in for the router: answer the oneshot claiming every recipient is dead.
+        let router_task = tokio::spawn(async move {
+            match router_rx.recv().await.unwrap() {
+                MessageRouterCommand::DeliverChannelMessage { recipients, tx, .. } => {
+                    tx.send(recipients).unwrap();
+                }
+                other => panic!("expected DeliverChannelMessage, got {other:?}"),
+            }
+        });
+
+        actor
+            .send_channel_message(player, 1, "hello".to_owned())
+            .await;
+        router_task.await.unwrap();
+
+        assert!(
+            actor.channels[&1].members.is_empty(),
+            "a member the router could not reach must be dropped"
+        );
+    }
 }
