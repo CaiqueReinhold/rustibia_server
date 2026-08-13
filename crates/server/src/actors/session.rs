@@ -66,6 +66,8 @@ pub enum SessionError {
     ConnectionClosed,
     #[error("Player logged out")]
     Logout,
+    #[error("World actor stopped")]
+    WorldStopped,
 }
 
 #[derive(Clone, Debug)]
@@ -165,6 +167,7 @@ pub struct SessionActor {
     chat: ChatActorHandle,
     tick_rx: watch::Receiver<Tick>,
     next_chat_tick: Tick,
+    queued_walk: Option<Direction>,
     logout_pending: bool,
 }
 
@@ -220,6 +223,7 @@ impl SessionActor {
                         persistence: context.persistence.clone(),
                         tick_rx: context.tick_rx.clone(),
                         next_chat_tick: 0,
+                        queued_walk: None,
                         logout_pending: false,
                     };
                     actor.run().await;
@@ -271,6 +275,15 @@ impl SessionActor {
                     } else {
                         Err(SessionError::ConnectionClosed.into())
                     },
+                changed = self.tick_rx.changed() => {
+                    if changed.is_err() {
+                        // The world's tick sender was dropped. Without this the
+                        // branch returns Ready forever and the session spins.
+                        Err(SessionError::WorldStopped.into())
+                    } else {
+                        self.check_queues().await
+                    }
+                }
                 _ = save_timer.tick() => {
                     self.save_player().await;
                     Ok(())
@@ -478,15 +491,74 @@ impl SessionActor {
         Ok(())
     }
 
-    async fn handle_move_player(&self, direction: Direction) -> Result<()> {
-        let _ = self
-            .world
+    /// Ticks remaining before this session's player may walk again, read from the
+    /// published snapshot.
+    ///
+    /// `saturating_sub` is load-bearing: `next_walk_tick` trails the current tick
+    /// by an unbounded amount once a player has stood still, so a plain subtraction
+    /// underflows the `u64` and every idle walk looks like a ~2^64-tick wait.
+    ///
+    /// An agent missing from the snapshot reads as 0. The session must not start
+    /// refusing walks on its own reading of a snapshot that may not yet contain a
+    /// just-spawned player.
+    fn walk_cooldown_remaining(&self) -> Tick {
+        let map = self.shared_map.load();
+        map.get_agent(self.player_key)
+            .map(|agent| agent.next_walk_tick.saturating_sub(*self.tick_rx.borrow()))
+            .unwrap_or(0)
+    }
+
+    /// Per-tick hook for session-local state that advances with the world clock.
+    /// Today only the walk queue; further per-tick cooldowns belong here rather
+    /// than in their own `select!` branch.
+    async fn check_queues(&mut self) -> Result<()> {
+        self.check_walk_queue().await
+    }
+
+    /// Recomputes the remaining cooldown from the snapshot every tick rather than
+    /// storing a deadline at admission, so it self-corrects if the cooldown moves.
+    async fn check_walk_queue(&mut self) -> Result<()> {
+        let Some(direction) = self.queued_walk else {
+            return Ok(());
+        };
+        if self.walk_cooldown_remaining() > 0 {
+            return Ok(());
+        }
+        self.queued_walk = None;
+        self.send_walk(direction).await
+    }
+
+    async fn send_walk(&self, direction: Direction) -> Result<()> {
+        self.world
             .send(WorldCommand::Walk {
                 direction,
                 actor: self.player_key,
             })
             .await;
         Ok(())
+    }
+
+    /// A walk that arrives while the cooldown is nearly up is held rather than
+    /// forwarded into a refusal. The client's step animation and the server's
+    /// cooldown are the same length, but the client starts its clock when it sends
+    /// and the server when it processes, so a walk clears by exactly zero ticks and
+    /// any downward latency jitter refuses it.
+    ///
+    /// A walk that is early by more than the window is still forwarded: the
+    /// snapshot read here can be a tick stale, so the world stays the single
+    /// authority on refusal. That case is self-correcting — the client's next
+    /// key-repeat retry arrives closer and lands inside the window.
+    async fn handle_move_player(&mut self, direction: Direction) -> Result<()> {
+        let remaining = self.walk_cooldown_remaining();
+        if remaining > 0 && remaining <= GAME_CONFIG.movement.walk_queue_ticks {
+            // Newest wins: a direction change supersedes what was queued.
+            self.queued_walk = Some(direction);
+            return Ok(());
+        }
+        // A fresh walk supersedes a queued one, so a stale direction cannot fire
+        // behind it.
+        self.queued_walk = None;
+        self.send_walk(direction).await
     }
 
     async fn handle_get_position(&self) -> Result<()> {
@@ -1318,6 +1390,7 @@ impl SessionActor {
                 persistence,
                 tick_rx,
                 next_chat_tick: 0,
+                queued_walk: None,
                 logout_pending: false,
             },
             connection_rx,
@@ -1555,5 +1628,125 @@ mod tests {
                 ServerMessage::IntroducePlayer { .. }
             ))
         ));
+    }
+
+    /// Puts the seated player on cooldown as though it had just walked.
+    fn arm_cooldown(session: &SessionActor, until: Tick) {
+        let mut map = (**session.shared_map.load()).clone();
+        map.get_agent_mut(session.player_key)
+            .unwrap()
+            .next_walk_tick = until;
+        session.shared_map.store(Arc::new(map));
+    }
+
+    #[tokio::test]
+    async fn a_walk_with_no_cooldown_is_forwarded_immediately() {
+        let mut map = GameMap::new();
+        let key = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let (mut session, _connection_rx, mut world_rx, _tick_tx) =
+            SessionActor::for_test(key, map);
+
+        session.handle_move_player(Direction::North).await.unwrap();
+
+        assert!(
+            matches!(world_rx.try_recv(), Ok((WorldCommand::Walk { .. }, _))),
+            "nothing to wait for, so the walk goes straight through"
+        );
+        assert!(session.queued_walk.is_none());
+    }
+
+    /// The whole point: a walk that arrives a tick early is held, not refused.
+    #[tokio::test]
+    async fn a_walk_inside_the_window_is_held() {
+        let mut map = GameMap::new();
+        let key = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let (mut session, _connection_rx, mut world_rx, _tick_tx) =
+            SessionActor::for_test(key, map);
+        arm_cooldown(&session, GAME_CONFIG.movement.walk_queue_ticks);
+
+        session.handle_move_player(Direction::North).await.unwrap();
+
+        assert!(
+            world_rx.try_recv().is_err(),
+            "an early walk must not reach the world, where it would be denied"
+        );
+        assert!(
+            matches!(session.queued_walk, Some(Direction::North)),
+            "it is held instead"
+        );
+    }
+
+    #[tokio::test]
+    async fn a_held_walk_is_forwarded_when_the_cooldown_expires() {
+        let mut map = GameMap::new();
+        let key = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let (mut session, _connection_rx, mut world_rx, tick_tx) = SessionActor::for_test(key, map);
+        arm_cooldown(&session, GAME_CONFIG.movement.walk_queue_ticks);
+
+        session.handle_move_player(Direction::North).await.unwrap();
+        session.check_queues().await.unwrap();
+        assert!(world_rx.try_recv().is_err(), "still early, so still held");
+
+        tick_tx.send(GAME_CONFIG.movement.walk_queue_ticks).unwrap();
+        session.check_queues().await.unwrap();
+
+        assert!(
+            matches!(world_rx.try_recv(), Ok((WorldCommand::Walk { .. }, _))),
+            "the held walk goes through on the tick the cooldown expires"
+        );
+        assert!(session.queued_walk.is_none(), "and the slot is cleared");
+    }
+
+    /// Newest wins. Without this a direction change inside the window would be
+    /// dropped and the player would keep walking the abandoned way.
+    #[tokio::test]
+    async fn a_second_walk_inside_the_window_replaces_the_first() {
+        let mut map = GameMap::new();
+        let key = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let (mut session, _connection_rx, mut world_rx, tick_tx) = SessionActor::for_test(key, map);
+        arm_cooldown(&session, GAME_CONFIG.movement.walk_queue_ticks);
+
+        session.handle_move_player(Direction::North).await.unwrap();
+        session.handle_move_player(Direction::East).await.unwrap();
+
+        tick_tx.send(GAME_CONFIG.movement.walk_queue_ticks).unwrap();
+        session.check_queues().await.unwrap();
+
+        assert!(
+            matches!(
+                world_rx.try_recv(),
+                Ok((
+                    WorldCommand::Walk {
+                        direction: Direction::East,
+                        ..
+                    },
+                    _
+                ))
+            ),
+            "the newer direction is what fires"
+        );
+        assert!(
+            world_rx.try_recv().is_err(),
+            "and only one walk is forwarded, not two"
+        );
+    }
+
+    /// Beyond the window the session does not second-guess the world. Its snapshot
+    /// can be a tick stale, so refusal stays in one place.
+    #[tokio::test]
+    async fn a_walk_beyond_the_window_is_forwarded_for_the_world_to_deny() {
+        let mut map = GameMap::new();
+        let key = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let (mut session, _connection_rx, mut world_rx, _tick_tx) =
+            SessionActor::for_test(key, map);
+        arm_cooldown(&session, GAME_CONFIG.movement.walk_queue_ticks + 1);
+
+        session.handle_move_player(Direction::North).await.unwrap();
+
+        assert!(
+            matches!(world_rx.try_recv(), Ok((WorldCommand::Walk { .. }, _))),
+            "too early to hold, so the world decides"
+        );
+        assert!(session.queued_walk.is_none());
     }
 }
