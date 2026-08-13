@@ -22,6 +22,15 @@ pub struct GameConfig {
 #[derive(Deserialize)]
 pub struct MovementConfig {
     pub wander_ticks: Tick,
+    /// How early a walk may arrive and still be held rather than refused.
+    ///
+    /// The client's step animation and the server's cooldown are the same length,
+    /// but the client starts its clock when it sends and the server when it
+    /// processes, so a walk passes by exactly zero ticks and any downward latency
+    /// jitter refuses it. This window absorbs that. Keeping it small also bounds
+    /// how stale a superseded queued walk can be — a direction change cannot fire
+    /// the abandoned direction more than this long afterwards.
+    pub walk_queue_ticks: Tick,
 }
 
 #[derive(Deserialize)]
@@ -81,6 +90,7 @@ action:
   use_item_cooldown_ticks: 20
 movement:
   wander_ticks: 40
+  walk_queue_ticks: 4
 chat:
   server_channels:
     - id: 1
@@ -103,5 +113,9 @@ chat:
         let contents = std::fs::read_to_string("assets/game_conf.yaml").unwrap();
         let config: GameConfig = serde_yaml::from_str(&contents).unwrap();
         assert!(config.chat.max_message_length > 0);
+        assert!(
+            config.movement.walk_queue_ticks > 0,
+            "a zero window would refuse every early walk, which is the bug"
+        );
     }
 }
