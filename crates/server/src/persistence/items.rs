@@ -108,7 +108,7 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
             match key {
                 "capacity" => Some(ItemAttribute::Capacity(n as u8)),
                 "weight" => Some(ItemAttribute::Weight(n)),
-                "tile_friction" => Some(ItemAttribute::TileFriction(n)),
+                "tile_friction" => Some(ItemAttribute::TileFriction(n as u16)),
                 _ => None,
             }
         }

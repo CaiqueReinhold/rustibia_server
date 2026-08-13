@@ -54,7 +54,7 @@ pub enum ItemAttribute {
     Weight(u32),
     FloorChange(FloorChangeDirection),
     Inventory(InventorySlot),
-    TileFriction(u32),
+    TileFriction(u16),
     Action(ItemAction),
     MultiAction(ItemMultiAction),
     Decay { duration: Tick, decay_to: ItemId },

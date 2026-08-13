@@ -151,7 +151,7 @@ impl Agent {
         }
     }
 
-    pub fn calculate_walk_ticks(&self, tile_friction: u32, diagonal: bool) -> Tick {
+    pub fn calculate_walk_ticks(&self, tile_friction: u16, diagonal: bool) -> Tick {
         let move_speed = (SPEED_PARAM_A * ((self.speed as f32) + SPEED_PARAM_B).ln()
             + SPEED_PARAM_C)
             .round()
@@ -194,6 +194,7 @@ mod tests {
     use crate::entities::position::Position;
     use crate::entities::skills::{SkillType, SkillValue};
     use crate::persistence::player::PlayerSnapshot;
+    use crate::persistence::test_fixtures::a_test_snapshot;
     use std::collections::HashMap;
 
     fn make_snapshot(id: u32) -> PlayerSnapshot {
@@ -334,5 +335,28 @@ mod tests {
         assert_eq!(agent.name(), "Demon");
         assert_eq!(agent.life().maximum, 8200);
         assert_eq!(agent.outfit(), (35, (0, 0, 0, 0)));
+    }
+
+    /// Paired with `step_duration_matches_the_server` in the client's
+    /// `agent/components.rs`. The two formulas are deliberate duplicates across
+    /// two repositories: a divergence compiles cleanly on both sides and simply
+    /// desyncs movement, so each side pins the same three answers.
+    ///
+    /// The client asserts milliseconds; these are the same numbers divided by the
+    /// 50ms tick. `a_test_snapshot` gives the agent a Speed skill of 120.
+    #[test]
+    fn walk_ticks_match_the_client() {
+        let agent = Agent::from_player(a_test_snapshot(1, 1));
+        assert_eq!(
+            agent.speed(),
+            120,
+            "the fixture's Speed skill feeds the formula"
+        );
+
+        assert_eq!(agent.calculate_walk_ticks(150, false), 10, "500ms");
+        assert_eq!(agent.calculate_walk_ticks(150, true), 25, "1250ms diagonal");
+        // 260 is the friction of `ornamented stone floor` (id 21718), one of the
+        // ten values the client used to truncate through a `u8`.
+        assert_eq!(agent.calculate_walk_ticks(260, false), 18, "900ms");
     }
 }

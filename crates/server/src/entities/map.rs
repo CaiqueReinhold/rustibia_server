@@ -326,7 +326,7 @@ impl GameMap {
         true
     }
 
-    pub fn tile_friction(&self, pos: &Position) -> Option<u32> {
+    pub fn tile_friction(&self, pos: &Position) -> Option<u16> {
         let Ok(tile) = self.get_tile(pos) else {
             return None;
         };
