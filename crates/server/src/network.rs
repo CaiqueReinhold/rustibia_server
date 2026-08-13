@@ -29,6 +29,12 @@ impl Listener {
             match self.inner.accept().await {
                 Ok((stream, addr)) => {
                     info!("new connection from {:?}", addr);
+                    // Movement frames are a few bytes each. Nagle would hold them
+                    // until the previous segment is acknowledged, adding up to a
+                    // round trip of variable delay to every walk.
+                    if let Err(e) = stream.set_nodelay(true) {
+                        warn!("could not disable Nagle for {addr:?}: {e}");
+                    }
                     if let Err(e) = Self::accept_connection(stream, &context).await {
                         error!("accept_connection failed: {e}")
                     }
