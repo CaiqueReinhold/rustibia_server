@@ -269,13 +269,13 @@ impl SessionActor {
                     self.close_connection().await;
                     break;
                 }
-                cmd = self.rx.recv() =>
-                    if let Some(cmd) = cmd {
-                        self.route_command(cmd).await
-                    } else {
-                        Err(SessionError::ConnectionClosed.into())
-                    },
                 changed = self.tick_rx.changed() => {
+                    // Ahead of `rx.recv()` deliberately. Under `biased` the branches
+                    // are polled in order, and `rx` carries a broadcast per visible
+                    // agent event — in a crowded area it can stay permanently ready
+                    // and starve everything below it, so a queued walk would never
+                    // drain. This branch cannot starve `rx` in return: it wakes at
+                    // most once per 50ms tick and does nothing when the queue is empty.
                     if changed.is_err() {
                         // The world's tick sender was dropped. Without this the
                         // branch returns Ready forever and the session spins.
@@ -284,6 +284,12 @@ impl SessionActor {
                         self.check_queues().await
                     }
                 }
+                cmd = self.rx.recv() =>
+                    if let Some(cmd) = cmd {
+                        self.route_command(cmd).await
+                    } else {
+                        Err(SessionError::ConnectionClosed.into())
+                    },
                 _ = save_timer.tick() => {
                     self.save_player().await;
                     Ok(())
