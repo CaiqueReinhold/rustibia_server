@@ -8,7 +8,6 @@ action:
 
 movement:
   wander_ticks: 40
-  walk_queue_ticks: 4
 
 chat:
   server_channels:
