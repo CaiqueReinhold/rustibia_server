@@ -119,11 +119,27 @@ const SRV_TELEPORT_AGENT: u8 = 18;
 const SRV_CHAT_MESSAGE: u8 = 19;
 const SRV_CHANNEL_LIST: u8 = 20;
 const SRV_INTRODUCE_PLAYER: u8 = 21;
+const SRV_FLOATING_TEXT: u8 = 22;
 
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
     ActionDenied,
     Look,
+}
+
+/// Which kind of world-anchored text the client should draw. A presentation
+/// concept only — nothing in `game/` or `entities/` models it, which is why it
+/// lives here beside `TextMessageType` rather than under `entities/`.
+///
+/// Unused by `main` for now: nothing constructs `ServerMessage::FloatingText` yet
+/// (combat doesn't exist), so both variants are dead code until that producer lands
+/// in a later task. `#[allow(dead_code)]` mirrors the convention already used for
+/// `SqlLoginRepository` in `persistence/login.rs`.
+#[allow(dead_code)]
+#[derive(Clone, Copy, Debug)]
+pub enum FloatingTextType {
+    HitPoints,
+    PlayerMessage,
 }
 
 #[derive(Clone, Debug)]
@@ -231,6 +247,15 @@ pub enum ServerMessage {
     IntroducePlayer {
         local_id: AgentId,
         name: String,
+    },
+    /// Unused by `main` for now: no producer exists until combat lands in a later
+    /// task. See the note on `FloatingTextType`.
+    #[allow(dead_code)]
+    FloatingText {
+        text: String,
+        position: Position,
+        text_type: FloatingTextType,
+        color: Option<(u8, u8, u8)>,
     },
 }
 
@@ -628,6 +653,28 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u16_le(name_bytes.len() as u16);
                 dst.put_slice(name_bytes);
             }
+            ServerMessage::FloatingText {
+                text,
+                position,
+                text_type,
+                color,
+            } => {
+                dst.put_u8(SRV_FLOATING_TEXT);
+                let text_bytes = text.as_bytes();
+                dst.put_u16_le(text_bytes.len() as u16);
+                dst.put_slice(text_bytes);
+                encode_position(position, dst);
+                dst.put_u8(encode_floating_text_type(text_type));
+                match color {
+                    Some((r, g, b)) => {
+                        dst.put_u8(0x01);
+                        dst.put_u8(r);
+                        dst.put_u8(g);
+                        dst.put_u8(b);
+                    }
+                    None => dst.put_u8(0x00),
+                }
+            }
         }
 
         let payload_len = (dst.len() - len_offset - 2) as u16;
@@ -699,6 +746,13 @@ fn encode_chat_message_type(message_type: ChatMessageType) -> u8 {
         ChatMessageType::Local => 0x01,
         ChatMessageType::Private => 0x02,
         ChatMessageType::Channel => 0x03,
+    }
+}
+
+fn encode_floating_text_type(text_type: FloatingTextType) -> u8 {
+    match text_type {
+        FloatingTextType::HitPoints => 0x01,
+        FloatingTextType::PlayerMessage => 0x02,
     }
 }
 
@@ -831,6 +885,73 @@ mod tests {
         assert_eq!(u16::from_le_bytes([buf[3], buf[4]]), 3);
         assert_eq!(u16::from_le_bytes([buf[5], buf[6]]), 6);
         assert_eq!(&buf[7..], b"Rizael");
+    }
+
+    /// The colour is an `Option` behind a flag byte, so the two forms differ in
+    /// length. Both are asserted because a decoder that always reads three colour
+    /// bytes passes the `Some` case and corrupts the `None` case.
+    #[test]
+    fn encode_floating_text_with_a_colour() {
+        let mut codec = GameMessageCodec {};
+        let mut buf = BytesMut::new();
+
+        codec
+            .encode(
+                ServerMessage::FloatingText {
+                    text: "-25".to_owned(),
+                    position: Position::new(100, 200, 7),
+                    text_type: FloatingTextType::HitPoints,
+                    color: Some((255, 0, 64)),
+                },
+                &mut buf,
+            )
+            .unwrap();
+
+        let payload_len = u16::from_le_bytes([buf[0], buf[1]]) as usize;
+        assert_eq!(
+            payload_len,
+            buf.len() - 2,
+            "length prefix must cover the payload"
+        );
+        assert_eq!(buf[2], SRV_FLOATING_TEXT);
+        assert_eq!(u16::from_le_bytes([buf[3], buf[4]]), 3, "text length");
+        assert_eq!(&buf[5..8], b"-25");
+        assert_eq!(u16::from_le_bytes([buf[8], buf[9]]), 100, "position x");
+        assert_eq!(u16::from_le_bytes([buf[10], buf[11]]), 200, "position y");
+        assert_eq!(buf[12], 7, "position z");
+        assert_eq!(buf[13], 0x01, "HitPoints");
+        assert_eq!(buf[14], 0x01, "colour present");
+        assert_eq!(&buf[15..18], &[255, 0, 64], "rgb");
+        assert_eq!(buf.len(), 18, "no trailing bytes");
+    }
+
+    #[test]
+    fn encode_floating_text_without_a_colour() {
+        let mut codec = GameMessageCodec {};
+        let mut buf = BytesMut::new();
+
+        codec
+            .encode(
+                ServerMessage::FloatingText {
+                    text: "hi".to_owned(),
+                    position: Position::new(1, 2, 7),
+                    text_type: FloatingTextType::PlayerMessage,
+                    color: None,
+                },
+                &mut buf,
+            )
+            .unwrap();
+
+        assert_eq!(buf[2], SRV_FLOATING_TEXT);
+        assert_eq!(u16::from_le_bytes([buf[3], buf[4]]), 2, "text length");
+        assert_eq!(&buf[5..7], b"hi");
+        assert_eq!(buf[12], 0x02, "PlayerMessage");
+        assert_eq!(buf[13], 0x00, "colour absent");
+        assert_eq!(
+            buf.len(),
+            14,
+            "the None form is three bytes shorter than the Some form"
+        );
     }
 
     #[test]
