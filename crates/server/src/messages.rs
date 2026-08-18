@@ -925,6 +925,37 @@ mod tests {
         assert_eq!(buf.len(), 18, "no trailing bytes");
     }
 
+    /// The length prefix is a *byte* count. This codebase has been bitten by
+    /// byte-vs-char confusion before — `actors/session.rs` pins `max_message_length`
+    /// against `"é".repeat(..)` for the same reason — and every other test here uses
+    /// ASCII, where the two are indistinguishable.
+    #[test]
+    fn encode_floating_text_measures_the_text_in_bytes() {
+        let mut codec = GameMessageCodec {};
+        let mut buf = BytesMut::new();
+        let text = "café"; // 4 chars, 5 bytes
+
+        codec
+            .encode(
+                ServerMessage::FloatingText {
+                    text: text.to_owned(),
+                    position: Position::new(1, 2, 7),
+                    text_type: FloatingTextType::PlayerMessage,
+                    color: None,
+                },
+                &mut buf,
+            )
+            .unwrap();
+
+        assert_eq!(text.chars().count(), 4, "fixture must be multi-byte");
+        assert_eq!(
+            u16::from_le_bytes([buf[3], buf[4]]),
+            5,
+            "the prefix counts bytes, not characters"
+        );
+        assert_eq!(&buf[5..10], text.as_bytes());
+    }
+
     #[test]
     fn encode_floating_text_without_a_colour() {
         let mut codec = GameMessageCodec {};
