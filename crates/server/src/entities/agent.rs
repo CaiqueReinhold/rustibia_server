@@ -61,6 +61,16 @@ pub struct Agent {
     pub next_use_tick: Tick,
 
     pub next_wander_tick: Tick,
+
+    /// The agent this one is attacking. Session state — never persisted, and
+    /// deliberately private so it cannot be set without going through
+    /// `game::targeting::set_target`, which owns the validation rules.
+    ///
+    /// Unused by `main` for now: nothing reads or writes this outside tests until
+    /// `game::targeting` lands in a later task. `#[allow(dead_code)]` mirrors the
+    /// convention already used for `SqlLoginRepository` in `persistence/login.rs`.
+    #[allow(dead_code)]
+    target: Option<AgentKey>,
 }
 
 impl Agent {
@@ -102,6 +112,7 @@ impl Agent {
             next_walk_tick: 0,
             next_use_tick: 0,
             next_wander_tick: 0,
+            target: None,
         };
         agent.apply_modifiers();
         agent
@@ -119,6 +130,7 @@ impl Agent {
             next_walk_tick: 0,
             next_use_tick: 0,
             next_wander_tick: 0,
+            target: None,
         };
         agent.apply_modifiers();
         agent
@@ -138,6 +150,16 @@ impl Agent {
 
     pub fn speed(&self) -> u16 {
         self.speed
+    }
+
+    #[allow(dead_code)]
+    pub fn target(&self) -> Option<AgentKey> {
+        self.target
+    }
+
+    #[allow(dead_code)]
+    pub fn set_target(&mut self, target: Option<AgentKey>) {
+        self.target = target;
     }
 
     pub fn get_skill(&self, skill: SkillType) -> Option<&SkillValue> {
@@ -191,6 +213,7 @@ impl Agent {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::entities::map::GameMap;
     use crate::entities::position::Position;
     use crate::entities::skills::{SkillType, SkillValue};
     use crate::persistence::player::PlayerSnapshot;
@@ -358,5 +381,52 @@ mod tests {
         // 260 is the friction of `ornamented stone floor` (id 21718), one of the
         // ten values the client used to truncate through a `u8`.
         assert_eq!(agent.calculate_walk_ticks(260, false), 18, "900ms");
+    }
+
+    #[test]
+    fn a_new_agent_has_no_target() {
+        let agent = Agent::from_player(make_snapshot(1));
+        assert!(agent.target().is_none());
+    }
+
+    #[test]
+    fn set_target_stores_and_clears() {
+        let mut agent = Agent::from_player(make_snapshot(1));
+        let mut map = GameMap::new();
+        map.insert_tile(Position::new(1, 1, 7), crate::entities::map::MapTile::new());
+        let victim = map
+            .insert_agent(
+                Agent::from_player(make_snapshot(2)),
+                &Position::new(1, 1, 7),
+            )
+            .unwrap();
+
+        agent.set_target(Some(victim));
+        assert_eq!(agent.target(), Some(victim));
+
+        agent.set_target(None);
+        assert!(agent.target().is_none());
+    }
+
+    /// The target is session state. A character that logs out and back in must not
+    /// come back still targeting something.
+    #[test]
+    fn to_snapshot_does_not_carry_the_target() {
+        let mut map = GameMap::new();
+        map.insert_tile(Position::new(1, 1, 7), crate::entities::map::MapTile::new());
+        let victim = map
+            .insert_agent(
+                Agent::from_player(make_snapshot(2)),
+                &Position::new(1, 1, 7),
+            )
+            .unwrap();
+
+        let mut agent = Agent::from_player(make_snapshot(1));
+        agent.set_target(Some(victim));
+
+        let snapshot = agent.to_snapshot(Position::new(1, 1, 7)).unwrap();
+        let restored = Agent::from_player(snapshot);
+
+        assert!(restored.target().is_none());
     }
 }
