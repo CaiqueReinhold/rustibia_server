@@ -35,6 +35,7 @@ const CLI_REQUEST_CHANNELS: u8 = 13;
 const CLI_OPEN_CHANNEL: u8 = 14;
 const CLI_CLOSE_CHANNEL: u8 = 15;
 const CLI_OPEN_PM_CHAT: u8 = 16;
+const CLI_SET_TARGET: u8 = 17;
 
 #[derive(Clone, Debug)]
 pub enum ClientMessage {
@@ -94,6 +95,9 @@ pub enum ClientMessage {
     OpenPmChat {
         name: String,
     },
+    SetTarget {
+        agent_id: Option<AgentId>,
+    },
 }
 
 // server
@@ -120,6 +124,7 @@ const SRV_CHAT_MESSAGE: u8 = 19;
 const SRV_CHANNEL_LIST: u8 = 20;
 const SRV_INTRODUCE_PLAYER: u8 = 21;
 const SRV_FLOATING_TEXT: u8 = 22;
+const SRV_TARGET_CHANGED: u8 = 23;
 
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
@@ -257,6 +262,9 @@ pub enum ServerMessage {
         text_type: FloatingTextType,
         color: Option<(u8, u8, u8)>,
     },
+    TargetChanged {
+        agent_id: Option<AgentId>,
+    },
 }
 
 #[derive(Error, Debug)]
@@ -381,6 +389,9 @@ impl Decoder for GameMessageCodec {
                     .map_err(|_| MessageDecodeError::WrongSequence)?;
                 Ok(Some(ClientMessage::OpenPmChat { name }))
             }
+            CLI_SET_TARGET => Ok(Some(ClientMessage::SetTarget {
+                agent_id: decode_optional_agent(buf.get_u16_le()),
+            })),
             _ => Err(MessageDecodeError::WrongSequence),
         }
     }
@@ -675,6 +686,10 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                     None => dst.put_u8(0x00),
                 }
             }
+            ServerMessage::TargetChanged { agent_id } => {
+                dst.put_u8(SRV_TARGET_CHANGED);
+                encode_optional_agent(agent_id, dst);
+            }
         }
 
         let payload_len = (dst.len() - len_offset - 2) as u16;
@@ -739,6 +754,17 @@ fn encode_optional_item(item_id: Option<ItemId>, dst: &mut BytesMut) {
     } else {
         dst.put_u16_le(0xFFFF);
     }
+}
+
+/// `0xFFFF` is the same "absent" sentinel `encode_optional_item` uses. It cannot
+/// collide with a real id: `LocalIdMap` allocates from 1 upward and recycles, so
+/// reaching 65535 would need 65534 agents visible in one 15x11 viewport.
+fn encode_optional_agent(agent_id: Option<AgentId>, dst: &mut BytesMut) {
+    dst.put_u16_le(agent_id.unwrap_or(0xFFFF));
+}
+
+fn decode_optional_agent(raw: u16) -> Option<AgentId> {
+    if raw == 0xFFFF { None } else { Some(raw) }
 }
 
 fn encode_chat_message_type(message_type: ChatMessageType) -> u8 {
@@ -1209,5 +1235,47 @@ mod tests {
             ClientMessage::CloseChannel { channel } => assert_eq!(channel, 2),
             other => panic!("expected CloseChannel, got {other:?}"),
         }
+    }
+
+    #[test]
+    fn set_target_decodes_some_and_none() {
+        let mut buf = BytesMut::new();
+        // payload: opcode + u16 agent id
+        buf.put_u16_le(3);
+        buf.put_u8(CLI_SET_TARGET);
+        buf.put_u16_le(7);
+        let decoded = GameMessageCodec {}.decode(&mut buf).unwrap().unwrap();
+        assert!(matches!(
+            decoded,
+            ClientMessage::SetTarget { agent_id: Some(7) }
+        ));
+
+        let mut buf = BytesMut::new();
+        buf.put_u16_le(3);
+        buf.put_u8(CLI_SET_TARGET);
+        buf.put_u16_le(0xFFFF);
+        let decoded = GameMessageCodec {}.decode(&mut buf).unwrap().unwrap();
+        assert!(matches!(
+            decoded,
+            ClientMessage::SetTarget { agent_id: None }
+        ));
+    }
+
+    #[test]
+    fn target_changed_encodes_some_and_none() {
+        let mut dst = BytesMut::new();
+        GameMessageCodec {}
+            .encode(ServerMessage::TargetChanged { agent_id: Some(9) }, &mut dst)
+            .unwrap();
+        // 2 bytes length prefix, then opcode, then the id
+        assert_eq!(dst[2], SRV_TARGET_CHANGED);
+        assert_eq!(u16::from_le_bytes([dst[3], dst[4]]), 9);
+
+        let mut dst = BytesMut::new();
+        GameMessageCodec {}
+            .encode(ServerMessage::TargetChanged { agent_id: None }, &mut dst)
+            .unwrap();
+        assert_eq!(dst[2], SRV_TARGET_CHANGED);
+        assert_eq!(u16::from_le_bytes([dst[3], dst[4]]), 0xFFFF);
     }
 }

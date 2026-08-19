@@ -71,11 +71,6 @@ pub enum WorldCommand {
         agent_key: AgentKey,
         message: String,
     },
-    /// Unused by `main` for now: nothing constructs this until a client-facing
-    /// command reaches `SessionActor` in a later task of the targeting plan.
-    /// `#[allow(dead_code)]` mirrors the convention used for `Agent::target` in
-    /// Task 1 — remove it once that task wires a real sender.
-    #[allow(dead_code)]
     SetTarget {
         agent: AgentKey,
         target: Option<AgentKey>,

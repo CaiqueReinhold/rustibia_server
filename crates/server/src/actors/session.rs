@@ -482,6 +482,7 @@ impl SessionActor {
             ClientMessage::OpenChannel { channel } => self.handle_open_channel(channel).await,
             ClientMessage::CloseChannel { channel } => self.handle_close_channel(channel).await,
             ClientMessage::OpenPmChat { name } => self.handle_open_pm_chat(name).await,
+            ClientMessage::SetTarget { agent_id } => self.set_target(agent_id).await,
         }
     }
 
@@ -845,6 +846,21 @@ impl SessionActor {
         };
 
         self.introduce(target).await?;
+        Ok(())
+    }
+
+    /// Translates a session-local agent id into an `AgentKey` and asks the world
+    /// to set it. An id with no mapping resolves to `None` rather than being
+    /// dropped: the agent has already left view and the client is a tick behind,
+    /// so the honest answer is "you have no target".
+    async fn set_target(&mut self, agent_id: Option<AgentId>) -> Result<()> {
+        let target = agent_id.and_then(|id| self.agents.get_global(id).copied());
+        self.world
+            .send(WorldCommand::SetTarget {
+                agent: self.player_key,
+                target,
+            })
+            .await;
         Ok(())
     }
 
@@ -1772,5 +1788,36 @@ mod tests {
             "however early it is, it waits rather than being refused"
         );
         assert!(matches!(session.queued_walk, Some(Direction::North)));
+    }
+
+    #[tokio::test]
+    async fn set_target_translates_the_local_id_to_a_key() {
+        let mut map = GameMap::new();
+        let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let victim = seat_player(&mut map, &Position::new(101, 100, 7), 2);
+        let (mut session, _connection_rx, mut world_rx, _tick_tx) = SessionActor::for_test(me, map);
+        let local = session.agents.get_or_insert(victim);
+
+        session.set_target(Some(local)).await.unwrap();
+
+        let (cmd, _) = world_rx.try_recv().unwrap();
+        assert!(matches!(
+            cmd,
+            WorldCommand::SetTarget { target: Some(t), .. } if t == victim
+        ));
+    }
+
+    /// The agent has already left view and the client is a tick behind. The honest
+    /// answer is "you have no target", not a dropped message.
+    #[tokio::test]
+    async fn an_unknown_local_id_becomes_a_clear() {
+        let mut map = GameMap::new();
+        let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let (mut session, _connection_rx, mut world_rx, _tick_tx) = SessionActor::for_test(me, map);
+
+        session.set_target(Some(4242)).await.unwrap();
+
+        let (cmd, _) = world_rx.try_recv().unwrap();
+        assert!(matches!(cmd, WorldCommand::SetTarget { target: None, .. }));
     }
 }
