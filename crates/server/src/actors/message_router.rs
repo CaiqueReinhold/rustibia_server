@@ -315,6 +315,9 @@ impl MessageRouterActor {
             BroadcastMessage::AgentWalkDenied { agent_key } => {
                 self.send_to(message, agent_key);
             }
+            BroadcastMessage::TargetChanged { agent_key, .. } => {
+                self.send_to(message, agent_key);
+            }
             BroadcastMessage::TileChanged { position } => {
                 self.send_to_rect(
                     message,

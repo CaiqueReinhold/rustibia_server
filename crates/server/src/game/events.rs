@@ -70,4 +70,13 @@ pub enum BroadcastMessage {
         agent_key: AgentKey,
         message: String,
     },
+    /// Delivered to `agent_key`'s session only — the target square is private to
+    /// the player who set it.
+    TargetChanged {
+        agent_key: AgentKey,
+        // Unread by `main` until Task 7 replaces the session.rs placeholder for
+        // this variant — the dead-code warning is expected and useful until
+        // then, so this is deliberately not `#[allow(dead_code)]`ed.
+        target: Option<AgentKey>,
+    },
 }

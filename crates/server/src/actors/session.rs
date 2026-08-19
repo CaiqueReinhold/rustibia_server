@@ -917,6 +917,9 @@ impl SessionActor {
             BroadcastMessage::AgentSaid { agent_key, message } => {
                 self.agent_said(agent_key, message).await
             }
+            // Placeholder to satisfy exhaustiveness. Task 7 (client-facing delivery
+            // of TargetChanged) replaces this with the real handler.
+            BroadcastMessage::TargetChanged { .. } => Ok(()),
         }
     }
 

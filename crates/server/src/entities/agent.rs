@@ -65,11 +65,6 @@ pub struct Agent {
     /// The agent this one is attacking. Session state — never persisted, and
     /// deliberately private so it cannot be set without going through
     /// `game::targeting::set_target`, which owns the validation rules.
-    ///
-    /// Unused by `main` for now: nothing reads or writes this outside tests until
-    /// `game::targeting` lands in a later task. `#[allow(dead_code)]` mirrors the
-    /// convention already used for `SqlLoginRepository` in `persistence/login.rs`.
-    #[allow(dead_code)]
     target: Option<AgentKey>,
 }
 
@@ -152,12 +147,13 @@ impl Agent {
         self.speed
     }
 
-    #[allow(dead_code)]
+    // Unread by `main` until Task 7 replaces the session.rs placeholder for
+    // BroadcastMessage::TargetChanged — the dead-code warning is expected and
+    // useful until then, so this is deliberately not `#[allow(dead_code)]`ed.
     pub fn target(&self) -> Option<AgentKey> {
         self.target
     }
 
-    #[allow(dead_code)]
     pub fn set_target(&mut self, target: Option<AgentKey>) {
         self.target = target;
     }

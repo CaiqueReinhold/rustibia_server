@@ -19,7 +19,7 @@ use crate::entities::items::{ItemConfig, ItemGuid, ItemId, ItemRef};
 use crate::entities::map::GameMap;
 use crate::entities::position::{Direction, ItemPlacement, Position};
 use crate::game::events::BroadcastMessage;
-use crate::game::{Tick, chat, item_action, item_movement, item_multi_action, movement};
+use crate::game::{Tick, chat, item_action, item_movement, item_multi_action, movement, targeting};
 
 #[derive(Debug)]
 pub enum WorldCommand {
@@ -70,6 +70,15 @@ pub enum WorldCommand {
     Say {
         agent_key: AgentKey,
         message: String,
+    },
+    /// Unused by `main` for now: nothing constructs this until a client-facing
+    /// command reaches `SessionActor` in a later task of the targeting plan.
+    /// `#[allow(dead_code)]` mirrors the convention used for `Agent::target` in
+    /// Task 1 — remove it once that task wires a real sender.
+    #[allow(dead_code)]
+    SetTarget {
+        agent: AgentKey,
+        target: Option<AgentKey>,
     },
 }
 
@@ -323,6 +332,11 @@ impl WorldActor {
                 broadcast_messages.extend(msgs);
                 Ok(())
             }
+            WorldCommand::SetTarget { agent, target } => {
+                let msgs = targeting::set_target(&mut self.map, agent, target);
+                broadcast_messages.extend(msgs);
+                Ok(())
+            }
             WorldCommand::DespawnPlayer { agent_key, .. } => {
                 self.map.remove_agent(agent_key);
                 let position = self
@@ -453,5 +467,74 @@ impl WorldActor {
         });
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::entities::map::MapTile;
+    use crate::persistence::test_fixtures::a_test_snapshot;
+
+    /// Builds a `WorldActor` from bare fields, the same way `SessionActorHandle::for_test`
+    /// (session.rs) fabricates a channel-backed handle for tests. The `rx` half of the
+    /// command channel and the `message_router`/`tick_tx` handles are never driven; only
+    /// `handle_command` is called directly.
+    fn a_test_world_actor(map: GameMap) -> WorldActor {
+        let (_tx, rx) = mpsc::channel(1);
+        let (message_router, _router_rx) = MessageRouterActorHandle::for_test();
+        let (tick_tx, _tick_rx) = watch::channel(0);
+        WorldActor {
+            rx,
+            message_router,
+            command_queue: BinaryHeap::new(),
+            map,
+            item_configs: Arc::new(HashMap::new()),
+            shared_map: Arc::new(ArcSwap::from_pointee(GameMap::new())),
+            tick: 0,
+            tick_duration: Duration::from_millis(50),
+            tick_tx,
+        }
+    }
+
+    /// Goes through the real `WorldCommand::SetTarget` dispatch arm in
+    /// `handle_command`, not `game::targeting::set_target` directly. Verified by
+    /// hand: gutting the dispatch arm to a no-op `Ok(())` makes this test fail on
+    /// `assert_eq!(actor.map.get_agent(attacker).unwrap().target(), Some(victim))`
+    /// (left: `None`, right: `Some(victim)`); restoring the arm makes it pass again.
+    #[tokio::test]
+    async fn set_target_command_dispatches_through_handle_command() {
+        let mut map = GameMap::new();
+        let pos = Position::new(5, 5, 7);
+        map.insert_tile(pos.clone(), MapTile::new());
+        let attacker = map
+            .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &pos)
+            .unwrap();
+        let victim = map
+            .insert_agent(Agent::from_player(a_test_snapshot(2, 1)), &pos)
+            .unwrap();
+
+        let mut actor = a_test_world_actor(map);
+        let mut broadcasts = Vec::new();
+
+        actor
+            .handle_command(
+                WorldCommand::SetTarget {
+                    agent: attacker,
+                    target: Some(victim),
+                },
+                &mut broadcasts,
+            )
+            .await;
+
+        assert_eq!(
+            actor.map.get_agent(attacker).unwrap().target(),
+            Some(victim)
+        );
+        assert!(matches!(
+            broadcasts.as_slice(),
+            [BroadcastMessage::TargetChanged { agent_key, target: Some(t) }]
+                if *agent_key == attacker && *t == victim
+        ));
     }
 }
