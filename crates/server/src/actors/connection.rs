@@ -11,6 +11,7 @@
 use anyhow::Result;
 use futures::sink::SinkExt;
 use thiserror::Error;
+use tokio::io::AsyncWrite;
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 use tokio::select;
 use tokio::{net::TcpStream, sync::mpsc};
@@ -21,7 +22,9 @@ use tracing::{debug, error, info};
 use crate::actors::auth::AuthActorHandle;
 use crate::actors::session::SessionActorHandle;
 use crate::config::CONFIG;
-use crate::messages::{ClientMessage, GameMessageCodec, MessageDecodeError, ServerMessage};
+use crate::messages::{
+    ClientMessage, GameMessageCodec, MessageDecodeError, MessageEncodeError, ServerMessage,
+};
 
 #[derive(Clone, Debug)]
 pub enum ConnectionCommand {
@@ -115,11 +118,16 @@ impl ConnectionActor {
 
     async fn run(mut self) {
         info!(session = self.session_id, "Connection started");
+        // Reused across iterations so a busy connection is not reallocating a
+        // batch buffer every wake-up. `drain` keeps the capacity.
+        let mut commands = Vec::with_capacity(CONFIG.max_buffered_messages);
         loop {
-            debug!(session = self.session_id, "Connection waiting for messages");
             let result = select! {
                 msg = self.reader.next() => self.handle_client_message(msg).await,
-                cmd = self.rx.recv() => self.handle_connection_command(cmd).await
+                // `recv_many` is cancel-safe the same way `recv` is: if the reader
+                // branch wins, nothing was taken off the channel.
+                _ = self.rx.recv_many(&mut commands, CONFIG.max_buffered_messages) =>
+                    self.handle_connection_commands(&mut commands).await
             };
             if let Err(e) = result {
                 error!(session = self.session_id, "Connection error: {e}");
@@ -151,26 +159,173 @@ impl ConnectionActor {
         Ok(())
     }
 
-    async fn handle_connection_command(
+    /// Handles everything that was already queued, in order, and writes the
+    /// player messages among them with a single flush.
+    async fn handle_connection_commands(
         &mut self,
-        command: Option<ConnectionCommand>,
+        commands: &mut Vec<ConnectionCommand>,
     ) -> Result<(), ConnectionError> {
-        let cmd = command.ok_or(ConnectionError::ConnectionClosed)?;
-        match cmd {
-            ConnectionCommand::Close => {
-                return Err(ConnectionError::ConnectionClosed);
-            }
-            ConnectionCommand::SetSession(session) => {
-                info!(session = self.session_id, "Upstream switched to session");
-                self.upstream = Upstream::Session(session);
-            }
-            ConnectionCommand::SendPlayerMessage(msg) => {
-                info!(session = self.session_id, "Sending player msg: {:?}", msg);
-                if self.writer.send(msg).await.is_err() {
-                    return Err(ConnectionError::ServerError);
+        if commands.is_empty() {
+            return Err(ConnectionError::ConnectionClosed);
+        }
+
+        let mut messages = Vec::with_capacity(commands.len());
+        let mut closing = false;
+        for cmd in commands.drain(..) {
+            match cmd {
+                ConnectionCommand::Close => {
+                    closing = true;
+                    // Anything queued behind a close is not ours to deliver, but
+                    // what came before it is: those frames were accepted already.
+                    break;
+                }
+                ConnectionCommand::SetSession(session) => {
+                    info!(session = self.session_id, "Upstream switched to session");
+                    self.upstream = Upstream::Session(session);
+                }
+                ConnectionCommand::SendPlayerMessage(msg) => {
+                    info!(session = self.session_id, "Sending player msg: {:?}", msg);
+                    messages.push(msg);
                 }
             }
         }
-        Ok(())
+        // Drop the tail after a close so the buffer does not carry it into the
+        // next wake-up, which cannot happen anyway but leaves no stale state.
+        commands.clear();
+
+        let flushed = write_batch(&mut self.writer, messages).await;
+
+        if closing {
+            return Err(ConnectionError::ConnectionClosed);
+        }
+        flushed.map_err(|_| ConnectionError::ServerError)
+    }
+}
+
+/// Feeds every message into the codec's buffer and flushes once.
+///
+/// [`SinkExt::feed`] is `send` without the flush. `FramedWrite` still flushes on
+/// its own once the buffer passes its backpressure boundary, so a large batch
+/// cannot grow without bound.
+///
+/// Generic over the sink so the batching can be tested against a writer that
+/// counts its writes; the actor itself owns a `TcpStream` half that cannot be
+/// stood up in a unit test.
+async fn write_batch<W>(
+    writer: &mut FramedWrite<W, GameMessageCodec>,
+    messages: impl IntoIterator<Item = ServerMessage>,
+) -> Result<(), MessageEncodeError>
+where
+    W: AsyncWrite + Unpin,
+{
+    let mut wrote = false;
+    for msg in messages {
+        writer.feed(msg).await?;
+        wrote = true;
+    }
+    // Flushing an empty buffer is harmless but pointless; skipping it keeps a
+    // wake-up that carried only a `SetSession` off the socket entirely.
+    if wrote {
+        writer.flush().await?;
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io;
+    use std::pin::Pin;
+    use std::task::{Context as TaskContext, Poll};
+
+    /// An `AsyncWrite` that records how many times it was written to.
+    ///
+    /// This is the only way to see the property under test: how many `write`
+    /// calls a batch turns into. With `TCP_NODELAY` on the listener each of those
+    /// is its own segment, so the count is the thing that matters, not the bytes.
+    #[derive(Default)]
+    struct CountingWriter {
+        writes: usize,
+        bytes: Vec<u8>,
+    }
+
+    impl AsyncWrite for CountingWriter {
+        fn poll_write(
+            mut self: Pin<&mut Self>,
+            _: &mut TaskContext<'_>,
+            buf: &[u8],
+        ) -> Poll<io::Result<usize>> {
+            self.writes += 1;
+            self.bytes.extend_from_slice(buf);
+            Poll::Ready(Ok(buf.len()))
+        }
+
+        fn poll_flush(self: Pin<&mut Self>, _: &mut TaskContext<'_>) -> Poll<io::Result<()>> {
+            Poll::Ready(Ok(()))
+        }
+
+        fn poll_shutdown(self: Pin<&mut Self>, _: &mut TaskContext<'_>) -> Poll<io::Result<()>> {
+            Poll::Ready(Ok(()))
+        }
+    }
+
+    fn framed() -> FramedWrite<CountingWriter, GameMessageCodec> {
+        FramedWrite::new(CountingWriter::default(), GameMessageCodec {})
+    }
+
+    /// The point of the change: a whole batch costs one write, not one each.
+    #[tokio::test]
+    async fn a_batch_is_written_once() {
+        let mut writer = framed();
+
+        write_batch(&mut writer, vec![ServerMessage::Pong; 9])
+            .await
+            .unwrap();
+
+        assert_eq!(
+            writer.get_ref().writes,
+            1,
+            "nine messages must reach the socket in one write"
+        );
+    }
+
+    /// The behaviour being replaced, pinned so the difference is not theoretical:
+    /// `SinkExt::send` is feed + flush, so it pays a write per message.
+    #[tokio::test]
+    async fn sending_one_at_a_time_writes_once_per_message() {
+        let mut writer = framed();
+
+        for _ in 0..9 {
+            writer.send(ServerMessage::Pong).await.unwrap();
+        }
+
+        assert_eq!(writer.get_ref().writes, 9);
+    }
+
+    /// Batching is a change to how bytes leave, never to which bytes leave.
+    #[tokio::test]
+    async fn batching_does_not_change_the_bytes() {
+        let mut batched = framed();
+        let mut one_at_a_time = framed();
+
+        write_batch(&mut batched, vec![ServerMessage::Pong; 4])
+            .await
+            .unwrap();
+        for _ in 0..4 {
+            one_at_a_time.send(ServerMessage::Pong).await.unwrap();
+        }
+
+        assert_eq!(batched.get_ref().bytes, one_at_a_time.get_ref().bytes);
+    }
+
+    /// A wake-up carrying only a `SetSession` has nothing to send, and must not
+    /// touch the socket at all.
+    #[tokio::test]
+    async fn an_empty_batch_does_not_write() {
+        let mut writer = framed();
+
+        write_batch(&mut writer, Vec::new()).await.unwrap();
+
+        assert_eq!(writer.get_ref().writes, 0);
     }
 }
