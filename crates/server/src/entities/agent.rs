@@ -147,9 +147,6 @@ impl Agent {
         self.speed
     }
 
-    // Unread by `main` until Task 7 replaces the session.rs placeholder for
-    // BroadcastMessage::TargetChanged — the dead-code warning is expected and
-    // useful until then, so this is deliberately not `#[allow(dead_code)]`ed.
     pub fn target(&self) -> Option<AgentKey> {
         self.target
     }

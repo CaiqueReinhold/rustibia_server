@@ -864,6 +864,16 @@ impl SessionActor {
         Ok(())
     }
 
+    /// Translates the world's `AgentKey` back into this session's local id. If the
+    /// target has no local id the player cannot see it, so send a clear.
+    async fn target_changed(&mut self, target: Option<AgentKey>) -> Result<()> {
+        let agent_id = target.and_then(|key| self.agents.get_local(&key));
+        self.connection
+            .send_message(ServerMessage::TargetChanged { agent_id })
+            .await?;
+        Ok(())
+    }
+
     async fn handle_request_channels(&self) -> Result<()> {
         let channels = self
             .chat
@@ -933,9 +943,7 @@ impl SessionActor {
             BroadcastMessage::AgentSaid { agent_key, message } => {
                 self.agent_said(agent_key, message).await
             }
-            // Placeholder to satisfy exhaustiveness. Task 7 (client-facing delivery
-            // of TargetChanged) replaces this with the real handler.
-            BroadcastMessage::TargetChanged { .. } => Ok(()),
+            BroadcastMessage::TargetChanged { target, .. } => self.target_changed(target).await,
         }
     }
 
@@ -1819,5 +1827,42 @@ mod tests {
 
         let (cmd, _) = world_rx.try_recv().unwrap();
         assert!(matches!(cmd, WorldCommand::SetTarget { target: None, .. }));
+    }
+
+    #[tokio::test]
+    async fn target_changed_sends_the_local_id() {
+        let mut map = GameMap::new();
+        let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let victim = seat_player(&mut map, &Position::new(101, 100, 7), 2);
+        let (mut session, mut connection_rx, _world_rx, _tick_tx) = SessionActor::for_test(me, map);
+        let local = session.agents.get_or_insert(victim);
+
+        session.target_changed(Some(victim)).await.unwrap();
+
+        assert!(matches!(
+            connection_rx.try_recv(),
+            Ok(ConnectionCommand::SendPlayerMessage(
+                ServerMessage::TargetChanged { agent_id: Some(id) }
+            )) if id == local
+        ));
+    }
+
+    /// A target the player cannot see has no local id, and "no id" is a clear.
+    #[tokio::test]
+    async fn an_unmapped_target_key_sends_a_clear() {
+        let mut map = GameMap::new();
+        let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let stranger = seat_player(&mut map, &Position::new(101, 100, 7), 2);
+        let (mut session, mut connection_rx, _world_rx, _tick_tx) = SessionActor::for_test(me, map);
+        // deliberately never introduced: no local id exists for `stranger`
+
+        session.target_changed(Some(stranger)).await.unwrap();
+
+        assert!(matches!(
+            connection_rx.try_recv(),
+            Ok(ConnectionCommand::SendPlayerMessage(
+                ServerMessage::TargetChanged { agent_id: None }
+            ))
+        ));
     }
 }
