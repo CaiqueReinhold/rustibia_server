@@ -1080,11 +1080,8 @@ impl SessionActor {
                         .send_message(get_agent_desc(agent, agent_id, to_position))
                         .await?;
                 }
-            } else if let Some(agent_id) = self.agents.get_local(&agent_key) {
-                self.agents.remove_by_local(agent_id);
-                self.connection
-                    .send_message(ServerMessage::RemoveAgent { agent_id })
-                    .await?;
+            } else {
+                self.forget_agent(agent_key).await?;
             }
 
             Ok(())
@@ -1315,12 +1312,7 @@ impl SessionActor {
             return Ok(());
         }
 
-        if let Some(agent_id) = self.agents.get_local(&agent_key) {
-            self.agents.remove_by_local(agent_id);
-            self.connection
-                .send_message(ServerMessage::RemoveAgent { agent_id })
-                .await?;
-        }
+        self.forget_agent(agent_key).await?;
         Ok(())
     }
 
@@ -1366,11 +1358,8 @@ impl SessionActor {
                         .send_message(get_agent_desc(agent, agent_id, to_position))
                         .await?;
                 }
-            } else if let Some(agent_id) = self.agents.get_local(&agent_key) {
-                self.agents.remove_by_local(agent_id);
-                self.connection
-                    .send_message(ServerMessage::RemoveAgent { agent_id })
-                    .await?;
+            } else {
+                self.forget_agent(agent_key).await?;
             }
 
             Ok(())
@@ -1378,17 +1367,15 @@ impl SessionActor {
     }
 
     async fn remove_agents_not_in_reach(&mut self, visible: HashSet<AgentKey>) -> Result<()> {
-        for agent_id in self
+        let gone: Vec<AgentKey> = self
             .agents
             .iter_global()
             .filter(|key| **key != self.player_key && !visible.contains(key))
-            .filter_map(|key| self.agents.get_local(key))
-            .collect::<Vec<_>>()
-        {
-            self.connection
-                .send_message(ServerMessage::RemoveAgent { agent_id })
-                .await?;
-            self.agents.remove_by_local(agent_id);
+            .copied()
+            .collect();
+
+        for key in gone {
+            self.forget_agent(key).await?;
         }
 
         Ok(())
@@ -1397,6 +1384,41 @@ impl SessionActor {
     async fn agent_said(&mut self, agent_key: AgentKey, message: String) -> Result<()> {
         self.send_chat(agent_key, ChatMessageType::Local, 0, message)
             .await
+    }
+
+    /// Drops an agent's session-local id and tells the client it is gone.
+    ///
+    /// The four places that used to do this by hand all funnel through here,
+    /// because the id's lifetime *is* the target's lifetime: once the id is
+    /// recycled the target can no longer be named on the wire, so a removal that
+    /// forgot to clear the target would leave the two sides disagreeing.
+    async fn forget_agent(&mut self, agent_key: AgentKey) -> Result<()> {
+        let Some(agent_id) = self.agents.get_local(&agent_key) else {
+            return Ok(());
+        };
+
+        self.agents.remove_by_local(agent_id);
+        self.connection
+            .send_message(ServerMessage::RemoveAgent { agent_id })
+            .await?;
+
+        let is_my_target = self
+            .shared_map
+            .load()
+            .get_agent(self.player_key)
+            .and_then(|me| me.target())
+            == Some(agent_key);
+
+        if is_my_target {
+            self.world
+                .send(WorldCommand::SetTarget {
+                    agent: self.player_key,
+                    target: None,
+                })
+                .await;
+        }
+
+        Ok(())
     }
 
     #[cfg(test)]
@@ -1864,5 +1886,76 @@ mod tests {
                 ServerMessage::TargetChanged { agent_id: None }
             ))
         ));
+    }
+
+    /// Seats a player, a victim it is already targeting, and a bystander.
+    #[allow(clippy::type_complexity)]
+    fn a_session_with_a_target() -> (
+        SessionActor,
+        AgentKey,
+        AgentKey,
+        mpsc::Receiver<ConnectionCommand>,
+        mpsc::Receiver<(WorldCommand, Option<Tick>)>,
+    ) {
+        let mut map = GameMap::new();
+        let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let victim = seat_player(&mut map, &Position::new(101, 100, 7), 2);
+        let bystander = seat_player(&mut map, &Position::new(102, 100, 7), 3);
+        map.get_agent_mut(me).unwrap().set_target(Some(victim));
+
+        let (session, connection_rx, world_rx, _tick_tx) = SessionActor::for_test(me, map);
+        (session, victim, bystander, connection_rx, world_rx)
+    }
+
+    /// The id is recycled the moment the agent leaves view, so the target must go
+    /// with it. Asserting on the command sent to the world — not on the id map
+    /// shrinking — is what makes this test fail if the clear is deleted.
+    #[tokio::test]
+    async fn forgetting_the_target_clears_it() {
+        let (mut session, victim, _bystander, mut connection_rx, mut world_rx) =
+            a_session_with_a_target();
+        session.agents.get_or_insert(victim);
+
+        session.forget_agent(victim).await.unwrap();
+
+        assert!(matches!(
+            connection_rx.try_recv(),
+            Ok(ConnectionCommand::SendPlayerMessage(
+                ServerMessage::RemoveAgent { .. }
+            ))
+        ));
+        let (cmd, _) = world_rx.try_recv().unwrap();
+        assert!(matches!(cmd, WorldCommand::SetTarget { target: None, .. }));
+    }
+
+    /// Forgetting a bystander must not disturb the target.
+    #[tokio::test]
+    async fn forgetting_a_non_target_sends_no_clear() {
+        let (mut session, _victim, bystander, mut connection_rx, mut world_rx) =
+            a_session_with_a_target();
+        session.agents.get_or_insert(bystander);
+
+        session.forget_agent(bystander).await.unwrap();
+
+        assert!(matches!(
+            connection_rx.try_recv(),
+            Ok(ConnectionCommand::SendPlayerMessage(
+                ServerMessage::RemoveAgent { .. }
+            ))
+        ));
+        assert!(world_rx.try_recv().is_err(), "no world command expected");
+    }
+
+    /// An agent that was never introduced has no id to drop and nothing to announce.
+    #[tokio::test]
+    async fn forgetting_an_unknown_agent_does_nothing() {
+        let (mut session, victim, _bystander, mut connection_rx, mut world_rx) =
+            a_session_with_a_target();
+        // `victim` is the target but was never introduced, so it has no local id.
+
+        session.forget_agent(victim).await.unwrap();
+
+        assert!(connection_rx.try_recv().is_err());
+        assert!(world_rx.try_recv().is_err());
     }
 }
