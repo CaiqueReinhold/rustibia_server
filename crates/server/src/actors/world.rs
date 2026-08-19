@@ -75,6 +75,10 @@ pub enum WorldCommand {
         agent: AgentKey,
         target: Option<AgentKey>,
     },
+    ClearTargetIfCurrent {
+        agent: AgentKey,
+        expected: AgentKey,
+    },
 }
 
 #[derive(Debug)]
@@ -329,6 +333,11 @@ impl WorldActor {
             }
             WorldCommand::SetTarget { agent, target } => {
                 let msgs = targeting::set_target(&mut self.map, agent, target);
+                broadcast_messages.extend(msgs);
+                Ok(())
+            }
+            WorldCommand::ClearTargetIfCurrent { agent, expected } => {
+                let msgs = targeting::clear_target_if_current(&mut self.map, agent, expected);
                 broadcast_messages.extend(msgs);
                 Ok(())
             }

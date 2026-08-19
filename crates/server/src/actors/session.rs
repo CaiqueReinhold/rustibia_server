@@ -136,9 +136,6 @@ impl SessionActorHandle {
         Ok(())
     }
 
-    /// A handle backed by a channel the caller owns. The receiver must be kept alive:
-    /// dropping it turns every send into a `Closed` error, which the router reads as a
-    /// dead session.
     #[cfg(test)]
     pub fn for_test() -> (Self, mpsc::Receiver<SessionCommand>) {
         let (tx, rx) = mpsc::channel(64);
@@ -171,10 +168,6 @@ pub struct SessionActor {
     logout_pending: bool,
 }
 
-/// What `SessionActor::for_test` hands back: the actor, plus the receiving end of every
-/// channel it writes to and the tick sender. Every receiver has to stay *bound* for the
-/// life of the test — dropping one turns the matching send into a silent no-op, which
-/// would let an assertion about "nothing was sent" pass for the wrong reason.
 #[cfg(test)]
 type TestSession = (
     SessionActor,
@@ -270,12 +263,6 @@ impl SessionActor {
                     break;
                 }
                 changed = self.tick_rx.changed() => {
-                    // Ahead of `rx.recv()` deliberately. Under `biased` the branches
-                    // are polled in order, and `rx` carries a broadcast per visible
-                    // agent event — in a crowded area it can stay permanently ready
-                    // and starve everything below it, so a queued walk would never
-                    // drain. This branch cannot starve `rx` in return: it wakes at
-                    // most once per 50ms tick and does nothing when the queue is empty.
                     if changed.is_err() {
                         // The world's tick sender was dropped. Without this the
                         // branch returns Ready forever and the session spins.
@@ -482,7 +469,7 @@ impl SessionActor {
             ClientMessage::OpenChannel { channel } => self.handle_open_channel(channel).await,
             ClientMessage::CloseChannel { channel } => self.handle_close_channel(channel).await,
             ClientMessage::OpenPmChat { name } => self.handle_open_pm_chat(name).await,
-            ClientMessage::SetTarget { agent_id } => self.set_target(agent_id).await,
+            ClientMessage::SetTarget { agent_id } => self.handle_set_target(agent_id).await,
         }
     }
 
@@ -498,16 +485,6 @@ impl SessionActor {
         Ok(())
     }
 
-    /// Ticks remaining before this session's player may walk again, read from the
-    /// published snapshot.
-    ///
-    /// `saturating_sub` is load-bearing: `next_walk_tick` trails the current tick
-    /// by an unbounded amount once a player has stood still, so a plain subtraction
-    /// underflows the `u64` and every idle walk looks like a ~2^64-tick wait.
-    ///
-    /// An agent missing from the snapshot reads as 0. The session must not start
-    /// refusing walks on its own reading of a snapshot that may not yet contain a
-    /// just-spawned player.
     fn walk_cooldown_remaining(&self) -> Tick {
         let map = self.shared_map.load();
         map.get_agent(self.player_key)
@@ -515,9 +492,6 @@ impl SessionActor {
             .unwrap_or(0)
     }
 
-    /// Per-tick hook for session-local state that advances with the world clock.
-    /// Today only the walk queue; further per-tick cooldowns belong here rather
-    /// than in their own `select!` branch.
     async fn check_queues(&mut self) -> Result<()> {
         self.check_walk_queue().await
     }
@@ -545,29 +519,12 @@ impl SessionActor {
         Ok(())
     }
 
-    /// An early walk is held until the cooldown expires rather than forwarded into
-    /// a refusal, however early it is. The client's step animation and the server's
-    /// cooldown are the same length, but the client starts its clock when it sends
-    /// and the server when it processes, so a walk clears by exactly zero ticks and
-    /// any downward latency jitter refuses it.
-    ///
-    /// There is no bound on how early a walk may arrive, because replacement is
-    /// already the bound that matters: the slot holds one direction, and each new
-    /// request overwrites it, so what eventually fires is always the newest intent
-    /// and at most one step can be stale. A time window on top of that does not make
-    /// the queue safer — it just reintroduces a refusal at the boundary, which is
-    /// the failure it was meant to remove. This mirrors `Creature::startAutoWalk` in
-    /// TFS, which does `listWalkDir.clear(); listWalkDir.push_back(direction);` and
-    /// applies no deadline at all.
     async fn handle_move_player(&mut self, direction: Direction) -> Result<()> {
         let remaining = self.walk_cooldown_remaining();
         if remaining > 0 {
-            // Newest wins: a direction change supersedes what was queued.
             self.queued_walk = Some(direction);
             return Ok(());
         }
-        // A fresh walk supersedes a queued one, so a stale direction cannot fire
-        // behind it.
         self.queued_walk = None;
         self.send_walk(direction).await
     }
@@ -791,8 +748,6 @@ impl SessionActor {
         message_type: ChatMessageType,
         target: u16,
     ) -> Result<()> {
-        // Characters, not bytes, so the client's input-field cap measures the same thing
-        // and no message the player could compose is refused for length.
         if message.chars().count() > GAME_CONFIG.chat.max_message_length {
             return self.deny("Your message is too long.").await;
         }
@@ -813,8 +768,6 @@ impl SessionActor {
                     .await;
             }
             ChatMessageType::Private => {
-                // `target` is a `player_pms` id: the client got it from an
-                // `IntroducePlayer`, either by opening the chat or by receiving a message.
                 if let Some(recipient) = self.player_pms.get_global(target).copied() {
                     self.chat
                         .message_player(self.player_key, recipient, message)
@@ -830,9 +783,6 @@ impl SessionActor {
         Ok(())
     }
 
-    /// Resolves a name to a chat id so the client can start a conversation. The map
-    /// snapshot is the only name index there is — `OnlineRegistry` holds character ids
-    /// and nothing else.
     async fn handle_open_pm_chat(&mut self, name: String) -> Result<()> {
         let target = {
             let map = self.shared_map.load();
@@ -849,11 +799,7 @@ impl SessionActor {
         Ok(())
     }
 
-    /// Translates a session-local agent id into an `AgentKey` and asks the world
-    /// to set it. An id with no mapping resolves to `None` rather than being
-    /// dropped: the agent has already left view and the client is a tick behind,
-    /// so the honest answer is "you have no target".
-    async fn set_target(&mut self, agent_id: Option<AgentId>) -> Result<()> {
+    async fn handle_set_target(&mut self, agent_id: Option<AgentId>) -> Result<()> {
         let target = agent_id.and_then(|id| self.agents.get_global(id).copied());
         self.world
             .send(WorldCommand::SetTarget {
@@ -864,8 +810,6 @@ impl SessionActor {
         Ok(())
     }
 
-    /// Translates the world's `AgentKey` back into this session's local id. If the
-    /// target has no local id the player cannot see it, so send a clear.
     async fn target_changed(&mut self, target: Option<AgentKey>) -> Result<()> {
         let agent_id = target.and_then(|key| self.agents.get_local(&key));
         self.connection
@@ -1386,12 +1330,6 @@ impl SessionActor {
             .await
     }
 
-    /// Drops an agent's session-local id and tells the client it is gone.
-    ///
-    /// The four places that used to do this by hand all funnel through here,
-    /// because the id's lifetime *is* the target's lifetime: once the id is
-    /// recycled the target can no longer be named on the wire, so a removal that
-    /// forgot to clear the target would leave the two sides disagreeing.
     async fn forget_agent(&mut self, agent_key: AgentKey) -> Result<()> {
         let Some(agent_id) = self.agents.get_local(&agent_key) else {
             return Ok(());
@@ -1402,21 +1340,12 @@ impl SessionActor {
             .send_message(ServerMessage::RemoveAgent { agent_id })
             .await?;
 
-        let is_my_target = self
-            .shared_map
-            .load()
-            .get_agent(self.player_key)
-            .and_then(|me| me.target())
-            == Some(agent_key);
-
-        if is_my_target {
-            self.world
-                .send(WorldCommand::SetTarget {
-                    agent: self.player_key,
-                    target: None,
-                })
-                .await;
-        }
+        self.world
+            .send(WorldCommand::ClearTargetIfCurrent {
+                agent: self.player_key,
+                expected: agent_key,
+            })
+            .await;
 
         Ok(())
     }
@@ -1828,7 +1757,7 @@ mod tests {
         let (mut session, _connection_rx, mut world_rx, _tick_tx) = SessionActor::for_test(me, map);
         let local = session.agents.get_or_insert(victim);
 
-        session.set_target(Some(local)).await.unwrap();
+        session.handle_set_target(Some(local)).await.unwrap();
 
         let (cmd, _) = world_rx.try_recv().unwrap();
         assert!(matches!(
@@ -1845,7 +1774,7 @@ mod tests {
         let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
         let (mut session, _connection_rx, mut world_rx, _tick_tx) = SessionActor::for_test(me, map);
 
-        session.set_target(Some(4242)).await.unwrap();
+        session.handle_set_target(Some(4242)).await.unwrap();
 
         let (cmd, _) = world_rx.try_recv().unwrap();
         assert!(matches!(cmd, WorldCommand::SetTarget { target: None, .. }));
@@ -1888,7 +1817,9 @@ mod tests {
         ));
     }
 
-    /// Seats a player, a victim it is already targeting, and a bystander.
+    /// Seats a player, a victim it is already targeting (map state kept for
+    /// narrative clarity — `forget_agent` no longer reads it; the compare is the
+    /// world's job now), and an unrelated bystander.
     #[allow(clippy::type_complexity)]
     fn a_session_with_a_target() -> (
         SessionActor,
@@ -1907,11 +1838,12 @@ mod tests {
         (session, victim, bystander, connection_rx, world_rx)
     }
 
-    /// The id is recycled the moment the agent leaves view, so the target must go
-    /// with it. Asserting on the command sent to the world — not on the id map
-    /// shrinking — is what makes this test fail if the clear is deleted.
+    /// The id is recycled the moment the agent leaves view. `forget_agent` no
+    /// longer decides whether this was the player's target — it just reports who
+    /// left and lets the world's compare-and-swap decide, so the assertion here
+    /// is on the *command shape*, not on an outcome this layer can no longer see.
     #[tokio::test]
-    async fn forgetting_the_target_clears_it() {
+    async fn forgetting_a_known_agent_asks_the_world_to_clear_it_if_current() {
         let (mut session, victim, _bystander, mut connection_rx, mut world_rx) =
             a_session_with_a_target();
         session.agents.get_or_insert(victim);
@@ -1925,12 +1857,19 @@ mod tests {
             ))
         ));
         let (cmd, _) = world_rx.try_recv().unwrap();
-        assert!(matches!(cmd, WorldCommand::SetTarget { target: None, .. }));
+        assert!(matches!(
+            cmd,
+            WorldCommand::ClearTargetIfCurrent { expected, .. } if expected == victim
+        ));
     }
 
-    /// Forgetting a bystander must not disturb the target.
+    /// A bystander leaving still reports it as `expected` — `forget_agent` does
+    /// not special-case "is this actually my target" any more (see the previous
+    /// test's doc comment for why: only the world can answer that without a
+    /// race). Whether the clear actually applies is `clear_target_if_current`'s
+    /// job, covered in `game::targeting`'s tests, not here.
     #[tokio::test]
-    async fn forgetting_a_non_target_sends_no_clear() {
+    async fn forgetting_a_bystander_also_names_it_as_expected() {
         let (mut session, _victim, bystander, mut connection_rx, mut world_rx) =
             a_session_with_a_target();
         session.agents.get_or_insert(bystander);
@@ -1943,7 +1882,11 @@ mod tests {
                 ServerMessage::RemoveAgent { .. }
             ))
         ));
-        assert!(world_rx.try_recv().is_err(), "no world command expected");
+        let (cmd, _) = world_rx.try_recv().unwrap();
+        assert!(matches!(
+            cmd,
+            WorldCommand::ClearTargetIfCurrent { expected, .. } if expected == bystander
+        ));
     }
 
     /// An agent that was never introduced has no id to drop and nothing to announce.

@@ -2,16 +2,6 @@ use crate::entities::agent::AgentKey;
 use crate::entities::map::GameMap;
 use crate::game::events::BroadcastMessage;
 
-/// Sets or clears `agent`'s attack target.
-///
-/// A `Some(target)` is rejected when the target is absent from the map or is the
-/// actor itself. A rejection is **not** silent: it clears the target and says so,
-/// so the client is never left drawing a square the server does not hold.
-///
-/// Viewport membership is deliberately not checked here. `SessionActor` only ever
-/// names an agent it currently holds a local id for, and holding that id is what
-/// "in my viewport" means. Re-deriving it here would be a second, weaker copy of
-/// the same rule.
 pub fn set_target(
     map: &mut GameMap,
     agent: AgentKey,
@@ -34,6 +24,30 @@ pub fn set_target(
     vec![BroadcastMessage::TargetChanged {
         agent_key: agent,
         target: accepted,
+    }]
+}
+
+pub fn clear_target_if_current(
+    map: &mut GameMap,
+    agent: AgentKey,
+    expected: AgentKey,
+) -> Vec<BroadcastMessage> {
+    let Some(actor) = map.get_agent(agent) else {
+        return Vec::new();
+    };
+
+    if actor.target() != Some(expected) {
+        return Vec::new();
+    }
+
+    let actor = map
+        .get_agent_mut(agent)
+        .expect("agent was just found by get_agent above");
+    actor.set_target(None);
+
+    vec![BroadcastMessage::TargetChanged {
+        agent_key: agent,
+        target: None,
     }]
 }
 
@@ -149,6 +163,60 @@ mod tests {
         map.remove_agent(attacker);
 
         let msgs = set_target(&mut map, attacker, Some(victim));
+
+        assert!(msgs.is_empty());
+    }
+
+    #[test]
+    fn clear_target_if_current_clears_when_the_target_still_matches() {
+        let (mut map, attacker, victim) = map_with_two_players();
+        set_target(&mut map, attacker, Some(victim));
+
+        let msgs = clear_target_if_current(&mut map, attacker, victim);
+
+        assert_eq!(target_of(&map, attacker), None);
+        assert!(matches!(
+            msgs.as_slice(),
+            [BroadcastMessage::TargetChanged { agent_key, target: None }]
+                if *agent_key == attacker
+        ));
+    }
+
+    /// The clobber case this function exists to prevent: a `SetTarget` that
+    /// applied after the session decided to clear must not be reverted.
+    #[test]
+    fn clear_target_if_current_does_nothing_when_the_target_has_moved_on() {
+        let (mut map, attacker, victim) = map_with_two_players();
+        let third_pos = Position::new(12, 10, 7);
+        map.insert_tile(third_pos.clone(), MapTile::new());
+        let new_target = map
+            .insert_agent(Agent::from_player(a_test_snapshot(3, 1)), &third_pos)
+            .unwrap();
+        set_target(&mut map, attacker, Some(new_target));
+
+        let msgs = clear_target_if_current(&mut map, attacker, victim);
+
+        assert_eq!(target_of(&map, attacker), Some(new_target));
+        assert!(msgs.is_empty());
+    }
+
+    #[test]
+    fn clear_target_if_current_does_nothing_when_there_is_no_target() {
+        let (mut map, attacker, victim) = map_with_two_players();
+
+        let msgs = clear_target_if_current(&mut map, attacker, victim);
+
+        assert_eq!(target_of(&map, attacker), None);
+        assert!(msgs.is_empty());
+    }
+
+    #[test]
+    fn clear_target_if_current_does_nothing_when_the_actor_is_absent() {
+        let (mut map, attacker, victim) = map_with_two_players();
+        set_target(&mut map, attacker, Some(victim));
+        map.remove_agent(attacker);
+
+        let msgs = clear_target_if_current(&mut map, attacker, victim);
 
         assert!(msgs.is_empty());
     }
