@@ -6,7 +6,10 @@ use super::{inventory::Inventory, player::Player};
 use crate::{
     config,
     constants::{SPEED_PARAM_A, SPEED_PARAM_B, SPEED_PARAM_C},
-    entities::{creature::CreatureKind, position::Position},
+    entities::{
+        creature::{BloodType, CreatureKind},
+        position::Position,
+    },
     game::Tick,
     persistence::player::PlayerSnapshot,
 };
@@ -30,8 +33,8 @@ impl Pool {
         self.current = self.current.saturating_sub(amount)
     }
 
-    pub fn to_wire(&self) -> u8 {
-        ((self.current as f32) / (self.maximum as f32) * 100.0).round() as u8
+    pub fn to_wire(&self) -> u32 {
+        ((self.current as f32) / (self.maximum as f32) * 100.0).round() as u32
     }
 }
 
@@ -214,6 +217,13 @@ impl Agent {
         match &self.inner {
             AgentInner::Player(p) => p.weapon_range(),
             AgentInner::Creature(..) => 1,
+        }
+    }
+
+    pub fn blood_type(&self) -> BloodType {
+        match &self.inner {
+            AgentInner::Player(..) => BloodType::Blood,
+            AgentInner::Creature(c) => c.blood_type.clone(),
         }
     }
 

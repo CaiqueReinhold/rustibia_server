@@ -153,6 +153,22 @@ impl SessionActor {
         self.forget_agent(agent_key).await?;
         Ok(())
     }
+
+    pub(super) async fn mana_updated(&self) -> Result<()> {
+        let map = self.shared_map.load();
+        if let Some(player) = map.get_player(self.player_key)
+            && let Some(agent_id) = self.agents.get_local(&self.player_key)
+        {
+            self.connection
+                .send_message(ServerMessage::AgentManaChanged {
+                    agent_id,
+                    current: player.mana.current,
+                    max: player.mana.maximum,
+                })
+                .await?;
+        }
+        Ok(())
+    }
 }
 
 #[cfg(test)]

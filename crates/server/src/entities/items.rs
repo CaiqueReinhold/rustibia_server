@@ -41,19 +41,9 @@ pub enum ItemFlag {
     Usable,
     Avoid,
     AmmoContainer,
+    LiquidPool,
 }
 
-/// What a splash or fluid container holds.
-///
-/// The discriminants **are** the wire values, matching OTClient's `FluidsType`,
-/// so nothing converts on the way out. TFS instead keeps an internal enum that
-/// packs the colour into the low bits (`FLUID_BLOOD = FLUID_RED = 2`,
-/// `FLUID_LAVA = FLUID_RED + 24`) and converts through a `fluidMap` on send;
-/// that trick exists to avoid a lookup table in C, and there is no legacy
-/// representation here that would justify inheriting it.
-///
-/// Mapping these to colours is a rendering concern and deliberately lives on
-/// the client, not here.
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum FluidType {
     None = 0,
@@ -110,6 +100,7 @@ pub enum ItemAttribute {
 
 #[derive(Debug)]
 pub struct ItemConfig {
+    pub id: ItemId,
     pub name: String,
     pub description: Option<String>,
     pub article: Option<String>,
@@ -119,6 +110,7 @@ pub struct ItemConfig {
 
 impl ItemConfig {
     pub fn new(
+        id: ItemId,
         name: String,
         description: Option<String>,
         article: Option<String>,
@@ -126,6 +118,7 @@ impl ItemConfig {
         attributes: HashSet<ItemAttribute>,
     ) -> Self {
         ItemConfig {
+            id,
             name,
             description,
             article,
@@ -149,19 +142,18 @@ pub struct Item {
     pub config: Arc<ItemConfig>,
     pub item_id: ItemId,
     pub amount: u8,
-    /// `Some` only for splashes and fluid containers. Kept separate from
-    /// `amount` so the overload exists on the wire and nowhere else.
     pub fluid: Option<FluidType>,
     pub content: Option<Vec<Item>>,
 }
 
 impl Item {
-    pub fn new(item_id: ItemId, config: Arc<ItemConfig>, amount: u8) -> Self {
+    pub fn new(config: Arc<ItemConfig>, amount: u8) -> Self {
         let content = if config.has_flag(ItemFlag::Container) {
             Some(Vec::new())
         } else {
             None
         };
+        let item_id = config.id;
         Item {
             config,
             guid: ItemGuid(Uuid::now_v7().to_string()),
@@ -172,10 +164,18 @@ impl Item {
         }
     }
 
-    /// The subtype byte this item puts on the wire: a fluid for a splash or a
-    /// fluid container, a stack count for everything else. Same byte either way
-    /// -- which is OT's format, and why this rule lives in one place rather than
-    /// at each of the five sites that encode an item.
+    pub fn new_fluid(config: Arc<ItemConfig>, fluid: FluidType) -> Self {
+        let item_id = config.id;
+        Item {
+            config,
+            guid: ItemGuid(Uuid::now_v7().to_string()),
+            item_id,
+            amount: 1,
+            fluid: Some(fluid),
+            content: None,
+        }
+    }
+
     pub fn wire_subtype(&self) -> u8 {
         self.fluid.map(|f| f as u8).unwrap_or(self.amount)
     }
@@ -303,6 +303,7 @@ mod tests {
     #[test]
     fn a_fluid_item_sends_its_fluid_where_a_stack_sends_its_count() {
         let config = Arc::new(ItemConfig::new(
+            2886,
             "pool".to_string(),
             None,
             None,
@@ -310,9 +311,9 @@ mod tests {
             HashSet::new(),
         ));
 
-        let mut pool = Item::new(2886, Arc::clone(&config), 1);
+        let mut pool = Item::new(Arc::clone(&config), 1);
         pool.fluid = Some(FluidType::Blood);
-        let stack = Item::new(2148, config, 37);
+        let stack = Item::new(config, 37);
 
         assert_eq!(pool.wire_subtype(), 5, "the fluid, not the amount");
         assert_eq!(stack.wire_subtype(), 37, "the amount, as before");

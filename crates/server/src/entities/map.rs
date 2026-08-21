@@ -135,6 +135,11 @@ impl GameMap {
             .ok_or(MapError::TileDoesNotExist)
     }
 
+    pub fn iter_items(&self, pos: &Position) -> Result<impl Iterator<Item = &Item>, MapError> {
+        let tile = self.get_tile(pos)?;
+        Ok(tile.items.iter())
+    }
+
     pub fn insert_agent(&mut self, agent: Agent, pos: &Position) -> Result<AgentKey, MapError> {
         if !self.contains_tile(pos) {
             return Err(MapError::TileDoesNotExist);
@@ -486,12 +491,13 @@ impl GameMap {
         index: Option<usize>,
         container: Option<(&ItemGuid, usize)>,
         item: Item,
-    ) -> Result<(), MapError> {
+    ) -> Result<&Item, MapError> {
         match container {
             None => {
                 let tile = self.get_tile_mut(pos)?;
-                tile.items.insert(index.unwrap_or(tile.items.len()), item);
-                Ok(())
+                let index = index.unwrap_or(tile.items.len());
+                tile.items.insert(index, item);
+                Ok(&tile.items[index])
             }
             Some((target, slot)) => {
                 let tile = self.get_tile_mut(pos)?;
@@ -503,7 +509,7 @@ impl GameMap {
                                 return Err(MapError::ContainerIsFull);
                             }
                             content.insert(slot, item);
-                            return Ok(());
+                            return Ok(&content[slot]);
                         }
                     }
                 }

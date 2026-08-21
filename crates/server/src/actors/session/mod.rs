@@ -442,14 +442,13 @@ impl SessionActor {
                 to,
                 sprite_id,
             } => self.missile_launched(from, to, sprite_id).await,
-            BroadcastMessage::SkillProgressUpdated {
-                agent_key,
-                skill_type,
-            } => self.skill_progress(skill_type).await,
-            BroadcastMessage::SkillUpgraded {
-                agent_key,
-                skill_type,
-            } => self.skill_upgraded(skill_type).await,
+            BroadcastMessage::SkillProgressUpdated { skill_type, .. } => {
+                self.skill_progress(skill_type).await
+            }
+            BroadcastMessage::SkillUpgraded { skill_type, .. } => {
+                self.skill_upgraded(skill_type).await
+            }
+            BroadcastMessage::PlayerManaUpdated { .. } => self.mana_updated().await,
         }
     }
 

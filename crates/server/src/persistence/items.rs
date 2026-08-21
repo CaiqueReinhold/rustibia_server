@@ -55,7 +55,8 @@ fn parse_flag(s: &str) -> Option<ItemFlag> {
         "container" => Some(ItemFlag::Container),
         "usable" => Some(ItemFlag::Usable),
         "avoid" => Some(ItemFlag::Avoid),
-        "ammo_contaioner" => Some(ItemFlag::AmmoContainer),
+        "ammo_container" => Some(ItemFlag::AmmoContainer),
+        "liquidpool" => Some(ItemFlag::LiquidPool),
         _ => None,
     }
 }
@@ -144,7 +145,7 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
     }
 }
 
-fn convert(raw: RawItemConfig) -> ItemConfig {
+fn convert(id: u16, raw: RawItemConfig) -> ItemConfig {
     let flags = raw
         .flags
         .iter()
@@ -157,7 +158,14 @@ fn convert(raw: RawItemConfig) -> ItemConfig {
         .filter_map(|(k, v)| parse_attribute(k, v))
         .collect::<HashSet<_>>();
 
-    ItemConfig::new(raw.name, raw.description, raw.article, flags, attributes)
+    ItemConfig::new(
+        id,
+        raw.name,
+        raw.description,
+        raw.article,
+        flags,
+        attributes,
+    )
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
@@ -170,6 +178,6 @@ pub fn load_items(
     Ok(file
         .items
         .into_iter()
-        .map(|(id, raw)| (id, Arc::new(convert(raw))))
+        .map(|(id, raw)| (id, Arc::new(convert(id, raw))))
         .collect())
 }

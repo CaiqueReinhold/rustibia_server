@@ -1,6 +1,9 @@
 use serde::Deserialize;
 
-use crate::entities::agent::{OutfitColors, OutfitId, Pool};
+use crate::entities::{
+    agent::{OutfitColors, OutfitId, Pool},
+    items::FluidType,
+};
 
 pub type CreatureKindId = String;
 
@@ -9,6 +12,15 @@ pub type CreatureKindId = String;
 pub enum BloodType {
     Blood,
     Poison,
+}
+
+impl BloodType {
+    pub fn get_fluid(&self) -> FluidType {
+        match self {
+            BloodType::Blood => FluidType::Blood,
+            BloodType::Poison => FluidType::Slime,
+        }
+    }
 }
 
 #[derive(Clone, Debug)]

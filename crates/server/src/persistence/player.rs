@@ -262,13 +262,14 @@ mod tests {
         use std::sync::Arc;
 
         let config = Arc::new(ItemConfig::new(
+            2360,
             "sword".to_string(),
             None,
             None,
             HashSet::new(),
             HashSet::new(),
         ));
-        let item = Item::new(2360, config, 1);
+        let item = Item::new(config, 1);
         let mut inv: HashMap<InventorySlot, Item> = HashMap::new();
         inv.insert(InventorySlot::RightHand, item);
 

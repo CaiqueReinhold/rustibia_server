@@ -1,9 +1,14 @@
+use std::{collections::HashMap, sync::Arc};
+
+use tracing::info;
+
 use crate::{
+    actors::world::ScheduledCommand,
     entities::{
         agent::{Agent, AgentKey},
         combat::{CombatDamage, CombatElement, WeaponType},
         creature::{BloodType, CreatureKind},
-        items::{ItemAttribute, ItemGuid, ItemRef},
+        items::{Item, ItemAttribute, ItemConfig, ItemFlag, ItemGuid, ItemId, ItemRef},
         map::GameMap,
         player::{InventorySlot, Player},
         position::{ItemPlacement, Position},
@@ -13,6 +18,7 @@ use crate::{
         Tick,
         events::BroadcastMessage,
         game_config::{Color, GAME_CONFIG},
+        item_action::check_decay,
         map_query::can_throw,
         random::Rolls,
         skills::tick_skill,
@@ -76,53 +82,64 @@ pub fn auto_attack_target(
     map: &mut GameMap,
     agent_key: AgentKey,
     roll: &mut Rolls,
+    item_configs: &HashMap<ItemId, Arc<ItemConfig>>,
     current_tick: Tick,
-) -> Vec<BroadcastMessage> {
+) -> (Vec<BroadcastMessage>, Vec<ScheduledCommand>) {
     let mut msgs = Vec::new();
+    let mut cmds = Vec::new();
 
     let Some(attacker) = map.get_agent(agent_key) else {
-        return msgs;
+        return (msgs, cmds);
     };
     let Some(attacker_pos) = map.agent_position(agent_key) else {
-        return msgs;
+        return (msgs, cmds);
     };
-    let (Some(attacked_key), Some(_attacked), Some(attacked_pos)) = attacker
-        .target()
-        .map(|t| (Some(t), map.get_agent(t), map.agent_position(t)))
-        .unwrap_or((None, None, None))
-    else {
-        return msgs;
+    let Some(attacked_key) = attacker.target() else {
+        return (msgs, cmds);
+    };
+    let Some(attacked_pos) = map.agent_position(attacked_key).cloned() else {
+        return (msgs, cmds);
     };
 
     if attacker.next_attack_tick >= current_tick {
-        return msgs;
+        return (msgs, cmds);
     }
 
-    if !is_in_range(attacker, attacker_pos, attacked_pos) {
-        return msgs;
+    if !is_in_range(attacker, attacker_pos, &attacked_pos) {
+        return (msgs, cmds);
     }
 
-    if attacker.attack_range() > 1 && !can_throw(map, attacker_pos, attacked_pos, true) {
-        return msgs;
+    if attacker.attack_range() > 1 && !can_throw(map, attacker_pos, &attacked_pos, true) {
+        return (msgs, cmds);
     }
 
-    let mut ammo = None;
+    let mut ammo_guid = None;
     if let Some(player) = attacker.get_player() {
-        ammo = player.weapon_ammo().map(|it| it.guid.clone());
+        let ammo_item = player.weapon_ammo();
+        ammo_guid = ammo_item.map(|it| it.guid.clone());
         let can_attack = match player.weapon_type() {
-            WeaponType::Bow | WeaponType::Crossbow => ammo.is_some(),
+            WeaponType::Bow | WeaponType::Crossbow => ammo_guid.is_some(),
             WeaponType::Wand | WeaponType::Rod => player.has_enough_mana(player.weapon_mana_cost()),
             _ => true,
         };
         if !can_attack {
-            return msgs;
+            return (msgs, cmds);
         }
 
         if let Some(item) = player.inventory.get(&InventorySlot::LeftHand) {
-            let missile = item.config.get_attributes().find_map(|attr| match attr {
-                ItemAttribute::MissileId(id) => Some(*id),
-                _ => None,
-            });
+            let missile = item
+                .config
+                .get_attributes()
+                .find_map(|attr| match attr {
+                    ItemAttribute::MissileId(id) => Some(*id),
+                    _ => None,
+                })
+                .or(ammo_item.and_then(|it| {
+                    it.config.get_attributes().find_map(|attr| match attr {
+                        ItemAttribute::MissileId(id) => Some(*id),
+                        _ => None,
+                    })
+                }));
             if let Some(missile_id) = missile {
                 msgs.push(BroadcastMessage::MissileLaunched {
                     from: attacker_pos.clone(),
@@ -145,25 +162,28 @@ pub fn auto_attack_target(
         attacker.next_attack_tick = GAME_CONFIG.combat.auto_attack_ticks + current_tick;
     }
 
-    if let Some(skill_type) = skill_type {
-        tick_skill(map, skill_type, 1, agent_key, &mut msgs);
-    }
-
     // TODO: apply shield + armor + mitigation
     // TODO: apply element modifier
 
     if let Some(attacked) = map.get_agent_mut(attacked_key) {
-        attacked.take_hit(base_dmg, Some(agent_key))
+        attacked.take_hit(base_dmg, Some(agent_key));
+        info!("monster life: {:?}", attacked.life());
     }
 
     if let Some(player) = map.get_player_mut(agent_key) {
         match player.weapon_type() {
-            WeaponType::Bow | WeaponType::Crossbow if let Some(ammo_guid) = ammo => {
+            WeaponType::Bow | WeaponType::Crossbow if let Some(ammo_guid) = ammo_guid => {
                 consume_ammo(player, agent_key, ammo_guid, &mut msgs);
             }
             WeaponType::Distance => {}
-            WeaponType::Rod | WeaponType::Wand => player.mana.remove(player.weapon_mana_cost()),
+            WeaponType::Rod | WeaponType::Wand => {
+                consume_mana(agent_key, player, player.weapon_mana_cost(), &mut msgs);
+            }
             _ => {}
+        }
+
+        if let Some(skill_type) = skill_type {
+            tick_skill(player, agent_key, skill_type, 1, &mut msgs);
         }
     }
 
@@ -178,7 +198,19 @@ pub fn auto_attack_target(
         damage,
     });
 
-    msgs
+    if matches!(element, CombatElement::Physical) {
+        draw_blood(
+            map,
+            &mut msgs,
+            &mut cmds,
+            item_configs,
+            &attacked_pos,
+            attacked_key,
+            current_tick,
+        );
+    }
+
+    (msgs, cmds)
 }
 
 fn consume_ammo(
@@ -199,6 +231,58 @@ fn consume_ammo(
             },
         });
     }
+}
+
+fn consume_mana(
+    agent_key: AgentKey,
+    player: &mut Player,
+    mana_cost: u32,
+    msgs: &mut Vec<BroadcastMessage>,
+) {
+    player.mana.remove(mana_cost);
+    msgs.push(BroadcastMessage::PlayerManaUpdated { agent_key });
+    tick_skill(player, agent_key, SkillType::Magic, mana_cost as u64, msgs);
+}
+
+fn draw_blood(
+    map: &mut GameMap,
+    msgs: &mut Vec<BroadcastMessage>,
+    cmds: &mut Vec<ScheduledCommand>,
+    item_configs: &HashMap<ItemId, Arc<ItemConfig>>,
+    attacked_pos: &Position,
+    attacked_key: AgentKey,
+    current_tick: Tick,
+) {
+    let Some(config) = item_configs.get(&GAME_CONFIG.combat.pool_item_id) else {
+        return;
+    };
+
+    let mut guid = None;
+    if let Ok(mut items) = map.iter_items(attacked_pos)
+        && let Some(it) = items.find(|it| it.config.has_flag(ItemFlag::LiquidPool))
+    {
+        guid = Some(it.guid.clone());
+    }
+
+    if let Some(guid) = guid {
+        map.remove_item_from_tile(attacked_pos, &guid, 1);
+    }
+
+    let Some(attacked) = map.get_agent(attacked_key) else {
+        return;
+    };
+    let pool = Item::new_fluid(config.clone(), attacked.blood_type().get_fluid());
+    if let Ok(item) = map.place_item(attacked_pos, None, None, pool) {
+        check_decay(
+            cmds,
+            item,
+            ItemPlacement::Map(attacked_pos.clone()),
+            current_tick,
+        );
+    };
+    msgs.push(BroadcastMessage::TileChanged {
+        position: attacked_pos.clone(),
+    })
 }
 
 pub fn get_damage_visuals(damage: &CombatDamage, attacked: &Agent) -> (u16, Color) {

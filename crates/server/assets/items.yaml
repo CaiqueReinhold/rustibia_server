@@ -20525,6 +20525,12 @@ items:
     attributes:
       weight: 2700
       slot: 6
+      weapon_type: rod
+      attack: 37
+      element: ice
+      mana_cost: 12
+      range: 3
+      missile_id: 21
   3068:
     name: crystal wand
     article: a
@@ -20557,6 +20563,12 @@ items:
     attributes:
       weight: 2700
       slot: 6
+      weapon_type: wand
+      attack: 37
+      element: fire
+      mana_cost: 12
+      range: 3
+      missile_id: 3
   3072:
     name: wand of decay
     article: a
@@ -20624,6 +20636,7 @@ items:
     attributes:
       weight: 750
       slot: 8
+      speed: 30
   3080:
     name: broken amulet
     article: a
@@ -22467,6 +22480,9 @@ items:
     attributes:
       weight: 4200
       slot: 6
+      attack: 48
+      defense: 35
+      weapon_type: sword
   3289:
     name: staff
     article: a
@@ -22776,6 +22792,9 @@ items:
     attributes:
       weight: 9900
       slot: 6
+      attack: 50
+      defense: 30
+      weapon_type: axe
   3320:
     name: fire axe
     article: a
@@ -22999,6 +23018,9 @@ items:
     attributes:
       weight: 4000
       slot: 0
+      attack: 50
+      defense: 30
+      weapon_type: club
   3342:
     name: war axe
     article: a
@@ -23084,6 +23106,10 @@ items:
     attributes:
       weight: 3100
       slot: 0
+      weapon_type: bow
+      attack: 3
+      hit_chance: 5
+      range: 5
   3351:
     name: steel helmet
     article: a
@@ -23844,6 +23870,9 @@ items:
     - take
     attributes:
       weight: 80
+      ammo_type: bolt
+      attack: 30
+      missile_id: 1
   3447:
     name: arrow
     article: an
@@ -23852,6 +23881,9 @@ items:
     - take
     attributes:
       weight: 70
+      attack: 25
+      ammo_type: arrow
+      missile_id: 3
   3448:
     name: poison arrow
     article: a
@@ -40801,6 +40833,9 @@ items:
     attributes:
       weight: 9500
       slot: 0
+      weapon_type: crossbow
+      attack: 5
+      range: 4
   5804:
     name: nose ring
     article: a
@@ -170160,6 +170195,7 @@ items:
     attributes:
       weight: 2800
       slot: 1
+      armor: 9
   28716:
     name: falcon rod
     article: a
@@ -195657,6 +195693,7 @@ items:
     attributes:
       weight: 12300
       slot: 4
+      armor: 12
   34095:
     name: soulmantle
     article: a
@@ -198066,6 +198103,7 @@ items:
     - container
     - usable
     - take
+    - ammo_container
     attributes:
       weight: 1700
       capacity: 6
@@ -219288,6 +219326,7 @@ items:
     attributes:
       weight: 3800
       slot: 7
+      armor: 8
   43877:
     name: sanguine bow
     article: a

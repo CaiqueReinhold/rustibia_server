@@ -42,10 +42,17 @@ pub fn decay_item(
         return (broadcasts, commands);
     };
     let Some(config) = item_configs.get(&decay_to) else {
-        error!("Config not found for item id {decay_to}");
+        if decay_to != 0 {
+            error!("Config not found for item id {decay_to}");
+        }
         return (broadcasts, commands);
     };
-    let new_item = Item::new(decay_to, config.clone(), 1);
+
+    let new_item = if let Some(fluid) = item.fluid {
+        Item::new_fluid(config.clone(), fluid)
+    } else {
+        Item::new(config.clone(), 1)
+    };
     check_decay(
         &mut commands,
         &new_item,
@@ -86,7 +93,7 @@ pub fn decay_item(
     (broadcasts, commands)
 }
 
-fn check_decay(
+pub fn check_decay(
     commands: &mut Vec<ScheduledCommand>,
     item: &Item,
     placement: ItemPlacement,
@@ -218,7 +225,7 @@ pub(super) fn transform(
     let config = item_configs
         .get(&into)
         .unwrap_or_else(|| panic!("item config missing for transform target {into}"));
-    let new_item = Item::new(into, config.clone(), 1);
+    let new_item = Item::new(config.clone(), 1);
     check_decay(commands, &new_item, item.placement.clone(), current_tick);
 
     if let Err(e) = insert_item_at(

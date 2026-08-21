@@ -401,9 +401,15 @@ impl WorldActor {
                 Ok(())
             }
             WorldCommand::AutoAttackTarget { agent } => {
-                let msgs =
-                    combat::auto_attack_target(&mut self.map, agent, &mut self.roll, self.tick);
+                let (msgs, cmds) = combat::auto_attack_target(
+                    &mut self.map,
+                    agent,
+                    &mut self.roll,
+                    &self.item_configs,
+                    self.tick,
+                );
                 broadcast_messages.extend(msgs);
+                self.apply_commands(cmds);
                 Ok(())
             }
         };

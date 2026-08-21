@@ -385,6 +385,9 @@ impl MessageRouterActor {
             BroadcastMessage::SkillUpgraded { agent_key, .. } => {
                 self.send_to(message, agent_key);
             }
+            BroadcastMessage::PlayerManaUpdated { agent_key } => {
+                self.send_to(message, agent_key);
+            }
         }
     }
 

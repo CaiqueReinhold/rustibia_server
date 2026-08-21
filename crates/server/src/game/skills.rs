@@ -1,18 +1,15 @@
 use crate::{
-    entities::{agent::AgentKey, map::GameMap, skills::SkillType},
+    entities::{agent::AgentKey, player::Player, skills::SkillType},
     game::events::BroadcastMessage,
 };
 
 pub fn tick_skill(
-    map: &mut GameMap,
+    player: &mut Player,
+    agent_key: AgentKey,
     skill: SkillType,
     ticks: u64,
-    agent_key: AgentKey,
     messages: &mut Vec<BroadcastMessage>,
 ) {
-    let Some(player) = map.get_player_mut(agent_key) else {
-        return;
-    };
     let Some(skill_value) = player.skills.get_mut(&skill) else {
         return;
     };
@@ -20,7 +17,15 @@ pub fn tick_skill(
     if skill_value.current_ticks + ticks >= skill_value.max_ticks {
         skill_value.current_ticks = skill_value.max_ticks - skill_value.current_ticks + ticks;
         skill_value.value += 1;
+        messages.push(BroadcastMessage::SkillUpgraded {
+            agent_key,
+            skill_type: skill,
+        });
     } else {
         skill_value.current_ticks += ticks;
+        messages.push(BroadcastMessage::SkillProgressUpdated {
+            agent_key,
+            skill_type: skill,
+        });
     }
 }

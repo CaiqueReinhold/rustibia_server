@@ -129,6 +129,7 @@ const SRV_TARGET_CHANGED: u8 = 23;
 const SRV_AGENT_LIFE_UPDATED: u8 = 24;
 const SRV_SHOW_EFFECT: u8 = 25;
 const SRV_LAUNCH_MISSILE: u8 = 26;
+const SRV_AGENT_MANA_CHANGED: u8 = 27;
 
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
@@ -228,7 +229,7 @@ pub enum ServerMessage {
         position: Position,
         facing: Facing,
         name: String,
-        life: u8,
+        life: u32,
         speed: u16,
     },
     TeleportAgent {
@@ -264,12 +265,18 @@ pub enum ServerMessage {
     },
     AgentLifeChanged {
         agent_id: AgentId,
-        life: u8,
+        current: u32,
+        max: u32,
     },
     LaunchMissile {
         from: Position,
         to: Position,
         missile_id: u16,
+    },
+    AgentManaChanged {
+        agent_id: AgentId,
+        current: u32,
+        max: u32,
     },
 }
 
@@ -625,7 +632,7 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 let name_bytes = name.as_bytes();
                 dst.put_u16_le(name_bytes.len() as u16);
                 dst.put_slice(name_bytes);
-                dst.put_u8(life);
+                dst.put_u32_le(life);
                 dst.put_u16_le(outfit.0);
                 dst.put_u8(outfit.1.0);
                 dst.put_u8(outfit.1.1);
@@ -695,10 +702,15 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u8(SRV_TARGET_CHANGED);
                 encode_optional_agent(agent_id, dst);
             }
-            ServerMessage::AgentLifeChanged { agent_id, life } => {
+            ServerMessage::AgentLifeChanged {
+                agent_id,
+                current,
+                max,
+            } => {
                 dst.put_u8(SRV_AGENT_LIFE_UPDATED);
                 dst.put_u16_le(agent_id);
-                dst.put_u8(life);
+                dst.put_u32_le(current);
+                dst.put_u32_le(max);
             }
             ServerMessage::ShowEffect {
                 effect_id,
@@ -722,6 +734,16 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 encode_position(from, dst);
                 encode_position(to, dst);
                 dst.put_u16_le(missile_id);
+            }
+            ServerMessage::AgentManaChanged {
+                agent_id,
+                current,
+                max,
+            } => {
+                dst.put_u8(SRV_AGENT_MANA_CHANGED);
+                dst.put_u16_le(agent_id);
+                dst.put_u32_le(current);
+                dst.put_u32_le(max);
             }
         }
 

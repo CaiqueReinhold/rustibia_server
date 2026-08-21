@@ -44,9 +44,15 @@ pub fn get_look_description(
 fn get_item_description(item: &Item, show_weight: bool) -> Result<String, Error> {
     let mut buff = String::new();
     write!(buff, "You see ")?;
-    if let Some(article) = &item.config.article {
+
+    if item.amount == 1
+        && let Some(article) = &item.config.article
+    {
         write!(buff, "{} ", article)?;
+    } else if item.amount > 1 {
+        write!(buff, "{} ", item.amount)?;
     }
+
     write!(buff, "{}.", item.config.name)?;
 
     if let Some(desc) = &item.config.description {

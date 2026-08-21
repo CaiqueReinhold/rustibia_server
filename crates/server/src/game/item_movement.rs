@@ -3,7 +3,8 @@ use tracing::error;
 
 use crate::entities::{
     agent::AgentKey,
-    items::{Item, ItemFlag, ItemGuid, ItemRef},
+    combat::WeaponType,
+    items::{Item, ItemAttribute, ItemFlag, ItemGuid, ItemRef},
     map::{GameMap, MapError, RemovedItem},
     player::InventorySlot,
     position::ItemPlacement,
@@ -27,13 +28,15 @@ pub enum ItemMovementError {
     CannotEquip,
 }
 
+#[allow(clippy::too_many_arguments)]
 fn displace_inventory_items(
     broadcasts: &mut Vec<BroadcastMessage>,
     map: &mut GameMap,
     agent: AgentKey,
     slot: InventorySlot,
-    source_slot: Option<InventorySlot>,
+    source_item: &Item,
     source_placement: &ItemPlacement,
+    source_slot: Option<InventorySlot>,
     source_container: Option<&(ItemGuid, usize)>,
 ) -> Result<(), ItemMovementError> {
     let current_item = map
@@ -72,6 +75,31 @@ fn displace_inventory_items(
         }
     }
 
+    let is_bow_or_quiver = |it: &Item| {
+        it.config
+            .get_attributes()
+            .find(|attr| {
+                matches!(
+                    attr,
+                    ItemAttribute::WeaponType(WeaponType::Bow)
+                        | ItemAttribute::WeaponType(WeaponType::Crossbow)
+                )
+            })
+            .is_some()
+            || it.config.has_flag(ItemFlag::AmmoContainer)
+    };
+    let left_is_bow_or_quiver = map
+        .get_player(agent)
+        .unwrap()
+        .inventory
+        .get(&InventorySlot::LeftHand)
+        .map(is_bow_or_quiver)
+        .unwrap_or(false);
+    let source_is_bow_or_quiver = is_bow_or_quiver(source_item);
+    if left_is_bow_or_quiver && source_is_bow_or_quiver {
+        return Ok(());
+    }
+
     if source_slot.unwrap() == InventorySlot::BothHands {
         let player = map.get_player_mut(agent).unwrap();
         if let Some(rh_item) = player.inventory.take_slot(&InventorySlot::RightHand) {
@@ -108,7 +136,7 @@ fn displace_inventory_items(
     }
 
     let left_is_two_handed = map
-        .get_player_mut(agent)
+        .get_player(agent)
         .unwrap()
         .inventory
         .get(&InventorySlot::LeftHand)
@@ -275,8 +303,9 @@ pub fn move_item(
             map,
             *agent,
             *slot,
-            source_item.get_slot(),
+            &source_item,
             &source.placement,
+            source_item.get_slot(),
             source_container.as_ref(),
         )
     } else {
@@ -343,7 +372,7 @@ pub fn insert_item_at(
     match placement {
         ItemPlacement::Map(pos) => {
             match map.place_item(pos, index, container.map(|(g, i)| (g, *i)), item) {
-                Ok(()) => {
+                Ok(..) => {
                     if let Some((guid, _)) = container {
                         broadcasts.push(BroadcastMessage::ContainerUpdated {
                             item: ItemRef {

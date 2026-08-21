@@ -96,8 +96,7 @@ pub fn snapshot_from_record(
             .ok_or_else(|| malformed(format!("unknown facing discriminant {}", record.facing)))?,
         life: pool(record.life, "life")?,
         mana: pool(record.mana, "mana")?,
-        capacity: u32::try_from(record.capacity)
-            .map_err(|_| malformed("capacity out of range"))?,
+        capacity: u32::try_from(record.capacity).map_err(|_| malformed("capacity out of range"))?,
         speed: u16::try_from(record.speed).map_err(|_| malformed("speed out of range"))?,
         outfit: (
             u16::try_from(record.outfit.id).map_err(|_| malformed("outfit id out of range"))?,
@@ -183,7 +182,7 @@ fn restore_item(
         }
     };
 
-    let mut item = Item::new(stored.item_id, config, stored.amount);
+    let mut item = Item::new(config, stored.amount);
     if let Some(children) = stored.content {
         item.content = Some(
             children

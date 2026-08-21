@@ -10,7 +10,7 @@ use crate::{
         skills::SkillType,
     },
     game::combat::get_damage_visuals,
-    messages::{FloatingTextType, ServerMessage},
+    messages::{FloatingTextType, ServerMessage, TextMessageType},
 };
 
 impl SessionActor {
@@ -96,7 +96,8 @@ impl SessionActor {
             self.connection
                 .send_message(ServerMessage::AgentLifeChanged {
                     agent_id,
-                    life: agent.life().to_wire(),
+                    current: agent.life().to_wire(),
+                    max: 100,
                 })
                 .await?;
         }
@@ -108,8 +109,15 @@ impl SessionActor {
         &self,
         from: Position,
         to: Position,
-        sprite_id: u16,
+        missile_id: u16,
     ) -> Result<()> {
+        self.connection
+            .send_message(ServerMessage::LaunchMissile {
+                from,
+                to,
+                missile_id,
+            })
+            .await?;
         Ok(())
     }
 
@@ -118,6 +126,26 @@ impl SessionActor {
     }
 
     pub(super) async fn skill_upgraded(&self, skill: SkillType) -> Result<()> {
+        let map = self.shared_map.load();
+        let message = map.get_player(self.player_key).map(|p| match skill {
+            SkillType::Axe => format!("You advanced to axe fighting {}", p.skill_axe()),
+            SkillType::Club => format!("You advanced to club fighting {}", p.skill_club()),
+            SkillType::Sword => format!("You advanced to sword fighting {}", p.skill_sword()),
+            SkillType::Distance => {
+                format!("You advanced to distance fighting {}", p.skill_distance())
+            }
+            SkillType::Magic => format!("You advanced to magic level {}", p.skill_magic()),
+            SkillType::Level => format!("You advanced to level {}", p.level()),
+        });
+
+        if let Some(message) = message {
+            self.connection
+                .send_message(ServerMessage::TextMessage {
+                    text: message,
+                    message_type: TextMessageType::Look,
+                })
+                .await?;
+        }
         Ok(())
     }
 }

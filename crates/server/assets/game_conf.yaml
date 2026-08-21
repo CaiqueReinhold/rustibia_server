@@ -48,3 +48,4 @@ text_colors:
 
 combat:
   auto_attack_ticks: 40
+  pool_item_id: 2886

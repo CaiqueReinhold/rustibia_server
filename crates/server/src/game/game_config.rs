@@ -83,6 +83,7 @@ pub struct TextColors {
 #[derive(Deserialize)]
 pub struct CombatConfig {
     pub auto_attack_ticks: Tick,
+    pub pool_item_id: u16,
 }
 
 fn read_from_file() -> GameConfig {

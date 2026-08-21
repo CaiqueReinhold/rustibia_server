@@ -93,4 +93,7 @@ pub enum BroadcastMessage {
         agent_key: AgentKey,
         skill_type: SkillType,
     },
+    PlayerManaUpdated {
+        agent_key: AgentKey,
+    },
 }
