@@ -18,6 +18,7 @@ pub struct NewCharacterConfig {
     pub life: i32,
     pub mana: i32,
     pub capacity: i32,
+    pub speed: i32,
     pub outfit_id_female: i16,
     pub outfit_id_male: i16,
     pub outfit_head: i16,

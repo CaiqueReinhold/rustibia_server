@@ -54,10 +54,31 @@ pub async fn create(
 
     let character_id: i32 = sqlx::query_scalar(
         "INSERT INTO players \
-         (account_id, name, vocation, sex, pos_x, pos_y, pos_z, origin_x, origin_y, origin_z, \
-          facing, life_cur, life_max, mana_cur, mana_max, cap_cur, cap_max, \
-          outfit_id, outfit_head, outfit_body, outfit_legs, outfit_feet) \
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$5,$6,$7,$8,$9,$9,$10,$10,$11,$11,$12,$13,$14,$15,$16) \
+         ( \
+            account_id, \
+            name, \
+            vocation, \
+            sex, \
+            pos_x, \
+            pos_y, \
+            pos_z, \
+            origin_x, \
+            origin_y, \
+            origin_z, \
+            facing, \
+            life_cur, \
+            life_max, \
+            mana_cur, \
+            mana_max, \
+            capacity, \
+            speed, \
+            outfit_id, \
+            outfit_head, \
+            outfit_body, \
+            outfit_legs, \
+            outfit_feet \
+        ) \
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$5,$6,$7,$8,$9,$9,$10,$10,$11,$12,$13,$14,$15,$16,$17) \
          RETURNING id",
     )
     .bind(account_id)
@@ -67,15 +88,16 @@ pub async fn create(
     .bind(template.pos_x)
     .bind(template.pos_y)
     .bind(template.pos_z)
-    .bind(template.facing)
-    .bind(template.life)
-    .bind(template.mana)
-    .bind(template.capacity)
-    .bind(outfit_id)
-    .bind(template.outfit_head)
-    .bind(template.outfit_body)
-    .bind(template.outfit_legs)
-    .bind(template.outfit_feet)
+    .bind(template.facing) //8
+    .bind(template.life) //9
+    .bind(template.mana) //10
+    .bind(template.capacity) //11
+    .bind(template.speed) //12
+    .bind(outfit_id) //13
+    .bind(template.outfit_head) //14
+    .bind(template.outfit_body) //15
+    .bind(template.outfit_legs) //16
+    .bind(template.outfit_feet) //17
     .fetch_one(&mut *tx)
     .await
     .map_err(|e| match &e {

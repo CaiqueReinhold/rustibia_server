@@ -3,7 +3,11 @@ use std::{collections::HashSet, fmt::Display, sync::Arc};
 use uuid::Uuid;
 
 use crate::{
-    entities::{player::InventorySlot, position::ItemPlacement},
+    entities::{
+        combat::{AmmoType, CombatElement, WeaponType},
+        player::InventorySlot,
+        position::ItemPlacement,
+    },
     game::Tick,
 };
 
@@ -36,6 +40,7 @@ pub enum ItemFlag {
     Container,
     Usable,
     Avoid,
+    AmmoContainer,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
@@ -58,6 +63,13 @@ pub enum ItemAttribute {
     Action(ItemAction),
     MultiAction(ItemMultiAction),
     Decay { duration: Tick, decay_to: ItemId },
+    WeaponType(WeaponType),
+    WeaponAttack(u16),
+    WeaponElement(CombatElement),
+    AmmoType(AmmoType),
+    WeaponRange(u8),
+    ManaCost(u32),
+    MissileId(u16),
 }
 
 #[derive(Debug)]
@@ -123,17 +135,6 @@ impl Item {
     pub fn get_name(&self) -> &str {
         &self.config.name
     }
-
-    // pub fn is_full(&self) -> bool {
-    //     self.config
-    //         .get_attributes()
-    //         .find_map(|attr| match attr {
-    //             ItemAttribute::Capacity(cap) => Some(*cap as usize),
-    //             _ => None,
-    //         })
-    //         .map(|cap| self.content.as_ref().map_or(0, |content| content.len()) >= cap)
-    //         .unwrap_or(false)
-    // }
 
     pub fn container_capacity(&self) -> Option<u8> {
         self.config.get_attributes().find_map(|attr| match attr {

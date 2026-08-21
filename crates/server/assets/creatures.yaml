@@ -3,6 +3,10 @@ creatures:
     name: Demon
     life: 8200
     speed: 230
+    blood_type: blood
     outfit:
       id: 35
       colors: [0, 0, 0, 0]
+    damage:
+      min: 1
+      max: 25

@@ -18,6 +18,10 @@ impl Inventory {
         }
     }
 
+    pub fn total_weight(&self) -> u32 {
+        self.slots.values().map(|it| it.total_weight()).sum()
+    }
+
     /// Insert `item` into `slot`.
     ///
     /// - `container`: if `None`, replaces the slot item directly and returns the displaced item.

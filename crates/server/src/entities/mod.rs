@@ -1,5 +1,6 @@
 pub mod agent;
 pub mod chat;
+pub mod combat;
 pub mod creature;
 pub mod inventory;
 pub mod items;

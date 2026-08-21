@@ -17,6 +17,9 @@ pub struct GameConfig {
     pub action: ItemActionConfig,
     pub movement: MovementConfig,
     pub chat: ChatConfig,
+    pub effect_ids: EffectsConfig,
+    pub text_colors: TextColors,
+    pub combat: CombatConfig,
 }
 
 #[derive(Deserialize)]
@@ -48,14 +51,38 @@ pub struct ChannelConfig {
 #[derive(Deserialize)]
 pub struct ChatConfig {
     pub server_channels: Vec<ChannelConfig>,
-    /// Characters, not bytes — the client caps its input field by character count, and
-    /// measuring the same thing on both sides means no composable message is refused.
-    ///
-    /// This still protects the `SRV_CHAT_MESSAGE` encoder, which writes `len() as u16`:
-    /// an unbounded message would truncate that prefix and corrupt the stream, and the
-    /// worst case here is 4 bytes per character, so the guard only lapses above ~16383.
     pub max_message_length: usize,
     pub message_cooldown_ticks: Tick,
+}
+
+#[derive(Deserialize)]
+pub struct EffectsConfig {
+    pub life_hit: u16,
+    pub shield_hit: u16,
+    pub armor_hit: u16,
+    pub poison_hit: u16,
+    pub ice_hit: u16,
+    pub earth_hit: u16,
+    pub fire_hit: u16,
+    pub energy_hit: u16,
+}
+
+#[derive(Deserialize, Debug, Clone, Copy)]
+pub struct Color(pub u8, pub u8, pub u8);
+
+#[derive(Deserialize)]
+pub struct TextColors {
+    pub red: Color,
+    pub lightgreen: Color,
+    pub lightblue: Color,
+    pub skyblue: Color,
+    pub orange: Color,
+    pub eletric_purple: Color,
+}
+
+#[derive(Deserialize)]
+pub struct CombatConfig {
+    pub auto_attack_ticks: Tick,
 }
 
 fn read_from_file() -> GameConfig {

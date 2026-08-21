@@ -22331,6 +22331,9 @@ items:
     attributes:
       weight: 4200
       slot: 6
+      attack: 48
+      defense: 35
+      weapon_type: sword
   3289:
     name: staff
     article: a
@@ -22640,6 +22643,9 @@ items:
     attributes:
       weight: 9900
       slot: 6
+      attack: 50
+      defense: 30
+      weapon_type: axe
   3320:
     name: fire axe
     article: a
@@ -22863,6 +22869,9 @@ items:
     attributes:
       weight: 4000
       slot: 0
+      attack: 50
+      defense: 30
+      weapon_type: club
   3342:
     name: war axe
     article: a

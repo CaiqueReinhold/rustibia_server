@@ -7,7 +7,7 @@ action:
   use_item_cooldown_ticks: 20
 
 movement:
-  wander_ticks: 40
+  wander_ticks: 400
 
 chat:
   server_channels:
@@ -19,3 +19,32 @@ chat:
       name: Help
   max_message_length: 255
   message_cooldown_ticks: 10
+
+effect_ids:
+  life_hit: 1
+  shield_hit: 3
+  armor_hit: 4
+  poison_hit: 17
+  ice_hit: 1
+  earth_hit: 1
+  fire_hit: 1
+  energy_hit: 1
+
+text_colors:
+  blue: [0, 0, 255]
+  lightgreen: [0, 255, 0]
+  lightblue: [0, 255, 255]
+  mayablue: [102, 153, 255]
+  darkred: [153, 0, 0]
+  lightgrey: [153, 153, 153]
+  skyblue: [153, 255, 255]
+  purple: [204, 51, 204]
+  red: [255, 0, 0]
+  pastelred: [255, 102, 102]
+  orange: [255, 153, 0]
+  yellow: [255, 255, 0]
+  white_exp: [255, 255, 255]
+  eletric_purple: [204, 51, 255]
+
+combat:
+  auto_attack_ticks: 40

@@ -2,9 +2,11 @@ use std::sync::Arc;
 
 use crate::entities::{
     agent::{AgentKey, Facing},
+    combat::CombatDamage,
     items::ItemRef,
     player::InventorySlot,
     position::{Direction, Position},
+    skills::SkillType,
 };
 use crate::persistence::player::PlayerSnapshot;
 
@@ -35,7 +37,7 @@ pub enum BroadcastMessage {
         agent_key: AgentKey,
         message: String,
     },
-    UpdateContainer {
+    ContainerUpdated {
         item: ItemRef,
     },
     AgentWalkDenied {
@@ -53,7 +55,7 @@ pub enum BroadcastMessage {
         facing: Facing,
         position: Position,
     },
-    AgentTeleport {
+    AgentTeleported {
         agent_key: AgentKey,
         from_position: Position,
         to_position: Position,
@@ -70,10 +72,25 @@ pub enum BroadcastMessage {
         agent_key: AgentKey,
         message: String,
     },
-    /// Delivered to `agent_key`'s session only — the target square is private to
-    /// the player who set it.
     TargetChanged {
         agent_key: AgentKey,
         target: Option<AgentKey>,
+    },
+    DamageTaken {
+        agent_key: AgentKey,
+        damage: CombatDamage,
+    },
+    MissileLaunched {
+        from: Position,
+        to: Position,
+        sprite_id: u16,
+    },
+    SkillProgressUpdated {
+        agent_key: AgentKey,
+        skill_type: SkillType,
+    },
+    SkillUpgraded {
+        agent_key: AgentKey,
+        skill_type: SkillType,
     },
 }

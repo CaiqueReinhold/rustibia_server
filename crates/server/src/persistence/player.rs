@@ -32,7 +32,8 @@ pub struct PlayerSnapshot {
     pub name: String,
     pub life: Pool,
     pub mana: Pool,
-    pub capacity: Pool,
+    pub capacity: u32,
+    pub speed: u16,
     pub outfit: (OutfitId, OutfitColors),
     pub skills: HashMap<SkillType, SkillValue>,
     pub inventory: HashMap<InventorySlot, Item>,
@@ -68,7 +69,7 @@ impl PlayerRepository {
              origin_x = $5, origin_y = $6, origin_z = $7, \
              facing = $8, \
              life_cur = $9, life_max = $10, mana_cur = $11, mana_max = $12, \
-             cap_cur = $13, cap_max = $14, \
+             capacity = $13, speed = $14, \
              outfit_id = $15, outfit_head = $16, outfit_body = $17, \
              outfit_legs = $18, outfit_feet = $19, \
              inventory = $20 \
@@ -86,8 +87,8 @@ impl PlayerRepository {
         .bind(snapshot.life.maximum as i32)
         .bind(snapshot.mana.current as i32)
         .bind(snapshot.mana.maximum as i32)
-        .bind(snapshot.capacity.current as i32)
-        .bind(snapshot.capacity.maximum as i32)
+        .bind(snapshot.capacity as i32)
+        .bind(snapshot.speed as i32)
         .bind(outfit_id as i16)
         .bind(outfit_head as i16)
         .bind(outfit_body as i16)
@@ -170,14 +171,22 @@ pub(crate) fn i16_to_facing(n: i16) -> Option<Facing> {
 fn skill_type_to_i16(s: &SkillType) -> i16 {
     match s {
         SkillType::Level => 0,
-        SkillType::Speed => 1,
+        SkillType::Axe => 1,
+        SkillType::Club => 2,
+        SkillType::Sword => 3,
+        SkillType::Distance => 4,
+        SkillType::Magic => 5,
     }
 }
 
 pub(crate) fn i16_to_skill_type(n: i16) -> Option<SkillType> {
     match n {
         0 => Some(SkillType::Level),
-        1 => Some(SkillType::Speed),
+        1 => Some(SkillType::Axe),
+        2 => Some(SkillType::Club),
+        3 => Some(SkillType::Sword),
+        4 => Some(SkillType::Distance),
+        5 => Some(SkillType::Magic),
         _ => None,
     }
 }

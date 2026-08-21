@@ -89,7 +89,7 @@ pub fn walk(
             FloorChangeDirection::West => Position::new(new_pos.x - 1, new_pos.y, new_pos.z - 1),
         };
         map.move_agent(agent_key, &position)?;
-        broadcasts.push(BroadcastMessage::AgentTeleport {
+        broadcasts.push(BroadcastMessage::AgentTeleported {
             agent_key,
             from_position: new_pos,
             to_position: position,
@@ -104,11 +104,11 @@ pub fn change_direction(
     agent_key: AgentKey,
     facing: Facing,
 ) -> Vec<BroadcastMessage> {
-    let current_facing = map.get_agent(agent_key).map(|agent| agent.facing);
+    let current_facing = map.get_agent(agent_key).map(|agent| agent.facing());
     if let Some(current_facing) = current_facing
         && facing != current_facing
     {
-        map.get_agent_mut(agent_key).unwrap().facing = facing;
+        map.get_agent_mut(agent_key).unwrap().set_facing(facing);
         let position = map.agent_position(agent_key).cloned().unwrap_or_default();
         return vec![BroadcastMessage::AgentChangedDirection {
             agent_key,

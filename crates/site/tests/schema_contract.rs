@@ -39,7 +39,7 @@ async fn assert_column(pool: &PgPool, table: &str, column: &str, expected: &str)
 async fn players_has_every_column_the_game_server_reads(pool: PgPool) {
     for column in [
         "pos_x", "pos_y", "origin_x", "origin_y", "life_cur", "life_max", "mana_cur", "mana_max",
-        "cap_cur", "cap_max",
+        "capacity", "speed",
     ] {
         assert_column(&pool, "players", column, "integer").await;
     }
@@ -88,7 +88,7 @@ async fn the_game_servers_player_select_still_executes(pool: PgPool) {
     // `db::login::redeem`; this asserts the game server's rollback path stays valid too.
     let result = sqlx::query(
         "SELECT id, account_id, name, pos_x, pos_y, pos_z, origin_x, origin_y, origin_z, \
-         facing, life_cur, life_max, mana_cur, mana_max, cap_cur, cap_max, \
+         facing, life_cur, life_max, mana_cur, mana_max, capacity, speed, \
          outfit_id, outfit_head, outfit_body, outfit_legs, outfit_feet, inventory \
          FROM players WHERE id = $1 AND account_id = $2 AND deleted_at IS NULL",
     )
@@ -162,7 +162,7 @@ async fn a_character_cannot_hold_two_tokens(pool: PgPool) {
     let character_id: i32 = sqlx::query_scalar(
         "INSERT INTO players \
          (account_id, name, vocation, sex, pos_x, pos_y, pos_z, origin_x, origin_y, origin_z, \
-          facing, life_cur, life_max, mana_cur, mana_max, cap_cur, cap_max, \
+          facing, life_cur, life_max, mana_cur, mana_max, capacity, speed, \
           outfit_id, outfit_head, outfit_body, outfit_legs, outfit_feet) \
          VALUES ($1, 'Rizael', 0, 1, 1028, 1028, 7, 1028, 1028, 7, \
                  2, 150, 150, 0, 0, 400, 400, 133, 1, 2, 3, 4) \

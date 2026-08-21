@@ -1,4 +1,7 @@
-use std::sync::Arc;
+use std::{
+    hash::{BuildHasher, Hasher, RandomState},
+    sync::Arc,
+};
 
 use anyhow::{Context as _, Result};
 use sqlx::postgres::PgPoolOptions;
@@ -47,6 +50,8 @@ async fn main() -> Result<()> {
     // access lazy config to make sure it loaded correctly
     let _ = &GAME_CONFIG.action;
 
+    let seed = RandomState::new().build_hasher().finish();
+
     let items = Arc::new(persistence::items::load_items(&CONFIG.items_file_path).unwrap());
     let map = persistence::map::load_map(&CONFIG.map_file_path, &items).unwrap();
     let creatures =
@@ -61,6 +66,7 @@ async fn main() -> Result<()> {
         Arc::clone(&items),
         shared_map.clone(),
         message_router.clone(),
+        seed,
     );
     let chat = ChatActor::start(message_router);
 
@@ -71,7 +77,7 @@ async fn main() -> Result<()> {
         shared_map.clone(),
         tick_rx.clone(),
     );
-    CreatureBehaviorActor::start(world.clone(), shared_map.clone(), tick_rx.clone());
+    CreatureBehaviorActor::start(world.clone(), shared_map.clone(), tick_rx.clone(), seed);
 
     let internal_client = HttpLoginRepository::build_client(
         CONFIG.internal_tls_cert.as_str(),

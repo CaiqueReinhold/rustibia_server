@@ -13,6 +13,7 @@ use crate::{
         player::InventorySlot,
         position::{Direction, Position},
     },
+    game::game_config::Color,
 };
 
 pub type ItemStack = [Option<(ItemId, u8)>; MAX_VISIBLE_ITEMS];
@@ -125,6 +126,9 @@ const SRV_CHANNEL_LIST: u8 = 20;
 const SRV_INTRODUCE_PLAYER: u8 = 21;
 const SRV_FLOATING_TEXT: u8 = 22;
 const SRV_TARGET_CHANGED: u8 = 23;
+const SRV_AGENT_LIFE_UPDATED: u8 = 24;
+const SRV_SHOW_EFFECT: u8 = 25;
+const SRV_LAUNCH_MISSILE: u8 = 26;
 
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
@@ -132,15 +136,6 @@ pub enum TextMessageType {
     Look,
 }
 
-/// Which kind of world-anchored text the client should draw. A presentation
-/// concept only — nothing in `game/` or `entities/` models it, which is why it
-/// lives here beside `TextMessageType` rather than under `entities/`.
-///
-/// Unused by `main` for now: nothing constructs `ServerMessage::FloatingText` yet
-/// (combat doesn't exist), so both variants are dead code until that producer lands
-/// in a later task. `#[allow(dead_code)]` mirrors the convention already used for
-/// `SqlLoginRepository` in `persistence/login.rs`.
-#[allow(dead_code)]
 #[derive(Clone, Copy, Debug)]
 pub enum FloatingTextType {
     HitPoints,
@@ -233,7 +228,7 @@ pub enum ServerMessage {
         position: Position,
         facing: Facing,
         name: String,
-        life: Pool,
+        life: u8,
         speed: u16,
     },
     TeleportAgent {
@@ -253,17 +248,28 @@ pub enum ServerMessage {
         local_id: AgentId,
         name: String,
     },
-    /// Unused by `main` for now: no producer exists until combat lands in a later
-    /// task. See the note on `FloatingTextType`.
-    #[allow(dead_code)]
     FloatingText {
         text: String,
-        position: Position,
+        agent_id: AgentId,
         text_type: FloatingTextType,
-        color: Option<(u8, u8, u8)>,
+        color: Option<Color>,
     },
     TargetChanged {
         agent_id: Option<AgentId>,
+    },
+    ShowEffect {
+        effect_id: u16,
+        position: Position,
+        delta: Vec<(i8, i8)>,
+    },
+    AgentLifeChanged {
+        agent_id: AgentId,
+        life: u8,
+    },
+    LaunchMissile {
+        from: Position,
+        to: Position,
+        missile_id: u16,
     },
 }
 
@@ -619,8 +625,7 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 let name_bytes = name.as_bytes();
                 dst.put_u16_le(name_bytes.len() as u16);
                 dst.put_slice(name_bytes);
-                dst.put_u32_le(life.current);
-                dst.put_u32_le(life.maximum);
+                dst.put_u8(life);
                 dst.put_u16_le(outfit.0);
                 dst.put_u8(outfit.1.0);
                 dst.put_u8(outfit.1.1);
@@ -666,7 +671,7 @@ impl Encoder<ServerMessage> for GameMessageCodec {
             }
             ServerMessage::FloatingText {
                 text,
-                position,
+                agent_id,
                 text_type,
                 color,
             } => {
@@ -674,10 +679,10 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 let text_bytes = text.as_bytes();
                 dst.put_u16_le(text_bytes.len() as u16);
                 dst.put_slice(text_bytes);
-                encode_position(position, dst);
+                dst.put_u16_le(agent_id);
                 dst.put_u8(encode_floating_text_type(text_type));
                 match color {
-                    Some((r, g, b)) => {
+                    Some(Color(r, g, b)) => {
                         dst.put_u8(0x01);
                         dst.put_u8(r);
                         dst.put_u8(g);
@@ -689,6 +694,34 @@ impl Encoder<ServerMessage> for GameMessageCodec {
             ServerMessage::TargetChanged { agent_id } => {
                 dst.put_u8(SRV_TARGET_CHANGED);
                 encode_optional_agent(agent_id, dst);
+            }
+            ServerMessage::AgentLifeChanged { agent_id, life } => {
+                dst.put_u8(SRV_AGENT_LIFE_UPDATED);
+                dst.put_u16_le(agent_id);
+                dst.put_u8(life);
+            }
+            ServerMessage::ShowEffect {
+                effect_id,
+                position,
+                delta,
+            } => {
+                dst.put_u8(SRV_SHOW_EFFECT);
+                dst.put_u16_le(effect_id);
+                encode_position(position, dst);
+                for (dx, dy) in delta {
+                    dst.put_i8(dx);
+                    dst.put_i8(dy);
+                }
+            }
+            ServerMessage::LaunchMissile {
+                from,
+                to,
+                missile_id,
+            } => {
+                dst.put_u8(SRV_LAUNCH_MISSILE);
+                encode_position(from, dst);
+                encode_position(to, dst);
+                dst.put_u16_le(missile_id);
             }
         }
 
@@ -756,9 +789,6 @@ fn encode_optional_item(item_id: Option<ItemId>, dst: &mut BytesMut) {
     }
 }
 
-/// `0xFFFF` is the same "absent" sentinel `encode_optional_item` uses. It cannot
-/// collide with a real id: `LocalIdMap` allocates from 1 upward and recycles, so
-/// reaching 65535 would need 65534 agents visible in one 15x11 viewport.
 fn encode_optional_agent(agent_id: Option<AgentId>, dst: &mut BytesMut) {
     dst.put_u16_le(agent_id.unwrap_or(0xFFFF));
 }
@@ -925,9 +955,9 @@ mod tests {
             .encode(
                 ServerMessage::FloatingText {
                     text: "-25".to_owned(),
-                    position: Position::new(100, 200, 7),
+                    agent_id: 100,
                     text_type: FloatingTextType::HitPoints,
-                    color: Some((255, 0, 64)),
+                    color: Some(Color(255, 0, 64)),
                 },
                 &mut buf,
             )
@@ -942,13 +972,11 @@ mod tests {
         assert_eq!(buf[2], SRV_FLOATING_TEXT);
         assert_eq!(u16::from_le_bytes([buf[3], buf[4]]), 3, "text length");
         assert_eq!(&buf[5..8], b"-25");
-        assert_eq!(u16::from_le_bytes([buf[8], buf[9]]), 100, "position x");
-        assert_eq!(u16::from_le_bytes([buf[10], buf[11]]), 200, "position y");
-        assert_eq!(buf[12], 7, "position z");
-        assert_eq!(buf[13], 0x01, "HitPoints");
-        assert_eq!(buf[14], 0x01, "colour present");
-        assert_eq!(&buf[15..18], &[255, 0, 64], "rgb");
-        assert_eq!(buf.len(), 18, "no trailing bytes");
+        assert_eq!(u16::from_le_bytes([buf[8], buf[9]]), 100, "agent id");
+        assert_eq!(buf[10], 0x01, "HitPoints");
+        assert_eq!(buf[11], 0x01, "colour present");
+        assert_eq!(&buf[12..15], &[255, 0, 64], "rgb");
+        assert_eq!(buf.len(), 15, "no trailing bytes");
     }
 
     /// The length prefix is a *byte* count. This codebase has been bitten by
@@ -965,7 +993,7 @@ mod tests {
             .encode(
                 ServerMessage::FloatingText {
                     text: text.to_owned(),
-                    position: Position::new(1, 2, 7),
+                    agent_id: 1,
                     text_type: FloatingTextType::PlayerMessage,
                     color: None,
                 },
@@ -991,7 +1019,7 @@ mod tests {
             .encode(
                 ServerMessage::FloatingText {
                     text: "hi".to_owned(),
-                    position: Position::new(1, 2, 7),
+                    agent_id: 1,
                     text_type: FloatingTextType::PlayerMessage,
                     color: None,
                 },
@@ -1002,11 +1030,12 @@ mod tests {
         assert_eq!(buf[2], SRV_FLOATING_TEXT);
         assert_eq!(u16::from_le_bytes([buf[3], buf[4]]), 2, "text length");
         assert_eq!(&buf[5..7], b"hi");
-        assert_eq!(buf[12], 0x02, "PlayerMessage");
-        assert_eq!(buf[13], 0x00, "colour absent");
+        assert_eq!(u16::from_le_bytes([buf[7], buf[8]]), 1, "agent id");
+        assert_eq!(buf[9], 0x02, "PlayerMessage");
+        assert_eq!(buf[10], 0x00, "colour absent");
         assert_eq!(
             buf.len(),
-            14,
+            11,
             "the None form is three bytes shorter than the Some form"
         );
     }

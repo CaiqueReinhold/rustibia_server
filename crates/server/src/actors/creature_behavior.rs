@@ -8,11 +8,13 @@ use crate::actors::world::{WorldActorHandle, WorldCommand};
 use crate::entities::map::GameMap;
 use crate::game::Tick;
 use crate::game::creature_ai::{CreatureAction, decide_actions};
+use crate::game::random::Rolls;
 
 pub struct CreatureBehaviorActor {
     tick_rx: watch::Receiver<Tick>,
     world: WorldActorHandle,
     shared_map: Arc<ArcSwap<GameMap>>,
+    roll: Rolls,
 }
 
 impl CreatureBehaviorActor {
@@ -20,11 +22,13 @@ impl CreatureBehaviorActor {
         world: WorldActorHandle,
         shared_map: Arc<ArcSwap<GameMap>>,
         tick_rx: watch::Receiver<Tick>,
+        seed: u64,
     ) {
         let actor = Self {
             tick_rx,
             world,
             shared_map,
+            roll: Rolls::new(seed),
         };
         tokio::spawn(actor.run());
     }
@@ -37,9 +41,9 @@ impl CreatureBehaviorActor {
         }
     }
 
-    async fn process_tick(&self, tick: Tick) {
+    async fn process_tick(&mut self, tick: Tick) {
         let map = self.shared_map.load();
-        let actions = decide_actions(&map, tick);
+        let actions = decide_actions(&map, tick, &mut self.roll);
         for action in actions {
             let cmd = match action {
                 CreatureAction::Walk {

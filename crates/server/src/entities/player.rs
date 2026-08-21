@@ -1,4 +1,12 @@
-use crate::entities::{agent::Pool, inventory::Inventory};
+use std::collections::HashMap;
+
+use crate::entities::{
+    agent::Pool,
+    combat::{AmmoType, CombatElement, WeaponType},
+    inventory::Inventory,
+    items::{Item, ItemAttribute, ItemFlag},
+    skills::{SkillType, SkillValue},
+};
 
 use super::position::Position;
 
@@ -57,16 +65,152 @@ impl InventorySlot {
 #[derive(Clone, Debug)]
 pub struct Player {
     pub id: PlayerId,
+    pub name: String,
     pub account_id: i32,
     pub position: Position,
     pub origin: Position,
     pub mana: Pool,
     pub capacity: Pool,
     pub inventory: Inventory,
+    pub skills: HashMap<SkillType, SkillValue>,
 }
 
 impl Player {
     pub fn can_carry(&self, additional_weight: u32) -> bool {
         self.capacity.current + additional_weight <= self.capacity.maximum
+    }
+
+    pub fn has_enough_mana(&self, mana_cost: u32) -> bool {
+        self.mana.current >= mana_cost
+    }
+
+    pub fn weapon_element(&self) -> CombatElement {
+        self.inventory
+            .get(&InventorySlot::LeftHand)
+            .and_then(|it| {
+                it.config.get_attributes().find_map(|attr| match attr {
+                    ItemAttribute::WeaponElement(el) => Some(*el),
+                    _ => None,
+                })
+            })
+            .unwrap_or(CombatElement::Physical)
+    }
+
+    pub fn weapon_attack(&self) -> u16 {
+        self.inventory
+            .get(&InventorySlot::LeftHand)
+            .and_then(|it| {
+                it.config.get_attributes().find_map(|attr| match attr {
+                    ItemAttribute::WeaponAttack(att) => Some(*att),
+                    _ => None,
+                })
+            })
+            .unwrap_or(0)
+    }
+
+    pub fn weapon_type(&self) -> WeaponType {
+        self.inventory
+            .get(&InventorySlot::LeftHand)
+            .and_then(|it| {
+                it.config.get_attributes().find_map(|attr| match attr {
+                    ItemAttribute::WeaponType(wt) => Some(*wt),
+                    _ => None,
+                })
+            })
+            .unwrap_or(WeaponType::None)
+    }
+
+    pub fn weapon_ammo(&self) -> Option<&Item> {
+        let weapon_type = self.weapon_type();
+        if matches!(weapon_type, WeaponType::Crossbow | WeaponType::Bow) {
+            self.inventory
+                .get(&InventorySlot::RightHand)
+                .filter(|it| it.config.has_flag(ItemFlag::AmmoContainer))
+                .and_then(|quiv| {
+                    quiv.content.as_ref().and_then(|content| {
+                        content.iter().find(|it| {
+                            it.config
+                                .get_attributes()
+                                .find_map(|attr| match attr {
+                                    ItemAttribute::AmmoType(at) => Some(*at),
+                                    _ => None,
+                                })
+                                .is_some_and(|at| {
+                                    matches!(
+                                        (at, weapon_type),
+                                        (AmmoType::Arrow, WeaponType::Bow)
+                                            | (AmmoType::Bolt, WeaponType::Crossbow)
+                                    )
+                                })
+                        })
+                    })
+                })
+        } else {
+            None
+        }
+    }
+
+    pub fn weapon_range(&self) -> u8 {
+        self.inventory
+            .get(&InventorySlot::LeftHand)
+            .and_then(|it| {
+                it.config.get_attributes().find_map(|attr| match attr {
+                    ItemAttribute::WeaponRange(wr) => Some(*wr),
+                    _ => None,
+                })
+            })
+            .unwrap_or(1)
+    }
+
+    pub fn weapon_mana_cost(&self) -> u32 {
+        self.inventory
+            .get(&InventorySlot::LeftHand)
+            .and_then(|it| {
+                it.config.get_attributes().find_map(|attr| match attr {
+                    ItemAttribute::ManaCost(mc) => Some(*mc),
+                    _ => None,
+                })
+            })
+            .unwrap_or(0)
+    }
+
+    pub fn get_skill(&self, skill: SkillType) -> Option<&SkillValue> {
+        self.skills.get(&skill)
+    }
+
+    pub fn skill_sword(&self) -> u16 {
+        self.get_skill(SkillType::Sword)
+            .map(|st| st.value)
+            .unwrap_or(10)
+    }
+
+    pub fn skill_axe(&self) -> u16 {
+        self.get_skill(SkillType::Axe)
+            .map(|st| st.value)
+            .unwrap_or(10)
+    }
+
+    pub fn skill_club(&self) -> u16 {
+        self.get_skill(SkillType::Club)
+            .map(|st| st.value)
+            .unwrap_or(10)
+    }
+
+    pub fn skill_distance(&self) -> u16 {
+        self.get_skill(SkillType::Distance)
+            .map(|st| st.value)
+            .unwrap_or(10)
+    }
+
+    pub fn skill_magic(&self) -> u16 {
+        self.get_skill(SkillType::Magic)
+            .map(|st| st.value)
+            .unwrap_or(1)
+    }
+
+    pub fn level(&self) -> u16 {
+        self.get_skill(SkillType::Level)
+            .map(|st| st.value)
+            .unwrap_or(1)
     }
 }

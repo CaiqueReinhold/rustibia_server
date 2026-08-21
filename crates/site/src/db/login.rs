@@ -37,7 +37,7 @@ pub async fn redeem(pool: &PgPool, token: &str) -> Result<Option<CharacterRecord
 
     let row = sqlx::query(
         "SELECT id, account_id, name, pos_x, pos_y, pos_z, origin_x, origin_y, origin_z, \
-         facing, life_cur, life_max, mana_cur, mana_max, cap_cur, cap_max, \
+         facing, life_cur, life_max, mana_cur, mana_max, capacity, speed, \
          outfit_id, outfit_head, outfit_body, outfit_legs, outfit_feet, inventory \
          FROM players WHERE id = $1 AND deleted_at IS NULL",
     )
@@ -104,10 +104,8 @@ pub async fn redeem(pool: &PgPool, token: &str) -> Result<Option<CharacterRecord
             current: row.try_get("mana_cur")?,
             maximum: row.try_get("mana_max")?,
         },
-        capacity: PoolValue {
-            current: row.try_get("cap_cur")?,
-            maximum: row.try_get("cap_max")?,
-        },
+        capacity: row.try_get("capacity")?,
+        speed: row.try_get("speed")?,
         outfit: Outfit {
             id: row.try_get("outfit_id")?,
             head: row.try_get("outfit_head")?,

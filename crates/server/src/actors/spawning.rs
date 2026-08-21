@@ -29,17 +29,15 @@ pub struct SpawningActorHandle {
 }
 
 impl SpawningActorHandle {
-    pub async fn creature_spawned(
+    pub fn creature_spawned(
         &self,
         slot_idx: usize,
         agent_key: AgentKey,
-    ) -> Result<(), mpsc::error::SendError<SpawningCommand>> {
-        self.tx
-            .send(SpawningCommand::CreatureSpawned {
-                slot_idx,
-                agent_key,
-            })
-            .await
+    ) -> Result<(), mpsc::error::TrySendError<SpawningCommand>> {
+        self.tx.try_send(SpawningCommand::CreatureSpawned {
+            slot_idx,
+            agent_key,
+        })
     }
 }
 

@@ -113,7 +113,7 @@ impl GameMap {
         Arc::make_mut(chunk).tiles[idx] = Some(tile);
     }
 
-    fn contains_tile(&self, pos: &Position) -> bool {
+    pub fn contains_tile(&self, pos: &Position) -> bool {
         self.get_tile(pos).is_ok()
     }
 
@@ -135,9 +135,7 @@ impl GameMap {
             .ok_or(MapError::TileDoesNotExist)
     }
 
-    /// Insert an agent at `pos`. Maintains tile agent list and reverse index atomically.
     pub fn insert_agent(&mut self, agent: Agent, pos: &Position) -> Result<AgentKey, MapError> {
-        // Validate tile exists before inserting the agent.
         if !self.contains_tile(pos) {
             return Err(MapError::TileDoesNotExist);
         }
@@ -147,18 +145,17 @@ impl GameMap {
         Ok(key)
     }
 
-    /// Remove an agent entirely. Returns the `Agent` on success.
-    pub fn remove_agent(&mut self, key: AgentKey) -> Option<Agent> {
-        if let Some(pos) = self.agent_positions.remove(&key)
-            && let Ok(tile) = self.get_tile_mut(&pos)
+    pub fn remove_agent(&mut self, key: AgentKey) -> Option<(Agent, Position)> {
+        let pos = self.agent_positions.remove(&key)?;
+
+        if let Ok(tile) = self.get_tile_mut(&pos)
             && let Some(idx) = tile.agents.iter().position(|k| *k == key)
         {
             tile.agents.remove(idx);
         }
-        self.agents.remove(key)
+        self.agents.remove(key).map(|agent| (agent, pos))
     }
 
-    /// Move an agent to `new_pos`. Maintains tile lists and reverse index atomically.
     pub fn move_agent(&mut self, key: AgentKey, new_pos: &Position) -> Result<(), MapError> {
         let old_pos = self
             .agent_positions
@@ -324,6 +321,18 @@ impl GameMap {
         }
 
         true
+    }
+
+    pub fn has_sight(&self, pos: &Position) -> bool {
+        self.get_tile(pos)
+            .ok()
+            .map(|tile| {
+                tile.items
+                    .iter()
+                    .find(|it| it.config.has_flag(ItemFlag::Unpass))
+                    .is_none()
+            })
+            .unwrap_or(true)
     }
 
     pub fn tile_friction(&self, pos: &Position) -> Option<u16> {
@@ -544,20 +553,21 @@ impl GameMap {
 mod tests {
     use super::*;
     use crate::entities::agent::{Agent, Pool};
-    use crate::entities::creature::CreatureKind;
+    use crate::entities::creature::{BloodType, CreatureKind};
     use crate::entities::position::Position;
 
     fn new_creature() -> Agent {
-        Agent::from_creature_kind(&CreatureKind {
+        Agent::from_creature_kind(Arc::new(CreatureKind {
             name: "Creature".to_string(),
             life: Pool {
                 current: 1,
                 maximum: 1,
             },
-            outfit: (1, (0, 0, 0, 0)),
             speed: 1,
-            skills: HashMap::new(),
-        })
+            auto_attack_damage: (1, 2),
+            outfit: (1, (0, 0, 0, 0)),
+            blood_type: BloodType::Blood,
+        }))
     }
 
     fn map_with_one_tile(pos: &Position) -> GameMap {

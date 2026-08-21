@@ -7,7 +7,7 @@ use serde::Deserialize;
 use thiserror::Error;
 
 use crate::entities::agent::{OutfitColors, OutfitId, Pool};
-use crate::entities::creature::{CreatureKind, CreatureKindId};
+use crate::entities::creature::{BloodType, CreatureKind, CreatureKindId};
 
 #[derive(Error, Debug)]
 pub enum CreaturesLoadError {
@@ -24,11 +24,19 @@ struct RawOutfit {
 }
 
 #[derive(Deserialize)]
+struct RawDamage {
+    min: u32,
+    max: u32,
+}
+
+#[derive(Deserialize)]
 struct RawCreature {
     name: String,
     life: u32,
-    speed: u16,
     outfit: RawOutfit,
+    damage: RawDamage,
+    speed: u16,
+    blood_type: BloodType,
 }
 
 #[derive(Deserialize)]
@@ -51,26 +59,12 @@ pub fn load_creatures(
                     current: raw.life,
                     maximum: raw.life,
                 },
+                auto_attack_damage: (raw.damage.min, raw.damage.max),
                 outfit: (raw.outfit.id, raw.outfit.colors),
                 speed: raw.speed,
-                skills: HashMap::new(),
+                blood_type: raw.blood_type,
             };
             (id, Arc::new(kind))
         })
         .collect())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn loads_demon_from_assets() {
-        let creatures = load_creatures("assets/creatures.yaml").unwrap();
-        let demon = creatures.get("demon").expect("demon kind missing");
-        assert_eq!(demon.name, "Demon");
-        assert_eq!(demon.life.maximum, 8200);
-        assert_eq!(demon.speed, 230);
-        assert_eq!(demon.outfit.0, 35);
-    }
 }

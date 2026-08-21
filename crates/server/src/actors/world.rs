@@ -19,7 +19,10 @@ use crate::entities::items::{ItemConfig, ItemGuid, ItemId, ItemRef};
 use crate::entities::map::GameMap;
 use crate::entities::position::{Direction, ItemPlacement, Position};
 use crate::game::events::BroadcastMessage;
-use crate::game::{Tick, chat, item_action, item_movement, item_multi_action, movement, targeting};
+use crate::game::random::Rolls;
+use crate::game::{
+    Tick, chat, combat, item_action, item_movement, item_multi_action, movement, targeting,
+};
 
 #[derive(Debug)]
 pub enum WorldCommand {
@@ -78,6 +81,9 @@ pub enum WorldCommand {
     ClearTargetIfCurrent {
         agent: AgentKey,
         expected: AgentKey,
+    },
+    AutoAttackTarget {
+        agent: AgentKey,
     },
 }
 
@@ -164,6 +170,7 @@ pub struct WorldActor {
     tick: Tick,
     tick_duration: Duration,
     tick_tx: watch::Sender<Tick>,
+    roll: Rolls,
 }
 
 impl WorldActor {
@@ -172,6 +179,7 @@ impl WorldActor {
         item_configs: Arc<HashMap<ItemId, Arc<ItemConfig>>>,
         shared_map: Arc<ArcSwap<GameMap>>,
         message_router: MessageRouterActorHandle,
+        seed: u64,
     ) -> (WorldActorHandle, watch::Receiver<Tick>) {
         let (tx, rx) = mpsc::channel(CONFIG.max_buffered_messages);
         let (tick_tx, tick_rx) = watch::channel(0);
@@ -186,6 +194,7 @@ impl WorldActor {
             tick: 0,
             tick_duration: CONFIG.tick_duration,
             tick_tx,
+            roll: Rolls::new(seed),
         };
 
         tokio::spawn(actor.run());
@@ -234,8 +243,7 @@ impl WorldActor {
             while let Some(scheduled) = self.command_queue.peek() {
                 if scheduled.at_tick <= self.tick {
                     let scheduled = self.command_queue.pop().unwrap();
-                    self.handle_command(scheduled.command, &mut broadcast_messages)
-                        .await;
+                    self.handle_command(scheduled.command, &mut broadcast_messages);
                 } else {
                     break;
                 }
@@ -263,7 +271,7 @@ impl WorldActor {
         }
     }
 
-    async fn handle_command(
+    fn handle_command(
         &mut self,
         command: WorldCommand,
         broadcast_messages: &mut Vec<BroadcastMessage>,
@@ -342,18 +350,14 @@ impl WorldActor {
                 Ok(())
             }
             WorldCommand::DespawnPlayer { agent_key, .. } => {
-                self.map.remove_agent(agent_key);
-                let position = self
-                    .map
-                    .agent_position(agent_key)
-                    .cloned()
-                    .unwrap_or_default();
-                info!("Player {:?} despawned after disconnect", agent_key);
-                broadcast_messages.push(BroadcastMessage::PlayerDespawned {
-                    agent_key,
-                    snapshot: None,
-                    position,
-                });
+                if let Some((_, position)) = self.map.remove_agent(agent_key) {
+                    info!("Player {:?} despawned after disconnect", agent_key);
+                    broadcast_messages.push(BroadcastMessage::PlayerDespawned {
+                        agent_key,
+                        snapshot: None,
+                        position,
+                    });
+                }
                 Ok(())
             }
             WorldCommand::SpawnCreature {
@@ -362,14 +366,14 @@ impl WorldActor {
                 spawning,
                 slot_idx,
             } => {
-                let agent = Agent::from_creature_kind(kind.as_ref());
+                let agent = Agent::from_creature_kind(kind.clone());
                 match self.map.insert_agent(agent, &position) {
                     Ok(agent_key) => {
                         broadcast_messages.push(BroadcastMessage::PlayerSpawned {
                             agent_key,
                             position: position.clone(),
                         });
-                        if let Err(e) = spawning.creature_spawned(slot_idx, agent_key).await {
+                        if let Err(e) = spawning.creature_spawned(slot_idx, agent_key) {
                             error!("Failed to notify SpawningActor of spawn: {e}");
                         }
                         Ok(())
@@ -393,6 +397,12 @@ impl WorldActor {
             }
             WorldCommand::Say { agent_key, message } => {
                 let msgs = chat::say(&self.map, agent_key, message);
+                broadcast_messages.extend(msgs);
+                Ok(())
+            }
+            WorldCommand::AutoAttackTarget { agent } => {
+                let msgs =
+                    combat::auto_attack_target(&mut self.map, agent, &mut self.roll, self.tick);
                 broadcast_messages.extend(msgs);
                 Ok(())
             }
@@ -498,6 +508,7 @@ mod tests {
             tick: 0,
             tick_duration: Duration::from_millis(50),
             tick_tx,
+            roll: Rolls::new(1),
         }
     }
 
@@ -521,15 +532,13 @@ mod tests {
         let mut actor = a_test_world_actor(map);
         let mut broadcasts = Vec::new();
 
-        actor
-            .handle_command(
-                WorldCommand::SetTarget {
-                    agent: attacker,
-                    target: Some(victim),
-                },
-                &mut broadcasts,
-            )
-            .await;
+        actor.handle_command(
+            WorldCommand::SetTarget {
+                agent: attacker,
+                target: Some(victim),
+            },
+            &mut broadcasts,
+        );
 
         assert_eq!(
             actor.map.get_agent(attacker).unwrap().target(),

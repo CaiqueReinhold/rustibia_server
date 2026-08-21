@@ -22,12 +22,6 @@ impl SessionActor {
             .unwrap_or(0)
     }
 
-    pub(super) async fn check_queues(&mut self) -> Result<()> {
-        self.check_walk_queue().await
-    }
-
-    /// Recomputes the remaining cooldown from the snapshot every tick rather than
-    /// storing a deadline at admission, so it self-corrects if the cooldown moves.
     pub(super) async fn check_walk_queue(&mut self) -> Result<()> {
         let Some(direction) = self.queued_walk else {
             return Ok(());
@@ -288,11 +282,11 @@ mod tests {
         arm_cooldown(&session, COOLDOWN_TICKS);
 
         session.handle_move_player(Direction::North).await.unwrap();
-        session.check_queues().await.unwrap();
+        session.check_walk_queue().await.unwrap();
         assert!(world_rx.try_recv().is_err(), "still early, so still held");
 
         tick_tx.send(COOLDOWN_TICKS).unwrap();
-        session.check_queues().await.unwrap();
+        session.check_walk_queue().await.unwrap();
 
         assert!(
             matches!(world_rx.try_recv(), Ok((WorldCommand::Walk { .. }, _))),
@@ -316,7 +310,7 @@ mod tests {
         session.handle_move_player(Direction::East).await.unwrap();
 
         tick_tx.send(COOLDOWN_TICKS).unwrap();
-        session.check_queues().await.unwrap();
+        session.check_walk_queue().await.unwrap();
 
         assert!(
             matches!(

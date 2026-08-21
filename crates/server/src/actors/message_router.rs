@@ -267,7 +267,7 @@ impl MessageRouterActor {
 
                 self.send_to(message, agent_key);
             }
-            BroadcastMessage::AgentTeleport {
+            BroadcastMessage::AgentTeleported {
                 from_position,
                 to_position,
                 ..
@@ -327,7 +327,7 @@ impl MessageRouterActor {
                     None,
                 );
             }
-            BroadcastMessage::UpdateContainer { item } => match &item.placement {
+            BroadcastMessage::ContainerUpdated { item } => match &item.placement {
                 ItemPlacement::Inventory(_slot, agent_key) => {
                     self.send_to(message, agent_key);
                 }
@@ -348,7 +348,6 @@ impl MessageRouterActor {
                 self.send_to(message, agent_key);
             }
             BroadcastMessage::AgentSaid { agent_key, .. } => {
-                // `originator: None` is deliberate — a speaker hears themselves.
                 if let Some(position) = map.agent_position(*agent_key) {
                     self.send_to_rect(
                         message,
@@ -358,6 +357,33 @@ impl MessageRouterActor {
                         None,
                     );
                 }
+            }
+            BroadcastMessage::DamageTaken { agent_key, .. } => {
+                if let Some(position) = map.agent_position(*agent_key) {
+                    self.send_to_rect(
+                        message,
+                        map,
+                        Rect::player_viewport(position),
+                        position.z,
+                        None,
+                    );
+                }
+            }
+            BroadcastMessage::MissileLaunched { from, to, .. } => {
+                self.send_to_rects(
+                    message,
+                    map,
+                    &[
+                        (Rect::player_viewport(from), from.z),
+                        (Rect::player_viewport(to), to.z),
+                    ],
+                );
+            }
+            BroadcastMessage::SkillProgressUpdated { agent_key, .. } => {
+                self.send_to(message, agent_key);
+            }
+            BroadcastMessage::SkillUpgraded { agent_key, .. } => {
+                self.send_to(message, agent_key);
             }
         }
     }

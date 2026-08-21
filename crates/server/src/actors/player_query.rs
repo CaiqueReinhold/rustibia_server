@@ -5,7 +5,6 @@ use crate::{
         map::GameMap,
         player::InventorySlot,
         position::{ItemPlacement, Position},
-        skills::SkillType,
     },
     game::map_query::find_item_in_reach,
     local_id::LocalIdMap,
@@ -15,7 +14,6 @@ use crate::{
 pub fn get_player_desc(map: &GameMap, key: AgentKey, id: AgentId) -> Option<ServerMessage> {
     let agent = map.get_agent(key)?;
     let position = map.agent_position(key)?;
-    let exp = agent.get_skill(SkillType::Level)?;
     let player = agent.get_player()?;
 
     let slot_item = |slot: InventorySlot| player.inventory.get(&slot).map(|it| it.item_id);
@@ -23,9 +21,9 @@ pub fn get_player_desc(map: &GameMap, key: AgentKey, id: AgentId) -> Option<Serv
     Some(ServerMessage::DescribePlayer {
         agent_id: id,
         position: position.clone(),
-        facing: agent.facing,
+        facing: agent.facing(),
         name: agent.name().to_string(),
-        level: exp.value,
+        level: player.level(),
         life: agent.life().clone(),
         mana: player.mana.clone(),
         outfit: agent.outfit(),
@@ -49,9 +47,9 @@ pub fn get_agent_desc(agent: &Agent, agent_id: AgentId, position: Position) -> S
         agent_id,
         outfit: agent.outfit(),
         position,
-        facing: agent.facing,
+        facing: agent.facing(),
         name: agent.name().to_owned(),
-        life: agent.life().clone(),
+        life: agent.life().to_wire(),
         speed: agent.speed(),
     }
 }

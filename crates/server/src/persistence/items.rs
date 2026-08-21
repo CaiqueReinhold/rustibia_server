@@ -6,6 +6,7 @@ use std::sync::Arc;
 use serde::Deserialize;
 use thiserror::Error;
 
+use crate::entities::combat::{AmmoType, CombatElement, WeaponType};
 use crate::entities::items::{
     FloorChangeDirection, ItemAction, ItemAttribute, ItemConfig, ItemFlag, ItemId, ItemMultiAction,
 };
@@ -54,6 +55,7 @@ fn parse_flag(s: &str) -> Option<ItemFlag> {
         "container" => Some(ItemFlag::Container),
         "usable" => Some(ItemFlag::Usable),
         "avoid" => Some(ItemFlag::Avoid),
+        "ammo_contaioner" => Some(ItemFlag::AmmoContainer),
         _ => None,
     }
 }
@@ -103,6 +105,33 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
             let decay_to = value.get("decay_to")?.as_u64()? as ItemId;
             Some(ItemAttribute::Decay { duration, decay_to })
         }
+        "attack" => Some(ItemAttribute::WeaponAttack(value.as_i64()? as u16)),
+        "element" => match value.as_str()? {
+            "ice" => Some(ItemAttribute::WeaponElement(CombatElement::Ice)),
+            "physical" => Some(ItemAttribute::WeaponElement(CombatElement::Physical)),
+            "fire" => Some(ItemAttribute::WeaponElement(CombatElement::Fire)),
+            "earth" => Some(ItemAttribute::WeaponElement(CombatElement::Earth)),
+            "energy" => Some(ItemAttribute::WeaponElement(CombatElement::Energy)),
+            _ => None,
+        },
+        "weapon_type" => match value.as_str()? {
+            "axe" => Some(ItemAttribute::WeaponType(WeaponType::Axe)),
+            "sword" => Some(ItemAttribute::WeaponType(WeaponType::Sword)),
+            "club" => Some(ItemAttribute::WeaponType(WeaponType::Club)),
+            "bow" => Some(ItemAttribute::WeaponType(WeaponType::Bow)),
+            "crossbow" => Some(ItemAttribute::WeaponType(WeaponType::Crossbow)),
+            "wand" => Some(ItemAttribute::WeaponType(WeaponType::Wand)),
+            "rod" => Some(ItemAttribute::WeaponType(WeaponType::Rod)),
+            _ => None,
+        },
+        "ammo_type" => match value.as_str()? {
+            "arrow" => Some(ItemAttribute::AmmoType(AmmoType::Arrow)),
+            "bolt" => Some(ItemAttribute::AmmoType(AmmoType::Bolt)),
+            _ => None,
+        },
+        "range" => Some(ItemAttribute::WeaponRange(value.as_i64()? as u8)),
+        "mana_cost" => Some(ItemAttribute::ManaCost(value.as_i64()? as u32)),
+        "missile_id" => Some(ItemAttribute::MissileId(value.as_i64()? as u16)),
         _ => {
             let n = value.as_u64()? as u32;
             match key {

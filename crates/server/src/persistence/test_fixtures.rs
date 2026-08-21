@@ -42,7 +42,7 @@ pub async fn insert_character(pool: &PgPool, account_id: i32) -> i32 {
     sqlx::query_scalar::<_, i32>(
         "INSERT INTO players \
          (account_id, name, vocation, sex, pos_x, pos_y, pos_z, origin_x, origin_y, origin_z, \
-          facing, life_cur, life_max, mana_cur, mana_max, cap_cur, cap_max, \
+          facing, life_cur, life_max, mana_cur, mana_max, capacity, speed, \
           outfit_id, outfit_head, outfit_body, outfit_legs, outfit_feet) \
          VALUES ($1, $2, 0, 1, 1028, 1028, 7, 1028, 1028, 7, \
                  2, 150, 150, 0, 0, 400, 400, 133, 1, 2, 3, 4) \
@@ -113,29 +113,17 @@ pub fn a_test_snapshot(id: u32, account_id: i32) -> PlayerSnapshot {
             current: 100,
             maximum: 100,
         },
-        capacity: Pool {
-            current: 0,
-            maximum: 40000,
-        },
+        capacity: 40000,
+        speed: 120,
         outfit: (133, (1, 2, 3, 4)),
-        skills: HashMap::from([
-            (
-                SkillType::Level,
-                SkillValue {
-                    value: 1,
-                    current_ticks: 0,
-                    max_ticks: 100,
-                },
-            ),
-            (
-                SkillType::Speed,
-                SkillValue {
-                    value: 120,
-                    current_ticks: 0,
-                    max_ticks: 0,
-                },
-            ),
-        ]),
+        skills: HashMap::from([(
+            SkillType::Level,
+            SkillValue {
+                value: 1,
+                current_ticks: 0,
+                max_ticks: 100,
+            },
+        )]),
         inventory: HashMap::new(),
     }
 }

@@ -8,5 +8,9 @@ pub struct SkillValue {
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum SkillType {
     Level,
-    Speed,
+    Sword,
+    Club,
+    Axe,
+    Distance,
+    Magic,
 }

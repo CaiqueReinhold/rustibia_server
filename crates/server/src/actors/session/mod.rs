@@ -3,6 +3,7 @@
 //! submodule for its topic.
 
 mod chat;
+mod combat;
 mod items;
 mod movement;
 mod view;
@@ -153,6 +154,7 @@ pub struct SessionActor {
     next_chat_tick: Tick,
     queued_walk: Option<Direction>,
     logout_pending: bool,
+    has_target: bool,
 }
 
 #[cfg(test)]
@@ -205,6 +207,7 @@ impl SessionActor {
                         next_chat_tick: 0,
                         queued_walk: None,
                         logout_pending: false,
+                        has_target: false,
                     };
                     actor.run().await;
                 }
@@ -255,7 +258,7 @@ impl SessionActor {
                         // branch returns Ready forever and the session spins.
                         Err(SessionError::WorldStopped.into())
                     } else {
-                        self.check_queues().await
+                        self.tick_schedules().await
                     }
                 }
                 cmd = self.rx.recv() =>
@@ -405,7 +408,7 @@ impl SessionActor {
             BroadcastMessage::TileChanged { position } => self.tile_changed(position).await,
             BroadcastMessage::UseItemDenied { message, .. } => self.use_item_denied(message).await,
             BroadcastMessage::OpenContainer { item, .. } => self.open_container(item).await,
-            BroadcastMessage::UpdateContainer { item } => self.update_container(item).await,
+            BroadcastMessage::ContainerUpdated { item } => self.update_container(item).await,
             BroadcastMessage::AgentWalkDenied { .. } => self.walk_denied().await,
             BroadcastMessage::UpdateInventorySlot { agent_key, slot } => {
                 self.update_inventory_slot(agent_key, slot).await
@@ -421,7 +424,7 @@ impl SessionActor {
                 snapshot,
                 ..
             } => self.agent_despawned(agent_key, snapshot).await,
-            BroadcastMessage::AgentTeleport {
+            BroadcastMessage::AgentTeleported {
                 agent_key,
                 to_position,
                 ..
@@ -431,11 +434,33 @@ impl SessionActor {
                 self.agent_said(agent_key, message).await
             }
             BroadcastMessage::TargetChanged { target, .. } => self.target_changed(target).await,
+            BroadcastMessage::DamageTaken { agent_key, damage } => {
+                self.agent_took_damage(agent_key, damage).await
+            }
+            BroadcastMessage::MissileLaunched {
+                from,
+                to,
+                sprite_id,
+            } => self.missile_launched(from, to, sprite_id).await,
+            BroadcastMessage::SkillProgressUpdated {
+                agent_key,
+                skill_type,
+            } => self.skill_progress(skill_type).await,
+            BroadcastMessage::SkillUpgraded {
+                agent_key,
+                skill_type,
+            } => self.skill_upgraded(skill_type).await,
         }
     }
 
     async fn pong(&self) -> Result<()> {
         self.connection.send_message(ServerMessage::Pong).await?;
+        Ok(())
+    }
+
+    async fn tick_schedules(&mut self) -> Result<()> {
+        self.check_walk_queue().await?;
+        self.check_auto_attack().await?;
         Ok(())
     }
 
@@ -491,6 +516,7 @@ impl SessionActor {
                 next_chat_tick: 0,
                 queued_walk: None,
                 logout_pending: false,
+                has_target: false,
             },
             connection_rx,
             world_rx,

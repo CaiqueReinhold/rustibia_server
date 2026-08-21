@@ -183,7 +183,7 @@ fn rope(
     {
         map.move_agent(agent_key, &target_pos)
             .map_err(|_| ItemActionError::ActionFailed)?;
-        broadcasts.push(BroadcastMessage::AgentTeleport {
+        broadcasts.push(BroadcastMessage::AgentTeleported {
             agent_key,
             from_position: pos.clone(),
             to_position: target_pos,
@@ -203,7 +203,7 @@ fn rope(
             if map
                 .move_agent(last_agent, &target_pos)
                 .map(|()| {
-                    broadcasts.push(BroadcastMessage::AgentTeleport {
+                    broadcasts.push(BroadcastMessage::AgentTeleported {
                         agent_key: last_agent,
                         from_position: pos.clone(),
                         to_position: target_pos,

@@ -27,7 +27,8 @@ pub struct CharacterRecord {
     pub facing: i16,
     pub life: PoolValue,
     pub mana: PoolValue,
-    pub capacity: PoolValue,
+    pub capacity: i32,
+    pub speed: i32,
     pub outfit: Outfit,
     pub skills: Vec<SkillRow>,
     /// Keyed by inventory slot index, matching `players.inventory`'s JSONB shape.
@@ -105,10 +106,8 @@ mod tests {
                 current: 0,
                 maximum: 0,
             },
-            capacity: PoolValue {
-                current: 380,
-                maximum: 400,
-            },
+            capacity: 400,
+            speed: 100,
             outfit: Outfit {
                 id: 128,
                 head: 78,

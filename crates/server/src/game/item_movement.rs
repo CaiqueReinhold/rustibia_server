@@ -91,7 +91,7 @@ fn displace_inventory_items(
                         agent_key: agent,
                         slot: InventorySlot::RightHand,
                     });
-                    broadcasts.push(BroadcastMessage::UpdateContainer {
+                    broadcasts.push(BroadcastMessage::ContainerUpdated {
                         item: ItemRef {
                             guid: available_container,
                             placement: ItemPlacement::Inventory(InventorySlot::Backpack, agent),
@@ -135,7 +135,7 @@ fn displace_inventory_items(
                 agent_key: agent,
                 slot: InventorySlot::LeftHand,
             });
-            broadcasts.push(BroadcastMessage::UpdateContainer {
+            broadcasts.push(BroadcastMessage::ContainerUpdated {
                 item: ItemRef {
                     guid: available_container,
                     placement: ItemPlacement::Inventory(InventorySlot::Backpack, agent),
@@ -345,7 +345,7 @@ pub fn insert_item_at(
             match map.place_item(pos, index, container.map(|(g, i)| (g, *i)), item) {
                 Ok(()) => {
                     if let Some((guid, _)) = container {
-                        broadcasts.push(BroadcastMessage::UpdateContainer {
+                        broadcasts.push(BroadcastMessage::ContainerUpdated {
                             item: ItemRef {
                                 guid: guid.clone(),
                                 placement: placement.clone(),
@@ -387,7 +387,7 @@ pub fn insert_item_at(
                 };
                 match result {
                     Ok(..) => {
-                        broadcasts.push(BroadcastMessage::UpdateContainer {
+                        broadcasts.push(BroadcastMessage::ContainerUpdated {
                             item: ItemRef {
                                 guid: c_guid.clone(),
                                 placement: placement.clone(),
@@ -433,7 +433,7 @@ pub fn remove_item_at(
                     });
                 }
                 Some((_, None, Some((guid, _)))) => {
-                    broadcasts.push(BroadcastMessage::UpdateContainer {
+                    broadcasts.push(BroadcastMessage::ContainerUpdated {
                         item: ItemRef {
                             guid: guid.clone(),
                             placement: item.placement.clone(),
@@ -450,7 +450,7 @@ pub fn remove_item_at(
                 .and_then(|player| player.inventory.remove(*slot, &item.guid, amount));
             match &removed {
                 Some((_, Some((guid, _)))) => {
-                    broadcasts.push(BroadcastMessage::UpdateContainer {
+                    broadcasts.push(BroadcastMessage::ContainerUpdated {
                         item: ItemRef {
                             guid: guid.clone(),
                             placement: item.placement.clone(),

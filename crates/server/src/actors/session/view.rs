@@ -11,7 +11,6 @@ use crate::actors::player_query::get_agent_desc;
 use crate::actors::player_query::get_player_desc;
 use crate::actors::session::{SessionActor, SessionError};
 use crate::actors::world::WorldCommand;
-use crate::entities::agent::AgentId;
 use crate::entities::agent::AgentKey;
 use crate::entities::map::GameMap;
 use crate::entities::position::Position;
@@ -152,25 +151,6 @@ impl SessionActor {
         }
 
         self.forget_agent(agent_key).await?;
-        Ok(())
-    }
-
-    pub(super) async fn handle_set_target(&mut self, agent_id: Option<AgentId>) -> Result<()> {
-        let target = agent_id.and_then(|id| self.agents.get_global(id).copied());
-        self.world
-            .send(WorldCommand::SetTarget {
-                agent: self.player_key,
-                target,
-            })
-            .await;
-        Ok(())
-    }
-
-    pub(super) async fn target_changed(&mut self, target: Option<AgentKey>) -> Result<()> {
-        let agent_id = target.and_then(|key| self.agents.get_local(&key));
-        self.connection
-            .send_message(ServerMessage::TargetChanged { agent_id })
-            .await?;
         Ok(())
     }
 }

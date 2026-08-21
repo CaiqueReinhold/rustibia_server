@@ -312,3 +312,68 @@ pub fn get_top_entity<'a>(map: &'a GameMap, pos: &'a Position) -> Option<TileEnt
 
     None
 }
+
+fn walk_axis(a0: i32, b0: i32, a1: i32, b1: i32) -> impl Iterator<Item = (u16, u16)> {
+    let (da, db) = (a1 - a0, b1 - b0);
+    debug_assert!(
+        da > 0 && db.abs() <= da,
+        "caller must normalise the major axis"
+    );
+
+    let (mut q, mut r) = (0i32, 0i32);
+    (a0 + 1..a1).map(move |a| {
+        r += db;
+        if r < 0 {
+            r += da;
+            q -= 1;
+        } else if r >= da {
+            r -= da;
+            q += 1;
+        }
+        (a as u16, (b0 + q) as u16)
+    })
+}
+
+pub fn is_sight_clear(map: &GameMap, from: &Position, to: &Position, z: u8) -> bool {
+    let (dx, dy) = (to.x as i32 - from.x as i32, to.y as i32 - from.y as i32);
+    if dx <= 1 && dy <= 1 {
+        return true;
+    }
+
+    let steep = dy.abs() > dx.abs();
+    let (a0, b0, a1, b1) = match (steep, if steep { dy > 0 } else { dx > 0 }) {
+        (true, true) => (from.y as i32, from.x as i32, to.y as i32, to.x as i32),
+        (true, false) => (to.y as i32, to.x as i32, from.y as i32, from.x as i32),
+        (false, true) => (from.x as i32, from.y as i32, to.x as i32, to.y as i32),
+        (false, false) => (to.x as i32, to.y as i32, from.x as i32, from.y as i32),
+    };
+
+    walk_axis(a0, b0, a1, b1).all(|(a, b)| {
+        let (x, y) = if steep { (b, a) } else { (a, b) };
+        map.has_sight(&Position::new(x, y, z))
+    })
+}
+
+pub fn can_throw(map: &GameMap, from: &Position, to: &Position, same_floor: bool) -> bool {
+    if (from.z > 7 && to.z < 8) || (from.z < 8 && to.z > 7) {
+        return false;
+    }
+
+    let floor_delta = (from.z as i8) - (to.z as i8);
+    if floor_delta.abs() > 0 && same_floor {
+        return false;
+    }
+
+    if floor_delta > 0 {
+        // throwing at an upper level
+        (from.z + 1..=to.z).all(|z| map.contains_tile(&Position::new(from.x, from.y, z)))
+            && is_sight_clear(map, from, to, to.z)
+    } else if floor_delta < 0 {
+        // throwing at a lower level
+        (from.z + 1..=to.z).all(|z| map.contains_tile(&Position::new(to.x, to.y, z)))
+            && is_sight_clear(map, from, to, from.z)
+    } else {
+        // same floor
+        is_sight_clear(map, from, to, from.z)
+    }
+}

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::sync::Arc;
 
 use slotmap::new_key_type;
 
@@ -6,11 +6,7 @@ use super::{inventory::Inventory, player::Player};
 use crate::{
     config,
     constants::{SPEED_PARAM_A, SPEED_PARAM_B, SPEED_PARAM_C},
-    entities::{
-        creature::CreatureKind,
-        position::Position,
-        skills::{SkillType, SkillValue},
-    },
+    entities::{creature::CreatureKind, position::Position},
     game::Tick,
     persistence::player::PlayerSnapshot,
 };
@@ -29,6 +25,14 @@ impl Pool {
     pub fn available(&self) -> u32 {
         self.maximum - self.current
     }
+
+    pub fn remove(&mut self, amount: u32) {
+        self.current = self.current.saturating_sub(amount)
+    }
+
+    pub fn to_wire(&self) -> u8 {
+        ((self.current as f32) / (self.maximum as f32) * 100.0).round() as u8
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -42,7 +46,12 @@ pub enum Facing {
 #[derive(Clone, Debug)]
 enum AgentInner {
     Player(Player),
-    Creature,
+    Creature(Arc<CreatureKind>),
+}
+
+#[derive(Debug, Clone, Default)]
+struct Modifiers {
+    speed: u16,
 }
 
 new_key_type! { pub struct AgentKey; }
@@ -50,21 +59,22 @@ new_key_type! { pub struct AgentKey; }
 #[derive(Clone, Debug)]
 pub struct Agent {
     inner: AgentInner,
-    name: String,
     life: Pool,
-    skills: HashMap<SkillType, SkillValue>,
     outfit: (OutfitId, OutfitColors),
-    speed: u16,
+    base_speed: u16,
+    modifiers: Modifiers,
+    facing: Facing,
 
-    pub facing: Facing,
+    // both
     pub next_walk_tick: Tick,
+    pub next_attack_tick: Tick,
+
+    // player
     pub next_use_tick: Tick,
 
+    // creature
     pub next_wander_tick: Tick,
 
-    /// The agent this one is attacking. Session state — never persisted, and
-    /// deliberately private so it cannot be set without going through
-    /// `game::targeting::set_target`, which owns the validation rules.
     target: Option<AgentKey>,
 }
 
@@ -72,71 +82,90 @@ impl Agent {
     pub fn get_player(&self) -> Option<&Player> {
         match &self.inner {
             AgentInner::Player(p) => Some(p),
-            AgentInner::Creature => None,
+            AgentInner::Creature(..) => None,
         }
     }
 
     pub fn get_player_mut(&mut self) -> Option<&mut Player> {
         match &mut self.inner {
             AgentInner::Player(p) => Some(p),
-            AgentInner::Creature => None,
+            AgentInner::Creature(..) => None,
+        }
+    }
+
+    pub fn get_creature_kind(&self) -> Option<&CreatureKind> {
+        match &self.inner {
+            AgentInner::Creature(c) => Some(c),
+            AgentInner::Player(..) => None,
         }
     }
 
     pub fn is_creature(&self) -> bool {
-        matches!(self.inner, AgentInner::Creature)
+        matches!(self.inner, AgentInner::Creature(..))
     }
 
     pub fn from_player(player: PlayerSnapshot) -> Self {
-        let mut agent = Self {
+        let inventory = Inventory::from_snapshot(player.inventory);
+        Self {
             inner: AgentInner::Player(Player {
                 id: player.id,
+                name: player.name,
                 account_id: player.account_id,
                 position: player.position,
                 origin: player.origin,
                 mana: player.mana,
-                capacity: player.capacity,
-                inventory: Inventory::from_snapshot(player.inventory),
+                capacity: Pool {
+                    current: inventory.total_weight(),
+                    maximum: player.capacity,
+                },
+                inventory,
+                skills: player.skills,
             }),
-            name: player.name,
             facing: player.facing,
             life: player.life,
-            skills: player.skills,
             outfit: player.outfit,
-            speed: 0,
+            base_speed: player.speed,
             next_walk_tick: 0,
             next_use_tick: 0,
             next_wander_tick: 0,
+            next_attack_tick: 0,
             target: None,
-        };
-        agent.apply_modifiers();
-        agent
+            modifiers: Modifiers::default(),
+        }
     }
 
-    pub fn from_creature_kind(kind: &CreatureKind) -> Self {
-        let mut agent = Self {
-            inner: AgentInner::Creature,
-            name: kind.name.clone(),
-            life: kind.life.clone(),
-            skills: kind.skills.clone(),
-            outfit: kind.outfit,
-            speed: kind.speed,
+    pub fn from_creature_kind(kind: Arc<CreatureKind>) -> Self {
+        let life = kind.life.clone();
+        let outfit = kind.outfit;
+        let speed = kind.speed;
+        Self {
+            inner: AgentInner::Creature(kind),
+            life,
+            outfit,
+            base_speed: speed,
             facing: Facing::South,
             next_walk_tick: 0,
             next_use_tick: 0,
             next_wander_tick: 0,
+            next_attack_tick: 0,
             target: None,
-        };
-        agent.apply_modifiers();
-        agent
+            modifiers: Modifiers::default(),
+        }
     }
 
     pub fn name(&self) -> &str {
-        &self.name
+        match &self.inner {
+            AgentInner::Creature(c) => &c.name,
+            AgentInner::Player(p) => &p.name,
+        }
     }
 
     pub fn life(&self) -> &Pool {
         &self.life
+    }
+
+    pub fn take_hit(&mut self, damage: u32, _attacker: Option<AgentKey>) {
+        self.life.current = self.life.current.saturating_sub(damage);
     }
 
     pub fn outfit(&self) -> (OutfitId, OutfitColors) {
@@ -144,7 +173,15 @@ impl Agent {
     }
 
     pub fn speed(&self) -> u16 {
-        self.speed
+        self.base_speed + self.modifiers.speed
+    }
+
+    pub fn facing(&self) -> Facing {
+        self.facing
+    }
+
+    pub fn set_facing(&mut self, facing: Facing) {
+        self.facing = facing;
     }
 
     pub fn target(&self) -> Option<AgentKey> {
@@ -155,19 +192,8 @@ impl Agent {
         self.target = target;
     }
 
-    pub fn get_skill(&self, skill: SkillType) -> Option<&SkillValue> {
-        self.skills.get(&skill)
-    }
-
-    pub fn apply_modifiers(&mut self) {
-        if let Some(speed) = self.skills.get(&SkillType::Speed) {
-            // TODO: apply effects
-            self.speed = speed.value;
-        }
-    }
-
     pub fn calculate_walk_ticks(&self, tile_friction: u16, diagonal: bool) -> Tick {
-        let move_speed = (SPEED_PARAM_A * ((self.speed as f32) + SPEED_PARAM_B).ln()
+        let move_speed = (SPEED_PARAM_A * ((self.speed() as f32) + SPEED_PARAM_B).ln()
             + SPEED_PARAM_C)
             .round()
             .max(1.0);
@@ -184,20 +210,28 @@ impl Agent {
         self.next_walk_tick <= current_tick
     }
 
+    pub fn attack_range(&self) -> u8 {
+        match &self.inner {
+            AgentInner::Player(p) => p.weapon_range(),
+            AgentInner::Creature(..) => 1,
+        }
+    }
+
     pub fn to_snapshot(&self, position: Position) -> Option<PlayerSnapshot> {
         let player = self.get_player()?;
         Some(PlayerSnapshot {
             id: player.id,
             account_id: player.account_id,
-            name: self.name.clone(),
+            name: player.name.clone(),
             position,
             origin: player.origin.clone(),
             facing: self.facing,
             life: self.life.clone(),
             mana: player.mana.clone(),
-            capacity: player.capacity.clone(),
+            capacity: player.capacity.maximum,
+            speed: self.base_speed,
             outfit: self.outfit,
-            skills: self.skills.clone(),
+            skills: player.skills.clone(),
             inventory: player.inventory.slots().clone(),
         })
     }
@@ -206,6 +240,7 @@ impl Agent {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::entities::creature::BloodType;
     use crate::entities::map::GameMap;
     use crate::entities::position::Position;
     use crate::entities::skills::{SkillType, SkillValue};
@@ -237,15 +272,13 @@ mod tests {
                 current: 50,
                 maximum: 100,
             },
-            capacity: Pool {
-                current: 0,
-                maximum: 40000,
-            },
+            capacity: 40000,
+            speed: 100,
             outfit: (133, (1, 2, 3, 4)),
             skills: {
                 let mut m = HashMap::new();
                 m.insert(
-                    SkillType::Speed,
+                    SkillType::Level,
                     SkillValue {
                         value: 120,
                         current_ticks: 0,
@@ -260,16 +293,17 @@ mod tests {
 
     #[test]
     fn to_snapshot_returns_none_for_creature() {
-        let creature = Agent::from_creature_kind(&CreatureKind {
+        let creature = Agent::from_creature_kind(Arc::new(CreatureKind {
             name: "Creature".to_string(),
             life: Pool {
                 current: 1,
                 maximum: 1,
             },
-            outfit: (1, (0, 0, 0, 0)),
             speed: 1,
-            skills: HashMap::new(),
-        });
+            auto_attack_damage: (1, 2),
+            outfit: (1, (0, 0, 0, 0)),
+            blood_type: BloodType::Blood,
+        }));
         let pos = Position {
             x: 200,
             y: 200,
@@ -294,9 +328,9 @@ mod tests {
         assert_eq!(snap.life.current, 80);
         assert_eq!(snap.life.maximum, 100);
         assert_eq!(snap.mana.current, 50);
-        assert_eq!(snap.capacity.maximum, 40000);
+        assert_eq!(snap.capacity, 40000);
         assert_eq!(snap.outfit, (133, (1, 2, 3, 4)));
-        assert_eq!(snap.skills[&SkillType::Speed].value, 120);
+        assert_eq!(snap.skills[&SkillType::Level].value, 120);
     }
 
     #[test]
@@ -319,16 +353,17 @@ mod tests {
     #[test]
     fn is_creature_distinguishes_player_and_creature() {
         let player = Agent::from_player(make_snapshot(1));
-        let creature = Agent::from_creature_kind(&CreatureKind {
+        let creature = Agent::from_creature_kind(Arc::new(CreatureKind {
             name: "Creature".to_string(),
             life: Pool {
                 current: 1,
                 maximum: 1,
             },
+            auto_attack_damage: (1, 2),
             outfit: (1, (0, 0, 0, 0)),
             speed: 1,
-            skills: HashMap::new(),
-        });
+            blood_type: BloodType::Blood,
+        }));
         assert!(!player.is_creature());
         assert!(creature.is_creature());
     }
@@ -342,11 +377,12 @@ mod tests {
                 current: 8200,
                 maximum: 8200,
             },
+            auto_attack_damage: (1, 2),
             outfit: (35, (0, 0, 0, 0)),
-            speed: 230,
-            skills: HashMap::new(),
+            speed: 1,
+            blood_type: BloodType::Blood,
         };
-        let agent = Agent::from_creature_kind(&kind);
+        let agent = Agent::from_creature_kind(Arc::new(kind));
         assert!(agent.is_creature());
         assert_eq!(agent.name(), "Demon");
         assert_eq!(agent.life().maximum, 8200);
@@ -359,14 +395,16 @@ mod tests {
     /// desyncs movement, so each side pins the same three answers.
     ///
     /// The client asserts milliseconds; these are the same numbers divided by the
-    /// 50ms tick. `a_test_snapshot` gives the agent a Speed skill of 120.
+    /// 50ms tick. `a_test_snapshot` gives the agent a speed of 120, which is the
+    /// speed the client's paired test uses — moving that fixture desyncs the pair
+    /// without either side failing to compile.
     #[test]
     fn walk_ticks_match_the_client() {
         let agent = Agent::from_player(a_test_snapshot(1, 1));
         assert_eq!(
             agent.speed(),
             120,
-            "the fixture's Speed skill feeds the formula"
+            "the fixture's speed column feeds the formula"
         );
 
         assert_eq!(agent.calculate_walk_ticks(150, false), 10, "500ms");

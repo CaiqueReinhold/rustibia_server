@@ -50,10 +50,6 @@ pub fn snapshot_from_record(
     let mut skills: HashMap<SkillType, SkillValue> = HashMap::new();
     for row in record.skills {
         let Some(skill_type) = i16_to_skill_type(row.skill_type) else {
-            // Dropped rather than fatal: an unknown skill is a skill this build does not
-            // implement yet, and refusing the login would lock the character out
-            // entirely. It will be lost on the next save, which is why the site refuses
-            // to seed skill types the server does not know.
             warn!(
                 character = id,
                 skill_type = row.skill_type,
@@ -100,7 +96,9 @@ pub fn snapshot_from_record(
             .ok_or_else(|| malformed(format!("unknown facing discriminant {}", record.facing)))?,
         life: pool(record.life, "life")?,
         mana: pool(record.mana, "mana")?,
-        capacity: pool(record.capacity, "capacity")?,
+        capacity: u32::try_from(record.capacity)
+            .map_err(|_| malformed("capacity out of range"))?,
+        speed: u16::try_from(record.speed).map_err(|_| malformed("speed out of range"))?,
         outfit: (
             u16::try_from(record.outfit.id).map_err(|_| malformed("outfit id out of range"))?,
             (
@@ -242,7 +240,7 @@ impl SqlLoginRepository {
 
         let row = sqlx::query(
             "SELECT id, account_id, name, pos_x, pos_y, pos_z, origin_x, origin_y, origin_z, \
-             facing, life_cur, life_max, mana_cur, mana_max, cap_cur, cap_max, \
+             facing, life_cur, life_max, mana_cur, mana_max, capacity, speed, \
              outfit_id, outfit_head, outfit_body, outfit_legs, outfit_feet, inventory \
              FROM players WHERE id = $1 AND deleted_at IS NULL",
         )
@@ -293,10 +291,8 @@ impl SqlLoginRepository {
                     current: row.try_get("mana_cur")?,
                     maximum: row.try_get("mana_max")?,
                 },
-                capacity: rustibia_contract::PoolValue {
-                    current: row.try_get("cap_cur")?,
-                    maximum: row.try_get("cap_max")?,
-                },
+                capacity: row.try_get("capacity")?,
+                speed: row.try_get("speed")?,
                 outfit: rustibia_contract::Outfit {
                     id: row.try_get("outfit_id")?,
                     head: row.try_get("outfit_head")?,
@@ -487,10 +483,8 @@ mod tests {
                 current: 0,
                 maximum: 0,
             },
-            capacity: PoolValue {
-                current: 380,
-                maximum: 400,
-            },
+            capacity: 400,
+            speed: 100,
             outfit: Outfit {
                 id: 128,
                 head: 78,
@@ -546,9 +540,12 @@ mod tests {
         assert_eq!(snapshot.facing, Facing::South);
         assert_eq!(snapshot.life.current, 140);
         assert_eq!(snapshot.life.maximum, 150);
-        assert_eq!(snapshot.capacity.current, 380);
+        assert_eq!(snapshot.capacity, 400);
+        // Speed and capacity are plain columns sitting next to the outfit fields,
+        // so a mis-shifted mapping reads a neighbour and still type-checks. Both
+        // are pinned here against fixture values that differ from every neighbour.
+        assert_eq!(snapshot.speed, 100);
         assert_eq!(snapshot.outfit, (128, (78, 69, 58, 76)));
-        assert_eq!(snapshot.skills[&SkillType::Speed].value, 220);
     }
 
     #[test]
@@ -838,7 +835,8 @@ mod http_tests {
             "facing": 2,
             "life": { "current": 140, "maximum": 150 },
             "mana": { "current": 0, "maximum": 0 },
-            "capacity": { "current": 380, "maximum": 400 },
+            "capacity": 400,
+            "speed": 120,
             "outfit": { "id": 128, "head": 78, "body": 69, "legs": 58, "feet": 76 },
             "skills": [{ "skill_type": 1, "value": 220, "current_ticks": 0, "max_ticks": 0 }],
             "inventory": {}
@@ -870,7 +868,11 @@ mod http_tests {
         assert_eq!(snapshot.id, 7);
         assert_eq!(snapshot.name, "Rizael");
         assert_eq!(snapshot.facing, Facing::South);
-        assert_eq!(snapshot.skills[&SkillType::Speed].value, 220);
+        // The scalar shape of these two is the half of the contract this mock
+        // owns: the site sending a pool or a string here fails to deserialize,
+        // and nothing else in this module would notice.
+        assert_eq!(snapshot.capacity, 400);
+        assert_eq!(snapshot.speed, 120);
     }
 
     /// The request shape is half the contract. If the field name drifted, the site would
