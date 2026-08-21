@@ -344,6 +344,7 @@ fn make_item(item_id: ItemId, amount: u8, content: Vec<Item>, items: &Items) -> 
         guid: ItemGuid(Uuid::now_v7().to_string()),
         item_id,
         amount,
+        fluid: None,
         content,
     }
 }

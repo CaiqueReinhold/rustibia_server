@@ -272,7 +272,7 @@ impl SessionActor {
         let title = item.get_name().to_owned();
         let items = content
             .iter()
-            .map(|i| Some((i.item_id, i.amount)))
+            .map(|i| Some((i.item_id, i.wire_subtype())))
             .collect::<Vec<Option<(ItemId, u8)>>>()
             .into_boxed_slice();
         let container_id = self.containers.get_or_insert(item_ref.guid.clone());
@@ -319,7 +319,7 @@ impl SessionActor {
 
             let items = content
                 .iter()
-                .map(|i| Some((i.item_id, i.amount)))
+                .map(|i| Some((i.item_id, i.wire_subtype())))
                 .collect::<Vec<Option<(ItemId, u8)>>>()
                 .into_boxed_slice();
 

@@ -92,6 +92,7 @@ impl Inventory {
                     config: slot_item.config.clone(),
                     item_id: slot_item.item_id,
                     amount,
+                    fluid: None,
                     content: None,
                 };
                 self.carried_weight -= partial.total_weight();
@@ -178,6 +179,7 @@ fn remove_from_container(
                     config: item.config.clone(),
                     item_id: item.item_id,
                     amount,
+                    fluid: None,
                     content: None,
                 },
                 Some((item.guid.clone(), idx)),

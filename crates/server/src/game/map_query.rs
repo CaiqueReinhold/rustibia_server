@@ -59,7 +59,7 @@ pub fn get_map_desc_on_viewport(
             if let Some(tile) = tile {
                 for (j, item) in tile.visible_items().enumerate() {
                     found_any = true;
-                    tiles[idx][j] = Some((item.item_id, item.amount));
+                    tiles[idx][j] = Some((item.item_id, item.wire_subtype()));
                 }
             }
         }
@@ -132,7 +132,7 @@ pub fn get_map_expansion(
             if let Some(tile) = tile {
                 for (i, item) in tile.visible_items().enumerate() {
                     found_any = true;
-                    stack[i] = Some((item.item_id, item.amount));
+                    stack[i] = Some((item.item_id, item.wire_subtype()));
                 }
             }
             parsed_tiles.push(stack)
@@ -190,7 +190,7 @@ pub fn get_tile(map: &GameMap, position: &Position) -> Box<ItemStack> {
     let mut stack: Box<ItemStack> = Box::new([None; MAX_VISIBLE_ITEMS]);
     if let Ok(items) = map.get_visible_items(position) {
         for (i, item) in items.enumerate() {
-            stack[i] = Some((item.item_id, item.amount));
+            stack[i] = Some((item.item_id, item.wire_subtype()));
         }
     }
     stack
