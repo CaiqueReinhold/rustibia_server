@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::entities::vocation::Vocation;
 use crate::entities::{
     agent::Pool,
     combat::{AmmoType, CombatElement, WeaponType},
@@ -67,6 +68,7 @@ pub struct Player {
     pub id: PlayerId,
     pub name: String,
     pub account_id: i32,
+    pub vocation: Vocation,
     pub position: Position,
     pub origin: Position,
     pub mana: Pool,
@@ -84,9 +86,12 @@ impl Player {
         self.mana.current >= mana_cost
     }
 
+    pub fn weapon(&self) -> Option<&Item> {
+        self.inventory.get(&InventorySlot::LeftHand)
+    }
+
     pub fn weapon_element(&self) -> CombatElement {
-        self.inventory
-            .get(&InventorySlot::LeftHand)
+        self.weapon()
             .and_then(|it| {
                 it.config.get_attributes().find_map(|attr| match attr {
                     ItemAttribute::WeaponElement(el) => Some(*el),
@@ -97,8 +102,7 @@ impl Player {
     }
 
     pub fn weapon_attack(&self) -> u16 {
-        self.inventory
-            .get(&InventorySlot::LeftHand)
+        self.weapon()
             .and_then(|it| {
                 it.config.get_attributes().find_map(|attr| match attr {
                     ItemAttribute::WeaponAttack(att) => Some(*att),
@@ -109,8 +113,7 @@ impl Player {
     }
 
     pub fn weapon_type(&self) -> WeaponType {
-        self.inventory
-            .get(&InventorySlot::LeftHand)
+        self.weapon()
             .and_then(|it| {
                 it.config.get_attributes().find_map(|attr| match attr {
                     ItemAttribute::WeaponType(wt) => Some(*wt),
@@ -151,8 +154,7 @@ impl Player {
     }
 
     pub fn weapon_range(&self) -> u8 {
-        self.inventory
-            .get(&InventorySlot::LeftHand)
+        self.weapon()
             .and_then(|it| {
                 it.config.get_attributes().find_map(|attr| match attr {
                     ItemAttribute::WeaponRange(wr) => Some(*wr),
@@ -163,8 +165,7 @@ impl Player {
     }
 
     pub fn weapon_mana_cost(&self) -> u32 {
-        self.inventory
-            .get(&InventorySlot::LeftHand)
+        self.weapon()
             .and_then(|it| {
                 it.config.get_attributes().find_map(|attr| match attr {
                     ItemAttribute::ManaCost(mc) => Some(*mc),

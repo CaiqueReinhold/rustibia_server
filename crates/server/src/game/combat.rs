@@ -1,7 +1,5 @@
 use std::{collections::HashMap, sync::Arc};
 
-use tracing::info;
-
 use crate::{
     actors::world::ScheduledCommand,
     entities::{
@@ -25,18 +23,23 @@ use crate::{
     },
 };
 
-fn get_skill(player: &Player) -> (Option<SkillType>, u16) {
-    match player.weapon_type() {
-        WeaponType::None => (None, 100),
+struct WeaponSkill {
+    value: u16,
+    trains: Option<SkillType>,
+}
+
+fn weapon_skill(player: &Player) -> WeaponSkill {
+    let (trains, value) = match player.weapon_type() {
+        WeaponType::None => (None, GAME_CONFIG.combat.unarmed_skill),
         WeaponType::Axe => (Some(SkillType::Axe), player.skill_axe()),
         WeaponType::Club => (Some(SkillType::Club), player.skill_club()),
         WeaponType::Sword => (Some(SkillType::Sword), player.skill_sword()),
         WeaponType::Bow | WeaponType::Crossbow | WeaponType::Distance => {
             (Some(SkillType::Distance), player.skill_distance())
         }
-        // wand/rod damage is based on ML but a strike doesn't tick the skill
         WeaponType::Wand | WeaponType::Rod => (None, player.skill_magic()),
-    }
+    };
+    WeaponSkill { value, trains }
 }
 
 fn get_max_damage(attack_value: u16, level: u16, skill_value: u16) -> u32 {
@@ -44,7 +47,7 @@ fn get_max_damage(attack_value: u16, level: u16, skill_value: u16) -> u32 {
         .round() as u32
 }
 
-fn get_min_damange(attack_value: u16, level: u16, skill_value: u16) -> u32 {
+fn get_min_damage(attack_value: u16, level: u16, skill_value: u16) -> u32 {
     (((level as f32) / 5.0) + (((skill_value as f32) / 10.0) * ((attack_value as f32) / 10.0)))
         .round() as u32
 }
@@ -54,11 +57,11 @@ fn get_player_base_damage(
     roll: &mut Rolls,
 ) -> (Option<SkillType>, CombatElement, u32) {
     let level = player.level();
-    let (skill_type, skill_value) = get_skill(player);
-    let min = get_min_damange(player.weapon_attack(), level, skill_value);
-    let max = get_max_damage(player.weapon_attack(), level, skill_value);
+    let skill = weapon_skill(player);
+    let min = get_min_damage(player.weapon_attack(), level, skill.value);
+    let max = get_max_damage(player.weapon_attack(), level, skill.value);
     (
-        skill_type,
+        skill.trains,
         player.weapon_element(),
         roll.damage_roll(min, max),
     )
@@ -101,7 +104,7 @@ pub fn auto_attack_target(
         return (msgs, cmds);
     };
 
-    if attacker.next_attack_tick >= current_tick {
+    if attacker.next_attack_tick > current_tick {
         return (msgs, cmds);
     }
 
@@ -126,7 +129,7 @@ pub fn auto_attack_target(
             return (msgs, cmds);
         }
 
-        if let Some(item) = player.inventory.get(&InventorySlot::LeftHand) {
+        if let Some(item) = player.weapon() {
             let missile = item
                 .config
                 .get_attributes()
@@ -167,7 +170,6 @@ pub fn auto_attack_target(
 
     if let Some(attacked) = map.get_agent_mut(attacked_key) {
         attacked.take_hit(base_dmg, Some(agent_key));
-        info!("monster life: {:?}", attacked.life());
     }
 
     if let Some(player) = map.get_player_mut(agent_key) {
@@ -256,30 +258,40 @@ fn draw_blood(
     let Some(config) = item_configs.get(&GAME_CONFIG.combat.pool_item_id) else {
         return;
     };
-
-    let mut guid = None;
-    if let Ok(mut items) = map.iter_items(attacked_pos)
-        && let Some(it) = items.find(|it| it.config.has_flag(ItemFlag::LiquidPool))
-    {
-        guid = Some(it.guid.clone());
-    }
-
-    if let Some(guid) = guid {
-        map.remove_item_from_tile(attacked_pos, &guid, 1);
-    }
-
     let Some(attacked) = map.get_agent(attacked_key) else {
         return;
     };
-    let pool = Item::new_fluid(config.clone(), attacked.blood_type().get_fluid());
-    if let Ok(item) = map.place_item(attacked_pos, None, None, pool) {
-        check_decay(
-            cmds,
-            item,
-            ItemPlacement::Map(attacked_pos.clone()),
-            current_tick,
-        );
+    let fluid = attacked.blood_type().get_fluid();
+
+    let (ground_depth, existing) = map
+        .iter_items(attacked_pos)
+        .map(|items| {
+            let items: Vec<_> = items.collect();
+            let depth = items
+                .iter()
+                .take_while(|it| it.config.has_flag(ItemFlag::Ground))
+                .count();
+            let existing = items
+                .iter()
+                .find(|it| it.config.has_flag(ItemFlag::LiquidPool))
+                .map(|it| it.guid.clone());
+            (depth, existing)
+        })
+        .unwrap_or((0, None));
+
+    let pool = Item::new_fluid(config.clone(), fluid);
+    let Ok(item) = map.place_item(attacked_pos, Some(ground_depth), None, pool) else {
+        return;
     };
+    check_decay(
+        cmds,
+        item,
+        ItemPlacement::Map(attacked_pos.clone()),
+        current_tick,
+    );
+    if let Some(guid) = existing {
+        map.remove_item_from_tile(attacked_pos, &guid, 1);
+    }
     msgs.push(BroadcastMessage::TileChanged {
         position: attacked_pos.clone(),
     })

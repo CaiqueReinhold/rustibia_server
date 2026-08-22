@@ -92,6 +92,7 @@ pub enum BroadcastMessage {
     SkillUpgraded {
         agent_key: AgentKey,
         skill_type: SkillType,
+        gained: u16,
     },
     PlayerManaUpdated {
         agent_key: AgentKey,

@@ -109,14 +109,13 @@ pub async fn create(
 
     for skill in &template.starting_skills {
         sqlx::query(
-            "INSERT INTO player_skills (player_id, skill_type, value, current_ticks, max_ticks) \
-             VALUES ($1, $2, $3, $4, $5)",
+            "INSERT INTO player_skills (player_id, skill_type, value, current_ticks) \
+             VALUES ($1, $2, $3, $4)",
         )
         .bind(character_id)
         .bind(skill.skill_type)
         .bind(skill.value)
         .bind(skill.current_ticks)
-        .bind(skill.max_ticks)
         .execute(&mut *tx)
         .await?;
     }

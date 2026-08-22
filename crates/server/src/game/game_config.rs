@@ -3,6 +3,7 @@ use std::fs;
 use once_cell::sync::Lazy;
 use serde::Deserialize;
 
+use crate::entities::vocation::Vocation;
 use crate::{
     config::CONFIG,
     entities::{chat::ChannelId, items::ItemId},
@@ -20,6 +21,7 @@ pub struct GameConfig {
     pub effect_ids: EffectsConfig,
     pub text_colors: TextColors,
     pub combat: CombatConfig,
+    pub skills: SkillsConfig,
 }
 
 #[derive(Deserialize)]
@@ -84,6 +86,47 @@ pub struct TextColors {
 pub struct CombatConfig {
     pub auto_attack_ticks: Tick,
     pub pool_item_id: u16,
+    pub unarmed_skill: u16,
+}
+
+#[derive(Deserialize)]
+pub struct VocationMultipliers {
+    pub melee: f32,
+    pub distance: f32,
+    pub magic: f32,
+}
+
+#[derive(Deserialize)]
+pub struct SkillBases {
+    pub melee: u64,
+    pub distance: u64,
+    pub magic: u64,
+}
+
+#[derive(Deserialize)]
+pub struct VocationCurves {
+    pub knight: VocationMultipliers,
+    pub paladin: VocationMultipliers,
+    pub sorcerer: VocationMultipliers,
+    pub druid: VocationMultipliers,
+}
+
+impl VocationCurves {
+    pub fn get(&self, vocation: Vocation) -> &VocationMultipliers {
+        match vocation {
+            Vocation::Knight => &self.knight,
+            Vocation::Paladin => &self.paladin,
+            Vocation::Sorcerer => &self.sorcerer,
+            Vocation::Druid => &self.druid,
+        }
+    }
+}
+
+#[derive(Deserialize)]
+pub struct SkillsConfig {
+    pub min_level: u16,
+    pub base: SkillBases,
+    pub vocations: VocationCurves,
 }
 
 fn read_from_file() -> GameConfig {

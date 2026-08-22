@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use thiserror::Error;
 
+use crate::entities::vocation::Vocation;
 use crate::entities::{
     agent::{Facing, OutfitColors, OutfitId, Pool},
     items::Item,
@@ -30,6 +31,7 @@ pub struct PlayerSnapshot {
     pub origin: Position,
     pub facing: Facing,
     pub name: String,
+    pub vocation: Vocation,
     pub life: Pool,
     pub mana: Pool,
     pub capacity: u32,
@@ -109,14 +111,13 @@ impl PlayerRepository {
 
         for (skill_type, skill_value) in &snapshot.skills {
             sqlx::query(
-                "INSERT INTO player_skills (player_id, skill_type, value, current_ticks, max_ticks) \
-                 VALUES ($1, $2, $3, $4, $5)",
+                "INSERT INTO player_skills (player_id, skill_type, value, current_ticks) \
+                 VALUES ($1, $2, $3, $4)",
             )
             .bind(snapshot.id as i32)
             .bind(skill_type_to_i16(skill_type))
             .bind(skill_value.value as i16)
             .bind(skill_value.current_ticks as i64)
-            .bind(skill_value.max_ticks as i64)
             .execute(&mut *tx)
             .await?;
         }

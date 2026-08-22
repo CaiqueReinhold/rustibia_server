@@ -49,3 +49,16 @@ text_colors:
 combat:
   auto_attack_ticks: 40
   pool_item_id: 2886
+  unarmed_skill: 100
+
+skills:
+  min_level: 10
+  base:
+    melee: 50
+    distance: 30
+    magic: 1600
+  vocations:
+    knight: { melee: 1.1, distance: 1.4, magic: 3.0 }
+    paladin: { melee: 1.2, distance: 1.1, magic: 1.4 }
+    sorcerer: { melee: 2.0, distance: 2.0, magic: 1.1 }
+    druid: { melee: 1.8, distance: 1.8, magic: 1.1 }

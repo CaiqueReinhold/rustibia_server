@@ -1,5 +1,4 @@
 use anyhow::Result;
-use tracing::info;
 
 use crate::{
     actors::{session::SessionActor, world::WorldCommand},
@@ -26,39 +25,10 @@ impl SessionActor {
     }
 
     pub(super) async fn target_changed(&mut self, target: Option<AgentKey>) -> Result<()> {
-        self.has_target = target.is_some();
         let agent_id = target.and_then(|key| self.agents.get_local(&key));
         self.connection
             .send_message(ServerMessage::TargetChanged { agent_id })
             .await?;
-        Ok(())
-    }
-
-    pub(super) async fn check_auto_attack(&self) -> Result<()> {
-        if !self.has_target {
-            return Ok(());
-        }
-
-        info!("checking auto attack");
-
-        let map = self.shared_map.load();
-        let remaining_ticks = map
-            .get_agent(self.player_key)
-            .map(|p| p.next_attack_tick.saturating_sub(*self.tick_rx.borrow()))
-            .unwrap_or(0);
-
-        info!("remaining ticks {}", remaining_ticks);
-
-        if remaining_ticks > 1 {
-            return Ok(());
-        }
-
-        self.world
-            .send(WorldCommand::AutoAttackTarget {
-                agent: self.player_key,
-            })
-            .await;
-
         Ok(())
     }
 

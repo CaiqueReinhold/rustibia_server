@@ -82,9 +82,6 @@ pub enum WorldCommand {
         agent: AgentKey,
         expected: AgentKey,
     },
-    AutoAttackTarget {
-        agent: AgentKey,
-    },
 }
 
 #[derive(Debug)]
@@ -249,6 +246,24 @@ impl WorldActor {
                 }
             }
 
+            let attackers: Vec<AgentKey> = self
+                .map
+                .iter_agents()
+                .filter(|(_, agent)| agent.target().is_some())
+                .map(|(key, _)| key)
+                .collect();
+            for agent_key in attackers {
+                let (msgs, cmds) = combat::auto_attack_target(
+                    &mut self.map,
+                    agent_key,
+                    &mut self.roll,
+                    &self.item_configs,
+                    self.tick,
+                );
+                broadcast_messages.extend(msgs);
+                self.apply_commands(cmds);
+            }
+
             self.shared_map.store(Arc::new(self.map.clone()));
             let _ = self.tick_tx.send(self.tick);
             self.message_router.broadcast(broadcast_messages).await;
@@ -398,18 +413,6 @@ impl WorldActor {
             WorldCommand::Say { agent_key, message } => {
                 let msgs = chat::say(&self.map, agent_key, message);
                 broadcast_messages.extend(msgs);
-                Ok(())
-            }
-            WorldCommand::AutoAttackTarget { agent } => {
-                let (msgs, cmds) = combat::auto_attack_target(
-                    &mut self.map,
-                    agent,
-                    &mut self.roll,
-                    &self.item_configs,
-                    self.tick,
-                );
-                broadcast_messages.extend(msgs);
-                self.apply_commands(cmds);
                 Ok(())
             }
         };

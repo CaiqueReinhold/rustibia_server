@@ -72,7 +72,6 @@ async fn player_skills_has_every_column_the_game_server_reads(pool: PgPool) {
     assert_column(&pool, "player_skills", "skill_type", "smallint").await;
     assert_column(&pool, "player_skills", "value", "smallint").await;
     assert_column(&pool, "player_skills", "current_ticks", "bigint").await;
-    assert_column(&pool, "player_skills", "max_ticks", "bigint").await;
 }
 
 #[sqlx::test(migrations = "./migrations")]

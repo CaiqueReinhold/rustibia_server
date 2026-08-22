@@ -11,6 +11,7 @@ use std::sync::Arc;
 
 use sqlx::PgPool;
 
+use crate::entities::vocation::Vocation;
 use crate::entities::{
     agent::{Facing, Pool},
     items::{ItemConfig, ItemId},
@@ -94,6 +95,7 @@ pub fn a_test_snapshot(id: u32, account_id: i32) -> PlayerSnapshot {
         id,
         account_id,
         name: "Rizael".to_string(),
+        vocation: Vocation::Knight,
         position: Position {
             x: 1028,
             y: 1028,
@@ -121,7 +123,6 @@ pub fn a_test_snapshot(id: u32, account_id: i32) -> PlayerSnapshot {
             SkillValue {
                 value: 1,
                 current_ticks: 0,
-                max_ticks: 100,
             },
         )]),
         inventory: HashMap::new(),

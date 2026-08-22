@@ -18,7 +18,7 @@ impl Rolls {
         let (a, b) = (min.min(max), min.max(max));
         let v = loop {
             let v = self.normal.sample(&mut self.rng);
-            if v >= 0.0 || v <= 1.0 {
+            if (0.0..=1.0).contains(&v) {
                 break v;
             }
         };

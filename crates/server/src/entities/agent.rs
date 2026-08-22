@@ -114,6 +114,7 @@ impl Agent {
                 id: player.id,
                 name: player.name,
                 account_id: player.account_id,
+                vocation: player.vocation,
                 position: player.position,
                 origin: player.origin,
                 mana: player.mana,
@@ -233,6 +234,7 @@ impl Agent {
             id: player.id,
             account_id: player.account_id,
             name: player.name.clone(),
+            vocation: player.vocation,
             position,
             origin: player.origin.clone(),
             facing: self.facing,
@@ -254,6 +256,7 @@ mod tests {
     use crate::entities::map::GameMap;
     use crate::entities::position::Position;
     use crate::entities::skills::{SkillType, SkillValue};
+    use crate::entities::vocation::Vocation;
     use crate::persistence::player::PlayerSnapshot;
     use crate::persistence::test_fixtures::a_test_snapshot;
     use std::collections::HashMap;
@@ -282,6 +285,7 @@ mod tests {
                 current: 50,
                 maximum: 100,
             },
+            vocation: Vocation::Knight,
             capacity: 40000,
             speed: 100,
             outfit: (133, (1, 2, 3, 4)),
@@ -292,7 +296,6 @@ mod tests {
                     SkillValue {
                         value: 120,
                         current_ticks: 0,
-                        max_ticks: 0,
                     },
                 );
                 m

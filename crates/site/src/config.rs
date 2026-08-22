@@ -6,7 +6,6 @@ pub struct StartingSkill {
     pub skill_type: i16,
     pub value: i16,
     pub current_ticks: i64,
-    pub max_ticks: i64,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -81,8 +80,8 @@ mod tests {
              \x20\x20outfit_legs: 58\n\
              \x20\x20outfit_feet: 76\n\
              \x20\x20starting_skills:\n\
-             \x20\x20\x20\x20- { skill_type: 0, value: 1, current_ticks: 0, max_ticks: 0 }\n\
-             \x20\x20\x20\x20- { skill_type: 1, value: 220, current_ticks: 0, max_ticks: 0 }\n",
+             \x20\x20\x20\x20- { skill_type: 0, value: 1, current_ticks: 0 }\n\
+             \x20\x20\x20\x20- { skill_type: 1, value: 220, current_ticks: 0 }\n",
         )
         .unwrap();
         assert_eq!(cfg.session_ttl_days, 7);

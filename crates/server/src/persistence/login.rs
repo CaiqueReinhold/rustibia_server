@@ -9,6 +9,7 @@ use sqlx::PgPool;
 use thiserror::Error;
 use tracing::warn;
 
+use crate::entities::vocation::Vocation;
 use crate::entities::{
     agent::Pool,
     items::{Item, ItemConfig, ItemId},
@@ -47,6 +48,9 @@ pub fn snapshot_from_record(
     let id = u32::try_from(record.id)
         .map_err(|_| malformed(format!("character id {} is negative", record.id)))?;
 
+    let vocation = Vocation::from_i16(record.vocation)
+        .ok_or_else(|| malformed(format!("unknown vocation {}", record.vocation)))?;
+
     let mut skills: HashMap<SkillType, SkillValue> = HashMap::new();
     for row in record.skills {
         let Some(skill_type) = i16_to_skill_type(row.skill_type) else {
@@ -62,7 +66,6 @@ pub fn snapshot_from_record(
             SkillValue {
                 value: row.value as u16,
                 current_ticks: row.current_ticks as u64,
-                max_ticks: row.max_ticks as u64,
             },
         );
     }
@@ -90,6 +93,7 @@ pub fn snapshot_from_record(
         id,
         account_id: record.account_id,
         name: record.name,
+        vocation,
         position: coords(record.position, "position")?,
         origin: coords(record.origin, "origin")?,
         facing: i16_to_facing(record.facing)
@@ -238,7 +242,7 @@ impl SqlLoginRepository {
         };
 
         let row = sqlx::query(
-            "SELECT id, account_id, name, pos_x, pos_y, pos_z, origin_x, origin_y, origin_z, \
+            "SELECT id, account_id, name, vocation, pos_x, pos_y, pos_z, origin_x, origin_y, origin_z, \
              facing, life_cur, life_max, mana_cur, mana_max, capacity, speed, \
              outfit_id, outfit_head, outfit_body, outfit_legs, outfit_feet, inventory \
              FROM players WHERE id = $1 AND deleted_at IS NULL",
@@ -255,7 +259,7 @@ impl SqlLoginRepository {
         };
 
         let skill_rows = sqlx::query(
-            "SELECT skill_type, value, current_ticks, max_ticks FROM player_skills \
+            "SELECT skill_type, value, current_ticks FROM player_skills \
              WHERE player_id = $1",
         )
         .bind(character_id)
@@ -268,6 +272,7 @@ impl SqlLoginRepository {
                 row.try_get("inventory")?;
 
             Ok(CharacterRecord {
+                vocation: row.try_get("vocation")?,
                 id: row.try_get("id")?,
                 account_id: row.try_get("account_id")?,
                 name: row.try_get("name")?,
@@ -306,7 +311,6 @@ impl SqlLoginRepository {
                             skill_type: r.try_get("skill_type")?,
                             value: r.try_get("value")?,
                             current_ticks: r.try_get("current_ticks")?,
-                            max_ticks: r.try_get("max_ticks")?,
                         })
                     })
                     .collect::<Result<Vec<_>, sqlx::Error>>()?,
@@ -463,6 +467,7 @@ mod tests {
             id: 7,
             account_id: 3,
             name: "Rizael".to_string(),
+            vocation: 0,
             position: Coords {
                 x: 1028,
                 y: 1029,
@@ -495,7 +500,6 @@ mod tests {
                 skill_type: 1,
                 value: 220,
                 current_ticks: 0,
-                max_ticks: 0,
             }],
             inventory: HashMap::new(),
         }
@@ -592,7 +596,6 @@ mod tests {
             skill_type: 99,
             value: 5,
             current_ticks: 0,
-            max_ticks: 0,
         });
 
         let snapshot = snapshot_from_record(record, &no_items()).unwrap();
@@ -829,6 +832,7 @@ mod http_tests {
             "id": 7,
             "account_id": 3,
             "name": "Rizael",
+            "vocation": 0,
             "position": { "x": 1028, "y": 1029, "z": 7 },
             "origin": { "x": 1028, "y": 1028, "z": 7 },
             "facing": 2,
@@ -837,7 +841,7 @@ mod http_tests {
             "capacity": 400,
             "speed": 120,
             "outfit": { "id": 128, "head": 78, "body": 69, "legs": 58, "feet": 76 },
-            "skills": [{ "skill_type": 1, "value": 220, "current_ticks": 0, "max_ticks": 0 }],
+            "skills": [{ "skill_type": 1, "value": 220, "current_ticks": 0 }],
             "inventory": {}
         })
     }

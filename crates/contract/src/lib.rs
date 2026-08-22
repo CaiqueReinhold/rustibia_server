@@ -22,6 +22,7 @@ pub struct CharacterRecord {
     pub id: i32,
     pub account_id: i32,
     pub name: String,
+    pub vocation: i16,
     pub position: Coords,
     pub origin: Coords,
     pub facing: i16,
@@ -62,7 +63,6 @@ pub struct SkillRow {
     pub skill_type: i16,
     pub value: i16,
     pub current_ticks: i64,
-    pub max_ticks: i64,
 }
 
 /// One item in a stored inventory, possibly a container with `content`.
@@ -87,6 +87,7 @@ mod tests {
             id: 7,
             account_id: 3,
             name: "Rizael".to_string(),
+            vocation: 3,
             position: Coords {
                 x: 1028,
                 y: 1029,
@@ -120,13 +121,11 @@ mod tests {
                     skill_type: 0,
                     value: 1,
                     current_ticks: 0,
-                    max_ticks: 0,
                 },
                 SkillRow {
                     skill_type: 1,
                     value: 220,
                     current_ticks: 0,
-                    max_ticks: 0,
                 },
             ],
             inventory: HashMap::from([(

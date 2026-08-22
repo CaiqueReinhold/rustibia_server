@@ -8,3 +8,4 @@ pub mod map;
 pub mod player;
 pub mod position;
 pub mod skills;
+pub mod vocation;

@@ -154,7 +154,6 @@ pub struct SessionActor {
     next_chat_tick: Tick,
     queued_walk: Option<Direction>,
     logout_pending: bool,
-    has_target: bool,
 }
 
 #[cfg(test)]
@@ -207,7 +206,6 @@ impl SessionActor {
                         next_chat_tick: 0,
                         queued_walk: None,
                         logout_pending: false,
-                        has_target: false,
                     };
                     actor.run().await;
                 }
@@ -459,7 +457,6 @@ impl SessionActor {
 
     async fn tick_schedules(&mut self) -> Result<()> {
         self.check_walk_queue().await?;
-        self.check_auto_attack().await?;
         Ok(())
     }
 
@@ -515,7 +512,6 @@ impl SessionActor {
                 next_chat_tick: 0,
                 queued_walk: None,
                 logout_pending: false,
-                has_target: false,
             },
             connection_rx,
             world_rx,

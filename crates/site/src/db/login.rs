@@ -36,7 +36,7 @@ pub async fn redeem(pool: &PgPool, token: &str) -> Result<Option<CharacterRecord
     };
 
     let row = sqlx::query(
-        "SELECT id, account_id, name, pos_x, pos_y, pos_z, origin_x, origin_y, origin_z, \
+        "SELECT id, account_id, name, vocation, pos_x, pos_y, pos_z, origin_x, origin_y, origin_z, \
          facing, life_cur, life_max, mana_cur, mana_max, capacity, speed, \
          outfit_id, outfit_head, outfit_body, outfit_legs, outfit_feet, inventory \
          FROM players WHERE id = $1 AND deleted_at IS NULL",
@@ -59,7 +59,7 @@ pub async fn redeem(pool: &PgPool, token: &str) -> Result<Option<CharacterRecord
     };
 
     let skill_rows = sqlx::query(
-        "SELECT skill_type, value, current_ticks, max_ticks FROM player_skills \
+        "SELECT skill_type, value, current_ticks FROM player_skills \
          WHERE player_id = $1",
     )
     .bind(character_id)
@@ -73,7 +73,6 @@ pub async fn redeem(pool: &PgPool, token: &str) -> Result<Option<CharacterRecord
                 skill_type: r.try_get("skill_type")?,
                 value: r.try_get("value")?,
                 current_ticks: r.try_get("current_ticks")?,
-                max_ticks: r.try_get("max_ticks")?,
             })
         })
         .collect::<Result<Vec<_>, sqlx::Error>>()?;
@@ -85,6 +84,7 @@ pub async fn redeem(pool: &PgPool, token: &str) -> Result<Option<CharacterRecord
         id: row.try_get("id")?,
         account_id: row.try_get("account_id")?,
         name: row.try_get("name")?,
+        vocation: row.try_get("vocation")?,
         position: Coords {
             x: row.try_get("pos_x")?,
             y: row.try_get("pos_y")?,
