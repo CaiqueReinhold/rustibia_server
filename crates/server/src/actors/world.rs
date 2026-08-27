@@ -248,7 +248,14 @@ impl WorldActor {
 
             self.drive_auto_attacks(&mut broadcast_messages);
 
-            self.shared_map.store(Arc::new(self.map.clone()));
+            let clone_start = time::Instant::now();
+            let snapshot = self.map.clone();
+            debug!(
+                "Tick {} map clone took {:?}",
+                self.tick,
+                clone_start.elapsed()
+            );
+            self.shared_map.store(Arc::new(snapshot));
             let _ = self.tick_tx.send(self.tick);
             self.message_router.broadcast(broadcast_messages).await;
 

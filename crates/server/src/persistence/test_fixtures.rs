@@ -6,7 +6,7 @@
 //! `GENERATED ALWAYS`, so ids cannot be chosen and must be read back, and `save` is an
 //! `UPDATE` — a character row has to exist before anything here can write to it.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 use sqlx::PgPool;
@@ -15,7 +15,8 @@ use crate::entities::vocation::Vocation;
 use crate::entities::{
     agent::{Agent, Facing, Pool},
     creature::{BloodType, CreatureKind},
-    items::{ItemConfig, ItemId},
+    items::{Item, ItemAttribute, ItemConfig, ItemFlag, ItemId},
+    player::InventorySlot,
     position::Position,
     skills::{SkillType, SkillValue},
 };
@@ -128,6 +129,61 @@ pub fn a_test_snapshot(id: u32, account_id: i32) -> PlayerSnapshot {
         )]),
         inventory: HashMap::new(),
     }
+}
+
+fn an_item_config(
+    id: ItemId,
+    flags: HashSet<ItemFlag>,
+    attributes: HashSet<ItemAttribute>,
+) -> Arc<ItemConfig> {
+    Arc::new(ItemConfig::new(
+        id,
+        format!("item {id}"),
+        None,
+        None,
+        flags,
+        attributes,
+    ))
+}
+
+fn a_container(id: ItemId, capacity: u8) -> Item {
+    Item::new(
+        an_item_config(
+            id,
+            HashSet::from([ItemFlag::Container]),
+            HashSet::from([ItemAttribute::Capacity(capacity), ItemAttribute::Weight(10)]),
+        ),
+        1,
+    )
+}
+
+/// A backpack holding four pouches of eight items each — 37 `Item`s over three levels of
+/// `Item.content`. Must stay nested: a flat inventory does not exercise the recursive clone.
+pub fn a_full_backpack() -> HashMap<InventorySlot, Item> {
+    let coin = an_item_config(
+        2148,
+        HashSet::from([ItemFlag::Take, ItemFlag::Cumulative]),
+        HashSet::from([ItemAttribute::Weight(1)]),
+    );
+
+    let mut backpack = a_container(1988, 20);
+    let outer = backpack.content.as_mut().unwrap();
+    for pouch_id in 0..4u16 {
+        let mut pouch = a_container(1990 + pouch_id, 8);
+        let inner = pouch.content.as_mut().unwrap();
+        for n in 0..8u8 {
+            inner.push(Item::new(Arc::clone(&coin), n + 1));
+        }
+        outer.push(pouch);
+    }
+
+    HashMap::from([(InventorySlot::Backpack, backpack)])
+}
+
+pub fn a_player_with_a_full_backpack(id: u32, account_id: i32) -> PlayerSnapshot {
+    let mut snapshot = a_test_snapshot(id, account_id);
+    snapshot.inventory = a_full_backpack();
+    snapshot
 }
 
 pub fn a_test_creature(name: &str, life: u32, damage: (u32, u32)) -> Agent {

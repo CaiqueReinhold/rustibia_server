@@ -562,7 +562,9 @@ mod tests {
     use super::*;
     use crate::entities::agent::{Agent, Pool};
     use crate::entities::creature::{BloodType, CreatureKind};
+    use crate::entities::player::InventorySlot;
     use crate::entities::position::Position;
+    use crate::persistence::test_fixtures::a_player_with_a_full_backpack;
 
     fn new_creature() -> Agent {
         Agent::from_creature_kind(Arc::new(CreatureKind {
@@ -582,6 +584,79 @@ mod tests {
         let mut map = GameMap::new();
         map.insert_tile(pos.clone(), MapTile::new());
         map
+    }
+
+    fn map_with_players(count: u32) -> (GameMap, Vec<AgentKey>) {
+        let mut map = GameMap::new();
+        let mut keys = Vec::new();
+        for i in 0..count {
+            let pos = Position::new(100 + i as u16, 100, 7);
+            map.insert_tile(pos.clone(), MapTile::new());
+            keys.push(
+                map.insert_agent(
+                    Agent::from_player(a_player_with_a_full_backpack(i, 1)),
+                    &pos,
+                )
+                .unwrap(),
+            );
+        }
+        (map, keys)
+    }
+
+    #[test]
+    fn a_map_clone_does_not_see_later_inventory_writes() {
+        let (mut map, keys) = map_with_players(1);
+        let snapshot = map.clone();
+
+        map.get_player_mut(keys[0])
+            .unwrap()
+            .inventory
+            .take_slot(&InventorySlot::Backpack);
+
+        assert!(
+            snapshot
+                .get_player(keys[0])
+                .unwrap()
+                .inventory
+                .get(&InventorySlot::Backpack)
+                .is_some(),
+            "the snapshot lost the backpack the live map removed"
+        );
+        assert!(
+            map.get_player(keys[0])
+                .unwrap()
+                .inventory
+                .get(&InventorySlot::Backpack)
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn a_map_clone_does_not_see_later_player_field_writes() {
+        let (mut map, keys) = map_with_players(1);
+        let snapshot = map.clone();
+
+        map.get_player_mut(keys[0]).unwrap().mana.current = 7;
+
+        assert_eq!(snapshot.get_player(keys[0]).unwrap().mana.current, 100);
+        assert_eq!(map.get_player(keys[0]).unwrap().mana.current, 7);
+    }
+
+    #[test]
+    #[ignore = "timing, not a pass/fail assertion"]
+    fn map_clone_cost_by_player_count() {
+        const ROUNDS: u32 = 100;
+        for count in [1, 10, 50, 200] {
+            let (map, _) = map_with_players(count);
+            let start = std::time::Instant::now();
+            let clones: Vec<GameMap> = (0..ROUNDS).map(|_| map.clone()).collect();
+            let elapsed = start.elapsed();
+            std::hint::black_box(&clones);
+            println!(
+                "{count:>4} players: {:>9.1} us/clone",
+                elapsed.as_secs_f64() * 1e6 / ROUNDS as f64
+            );
+        }
     }
 
     #[test]
