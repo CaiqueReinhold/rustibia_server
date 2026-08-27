@@ -351,11 +351,14 @@ pub fn move_item(
         return broadcasts;
     }
 
-    let player = map.get_player_mut(agent);
-    if let Some(player) = player
-        && player.capacity.current != player.inventory.carried_weight
-    {
-        player.capacity.current = player.inventory.carried_weight;
+    // Read before taking the mutable borrow: `get_player_mut` privatises the `Arc<Player>`
+    // through `make_mut`, and most moves leave carried weight where it already was.
+    let carried_weight = map
+        .get_player(agent)
+        .filter(|player| player.capacity.current != player.inventory.carried_weight)
+        .map(|player| player.inventory.carried_weight);
+    if let Some(carried_weight) = carried_weight {
+        map.get_player_mut(agent).unwrap().capacity.current = carried_weight;
         broadcasts.push(BroadcastMessage::UpdatePlayerCapacity { agent_key: agent });
     }
     broadcasts
@@ -498,4 +501,130 @@ pub fn remove_item_at(
         }
     };
     removed.ok_or(ItemMovementError::ItemNotInPosition)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::entities::agent::Agent;
+    use crate::entities::items::ItemConfig;
+    use crate::entities::map::MapTile;
+    use crate::entities::position::Position;
+    use crate::persistence::test_fixtures::a_test_snapshot;
+    use std::collections::HashSet;
+    use std::sync::Arc;
+
+    fn a_movable_item(weight: u32) -> Item {
+        Item::new(
+            Arc::new(ItemConfig::new(
+                1234,
+                "thing".to_string(),
+                None,
+                None,
+                HashSet::from([ItemFlag::Take]),
+                HashSet::from([
+                    ItemAttribute::Weight(weight),
+                    ItemAttribute::Inventory(InventorySlot::Backpack),
+                ]),
+            )),
+            1,
+        )
+    }
+
+    /// `can_drop_item` requires a `FullBank` ground item on the tile, so every tile here
+    /// gets one; a bare `MapTile::new()` rejects every drop.
+    fn a_ground_tile() -> MapTile {
+        let mut tile = MapTile::new();
+        tile.push_item(Item::new(
+            Arc::new(ItemConfig::new(
+                1,
+                "ground".to_string(),
+                None,
+                None,
+                HashSet::from([ItemFlag::Ground, ItemFlag::FullBank]),
+                HashSet::new(),
+            )),
+            1,
+        ));
+        tile
+    }
+
+    /// Player at (10,10) with `item` lying on the adjacent tile (11,10), and a free
+    /// tile at (12,10) to move it to.
+    fn a_player_beside(item: Item) -> (GameMap, AgentKey, Position, Position, ItemGuid) {
+        let (here, source, target) = (
+            Position::new(10, 10, 7),
+            Position::new(11, 10, 7),
+            Position::new(12, 10, 7),
+        );
+        let guid = item.guid.clone();
+        let mut map = GameMap::new();
+        map.insert_tile(here.clone(), a_ground_tile());
+        let mut source_tile = a_ground_tile();
+        source_tile.push_item(item);
+        map.insert_tile(source.clone(), source_tile);
+        map.insert_tile(target.clone(), a_ground_tile());
+        let agent = map
+            .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &here)
+            .unwrap();
+        (map, agent, source, target, guid)
+    }
+
+    #[test]
+    fn a_move_between_tiles_does_not_copy_the_player() {
+        let (mut map, agent, source, target, guid) = a_player_beside(a_movable_item(100));
+        let before = map.clone();
+
+        let broadcasts = move_item(
+            &mut map,
+            agent,
+            ItemRef {
+                guid: guid.clone(),
+                placement: ItemPlacement::Map(source),
+            },
+            1,
+            ItemPlacement::Map(target.clone()),
+            None,
+        );
+
+        assert!(map.get_item_by_id(&target, &guid).is_some());
+        assert!(
+            !broadcasts
+                .iter()
+                .any(|m| matches!(m, BroadcastMessage::UpdatePlayerCapacity { .. }))
+        );
+        assert!(std::ptr::eq(
+            map.get_player(agent).unwrap(),
+            before.get_player(agent).unwrap()
+        ));
+    }
+
+    #[test]
+    fn a_move_into_the_inventory_copies_the_player_and_refreshes_capacity() {
+        let (mut map, agent, source, _, guid) = a_player_beside(a_movable_item(100));
+        let before = map.clone();
+
+        let broadcasts = move_item(
+            &mut map,
+            agent,
+            ItemRef {
+                guid,
+                placement: ItemPlacement::Map(source),
+            },
+            1,
+            ItemPlacement::Inventory(InventorySlot::Backpack, agent),
+            None,
+        );
+
+        assert!(
+            broadcasts
+                .iter()
+                .any(|m| matches!(m, BroadcastMessage::UpdatePlayerCapacity { .. }))
+        );
+        assert_eq!(map.get_player(agent).unwrap().capacity.current, 100);
+        assert!(!std::ptr::eq(
+            map.get_player(agent).unwrap(),
+            before.get_player(agent).unwrap()
+        ));
+    }
 }

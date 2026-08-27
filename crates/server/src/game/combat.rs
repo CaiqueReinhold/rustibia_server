@@ -193,7 +193,8 @@ pub fn execute_attack(
         });
     }
 
-    if let Some(player) = map.get_player_mut(plan.attacker) {
+    let writes_to_player = !matches!(plan.cost, AttackCost::None) || plan.trains.is_some();
+    if writes_to_player && let Some(player) = map.get_player_mut(plan.attacker) {
         match plan.cost {
             AttackCost::Ammo(guid) => consume_ammo(player, plan.attacker, guid, msgs),
             AttackCost::Mana(mana_cost) => consume_mana(plan.attacker, player, mana_cost, msgs),
@@ -693,5 +694,44 @@ mod tests {
         let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
 
         assert_eq!(plan.missile, None);
+    }
+
+    #[test]
+    fn an_unarmed_attack_does_not_copy_the_player() {
+        let (mut map, attacker, _) = duel(
+            Agent::from_player(a_test_snapshot(1, 1)),
+            a_test_creature("Rat", 100, (1, 2)),
+        );
+        let mut roll = Rolls::new(1);
+        let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
+        assert!(matches!(plan.cost, AttackCost::None) && plan.trains.is_none());
+
+        let snapshot = map.clone();
+        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
+        execute_attack(&mut map, plan, &HashMap::new(), 0, &mut msgs, &mut cmds);
+
+        assert!(std::ptr::eq(
+            map.get_player(attacker).unwrap(),
+            snapshot.get_player(attacker).unwrap()
+        ));
+    }
+
+    #[test]
+    fn an_attack_that_pays_a_cost_copies_the_player() {
+        let (mut map, attacker, _) = duel(
+            Agent::from_player(armed(Some(a_wand(5)), None)),
+            a_test_creature("Rat", 100, (1, 2)),
+        );
+        let mut roll = Rolls::new(1);
+        let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
+
+        let snapshot = map.clone();
+        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
+        execute_attack(&mut map, plan, &HashMap::new(), 0, &mut msgs, &mut cmds);
+
+        assert!(!std::ptr::eq(
+            map.get_player(attacker).unwrap(),
+            snapshot.get_player(attacker).unwrap()
+        ));
     }
 }
