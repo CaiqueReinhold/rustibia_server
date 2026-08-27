@@ -644,6 +644,27 @@ mod tests {
 
     #[test]
     #[ignore = "timing, not a pass/fail assertion"]
+    fn player_write_cost_on_a_shared_map() {
+        const ROUNDS: u32 = 100;
+        for count in [1, 10, 50, 200] {
+            let (mut map, keys) = map_with_players(count);
+            let _snapshot = map.clone();
+            let start = std::time::Instant::now();
+            for _ in 0..ROUNDS {
+                for key in &keys {
+                    map.get_player_mut(*key).unwrap().mana.current += 1;
+                }
+            }
+            let elapsed = start.elapsed();
+            println!(
+                "{count:>4} players: {:>9.1} us/round of writes",
+                elapsed.as_secs_f64() * 1e6 / ROUNDS as f64
+            );
+        }
+    }
+
+    #[test]
+    #[ignore = "timing, not a pass/fail assertion"]
     fn map_clone_cost_by_player_count() {
         const ROUNDS: u32 = 100;
         for count in [1, 10, 50, 200] {
