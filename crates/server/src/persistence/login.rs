@@ -811,7 +811,7 @@ mod tests {
         );
         assert_eq!(loaded.life.current, 60);
         assert_eq!(loaded.facing, Facing::West);
-        assert_eq!(loaded.skills.len(), 2);
+        assert_eq!(loaded.skills.len(), snapshot.skills.len());
     }
 }
 

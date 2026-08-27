@@ -58,7 +58,7 @@ mod tests {
         sqlx::query_scalar::<_, i32>(
             "INSERT INTO players \
              (account_id, name, vocation, sex, pos_x, pos_y, pos_z, origin_x, origin_y, origin_z, \
-              facing, life_cur, life_max, mana_cur, mana_max, capacity, spped, \
+              facing, life_cur, life_max, mana_cur, mana_max, capacity, speed, \
               outfit_id, outfit_head, outfit_body, outfit_legs, outfit_feet) \
              VALUES ($1, $2, 0, 1, 1028, 1028, 7, 1028, 1028, 7, \
                      2, 150, 150, 0, 0, 400, 400, 128, 78, 69, 58, 76) \

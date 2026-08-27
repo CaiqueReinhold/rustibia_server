@@ -317,8 +317,9 @@ mod tests {
                 .unwrap();
 
         assert_eq!(
-            count, 2,
-            "two saves of two skills must leave two rows, not four"
+            count,
+            snapshot.skills.len() as i64,
+            "two saves of the same skills must leave one row each, not two"
         );
     }
 }

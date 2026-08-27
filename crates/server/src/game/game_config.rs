@@ -158,6 +158,37 @@ chat:
       name: World Chat
   max_message_length: 255
   message_cooldown_ticks: 10
+effect_ids:
+  life_hit: 1
+  shield_hit: 3
+  armor_hit: 4
+  poison_hit: 17
+  ice_hit: 1
+  earth_hit: 1
+  fire_hit: 1
+  energy_hit: 1
+text_colors:
+  red: [255, 0, 0]
+  lightgreen: [0, 255, 0]
+  lightblue: [0, 255, 255]
+  skyblue: [153, 255, 255]
+  orange: [255, 153, 0]
+  eletric_purple: [204, 51, 255]
+combat:
+  auto_attack_ticks: 40
+  pool_item_id: 2886
+  unarmed_skill: 100
+skills:
+  min_level: 10
+  base:
+    melee: 50
+    distance: 30
+    magic: 1600
+  vocations:
+    knight: { melee: 1.1, distance: 1.4, magic: 3.0 }
+    paladin: { melee: 1.2, distance: 1.1, magic: 1.4 }
+    sorcerer: { melee: 2.0, distance: 2.0, magic: 1.1 }
+    druid: { melee: 1.8, distance: 1.8, magic: 1.1 }
 "#;
         let config: GameConfig = serde_yaml::from_str(yaml).unwrap();
 
