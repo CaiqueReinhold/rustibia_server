@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use crate::entities::vocation::Vocation;
 use crate::entities::{
@@ -73,11 +74,15 @@ pub struct Player {
     pub origin: Position,
     pub mana: Pool,
     pub capacity: Pool,
-    pub inventory: Inventory,
+    pub inventory: Arc<Inventory>,
     pub skills: HashMap<SkillType, SkillValue>,
 }
 
 impl Player {
+    pub fn inventory_mut(&mut self) -> &mut Inventory {
+        Arc::make_mut(&mut self.inventory)
+    }
+
     pub fn can_carry(&self, additional_weight: u32) -> bool {
         self.capacity.current + additional_weight <= self.capacity.maximum
     }

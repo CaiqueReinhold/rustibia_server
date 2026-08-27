@@ -224,7 +224,7 @@ fn consume_ammo(
 ) {
     if let Some((_, Some((parent, _)))) =
         player
-            .inventory
+            .inventory_mut()
             .remove(InventorySlot::RightHand, &ammo_guid, 1)
     {
         msgs.push(BroadcastMessage::ContainerUpdated {

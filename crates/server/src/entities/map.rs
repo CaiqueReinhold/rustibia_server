@@ -610,7 +610,7 @@ mod tests {
 
         map.get_player_mut(keys[0])
             .unwrap()
-            .inventory
+            .inventory_mut()
             .take_slot(&InventorySlot::Backpack);
 
         assert!(

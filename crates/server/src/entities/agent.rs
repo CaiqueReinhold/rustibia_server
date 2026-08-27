@@ -122,7 +122,7 @@ impl Agent {
                     current: inventory.total_weight(),
                     maximum: player.capacity,
                 },
-                inventory,
+                inventory: Arc::new(inventory),
                 skills: player.skills,
             })),
             facing: player.facing,

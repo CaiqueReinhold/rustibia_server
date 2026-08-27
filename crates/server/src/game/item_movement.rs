@@ -41,7 +41,7 @@ fn displace_inventory_items(
 ) -> Result<(), ItemMovementError> {
     let current_item = map
         .get_player_mut(agent)
-        .and_then(|player| player.inventory.take_slot(&slot));
+        .and_then(|player| player.inventory_mut().take_slot(&slot));
 
     // Displace any item currently in the slot back to the source
     // (inventory-to-inventory swaps are rejected upstream, so source is always Map)
@@ -102,16 +102,16 @@ fn displace_inventory_items(
 
     if source_slot.unwrap() == InventorySlot::BothHands {
         let player = map.get_player_mut(agent).unwrap();
-        if let Some(rh_item) = player.inventory.take_slot(&InventorySlot::RightHand) {
+        if let Some(rh_item) = player.inventory_mut().take_slot(&InventorySlot::RightHand) {
             if let Some(available_container) = player.inventory.first_available_container().cloned()
             {
-                if let Err(e) = player.inventory.insert(
+                if let Err(e) = player.inventory_mut().insert(
                     InventorySlot::Backpack,
                     Some((&available_container, 0)),
                     rh_item.clone(),
                 ) {
                     let _ = player
-                        .inventory
+                        .inventory_mut()
                         .insert(InventorySlot::RightHand, None, rh_item);
                     return Err(e);
                 } else {
@@ -128,7 +128,7 @@ fn displace_inventory_items(
                 }
             } else {
                 let _ = player
-                    .inventory
+                    .inventory_mut()
                     .insert(InventorySlot::RightHand, None, rh_item);
                 return Err(ItemMovementError::CannotEquip);
             }
@@ -145,17 +145,17 @@ fn displace_inventory_items(
     if slot == InventorySlot::RightHand && left_is_two_handed {
         let player = map.get_player_mut(agent).unwrap();
         let lh_item = player
-            .inventory
+            .inventory_mut()
             .take_slot(&InventorySlot::LeftHand)
             .unwrap();
         if let Some(available_container) = player.inventory.first_available_container().cloned() {
-            if let Err(e) = player.inventory.insert(
+            if let Err(e) = player.inventory_mut().insert(
                 InventorySlot::Backpack,
                 Some((&available_container, 0)),
                 lh_item.clone(),
             ) {
                 let _ = player
-                    .inventory
+                    .inventory_mut()
                     .insert(InventorySlot::LeftHand, None, lh_item);
                 return Err(e);
             }
@@ -171,7 +171,7 @@ fn displace_inventory_items(
             });
         } else {
             let _ = player
-                .inventory
+                .inventory_mut()
                 .insert(InventorySlot::LeftHand, None, lh_item);
             return Err(ItemMovementError::CannotEquip);
         }
@@ -408,7 +408,7 @@ pub fn insert_item_at(
             if let Some((c_guid, c_index)) = container.as_ref() {
                 let result = map.get_player_mut(*agent).map(|player| {
                     player
-                        .inventory
+                        .inventory_mut()
                         .insert(*slot, Some((c_guid, *c_index)), item)
                 });
                 let Some(result) = result else {
@@ -429,7 +429,7 @@ pub fn insert_item_at(
                 match map
                     .get_player_mut(*agent)
                     .unwrap()
-                    .inventory
+                    .inventory_mut()
                     .insert(*slot, None, item)
                 {
                     Ok(..) => {
@@ -476,7 +476,7 @@ pub fn remove_item_at(
         ItemPlacement::Inventory(slot, agent_key) => {
             let removed = map
                 .get_player_mut(*agent_key)
-                .and_then(|player| player.inventory.remove(*slot, &item.guid, amount));
+                .and_then(|player| player.inventory_mut().remove(*slot, &item.guid, amount));
             match &removed {
                 Some((_, Some((guid, _)))) => {
                     broadcasts.push(BroadcastMessage::ContainerUpdated {
