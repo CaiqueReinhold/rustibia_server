@@ -515,7 +515,10 @@ impl WorldActor {
 mod tests {
     use super::*;
     use crate::entities::map::MapTile;
-    use crate::persistence::test_fixtures::{a_test_creature, a_test_snapshot};
+    use crate::entities::player::InventorySlot;
+    use crate::persistence::test_fixtures::{
+        a_player_with_a_full_backpack, a_test_creature, a_test_snapshot,
+    };
 
     /// Builds a `WorldActor` from bare fields, the same way `SessionActorHandle::for_test`
     /// (session.rs) fabricates a channel-backed handle for tests. The `rx` half of the
@@ -604,5 +607,50 @@ mod tests {
 
         assert!(actor.map.get_agent(victim).is_none());
         assert_eq!(actor.map.get_agent(killer).unwrap().life().current, 100);
+    }
+
+    /// Covers the publish seam — `shared_map.store(Arc::new(self.map.clone()))` against a
+    /// real `WorldActor` and a real `ArcSwap` — not a full tick. No `WorldCommand` is
+    /// dispatched; `entities/map.rs`'s tests cover the clone itself.
+    #[tokio::test]
+    async fn a_published_snapshot_does_not_see_later_inventory_writes() {
+        let pos = Position::new(5, 5, 7);
+        let mut map = GameMap::new();
+        map.insert_tile(pos.clone(), MapTile::new());
+        let key = map
+            .insert_agent(
+                Agent::from_player(a_player_with_a_full_backpack(1, 1)),
+                &pos,
+            )
+            .unwrap();
+
+        let mut actor = a_test_world_actor(map);
+        actor.shared_map.store(Arc::new(actor.map.clone()));
+        let published = actor.shared_map.load_full();
+
+        actor
+            .map
+            .get_player_mut(key)
+            .unwrap()
+            .inventory_mut()
+            .take_slot(&InventorySlot::Backpack);
+
+        assert!(
+            published
+                .get_player(key)
+                .unwrap()
+                .inventory
+                .get(&InventorySlot::Backpack)
+                .is_some()
+        );
+        assert!(
+            actor
+                .map
+                .get_player(key)
+                .unwrap()
+                .inventory
+                .get(&InventorySlot::Backpack)
+                .is_none()
+        );
     }
 }

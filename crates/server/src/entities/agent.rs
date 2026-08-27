@@ -254,6 +254,7 @@ mod tests {
     use super::*;
     use crate::entities::creature::BloodType;
     use crate::entities::map::GameMap;
+    use crate::entities::player::InventorySlot;
     use crate::entities::position::Position;
     use crate::entities::skills::{SkillType, SkillValue};
     use crate::entities::vocation::Vocation;
@@ -472,5 +473,88 @@ mod tests {
         let restored = Agent::from_player(snapshot);
 
         assert!(restored.target().is_none());
+    }
+
+    fn player_arc(agent: &Agent) -> &Arc<Player> {
+        match &agent.inner {
+            AgentInner::Player(p) => p,
+            AgentInner::Creature(..) => panic!("not a player"),
+        }
+    }
+
+    fn a_backpacked_agent() -> Agent {
+        Agent::from_player(crate::persistence::test_fixtures::a_player_with_a_full_backpack(1, 1))
+    }
+
+    #[test]
+    fn cloning_an_agent_shares_the_player() {
+        let a = a_backpacked_agent();
+        let b = a.clone();
+        assert!(Arc::ptr_eq(player_arc(&a), player_arc(&b)));
+        assert!(Arc::ptr_eq(
+            &a.get_player().unwrap().inventory,
+            &b.get_player().unwrap().inventory
+        ));
+    }
+
+    #[test]
+    fn agent_level_writes_do_not_copy_the_player() {
+        let mut a = a_backpacked_agent();
+        let b = a.clone();
+
+        a.next_walk_tick = 42;
+        a.set_facing(Facing::North);
+        a.set_target(None);
+
+        assert!(Arc::ptr_eq(player_arc(&a), player_arc(&b)));
+    }
+
+    #[test]
+    fn get_player_mut_privatises_the_player_exactly_once() {
+        let mut a = a_backpacked_agent();
+        let b = a.clone();
+
+        a.get_player_mut().unwrap().mana.current = 7;
+        assert!(!Arc::ptr_eq(player_arc(&a), player_arc(&b)));
+
+        let after_first = Arc::as_ptr(player_arc(&a));
+        a.get_player_mut().unwrap().mana.current = 8;
+        assert_eq!(Arc::as_ptr(player_arc(&a)), after_first);
+    }
+
+    #[test]
+    fn a_player_level_write_does_not_copy_the_inventory() {
+        let mut a = a_backpacked_agent();
+        let b = a.clone();
+
+        a.get_player_mut().unwrap().mana.current = 7;
+
+        assert!(Arc::ptr_eq(
+            &a.get_player().unwrap().inventory,
+            &b.get_player().unwrap().inventory
+        ));
+    }
+
+    #[test]
+    fn inventory_mut_privatises_the_inventory() {
+        let mut a = a_backpacked_agent();
+        let b = a.clone();
+
+        a.get_player_mut()
+            .unwrap()
+            .inventory_mut()
+            .take_slot(&InventorySlot::Backpack);
+
+        assert!(!Arc::ptr_eq(
+            &a.get_player().unwrap().inventory,
+            &b.get_player().unwrap().inventory
+        ));
+        assert!(
+            b.get_player()
+                .unwrap()
+                .inventory
+                .get(&InventorySlot::Backpack)
+                .is_some()
+        );
     }
 }

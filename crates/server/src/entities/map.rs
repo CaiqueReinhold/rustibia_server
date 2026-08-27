@@ -604,6 +604,26 @@ mod tests {
     }
 
     #[test]
+    fn a_map_clone_shares_the_inventories_no_one_wrote_to() {
+        let (mut map, keys) = map_with_players(2);
+        let snapshot = map.clone();
+
+        map.get_player_mut(keys[0])
+            .unwrap()
+            .inventory_mut()
+            .take_slot(&InventorySlot::Backpack);
+
+        assert!(!Arc::ptr_eq(
+            &map.get_player(keys[0]).unwrap().inventory,
+            &snapshot.get_player(keys[0]).unwrap().inventory
+        ));
+        assert!(Arc::ptr_eq(
+            &map.get_player(keys[1]).unwrap().inventory,
+            &snapshot.get_player(keys[1]).unwrap().inventory
+        ));
+    }
+
+    #[test]
     fn a_map_clone_does_not_see_later_inventory_writes() {
         let (mut map, keys) = map_with_players(1);
         let snapshot = map.clone();
