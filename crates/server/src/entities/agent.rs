@@ -48,7 +48,7 @@ pub enum Facing {
 
 #[derive(Clone, Debug)]
 enum AgentInner {
-    Player(Player),
+    Player(Arc<Player>),
     Creature(Arc<CreatureKind>),
 }
 
@@ -91,7 +91,7 @@ impl Agent {
 
     pub fn get_player_mut(&mut self) -> Option<&mut Player> {
         match &mut self.inner {
-            AgentInner::Player(p) => Some(p),
+            AgentInner::Player(p) => Some(Arc::make_mut(p)),
             AgentInner::Creature(..) => None,
         }
     }
@@ -110,7 +110,7 @@ impl Agent {
     pub fn from_player(player: PlayerSnapshot) -> Self {
         let inventory = Inventory::from_snapshot(player.inventory);
         Self {
-            inner: AgentInner::Player(Player {
+            inner: AgentInner::Player(Arc::new(Player {
                 id: player.id,
                 name: player.name,
                 account_id: player.account_id,
@@ -124,7 +124,7 @@ impl Agent {
                 },
                 inventory,
                 skills: player.skills,
-            }),
+            })),
             facing: player.facing,
             life: player.life,
             outfit: player.outfit,
