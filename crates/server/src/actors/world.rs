@@ -1,6 +1,5 @@
 use anyhow::{Result, anyhow};
 use arc_swap::ArcSwap;
-use std::collections::HashMap;
 use std::collections::binary_heap::BinaryHeap;
 use std::sync::Arc;
 use std::time::Duration;
@@ -15,7 +14,7 @@ use crate::actors::spawning::SpawningActorHandle;
 use crate::config::CONFIG;
 use crate::entities::agent::{Agent, AgentKey, Facing};
 use crate::entities::creature::CreatureKind;
-use crate::entities::items::{ItemConfig, ItemGuid, ItemId, ItemRef};
+use crate::entities::items::{ItemGuid, ItemRef};
 use crate::entities::map::GameMap;
 use crate::entities::position::{Direction, ItemPlacement, Position};
 use crate::game::events::BroadcastMessage;
@@ -162,7 +161,6 @@ pub struct WorldActor {
     message_router: MessageRouterActorHandle,
     command_queue: BinaryHeap<ScheduledCommand>,
     map: GameMap,
-    item_configs: Arc<HashMap<ItemId, Arc<ItemConfig>>>,
     shared_map: Arc<ArcSwap<GameMap>>,
     tick: Tick,
     tick_duration: Duration,
@@ -173,7 +171,6 @@ pub struct WorldActor {
 impl WorldActor {
     pub fn start(
         map: GameMap,
-        item_configs: Arc<HashMap<ItemId, Arc<ItemConfig>>>,
         shared_map: Arc<ArcSwap<GameMap>>,
         message_router: MessageRouterActorHandle,
         seed: u64,
@@ -186,7 +183,6 @@ impl WorldActor {
             message_router,
             command_queue: BinaryHeap::with_capacity(CONFIG.max_queue_size),
             map,
-            item_configs,
             shared_map,
             tick: 0,
             tick_duration: CONFIG.tick_duration,
@@ -295,7 +291,6 @@ impl WorldActor {
             combat::execute_attack(
                 &mut self.map,
                 plan,
-                &self.item_configs,
                 self.tick,
                 broadcast_messages,
                 &mut scheduled,
@@ -339,13 +334,7 @@ impl WorldActor {
                 Ok(())
             }
             WorldCommand::UseItem { agent, item } => {
-                let (msgs, cmds) = item_action::use_item(
-                    &mut self.map,
-                    &self.item_configs,
-                    agent,
-                    item,
-                    self.tick,
-                );
+                let (msgs, cmds) = item_action::use_item(&mut self.map, agent, item, self.tick);
                 broadcast_messages.extend(msgs);
                 self.apply_commands(cmds);
                 Ok(())
@@ -357,7 +346,6 @@ impl WorldActor {
             } => {
                 let (msgs, cmds) = item_multi_action::use_item_with(
                     &mut self.map,
-                    &self.item_configs,
                     agent,
                     source,
                     target,
@@ -422,8 +410,7 @@ impl WorldActor {
                 self.handle_request_logout(agent_key, broadcast_messages)
             }
             WorldCommand::DecayItem { item } => {
-                let (msgs, commands) =
-                    item_action::decay_item(&mut self.map, &self.item_configs, item, self.tick);
+                let (msgs, commands) = item_action::decay_item(&mut self.map, item, self.tick);
                 broadcast_messages.extend(msgs);
                 self.apply_commands(commands);
                 Ok(())
@@ -533,7 +520,6 @@ mod tests {
             message_router,
             command_queue: BinaryHeap::new(),
             map,
-            item_configs: Arc::new(HashMap::new()),
             shared_map: Arc::new(ArcSwap::from_pointee(GameMap::new())),
             tick: 0,
             tick_duration: Duration::from_millis(50),

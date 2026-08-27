@@ -1,16 +1,14 @@
-use std::collections::HashMap;
-use std::sync::Arc;
-
 use crate::actors::world::ScheduledCommand;
 use crate::entities::agent::AgentKey;
 use crate::entities::combat::{CombatDamage, CombatElement};
-use crate::entities::items::{Item, ItemConfig, ItemFlag, ItemId};
+use crate::entities::items::{Item, ItemFlag};
 use crate::entities::map::GameMap;
 use crate::entities::position::{ItemPlacement, Position};
 use crate::game::events::BroadcastMessage;
 use crate::game::game_config::GAME_CONFIG;
 use crate::game::item_action::check_decay;
 use crate::game::{Tick, death};
+use crate::persistence::items::ITEM_CONFIGS;
 
 /// The target may no longer be in the map when this returns: a lethal hit reaps it. Anything
 /// a caller still needs to do to the target must happen before the call.
@@ -20,7 +18,6 @@ pub fn apply_damage(
     target: AgentKey,
     mut damage: CombatDamage,
     source: Option<AgentKey>,
-    item_configs: &HashMap<ItemId, Arc<ItemConfig>>,
     current_tick: Tick,
     msgs: &mut Vec<BroadcastMessage>,
     cmds: &mut Vec<ScheduledCommand>,
@@ -59,15 +56,7 @@ pub fn apply_damage(
     });
 
     if matches!(element, CombatElement::Physical) {
-        draw_blood(
-            map,
-            msgs,
-            cmds,
-            item_configs,
-            &target_pos,
-            target,
-            current_tick,
-        );
+        draw_blood(map, msgs, cmds, &target_pos, target, current_tick);
     }
 
     if map
@@ -82,12 +71,11 @@ fn draw_blood(
     map: &mut GameMap,
     msgs: &mut Vec<BroadcastMessage>,
     cmds: &mut Vec<ScheduledCommand>,
-    item_configs: &HashMap<ItemId, Arc<ItemConfig>>,
     attacked_pos: &Position,
     attacked_key: AgentKey,
     current_tick: Tick,
 ) {
-    let Some(config) = item_configs.get(&GAME_CONFIG.combat.pool_item_id) else {
+    let Some(config) = ITEM_CONFIGS.get(&GAME_CONFIG.combat.pool_item_id) else {
         return;
     };
     let Some(attacked) = map.get_agent(attacked_key) else {
@@ -133,10 +121,8 @@ fn draw_blood(
 mod tests {
     use super::*;
     use crate::entities::agent::Agent;
-    use crate::entities::items::ItemFlag;
     use crate::entities::map::MapTile;
     use crate::persistence::test_fixtures::{a_test_creature, a_test_snapshot};
-    use std::collections::HashSet;
 
     fn physical(value: u32) -> CombatDamage {
         CombatDamage {
@@ -154,21 +140,6 @@ mod tests {
             blocked_shield: false,
             blocked_armor: false,
         }
-    }
-
-    fn a_pool_catalogue() -> HashMap<ItemId, Arc<ItemConfig>> {
-        let id = GAME_CONFIG.combat.pool_item_id;
-        HashMap::from([(
-            id,
-            Arc::new(ItemConfig::new(
-                id,
-                "pool of blood".to_string(),
-                None,
-                None,
-                HashSet::from([ItemFlag::LiquidPool]),
-                HashSet::new(),
-            )),
-        )])
     }
 
     fn map_with_creature(life: u32) -> (GameMap, AgentKey, Position) {
@@ -203,16 +174,7 @@ mod tests {
         let (mut map, rat, _) = map_with_creature(3);
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
 
-        apply_damage(
-            &mut map,
-            rat,
-            physical(50),
-            None,
-            &HashMap::new(),
-            0,
-            &mut msgs,
-            &mut cmds,
-        );
+        apply_damage(&mut map, rat, physical(50), None, 0, &mut msgs, &mut cmds);
 
         assert_eq!(reported_damage(&msgs), Some(3));
     }
@@ -222,16 +184,7 @@ mod tests {
         let (mut map, rat, _) = map_with_creature(3);
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
 
-        apply_damage(
-            &mut map,
-            rat,
-            physical(50),
-            None,
-            &HashMap::new(),
-            0,
-            &mut msgs,
-            &mut cmds,
-        );
+        apply_damage(&mut map, rat, physical(50), None, 0, &mut msgs, &mut cmds);
 
         assert!(map.get_agent(rat).is_none());
     }
@@ -241,16 +194,7 @@ mod tests {
         let (mut map, rat, _) = map_with_creature(10);
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
 
-        apply_damage(
-            &mut map,
-            rat,
-            physical(3),
-            None,
-            &HashMap::new(),
-            0,
-            &mut msgs,
-            &mut cmds,
-        );
+        apply_damage(&mut map, rat, physical(3), None, 0, &mut msgs, &mut cmds);
 
         assert_eq!(map.get_agent(rat).unwrap().life().current, 7);
         assert_eq!(reported_damage(&msgs), Some(3));
@@ -266,7 +210,6 @@ mod tests {
             player,
             physical(500),
             None,
-            &HashMap::new(),
             0,
             &mut msgs,
             &mut cmds,
@@ -285,7 +228,6 @@ mod tests {
             player,
             physical(500),
             None,
-            &HashMap::new(),
             0,
             &mut msgs,
             &mut cmds,
@@ -297,7 +239,6 @@ mod tests {
             player,
             physical(500),
             None,
-            &HashMap::new(),
             0,
             &mut msgs,
             &mut cmds,
@@ -313,16 +254,7 @@ mod tests {
         map.remove_agent(rat);
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
 
-        apply_damage(
-            &mut map,
-            rat,
-            physical(3),
-            None,
-            &HashMap::new(),
-            0,
-            &mut msgs,
-            &mut cmds,
-        );
+        apply_damage(&mut map, rat, physical(3), None, 0, &mut msgs, &mut cmds);
 
         assert!(msgs.is_empty());
     }
@@ -330,19 +262,9 @@ mod tests {
     #[test]
     fn physical_damage_splashes_blood() {
         let (mut map, rat, pos) = map_with_creature(10);
-        let catalogue = a_pool_catalogue();
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
 
-        apply_damage(
-            &mut map,
-            rat,
-            physical(3),
-            None,
-            &catalogue,
-            0,
-            &mut msgs,
-            &mut cmds,
-        );
+        apply_damage(&mut map, rat, physical(3), None, 0, &mut msgs, &mut cmds);
 
         let pooled = map
             .iter_items(&pos)
@@ -354,19 +276,9 @@ mod tests {
     #[test]
     fn a_non_physical_element_does_not_splash() {
         let (mut map, rat, pos) = map_with_creature(10);
-        let catalogue = a_pool_catalogue();
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
 
-        apply_damage(
-            &mut map,
-            rat,
-            fire(3),
-            None,
-            &catalogue,
-            0,
-            &mut msgs,
-            &mut cmds,
-        );
+        apply_damage(&mut map, rat, fire(3), None, 0, &mut msgs, &mut cmds);
 
         let pooled = map
             .iter_items(&pos)

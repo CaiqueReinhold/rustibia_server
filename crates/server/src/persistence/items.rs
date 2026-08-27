@@ -3,15 +3,23 @@ use std::fs;
 use std::path::Path;
 use std::sync::Arc;
 
+use once_cell::sync::Lazy;
 use serde::Deserialize;
 use thiserror::Error;
 
+use crate::config::CONFIG;
 use crate::entities::combat::{AmmoType, CombatElement, WeaponType};
 use crate::entities::items::{
     FloorChangeDirection, ItemAction, ItemAttribute, ItemConfig, ItemFlag, ItemId, ItemMultiAction,
 };
 use crate::entities::player::InventorySlot;
 use crate::game::Tick;
+
+/// The item catalogue, loaded once from `assets/items.yaml`. Immutable after load and
+/// read by every subsystem, so it is a global for the same reason `GAME_CONFIG` is.
+pub static ITEM_CONFIGS: Lazy<Arc<HashMap<ItemId, Arc<ItemConfig>>>> = Lazy::new(|| {
+    Arc::new(load_items(&CONFIG.items_file_path).expect("failed to load item configs"))
+});
 
 #[derive(Error, Debug)]
 pub enum ItemsLoadError {

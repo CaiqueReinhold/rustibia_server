@@ -1,12 +1,10 @@
-use std::{collections::HashMap, sync::Arc};
-
 use crate::{
     actors::world::ScheduledCommand,
     entities::{
         agent::{Agent, AgentKey},
         combat::{CombatDamage, CombatElement, WeaponType},
         creature::{BloodType, CreatureKind},
-        items::{Item, ItemAttribute, ItemConfig, ItemGuid, ItemId, ItemRef},
+        items::{Item, ItemAttribute, ItemGuid, ItemRef},
         map::GameMap,
         player::{InventorySlot, Player},
         position::{ItemPlacement, Position},
@@ -176,7 +174,6 @@ pub fn plan_auto_attack(
 pub fn execute_attack(
     map: &mut GameMap,
     plan: AttackPlan,
-    item_configs: &HashMap<ItemId, Arc<ItemConfig>>,
     current_tick: Tick,
     msgs: &mut Vec<BroadcastMessage>,
     cmds: &mut Vec<ScheduledCommand>,
@@ -210,7 +207,6 @@ pub fn execute_attack(
         plan.target,
         plan.damage,
         Some(plan.attacker),
-        item_configs,
         current_tick,
         msgs,
         cmds,
@@ -281,11 +277,13 @@ mod tests {
     use crate::entities::agent::Agent;
     use crate::entities::combat::AmmoType;
     use crate::entities::items::{ItemAttribute, ItemFlag};
+    use crate::entities::items::{ItemConfig, ItemId};
     use crate::entities::map::MapTile;
     use crate::entities::skills::SkillValue;
     use crate::persistence::player::PlayerSnapshot;
     use crate::persistence::test_fixtures::{a_test_creature, a_test_snapshot};
     use std::collections::HashSet;
+    use std::sync::Arc;
 
     fn a_config(
         id: ItemId,
@@ -573,7 +571,7 @@ mod tests {
         let plan = plan_auto_attack(&map, attacker, &mut roll, 7).unwrap();
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
 
-        execute_attack(&mut map, plan, &HashMap::new(), 7, &mut msgs, &mut cmds);
+        execute_attack(&mut map, plan, 7, &mut msgs, &mut cmds);
 
         let agent = map.get_agent(attacker).unwrap();
         assert_eq!(
@@ -581,7 +579,7 @@ mod tests {
             GAME_CONFIG.combat.auto_attack_ticks + 7
         );
         assert_eq!(agent.get_player().unwrap().mana.current, 80);
-        assert_eq!(broadcast_kinds(&msgs), ["mana", "skill", "damage"]);
+        assert_eq!(broadcast_kinds(&msgs), ["mana", "skill", "damage", "blood"]);
     }
 
     /// `Distance` is its own weapon type but costs nothing to swing — it fell through the
@@ -620,7 +618,7 @@ mod tests {
         let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
 
-        execute_attack(&mut map, plan, &HashMap::new(), 0, &mut msgs, &mut cmds);
+        execute_attack(&mut map, plan, 0, &mut msgs, &mut cmds);
 
         let arrows = map
             .get_agent(attacker)
@@ -646,6 +644,7 @@ mod tests {
                 | BroadcastMessage::SkillUpgraded { .. } => "skill",
                 BroadcastMessage::ContainerUpdated { .. } => "ammo",
                 BroadcastMessage::DamageTaken { .. } => "damage",
+                BroadcastMessage::TileChanged { .. } => "blood",
                 _ => "other",
             })
             .collect()
@@ -708,7 +707,7 @@ mod tests {
 
         let snapshot = map.clone();
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
-        execute_attack(&mut map, plan, &HashMap::new(), 0, &mut msgs, &mut cmds);
+        execute_attack(&mut map, plan, 0, &mut msgs, &mut cmds);
 
         assert!(std::ptr::eq(
             map.get_player(attacker).unwrap(),
@@ -727,7 +726,7 @@ mod tests {
 
         let snapshot = map.clone();
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
-        execute_attack(&mut map, plan, &HashMap::new(), 0, &mut msgs, &mut cmds);
+        execute_attack(&mut map, plan, 0, &mut msgs, &mut cmds);
 
         assert!(!std::ptr::eq(
             map.get_player(attacker).unwrap(),

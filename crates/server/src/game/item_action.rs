@@ -1,5 +1,3 @@
-use std::{collections::HashMap, sync::Arc};
-
 use thiserror::Error;
 use tracing::{error, warn};
 
@@ -7,7 +5,7 @@ use crate::{
     actors::world::{ScheduledCommand, WorldCommand},
     entities::{
         agent::AgentKey,
-        items::{Item, ItemAction, ItemConfig, ItemFlag, ItemId, ItemRef},
+        items::{Item, ItemAction, ItemFlag, ItemId, ItemRef},
         map::GameMap,
         position::ItemPlacement,
     },
@@ -19,6 +17,7 @@ use crate::{
 };
 
 use super::{events::BroadcastMessage, map_query::find_item_in_placement};
+use crate::persistence::items::ITEM_CONFIGS;
 
 #[derive(Error, Debug)]
 pub enum ItemActionError {
@@ -30,7 +29,6 @@ pub enum ItemActionError {
 
 pub fn decay_item(
     map: &mut GameMap,
-    item_configs: &HashMap<ItemId, Arc<ItemConfig>>,
     item_ref: ItemRef,
     current_tick: Tick,
 ) -> (Vec<BroadcastMessage>, Vec<ScheduledCommand>) {
@@ -41,7 +39,7 @@ pub fn decay_item(
     let Some((_, decay_to)) = item.get_decay() else {
         return (broadcasts, commands);
     };
-    let Some(config) = item_configs.get(&decay_to) else {
+    let Some(config) = ITEM_CONFIGS.get(&decay_to) else {
         if decay_to != 0 {
             error!("Config not found for item id {decay_to}");
         }
@@ -114,7 +112,6 @@ pub fn check_decay(
 
 pub fn use_item(
     map: &mut GameMap,
-    item_configs: &HashMap<ItemId, Arc<ItemConfig>>,
     agent_key: AgentKey,
     item_ref: ItemRef,
     current_tick: Tick,
@@ -161,14 +158,7 @@ pub fn use_item(
             vec![],
         );
     } else if let Some(action) = action {
-        match route_action(
-            &action,
-            item_configs,
-            map,
-            agent_key,
-            &item_ref,
-            current_tick,
-        ) {
+        match route_action(&action, map, agent_key, &item_ref, current_tick) {
             Ok((action_broadcasts, scheduled_commands)) => {
                 map.get_agent_mut(agent_key).unwrap().next_use_tick =
                     current_tick + GAME_CONFIG.action.use_item_cooldown_ticks;
@@ -186,7 +176,6 @@ pub fn use_item(
 
 pub fn route_action(
     action: &ItemAction,
-    item_configs: &HashMap<ItemId, Arc<ItemConfig>>,
     map: &mut GameMap,
     _agent_key: AgentKey,
     item: &ItemRef,
@@ -199,7 +188,6 @@ pub fn route_action(
             &mut broadcasts,
             &mut commands,
             map,
-            item_configs,
             item,
             *into,
             current_tick,
@@ -212,7 +200,6 @@ pub(super) fn transform(
     broadcasts: &mut Vec<BroadcastMessage>,
     commands: &mut Vec<ScheduledCommand>,
     map: &mut GameMap,
-    item_configs: &HashMap<ItemId, Arc<ItemConfig>>,
     item: &ItemRef,
     into: ItemId,
     current_tick: Tick,
@@ -222,7 +209,7 @@ pub(super) fn transform(
         return Err(ItemActionError::ActionFailed);
     };
 
-    let config = item_configs
+    let config = ITEM_CONFIGS
         .get(&into)
         .unwrap_or_else(|| panic!("item config missing for transform target {into}"));
     let new_item = Item::new(config.clone(), 1);

@@ -1,12 +1,10 @@
-use std::{collections::HashMap, sync::Arc};
-
 use tracing::warn;
 
 use crate::{
     actors::world::ScheduledCommand,
     entities::{
         agent::AgentKey,
-        items::{ItemConfig, ItemFlag, ItemId, ItemMultiAction, ItemRef},
+        items::{ItemFlag, ItemMultiAction, ItemRef},
         map::GameMap,
         position::{ItemPlacement, Position},
     },
@@ -22,7 +20,6 @@ use crate::{
 
 pub fn use_item_with(
     map: &mut GameMap,
-    item_configs: &HashMap<ItemId, Arc<ItemConfig>>,
     agent_key: AgentKey,
     source: ItemRef,
     target: ItemRef,
@@ -66,15 +63,7 @@ pub fn use_item_with(
 
     let action = source_item.get_multi_action();
     if let Some(action) = action {
-        match route_multi_action(
-            &action,
-            item_configs,
-            map,
-            agent_key,
-            &source,
-            &target,
-            current_tick,
-        ) {
+        match route_multi_action(&action, map, agent_key, &source, &target, current_tick) {
             Ok((action_broadcasts, scheduled_commands)) => {
                 map.get_agent_mut(agent_key).unwrap().next_use_tick =
                     current_tick + GAME_CONFIG.action.use_item_cooldown_ticks;
@@ -95,7 +84,6 @@ pub fn use_item_with(
 
 fn route_multi_action(
     action: &ItemMultiAction,
-    item_configs: &HashMap<ItemId, Arc<ItemConfig>>,
     map: &mut GameMap,
     agent_key: AgentKey,
     _source: &ItemRef,
@@ -105,14 +93,9 @@ fn route_multi_action(
     let mut broadcasts = Vec::new();
     let mut commands = Vec::new();
     match action {
-        ItemMultiAction::Shovel => shovel(
-            &mut broadcasts,
-            &mut commands,
-            map,
-            item_configs,
-            target,
-            current_tick,
-        )?,
+        ItemMultiAction::Shovel => {
+            shovel(&mut broadcasts, &mut commands, map, target, current_tick)?
+        }
         ItemMultiAction::Rope => rope(&mut broadcasts, map, agent_key, target)?,
     };
     Ok((broadcasts, commands))
@@ -122,7 +105,6 @@ fn shovel(
     broadcasts: &mut Vec<BroadcastMessage>,
     commands: &mut Vec<ScheduledCommand>,
     map: &mut GameMap,
-    item_configs: &HashMap<ItemId, Arc<ItemConfig>>,
     target: &ItemRef,
     current_tick: Tick,
 ) -> Result<(), ItemActionError> {
@@ -138,7 +120,6 @@ fn shovel(
         broadcasts,
         commands,
         map,
-        item_configs,
         target,
         target_item.item_id + 1,
         current_tick,

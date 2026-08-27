@@ -19,6 +19,7 @@ mod online_registry;
 mod persistence;
 
 use config::CONFIG;
+use persistence::items::ITEM_CONFIGS;
 
 use arc_swap::ArcSwap;
 
@@ -52,8 +53,7 @@ async fn main() -> Result<()> {
 
     let seed = RandomState::new().build_hasher().finish();
 
-    let items = Arc::new(persistence::items::load_items(&CONFIG.items_file_path).unwrap());
-    let map = persistence::map::load_map(&CONFIG.map_file_path, &items).unwrap();
+    let map = persistence::map::load_map(&CONFIG.map_file_path, &ITEM_CONFIGS).unwrap();
     let creatures =
         Arc::new(persistence::creatures::load_creatures(&CONFIG.creatures_file_path).unwrap());
     let spawns = persistence::spawns::load_spawns(&CONFIG.spawns_file_path).unwrap();
@@ -61,13 +61,7 @@ async fn main() -> Result<()> {
     let shared_map = Arc::new(ArcSwap::from_pointee(map.clone()));
 
     let message_router = MessageRouterActor::start(shared_map.clone());
-    let (world, tick_rx) = WorldActor::start(
-        map,
-        Arc::clone(&items),
-        shared_map.clone(),
-        message_router.clone(),
-        seed,
-    );
+    let (world, tick_rx) = WorldActor::start(map, shared_map.clone(), message_router.clone(), seed);
     let chat = ChatActor::start(message_router);
 
     SpawningActor::start(
@@ -105,7 +99,7 @@ async fn main() -> Result<()> {
     let login_repo = Arc::new(HttpLoginRepository::new(
         &CONFIG.site_internal_url,
         internal_client,
-        Arc::clone(&items),
+        Arc::clone(&ITEM_CONFIGS),
     ));
     let persistence = PersistenceActor::start(Arc::clone(&player_repo), Arc::clone(&online_repo));
 

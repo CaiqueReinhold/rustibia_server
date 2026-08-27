@@ -91,7 +91,7 @@ impl SessionActor {
         Ok(())
     }
 
-    pub(super) async fn skill_progress(&self, skill: SkillType) -> Result<()> {
+    pub(super) async fn skill_progress(&self, _skill: SkillType) -> Result<()> {
         Ok(())
     }
 
