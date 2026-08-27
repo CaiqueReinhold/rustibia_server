@@ -417,7 +417,7 @@ impl SessionActor {
             BroadcastMessage::AgentChangedDirection {
                 agent_key, facing, ..
             } => self.actor_direction_changed(agent_key, facing).await,
-            BroadcastMessage::PlayerDespawned {
+            BroadcastMessage::AgentDespawned {
                 agent_key,
                 snapshot,
                 ..

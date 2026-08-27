@@ -168,7 +168,7 @@ impl Agent {
         &self.life
     }
 
-    pub fn take_hit(&mut self, damage: u32, _attacker: Option<AgentKey>) {
+    pub fn take_hit(&mut self, damage: u32) {
         self.life.current = self.life.current.saturating_sub(damage);
     }
 

@@ -1,6 +1,7 @@
 pub mod chat;
 pub mod combat;
 pub mod creature_ai;
+pub mod damage;
 pub mod death;
 pub mod description;
 pub mod events;

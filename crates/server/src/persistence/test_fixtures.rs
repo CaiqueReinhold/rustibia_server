@@ -13,7 +13,8 @@ use sqlx::PgPool;
 
 use crate::entities::vocation::Vocation;
 use crate::entities::{
-    agent::{Facing, Pool},
+    agent::{Agent, Facing, Pool},
+    creature::{BloodType, CreatureKind},
     items::{ItemConfig, ItemId},
     position::Position,
     skills::{SkillType, SkillValue},
@@ -127,4 +128,18 @@ pub fn a_test_snapshot(id: u32, account_id: i32) -> PlayerSnapshot {
         )]),
         inventory: HashMap::new(),
     }
+}
+
+pub fn a_test_creature(name: &str, life: u32, damage: (u32, u32)) -> Agent {
+    Agent::from_creature_kind(Arc::new(CreatureKind {
+        name: name.to_string(),
+        life: Pool {
+            current: life,
+            maximum: life,
+        },
+        outfit: (21, (0, 0, 0, 0)),
+        speed: 100,
+        auto_attack_damage: damage,
+        blood_type: BloodType::Blood,
+    }))
 }

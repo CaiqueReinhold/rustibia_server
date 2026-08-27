@@ -289,7 +289,7 @@ impl MessageRouterActor {
             BroadcastMessage::OpenContainer { agent_key, .. } => {
                 self.send_to(message, agent_key);
             }
-            BroadcastMessage::PlayerDespawned {
+            BroadcastMessage::AgentDespawned {
                 agent_key,
                 position,
                 ..

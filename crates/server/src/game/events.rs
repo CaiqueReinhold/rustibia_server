@@ -60,7 +60,7 @@ pub enum BroadcastMessage {
         from_position: Position,
         to_position: Position,
     },
-    PlayerDespawned {
+    AgentDespawned {
         agent_key: AgentKey,
         position: Position,
         snapshot: Option<Arc<PlayerSnapshot>>,

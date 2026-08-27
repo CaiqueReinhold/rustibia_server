@@ -246,23 +246,7 @@ impl WorldActor {
                 }
             }
 
-            let attackers: Vec<AgentKey> = self
-                .map
-                .iter_agents()
-                .filter(|(_, agent)| agent.target().is_some())
-                .map(|(key, _)| key)
-                .collect();
-            for agent_key in attackers {
-                let (msgs, cmds) = combat::auto_attack_target(
-                    &mut self.map,
-                    agent_key,
-                    &mut self.roll,
-                    &self.item_configs,
-                    self.tick,
-                );
-                broadcast_messages.extend(msgs);
-                self.apply_commands(cmds);
-            }
+            self.drive_auto_attacks(&mut broadcast_messages);
 
             self.shared_map.store(Arc::new(self.map.clone()));
             let _ = self.tick_tx.send(self.tick);
@@ -284,6 +268,33 @@ impl WorldActor {
         for cmd in cmds {
             self.command_queue.push(cmd);
         }
+    }
+
+    fn drive_auto_attacks(&mut self, broadcast_messages: &mut Vec<BroadcastMessage>) {
+        let attackers: Vec<AgentKey> = self
+            .map
+            .iter_agents()
+            .filter(|(_, agent)| agent.target().is_some())
+            .map(|(key, _)| key)
+            .collect();
+
+        let mut scheduled = Vec::new();
+        for agent_key in attackers {
+            let Some(plan) =
+                combat::plan_auto_attack(&self.map, agent_key, &mut self.roll, self.tick)
+            else {
+                continue;
+            };
+            combat::execute_attack(
+                &mut self.map,
+                plan,
+                &self.item_configs,
+                self.tick,
+                broadcast_messages,
+                &mut scheduled,
+            );
+        }
+        self.apply_commands(scheduled);
     }
 
     fn handle_command(
@@ -367,7 +378,7 @@ impl WorldActor {
             WorldCommand::DespawnPlayer { agent_key, .. } => {
                 if let Some((_, position)) = self.map.remove_agent(agent_key) {
                     info!("Player {:?} despawned after disconnect", agent_key);
-                    broadcast_messages.push(BroadcastMessage::PlayerDespawned {
+                    broadcast_messages.push(BroadcastMessage::AgentDespawned {
                         agent_key,
                         snapshot: None,
                         position,
@@ -446,7 +457,7 @@ impl WorldActor {
             .and_then(|pos| agent.to_snapshot(pos))
             .map(Arc::new);
         self.map.remove_agent(agent_key);
-        broadcast_messages.push(BroadcastMessage::PlayerDespawned {
+        broadcast_messages.push(BroadcastMessage::AgentDespawned {
             agent_key,
             snapshot,
             position: position.unwrap_or_default(),
@@ -497,7 +508,7 @@ impl WorldActor {
 mod tests {
     use super::*;
     use crate::entities::map::MapTile;
-    use crate::persistence::test_fixtures::a_test_snapshot;
+    use crate::persistence::test_fixtures::{a_test_creature, a_test_snapshot};
 
     /// Builds a `WorldActor` from bare fields, the same way `SessionActorHandle::for_test`
     /// (session.rs) fabricates a channel-backed handle for tests. The `rx` half of the
@@ -558,5 +569,33 @@ mod tests {
             [BroadcastMessage::TargetChanged { agent_key, target: Some(t) }]
                 if *agent_key == attacker && *t == victim
         ));
+    }
+
+    /// The behavioural claim of the whole change: a creature killed earlier in the pass
+    /// does not get its swing. Insertion order fixes who goes first — `iter_agents` walks
+    /// slots in index order — so `killer` is asked before `victim`.
+    #[tokio::test]
+    async fn a_creature_killed_this_pass_does_not_swing_back() {
+        let a = Position::new(5, 5, 7);
+        let b = Position::new(6, 5, 7);
+        let mut map = GameMap::new();
+        map.insert_tile(a.clone(), MapTile::new());
+        map.insert_tile(b.clone(), MapTile::new());
+        let killer = map
+            .insert_agent(a_test_creature("Killer", 100, (5, 5)), &a)
+            .unwrap();
+        let victim = map
+            .insert_agent(a_test_creature("Victim", 1, (7, 7)), &b)
+            .unwrap();
+        map.get_agent_mut(killer).unwrap().set_target(Some(victim));
+        map.get_agent_mut(victim).unwrap().set_target(Some(killer));
+
+        let mut actor = a_test_world_actor(map);
+        let mut broadcasts = Vec::new();
+
+        actor.drive_auto_attacks(&mut broadcasts);
+
+        assert!(actor.map.get_agent(victim).is_none());
+        assert_eq!(actor.map.get_agent(killer).unwrap().life().current, 100);
     }
 }
