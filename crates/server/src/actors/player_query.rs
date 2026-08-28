@@ -5,10 +5,12 @@ use crate::{
         map::GameMap,
         player::InventorySlot,
         position::{ItemPlacement, Position},
+        skills::SkillType,
     },
     game::map_query::find_item_in_reach,
+    game::skills::{progress_bp, total_experience},
     local_id::LocalIdMap,
-    messages::ServerMessage,
+    messages::{ServerMessage, SkillProgress},
 };
 
 pub fn get_player_desc(map: &GameMap, key: AgentKey, id: AgentId) -> Option<ServerMessage> {
@@ -39,6 +41,34 @@ pub fn get_player_desc(map: &GameMap, key: AgentKey, id: AgentId) -> Option<Serv
         inventory_feet: slot_item(InventorySlot::Feet),
         inventory_ring: slot_item(InventorySlot::Ring),
         inventory_trinket: slot_item(InventorySlot::Trinket),
+    })
+}
+
+pub fn get_player_skills(map: &GameMap, key: AgentKey) -> Option<ServerMessage> {
+    let player = map.get_player(key)?;
+
+    let mut skills: Vec<(SkillType, SkillProgress)> = player
+        .skills
+        .iter()
+        .map(|(skill, value)| {
+            (
+                skill.clone(),
+                SkillProgress {
+                    level: value.value,
+                    percent_bp: progress_bp(player.vocation, skill, value),
+                },
+            )
+        })
+        .collect();
+    skills.sort_by_key(|(skill, _)| skill.as_id());
+
+    Some(ServerMessage::PlayerSkills {
+        experience: player
+            .skills
+            .get(&SkillType::Level)
+            .map(total_experience)
+            .unwrap_or(0),
+        skills,
     })
 }
 
@@ -75,5 +105,75 @@ pub fn client_position_to_placement(
         Some((ItemPlacement::Inventory(slot, agent_key), None))
     } else {
         Some((ItemPlacement::Map(position), None))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::entities::agent::Agent;
+    use crate::entities::map::MapTile;
+    use crate::entities::skills::{SkillType, SkillValue};
+    use crate::messages::ServerMessage;
+    use crate::persistence::test_fixtures::a_test_snapshot;
+
+    /// Rows arrive in id order regardless of how the player's `HashMap` iterates,
+    /// so the frame is reproducible and a client can rely on it.
+    #[tokio::test]
+    async fn skills_are_sent_in_id_order_with_the_experience_total() {
+        let position = Position::new(100, 100, 7);
+        let mut map = GameMap::new();
+        map.insert_tile(position.clone(), MapTile::new());
+        let key = map
+            .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &position)
+            .unwrap();
+        let player = map.get_player_mut(key).unwrap();
+        player.skills.insert(
+            SkillType::Sword,
+            SkillValue {
+                value: 11,
+                current_ticks: 27,
+            },
+        );
+        player.skills.insert(
+            SkillType::Level,
+            SkillValue {
+                value: 8,
+                current_ticks: 55,
+            },
+        );
+
+        let message = get_player_skills(&map, key).unwrap();
+
+        let ServerMessage::PlayerSkills { experience, skills } = message else {
+            panic!("expected PlayerSkills");
+        };
+        assert_eq!(experience, 4255);
+        assert_eq!(skills.len(), 2);
+        assert_eq!(skills[0].0, SkillType::Level);
+        assert_eq!(skills[0].1.level, 8);
+        assert_eq!(skills[1].0, SkillType::Sword);
+        assert_eq!(skills[1].1.percent_bp, 4909);
+    }
+
+    /// A character whose `Level` row never loaded still gets a window, with a
+    /// zero rather than a missing message.
+    #[tokio::test]
+    async fn a_missing_level_row_reports_no_experience() {
+        let position = Position::new(100, 100, 7);
+        let mut map = GameMap::new();
+        map.insert_tile(position.clone(), MapTile::new());
+        let key = map
+            .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &position)
+            .unwrap();
+        map.get_player_mut(key).unwrap().skills.clear();
+
+        let ServerMessage::PlayerSkills { experience, skills } =
+            get_player_skills(&map, key).unwrap()
+        else {
+            panic!("expected PlayerSkills");
+        };
+        assert_eq!(experience, 0);
+        assert!(skills.is_empty());
     }
 }
