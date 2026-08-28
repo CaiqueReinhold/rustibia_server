@@ -170,28 +170,11 @@ pub(crate) fn i16_to_facing(n: i16) -> Option<Facing> {
 }
 
 fn skill_type_to_i16(s: &SkillType) -> i16 {
-    match s {
-        SkillType::Level => 0,
-        SkillType::Axe => 1,
-        SkillType::Club => 2,
-        SkillType::Sword => 3,
-        SkillType::Distance => 4,
-        SkillType::Magic => 5,
-        SkillType::Shielding => 6,
-    }
+    s.as_id() as i16
 }
 
 pub(crate) fn i16_to_skill_type(n: i16) -> Option<SkillType> {
-    match n {
-        0 => Some(SkillType::Level),
-        1 => Some(SkillType::Axe),
-        2 => Some(SkillType::Club),
-        3 => Some(SkillType::Sword),
-        4 => Some(SkillType::Distance),
-        5 => Some(SkillType::Magic),
-        6 => Some(SkillType::Shielding),
-        _ => None,
-    }
+    u8::try_from(n).ok().and_then(SkillType::from_id)
 }
 
 #[cfg(test)]
