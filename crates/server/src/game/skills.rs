@@ -37,6 +37,29 @@ pub fn required_ticks(vocation: Vocation, skill: &SkillType, level: u16) -> u64 
     }
 }
 
+fn bp_from(current_ticks: u64, current_cost: u64, next_cost: u64) -> u16 {
+    if next_cost <= current_cost {
+        return 10_000;
+    }
+
+    ((current_ticks as u128 * 10_000) / next_cost as u128).min(10_000) as u16
+}
+
+/// Progress toward the next level in hundredths of a percent, `0..=10_000`.
+pub fn progress_bp(vocation: Vocation, skill: &SkillType, value: &SkillValue) -> u16 {
+    bp_from(
+        value.current_ticks,
+        required_ticks(vocation, skill, value.value),
+        required_ticks(vocation, skill, value.value.saturating_add(1)),
+    )
+}
+
+/// Total experience for a `SkillType::Level` row: what every level below cost,
+/// plus progress through the current one.
+pub fn total_experience(value: &SkillValue) -> u64 {
+    exp_for_level(value.value).saturating_add(value.current_ticks)
+}
+
 /// Adds `ticks` of progress and reports how many levels were gained.
 /// `required(level)` gives the cost of the step into that level.
 fn advance(skill: &mut SkillValue, ticks: u64, required: impl Fn(u16) -> u64) -> u16 {
@@ -255,5 +278,58 @@ mod tests {
                 required_ticks(Vocation::Paladin, &SkillType::Level, 8)
             );
         }
+    }
+
+    #[test]
+    fn no_progress_is_an_empty_bar_and_the_threshold_is_a_full_one() {
+        assert_eq!(bp_from(0, 50, 55), 0);
+        assert_eq!(bp_from(55, 50, 55), 10_000);
+    }
+
+    #[test]
+    fn partial_progress_keeps_two_decimals() {
+        assert_eq!(bp_from(27, 50, 55), 4909);
+    }
+
+    /// A curve that has stopped rising is `advance`'s ceiling condition. The bar
+    /// has to read it the same way or a maxed skill draws as empty forever.
+    #[test]
+    fn a_ceiling_reads_as_a_full_bar() {
+        assert_eq!(bp_from(0, 100, 100), 10_000);
+        assert_eq!(bp_from(u64::MAX, 100, 90), 10_000);
+    }
+
+    #[test]
+    fn ticks_past_the_threshold_clamp() {
+        assert_eq!(bp_from(200, 50, 55), 10_000);
+    }
+
+    /// Above `u64::MAX / 10_000` a u64 multiply saturates and the ratio stops
+    /// tracking `current_ticks` — the bar freezes part-way instead of filling.
+    #[test]
+    fn progress_past_the_u64_multiply_boundary_still_tracks() {
+        let next_cost = 5_000_000_000_000_000;
+
+        assert_eq!(bp_from(next_cost / 2, 1, next_cost), 5_000);
+        assert_eq!(bp_from(next_cost / 100 * 98, 1, next_cost), 9_800);
+    }
+
+    /// Level 11 -> 12 costs a knight 55; the step into 11 cost 50. Measuring 27
+    /// ticks against the wrong one gives 5400 instead of 4909.
+    #[test]
+    fn progress_is_measured_against_the_next_levels_cost() {
+        let value = skill(11, 27);
+
+        assert_eq!(
+            progress_bp(Vocation::Knight, &SkillType::Sword, &value),
+            4909
+        );
+    }
+
+    #[test]
+    fn total_experience_is_the_levels_below_plus_the_current_one() {
+        assert_eq!(total_experience(&skill(1, 0)), 0);
+        assert_eq!(total_experience(&skill(8, 0)), 4200);
+        assert_eq!(total_experience(&skill(8, 55)), 4255);
     }
 }
