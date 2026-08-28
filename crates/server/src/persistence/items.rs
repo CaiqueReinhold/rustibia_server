@@ -10,7 +10,7 @@ use thiserror::Error;
 use crate::config::CONFIG;
 use crate::entities::combat::{AmmoType, CombatElement, WeaponType};
 use crate::entities::items::{
-    FloorChangeDirection, ItemAction, ItemAttribute, ItemConfig, ItemFlag, ItemId, ItemMultiAction,
+    FloorChangeDirection, ItemAction, ItemAttribute, ItemConfig, ItemFlag, ItemId,
 };
 use crate::entities::player::InventorySlot;
 use crate::game::Tick;
@@ -62,6 +62,7 @@ fn parse_flag(s: &str) -> Option<ItemFlag> {
         "bottom" => Some(ItemFlag::Bottom),
         "container" => Some(ItemFlag::Container),
         "usable" => Some(ItemFlag::Usable),
+        "multiuse" => Some(ItemFlag::Multiuse),
         "avoid" => Some(ItemFlag::Avoid),
         "ammo_container" => Some(ItemFlag::AmmoContainer),
         "liquidpool" => Some(ItemFlag::LiquidPool),
@@ -104,11 +105,6 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
             };
             Some(ItemAttribute::Action(action))
         }
-        "multi_action" => match value.as_str()? {
-            "shovel" => Some(ItemAttribute::MultiAction(ItemMultiAction::Shovel)),
-            "rope" => Some(ItemAttribute::MultiAction(ItemMultiAction::Rope)),
-            _ => None,
-        },
         "decay" => {
             let duration = value.get("duration")?.as_u64()? as Tick;
             let decay_to = value.get("decay_to")?.as_u64()? as ItemId;

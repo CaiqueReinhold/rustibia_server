@@ -204,14 +204,19 @@ pub(super) fn transform(
     into: ItemId,
     current_tick: Tick,
 ) -> Result<(), ItemActionError> {
+    let Some(config) = ITEM_CONFIGS.get(&into) else {
+        error!(
+            "cannot transform {:?} into {into}: no such item config",
+            item.guid
+        );
+        return Err(ItemActionError::ActionFailed);
+    };
+
     let Ok((old_item, source_index, source_container)) = remove_item_at(broadcasts, map, item, 1)
     else {
         return Err(ItemActionError::ActionFailed);
     };
 
-    let config = ITEM_CONFIGS
-        .get(&into)
-        .unwrap_or_else(|| panic!("item config missing for transform target {into}"));
     let new_item = Item::new(config.clone(), 1);
     check_decay(commands, &new_item, item.placement.clone(), current_tick);
 
@@ -263,4 +268,54 @@ pub(super) fn transform(
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::entities::map::MapTile;
+    use crate::entities::position::Position;
+
+    /// `into` comes from data -- a `transform(N)` attribute or a diggable's `id + 1` -- so
+    /// an id the catalogue does not carry is reachable by editing an asset file.
+    #[test]
+    fn a_transform_into_an_unknown_item_refuses_and_keeps_the_original() {
+        let missing = 65535;
+        assert!(
+            !ITEM_CONFIGS.contains_key(&missing),
+            "{missing} must stay absent for this test to mean anything"
+        );
+
+        let pos = Position::new(10, 10, 7);
+        let sand = Item::new(ITEM_CONFIGS.get(&614).unwrap().clone(), 1);
+        let guid = sand.guid.clone();
+        let mut tile = MapTile::new();
+        tile.push_item(sand);
+        let mut map = GameMap::new();
+        map.insert_tile(pos.clone(), tile);
+
+        let (mut broadcasts, mut commands) = (Vec::new(), Vec::new());
+        let result = transform(
+            &mut broadcasts,
+            &mut commands,
+            &mut map,
+            &ItemRef {
+                guid: guid.clone(),
+                placement: ItemPlacement::Map(pos.clone()),
+            },
+            missing,
+            0,
+        );
+
+        assert!(result.is_err());
+        assert!(
+            map.get_item_by_id(&pos, &guid).is_some(),
+            "the original item was destroyed"
+        );
+        assert!(
+            broadcasts.is_empty(),
+            "a refused transform must not report a change: {broadcasts:?}"
+        );
+        assert!(commands.is_empty());
+    }
 }

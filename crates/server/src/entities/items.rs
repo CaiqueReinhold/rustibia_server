@@ -39,6 +39,7 @@ pub enum ItemFlag {
     Cumulative,
     Container,
     Usable,
+    Multiuse,
     Avoid,
     AmmoContainer,
     LiquidPool,
@@ -87,7 +88,6 @@ pub enum ItemAttribute {
     Inventory(InventorySlot),
     TileFriction(u16),
     Action(ItemAction),
-    MultiAction(ItemMultiAction),
     Decay { duration: Tick, decay_to: ItemId },
     WeaponType(WeaponType),
     WeaponAttack(u16),
@@ -276,13 +276,6 @@ impl Item {
     pub fn get_action(&self) -> Option<ItemAction> {
         self.config.get_attributes().find_map(|attr| match attr {
             ItemAttribute::Action(a) => Some(a.clone()),
-            _ => None,
-        })
-    }
-
-    pub fn get_multi_action(&self) -> Option<ItemMultiAction> {
-        self.config.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::MultiAction(a) => Some(a.clone()),
             _ => None,
         })
     }

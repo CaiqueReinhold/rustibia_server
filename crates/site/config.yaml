@@ -8,7 +8,7 @@ new_character:
   facing: 2
   life: 150
   mana: 100
-  capacity: 400
+  capacity: 40000
   speed: 100
   outfit_id_female: 136
   outfit_id_male: 128

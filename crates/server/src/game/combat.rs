@@ -375,6 +375,20 @@ mod tests {
         )
     }
 
+    fn a_weapon_with_attack(attack: u16) -> Item {
+        Item::new(
+            a_config(
+                8,
+                HashSet::new(),
+                HashSet::from([
+                    ItemAttribute::WeaponType(WeaponType::Sword),
+                    ItemAttribute::WeaponAttack(attack),
+                ]),
+            ),
+            1,
+        )
+    }
+
     fn a_bow(range: Option<u8>) -> Item {
         let mut attrs = HashSet::from([
             ItemAttribute::WeaponType(WeaponType::Bow),
@@ -794,11 +808,28 @@ mod tests {
         ));
     }
 
-    /// An unarmed level-1 player rolls zero base damage — `weapon_attack()` is 0, so both
-    /// damage bounds round away to nothing. That swing must not be reported as a block: the
-    /// rat here has neither armour nor defence for anything to have blocked it with.
+    /// Zero has to come from the weapon: `weapon_attack()` falls back to **5** when no
+    /// weapon is held, so an unarmed player is not a zero-damage one. An attack of 0
+    /// zeroes both damage bounds whatever the skill, because it is a factor in each.
     #[test]
     fn a_zero_damage_hit_is_not_reported_as_a_block() {
+        let (map, attacker, _) = duel(
+            Agent::from_player(armed(Some(a_weapon_with_attack(0)), None)),
+            a_test_creature("Rat", 10, (1, 2)),
+        );
+        let mut roll = Rolls::new(1);
+
+        let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
+
+        assert!(matches!(plan.damage.element, CombatElement::Physical));
+        assert_eq!(plan.damage.value, 0, "a zero-attack weapon deals nothing");
+        assert!(!plan.damage.blocked_shield);
+        assert!(!plan.damage.blocked_armor);
+    }
+
+    /// Pins the `weapon_attack()` fallback the test above depends on.
+    #[test]
+    fn an_unarmed_player_still_deals_damage() {
         let (map, attacker, _) = duel(
             Agent::from_player(a_test_snapshot(1, 1)),
             a_test_creature("Rat", 10, (1, 2)),
@@ -807,8 +838,8 @@ mod tests {
 
         let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
 
-        assert_eq!(plan.damage.value, 0, "unarmed at level 1 deals nothing");
-        assert!(!plan.damage.blocked_shield);
-        assert!(!plan.damage.blocked_armor);
+        assert!(plan.damage.value > 0, "unarmed swings must still hurt");
+        assert_eq!(get_min_damage(5, 1, GAME_CONFIG.combat.unarmed_skill), 5);
+        assert_eq!(get_max_damage(5, 1, GAME_CONFIG.combat.unarmed_skill), 48);
     }
 }

@@ -6,7 +6,10 @@ use serde::Deserialize;
 use crate::entities::vocation::Vocation;
 use crate::{
     config::CONFIG,
-    entities::{chat::ChannelId, items::ItemId},
+    entities::{
+        chat::ChannelId,
+        items::{ItemId, ItemMultiAction},
+    },
     game::Tick,
 };
 
@@ -37,11 +40,27 @@ pub struct ItemActionConfig {
 #[derive(Deserialize)]
 pub struct MultiActionConfig {
     #[serde(default)]
+    pub shovel_ids: Vec<ItemId>,
+    #[serde(default)]
+    pub rope_ids: Vec<ItemId>,
+    #[serde(default)]
     pub diggable_ids: Vec<ItemId>,
     #[serde(default)]
     pub opened_hole_ids: Vec<ItemId>,
     #[serde(default)]
     pub rope_spot_ids: Vec<ItemId>,
+}
+
+impl MultiActionConfig {
+    pub fn tool_action(&self, item_id: ItemId) -> Option<ItemMultiAction> {
+        if self.shovel_ids.contains(&item_id) {
+            Some(ItemMultiAction::Shovel)
+        } else if self.rope_ids.contains(&item_id) {
+            Some(ItemMultiAction::Rope)
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Deserialize)]

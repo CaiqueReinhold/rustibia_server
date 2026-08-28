@@ -1,4 +1,6 @@
 multi_action:
+  shovel_ids: [3457, 5710, 7883, 19203, 21373, 36981]
+  rope_ids: [646, 3003, 7884, 21375]
   rope_spot_ids: [386]
   opened_hole_ids: [21342]
   diggable_ids: [593, 606, 608, 614, 21341]
