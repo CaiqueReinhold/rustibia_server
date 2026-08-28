@@ -222,8 +222,7 @@ impl WorldActor {
             self.tick += 1;
             debug!("World: starting tick {}", self.tick);
 
-            let mut broadcast_messages: Vec<BroadcastMessage> =
-                Vec::with_capacity(CONFIG.max_queue_size);
+            let mut broadcast_messages: Vec<BroadcastMessage> = Vec::new();
 
             if !self.command_queue.is_empty() {
                 info!(

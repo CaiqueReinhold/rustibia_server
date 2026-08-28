@@ -96,6 +96,10 @@ pub enum ItemAttribute {
     WeaponRange(u8),
     ManaCost(u32),
     MissileId(u16),
+    Defense(u16),
+    ExtraDef(i16),
+    Armor(u16),
+    Speed(i16),
 }
 
 #[derive(Debug)]
@@ -133,6 +137,34 @@ impl ItemConfig {
 
     pub fn get_attributes(&self) -> impl Iterator<Item = &ItemAttribute> {
         self.attributes.iter()
+    }
+
+    pub fn attr_armor(&self) -> Option<u16> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::Armor(a) => Some(*a),
+            _ => None,
+        })
+    }
+
+    pub fn attr_extra_def(&self) -> Option<i16> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::ExtraDef(a) => Some(*a),
+            _ => None,
+        })
+    }
+
+    pub fn attr_defense(&self) -> Option<u16> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::Defense(a) => Some(*a),
+            _ => None,
+        })
+    }
+
+    pub fn attr_weapon_type(&self) -> Option<WeaponType> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::WeaponType(a) => Some(*a),
+            _ => None,
+        })
     }
 }
 

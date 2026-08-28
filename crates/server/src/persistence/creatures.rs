@@ -37,6 +37,8 @@ struct RawCreature {
     damage: RawDamage,
     speed: u16,
     blood_type: BloodType,
+    armor: u16,
+    defense: u16,
 }
 
 #[derive(Deserialize)]
@@ -63,6 +65,8 @@ pub fn load_creatures(
                 outfit: (raw.outfit.id, raw.outfit.colors),
                 speed: raw.speed,
                 blood_type: raw.blood_type,
+                armor: raw.armor,
+                defense: raw.defense,
             };
             (id, Arc::new(kind))
         })

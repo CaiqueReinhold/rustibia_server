@@ -55,14 +55,16 @@ impl SessionActor {
                     delta: Vec::new(),
                 })
                 .await?;
-            self.connection
-                .send_message(ServerMessage::FloatingText {
-                    text: damage.value.to_string(),
-                    agent_id,
-                    text_type: FloatingTextType::HitPoints,
-                    color: Some(text_color),
-                })
-                .await?;
+            if damage.value > 0 {
+                self.connection
+                    .send_message(ServerMessage::FloatingText {
+                        text: damage.value.to_string(),
+                        agent_id,
+                        text_type: FloatingTextType::HitPoints,
+                        color: Some(text_color),
+                    })
+                    .await?;
+            }
             self.connection
                 .send_message(ServerMessage::AgentLifeChanged {
                     agent_id,
@@ -106,6 +108,7 @@ impl SessionActor {
             }
             SkillType::Magic => format!("You advanced to magic level {}", p.skill_magic()),
             SkillType::Level => format!("You advanced to level {}", p.level()),
+            SkillType::Shielding => format!("You advanced to shielding {}", p.skill_shielding()),
         });
 
         if let Some(message) = message {

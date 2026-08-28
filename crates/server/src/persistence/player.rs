@@ -177,6 +177,7 @@ fn skill_type_to_i16(s: &SkillType) -> i16 {
         SkillType::Sword => 3,
         SkillType::Distance => 4,
         SkillType::Magic => 5,
+        SkillType::Shielding => 6,
     }
 }
 
@@ -188,6 +189,7 @@ pub(crate) fn i16_to_skill_type(n: i16) -> Option<SkillType> {
         3 => Some(SkillType::Sword),
         4 => Some(SkillType::Distance),
         5 => Some(SkillType::Magic),
+        6 => Some(SkillType::Shielding),
         _ => None,
     }
 }

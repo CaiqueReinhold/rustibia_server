@@ -577,6 +577,8 @@ mod tests {
             auto_attack_damage: (1, 2),
             outfit: (1, (0, 0, 0, 0)),
             blood_type: BloodType::Blood,
+            armor: 1,
+            defense: 1,
         }))
     }
 

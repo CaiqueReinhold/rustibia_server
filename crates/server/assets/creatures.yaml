@@ -4,8 +4,23 @@ creatures:
     life: 8200
     speed: 230
     blood_type: blood
+    armor: 10
+    defense: 20
     outfit:
       id: 35
+      colors: [0, 0, 0, 0]
+    damage:
+      min: 1
+      max: 25
+  elf:
+    name: Elf
+    life: 80
+    speed: 80
+    blood_type: blood
+    armor: 10
+    defense: 20
+    outfit:
+      id: 62
       colors: [0, 0, 0, 0]
     damage:
       min: 1

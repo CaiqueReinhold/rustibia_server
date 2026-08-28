@@ -12,4 +12,5 @@ pub enum SkillType {
     Axe,
     Distance,
     Magic,
+    Shielding,
 }

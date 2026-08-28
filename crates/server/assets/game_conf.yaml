@@ -57,8 +57,9 @@ skills:
     melee: 50
     distance: 30
     magic: 1600
+    shielding: 100
   vocations:
-    knight: { melee: 1.1, distance: 1.4, magic: 3.0 }
-    paladin: { melee: 1.2, distance: 1.1, magic: 1.4 }
-    sorcerer: { melee: 2.0, distance: 2.0, magic: 1.1 }
-    druid: { melee: 1.8, distance: 1.8, magic: 1.1 }
+    knight: { melee: 1.1, distance: 1.4, magic: 3.0, shielding: 1.1 }
+    paladin: { melee: 1.2, distance: 1.1, magic: 1.4, shielding: 1.1 }
+    sorcerer: { melee: 2.0, distance: 2.0, magic: 1.1, shielding: 1.5 }
+    druid: { melee: 1.8, distance: 1.8, magic: 1.1, shielding: 1.5 }

@@ -29,8 +29,8 @@ pub fn apply_damage(
         return;
     };
 
-    // TODO: apply shield + armor + mitigation
     // TODO: apply element modifier
+
     let life = agent.life().current;
     let survivable = if agent.is_creature() {
         life
@@ -40,6 +40,12 @@ pub fn apply_damage(
 
     damage.value = damage.value.min(survivable);
     if damage.value == 0 {
+        if damage.blocked_shield || damage.blocked_armor {
+            msgs.push(BroadcastMessage::DamageTaken {
+                agent_key: target,
+                damage,
+            });
+        }
         return;
     }
 
@@ -116,7 +122,6 @@ fn draw_blood(
         position: attacked_pos.clone(),
     })
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;

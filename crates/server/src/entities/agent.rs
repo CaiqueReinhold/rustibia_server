@@ -54,7 +54,7 @@ enum AgentInner {
 
 #[derive(Debug, Clone, Default)]
 struct Modifiers {
-    speed: u16,
+    speed: i16,
 }
 
 new_key_type! { pub struct AgentKey; }
@@ -109,22 +109,26 @@ impl Agent {
 
     pub fn from_player(player: PlayerSnapshot) -> Self {
         let inventory = Inventory::from_snapshot(player.inventory);
+        let mut p = Player {
+            id: player.id,
+            name: player.name,
+            account_id: player.account_id,
+            vocation: player.vocation,
+            position: player.position,
+            origin: player.origin,
+            mana: player.mana,
+            capacity: Pool {
+                current: inventory.total_weight(),
+                maximum: player.capacity,
+            },
+            inventory: Arc::new(inventory),
+            skills: player.skills,
+            armor: 0,
+            defense: 0,
+        };
+        p.update_equipment_stats();
         Self {
-            inner: AgentInner::Player(Arc::new(Player {
-                id: player.id,
-                name: player.name,
-                account_id: player.account_id,
-                vocation: player.vocation,
-                position: player.position,
-                origin: player.origin,
-                mana: player.mana,
-                capacity: Pool {
-                    current: inventory.total_weight(),
-                    maximum: player.capacity,
-                },
-                inventory: Arc::new(inventory),
-                skills: player.skills,
-            })),
+            inner: AgentInner::Player(Arc::new(p)),
             facing: player.facing,
             life: player.life,
             outfit: player.outfit,
@@ -177,7 +181,7 @@ impl Agent {
     }
 
     pub fn speed(&self) -> u16 {
-        self.base_speed + self.modifiers.speed
+        i16::max(0, (self.base_speed as i16) + self.modifiers.speed) as u16
     }
 
     pub fn facing(&self) -> Facing {
@@ -225,6 +229,20 @@ impl Agent {
         match &self.inner {
             AgentInner::Player(..) => BloodType::Blood,
             AgentInner::Creature(c) => c.blood_type.clone(),
+        }
+    }
+
+    pub fn armor(&self) -> u16 {
+        match &self.inner {
+            AgentInner::Creature(c) => c.armor,
+            AgentInner::Player(p) => p.armor,
+        }
+    }
+
+    pub fn defense(&self) -> u16 {
+        match &self.inner {
+            AgentInner::Creature(c) => c.defense,
+            AgentInner::Player(p) => p.defense,
         }
     }
 
@@ -317,6 +335,8 @@ mod tests {
             auto_attack_damage: (1, 2),
             outfit: (1, (0, 0, 0, 0)),
             blood_type: BloodType::Blood,
+            armor: 1,
+            defense: 1,
         }));
         let pos = Position {
             x: 200,
@@ -377,6 +397,8 @@ mod tests {
             outfit: (1, (0, 0, 0, 0)),
             speed: 1,
             blood_type: BloodType::Blood,
+            armor: 1,
+            defense: 1,
         }));
         assert!(!player.is_creature());
         assert!(creature.is_creature());
@@ -395,6 +417,8 @@ mod tests {
             outfit: (35, (0, 0, 0, 0)),
             speed: 1,
             blood_type: BloodType::Blood,
+            armor: 1,
+            defense: 1,
         };
         let agent = Agent::from_creature_kind(Arc::new(kind));
         assert!(agent.is_creature());

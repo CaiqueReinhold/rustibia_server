@@ -104,6 +104,37 @@ fn missile_id(item: &Item) -> Option<u16> {
     })
 }
 
+fn apply_shield(base_attack_value: u32, target: &Agent, roll: &mut Rolls) -> u32 {
+    let defense_value = if target.is_creature() {
+        target.defense() as u32
+    } else {
+        let def = target.defense() as f32;
+        let player = target.get_player().unwrap();
+        let skill = if player.has_shield() {
+            player.skill_shielding() as f32
+        } else {
+            match player.weapon_type() {
+                WeaponType::Axe => player.skill_axe() as f32,
+                WeaponType::Sword => player.skill_sword() as f32,
+                WeaponType::Club => player.skill_club() as f32,
+                _ => 0.,
+            }
+        };
+
+        ((skill / 4. + 2.23) * def * 0.15) as u32
+    };
+    let defended = roll.uniform(defense_value / 2, defense_value);
+    base_attack_value.saturating_sub(defended)
+}
+
+fn apply_armor(base_attack_value: u32, target: &Agent, roll: &mut Rolls) -> u32 {
+    let armor = target.armor() as u32;
+    if armor == 0 {
+        return base_attack_value;
+    }
+    base_attack_value.saturating_sub(roll.uniform(armor / 2, armor))
+}
+
 pub fn plan_auto_attack(
     map: &GameMap,
     attacker: AgentKey,
@@ -114,6 +145,7 @@ pub fn plan_auto_attack(
     let from = map.agent_position(attacker)?.clone();
     let target = agent.target()?;
     let to = map.agent_position(target)?.clone();
+    let target_agent = map.get_agent(agent.target()?)?;
 
     if agent.next_attack_tick > current_tick {
         return None;
@@ -147,12 +179,22 @@ pub fn plan_auto_attack(
         None => (AttackCost::None, None),
     };
 
-    let (trains, element, value) = if agent.is_creature() {
+    let (trains, element, mut value) = if agent.is_creature() {
         let (element, value) = get_creature_base_damage(agent.get_creature_kind()?, roll);
         (None, element, value)
     } else {
         get_player_base_damage(agent.get_player()?, roll)
     };
+
+    let is_blockable = matches!(element, CombatElement::Physical) && value > 0;
+    if is_blockable {
+        value = apply_shield(value, target_agent, roll);
+    }
+    let blocked_shield = is_blockable && value == 0;
+    if is_blockable && !blocked_shield {
+        value = apply_armor(value, target_agent, roll);
+    }
+    let blocked_armor = is_blockable && !blocked_shield && value == 0;
 
     Some(AttackPlan {
         attacker,
@@ -162,8 +204,8 @@ pub fn plan_auto_attack(
         damage: CombatDamage {
             element,
             value,
-            blocked_shield: false,
-            blocked_armor: false,
+            blocked_shield,
+            blocked_armor,
         },
         cost,
         trains,
@@ -188,6 +230,12 @@ pub fn execute_attack(
             to: plan.to,
             sprite_id,
         });
+    }
+
+    if plan.damage.blocked_shield
+        && let Some(player) = map.get_player_mut(plan.target)
+    {
+        tick_skill(player, plan.target, SkillType::Shielding, 1, msgs);
     }
 
     let writes_to_player = !matches!(plan.cost, AttackCost::None) || plan.trains.is_some();
@@ -246,6 +294,18 @@ fn consume_mana(
 
 pub fn get_damage_visuals(damage: &CombatDamage, attacked: &Agent) -> (u16, Color) {
     let blood_type = attacked.get_creature_kind().map(|c| &c.blood_type);
+    if damage.blocked_shield {
+        return (
+            GAME_CONFIG.effect_ids.shield_hit,
+            GAME_CONFIG.text_colors.lightblue,
+        );
+    }
+    if damage.blocked_armor {
+        return (
+            GAME_CONFIG.effect_ids.armor_hit,
+            GAME_CONFIG.text_colors.lightblue,
+        );
+    }
     let effect = match damage.element {
         CombatElement::Physical => match blood_type {
             Some(BloodType::Blood) => GAME_CONFIG.effect_ids.life_hit,
@@ -732,5 +792,23 @@ mod tests {
             map.get_player(attacker).unwrap(),
             snapshot.get_player(attacker).unwrap()
         ));
+    }
+
+    /// An unarmed level-1 player rolls zero base damage — `weapon_attack()` is 0, so both
+    /// damage bounds round away to nothing. That swing must not be reported as a block: the
+    /// rat here has neither armour nor defence for anything to have blocked it with.
+    #[test]
+    fn a_zero_damage_hit_is_not_reported_as_a_block() {
+        let (map, attacker, _) = duel(
+            Agent::from_player(a_test_snapshot(1, 1)),
+            a_test_creature("Rat", 10, (1, 2)),
+        );
+        let mut roll = Rolls::new(1);
+
+        let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
+
+        assert_eq!(plan.damage.value, 0, "unarmed at level 1 deals nothing");
+        assert!(!plan.damage.blocked_shield);
+        assert!(!plan.damage.blocked_armor);
     }
 }

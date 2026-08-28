@@ -129,6 +129,7 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
             "club" => Some(ItemAttribute::WeaponType(WeaponType::Club)),
             "bow" => Some(ItemAttribute::WeaponType(WeaponType::Bow)),
             "crossbow" => Some(ItemAttribute::WeaponType(WeaponType::Crossbow)),
+            "distance" => Some(ItemAttribute::WeaponType(WeaponType::Distance)),
             "wand" => Some(ItemAttribute::WeaponType(WeaponType::Wand)),
             "rod" => Some(ItemAttribute::WeaponType(WeaponType::Rod)),
             _ => None,
@@ -138,6 +139,7 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
             "bolt" => Some(ItemAttribute::AmmoType(AmmoType::Bolt)),
             _ => None,
         },
+        "extra_defense" => Some(ItemAttribute::ExtraDef(value.as_i64()? as i16)),
         "range" => Some(ItemAttribute::WeaponRange(value.as_i64()? as u8)),
         "mana_cost" => Some(ItemAttribute::ManaCost(value.as_i64()? as u32)),
         "missile_id" => Some(ItemAttribute::MissileId(value.as_i64()? as u16)),
@@ -147,6 +149,8 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
                 "capacity" => Some(ItemAttribute::Capacity(n as u8)),
                 "weight" => Some(ItemAttribute::Weight(n)),
                 "tile_friction" => Some(ItemAttribute::TileFriction(n as u16)),
+                "armor" => Some(ItemAttribute::Armor(n as u16)),
+                "defense" => Some(ItemAttribute::Defense(n as u16)),
                 _ => None,
             }
         }
@@ -188,4 +192,54 @@ pub fn load_items(
         .into_iter()
         .map(|(id, raw)| (id, Arc::new(convert(id, raw))))
         .collect())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn parse(key: &str, value: &str) -> Option<ItemAttribute> {
+        parse_attribute(key, &serde_yaml::from_str(value).unwrap())
+    }
+
+    #[test]
+    fn armour_and_defence_reach_the_config() {
+        assert_eq!(parse("armor", "11"), Some(ItemAttribute::Armor(11)));
+        assert_eq!(parse("defense", "25"), Some(ItemAttribute::Defense(25)));
+    }
+
+    /// `extradef` runs -3..3 in the source data. The `_ =>` fallback reads through
+    /// `as_u64()`, which returns `None` for a negative and would drop these silently —
+    /// the reading-side twin of the generators dropping fields on the way out.
+    #[test]
+    fn a_negative_extra_defence_is_not_dropped() {
+        assert_eq!(
+            parse("extra_defense", "-2"),
+            Some(ItemAttribute::ExtraDef(-2))
+        );
+        assert_eq!(
+            parse("extra_defense", "3"),
+            Some(ItemAttribute::ExtraDef(3))
+        );
+    }
+
+    /// The catalogue is the real check: a key that parses in isolation but is spelled
+    /// differently in `items.yaml` reaches nothing.
+    #[test]
+    fn the_shipped_catalogue_carries_armour_and_defence() {
+        let items = load_items(&CONFIG.items_file_path).unwrap();
+        let armoured = items.values().filter(|c| c.attr_armor().is_some()).count();
+        let defended = items
+            .values()
+            .filter(|c| c.attr_defense().is_some())
+            .count();
+        let extra = items
+            .values()
+            .filter(|c| c.attr_extra_def().is_some_and(|d| d < 0))
+            .count();
+
+        assert!(armoured > 300, "only {armoured} items carry armour");
+        assert!(defended > 500, "only {defended} items carry defence");
+        assert!(extra > 0, "no item kept a negative extra defence");
+    }
 }

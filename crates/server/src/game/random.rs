@@ -1,4 +1,4 @@
-use rand::{SeedableRng, rngs::Xoshiro256PlusPlus, seq::IndexedRandom};
+use rand::{RngExt, SeedableRng, rngs::Xoshiro256PlusPlus, seq::IndexedRandom};
 use rand_distr::{Distribution, Normal};
 
 pub struct Rolls {
@@ -23,6 +23,11 @@ impl Rolls {
             }
         };
         a + (v * (b - a) as f32).round() as u32
+    }
+
+    pub fn uniform(&mut self, min: u32, max: u32) -> u32 {
+        let (a, b) = (min.min(max), min.max(max));
+        self.rng.random_range(a..=b)
     }
 
     pub fn category_roll<'a, T>(&mut self, choices: &'a [T]) -> Option<&'a T> {

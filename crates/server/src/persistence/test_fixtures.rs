@@ -186,7 +186,20 @@ pub fn a_player_with_a_full_backpack(id: u32, account_id: i32) -> PlayerSnapshot
     snapshot
 }
 
+/// Undefended on purpose. Armour that quietly swallows every small hit would turn tests
+/// about something else green for the wrong reason; anything testing mitigation asks for
+/// it by name.
 pub fn a_test_creature(name: &str, life: u32, damage: (u32, u32)) -> Agent {
+    a_test_creature_with_defences(name, life, damage, 0, 0)
+}
+
+pub fn a_test_creature_with_defences(
+    name: &str,
+    life: u32,
+    damage: (u32, u32),
+    armor: u16,
+    defense: u16,
+) -> Agent {
     Agent::from_creature_kind(Arc::new(CreatureKind {
         name: name.to_string(),
         life: Pool {
@@ -197,5 +210,7 @@ pub fn a_test_creature(name: &str, life: u32, damage: (u32, u32)) -> Agent {
         speed: 100,
         auto_attack_damage: damage,
         blood_type: BloodType::Blood,
+        armor,
+        defense,
     }))
 }

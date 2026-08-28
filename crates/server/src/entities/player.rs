@@ -76,6 +76,8 @@ pub struct Player {
     pub capacity: Pool,
     pub inventory: Arc<Inventory>,
     pub skills: HashMap<SkillType, SkillValue>,
+    pub armor: u16,
+    pub defense: u16,
 }
 
 impl Player {
@@ -89,6 +91,13 @@ impl Player {
 
     pub fn has_enough_mana(&self, mana_cost: u32) -> bool {
         self.mana.current >= mana_cost
+    }
+
+    pub fn has_shield(&self) -> bool {
+        self.inventory
+            .get(&InventorySlot::RightHand)
+            .map(|it| it.config.attr_defense().is_some())
+            .unwrap_or(false)
     }
 
     pub fn weapon(&self) -> Option<&Item> {
@@ -114,7 +123,7 @@ impl Player {
                     _ => None,
                 })
             })
-            .unwrap_or(0)
+            .unwrap_or(5)
     }
 
     pub fn weapon_type(&self) -> WeaponType {
@@ -214,9 +223,47 @@ impl Player {
             .unwrap_or(1)
     }
 
+    pub fn skill_shielding(&self) -> u16 {
+        self.get_skill(SkillType::Shielding)
+            .map(|st| st.value)
+            .unwrap_or(10)
+    }
+
     pub fn level(&self) -> u16 {
         self.get_skill(SkillType::Level)
             .map(|st| st.value)
             .unwrap_or(1)
+    }
+
+    pub fn update_equipment_stats(&mut self) {
+        self.update_armor();
+        self.update_defense();
+    }
+
+    fn update_armor(&mut self) {
+        self.armor = self
+            .inventory
+            .slots()
+            .values()
+            .filter_map(|it| it.config.attr_armor())
+            .sum()
+    }
+
+    fn update_defense(&mut self) {
+        let weapon_extra = self
+            .inventory
+            .get(&InventorySlot::LeftHand)
+            .and_then(|w| w.config.attr_extra_def())
+            .unwrap_or(0);
+        self.defense = match self.inventory.get(&InventorySlot::RightHand) {
+            Some(it) => (it.config.attr_defense().unwrap_or(0) as i16 + weapon_extra).max(0) as u16,
+            None => self
+                .inventory
+                .get(&InventorySlot::LeftHand)
+                .map(|it| {
+                    (it.config.attr_defense().unwrap_or(0) as i16 + weapon_extra).max(0) as u16
+                })
+                .unwrap_or(0),
+        }
     }
 }

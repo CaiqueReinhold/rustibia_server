@@ -33,6 +33,7 @@ pub fn required_ticks(vocation: Vocation, skill: &SkillType, level: u16) -> u64 
         SkillType::Sword | SkillType::Axe | SkillType::Club => {
             geometric(cfg.base.melee, mult.melee, weapon_steps)
         }
+        SkillType::Shielding => geometric(cfg.base.shielding, mult.shielding, weapon_steps),
     }
 }
 

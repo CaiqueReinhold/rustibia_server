@@ -31,4 +31,6 @@ pub struct CreatureKind {
     pub speed: u16,
     pub auto_attack_damage: (u32, u32),
     pub blood_type: BloodType,
+    pub armor: u16,
+    pub defense: u16,
 }

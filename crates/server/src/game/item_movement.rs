@@ -312,12 +312,13 @@ pub fn move_item(
         Ok(())
     };
 
+    let container = target_container.as_ref().map(|guid| (guid.clone(), 0));
     let result = result.and_then(|_| {
         insert_item_at(
             &mut broadcasts,
             map,
             source_item.clone(),
-            target_container.map(|guid| (guid, 0)).as_ref(),
+            container.as_ref(),
             &to,
             None,
         )
@@ -351,8 +352,16 @@ pub fn move_item(
         return broadcasts;
     }
 
-    // Read before taking the mutable borrow: `get_player_mut` privatises the `Arc<Player>`
-    // through `make_mut`, and most moves leave carried weight where it already was.
+    let source_is_equip =
+        matches!(source.placement, ItemPlacement::Inventory(..)) && source_container.is_none();
+    let target_is_equip = matches!(to, ItemPlacement::Inventory(..)) && target_container.is_none();
+
+    if (source_is_equip || target_is_equip)
+        && let Some(player) = map.get_player_mut(agent)
+    {
+        player.update_equipment_stats();
+    }
+
     let carried_weight = map
         .get_player(agent)
         .filter(|player| player.capacity.current != player.inventory.carried_weight)
@@ -626,5 +635,68 @@ mod tests {
             map.get_player(agent).unwrap(),
             before.get_player(agent).unwrap()
         ));
+    }
+
+    fn an_armoured_helmet() -> Item {
+        Item::new(
+            Arc::new(ItemConfig::new(
+                4321,
+                "helmet".to_string(),
+                None,
+                None,
+                HashSet::from([ItemFlag::Take]),
+                HashSet::from([
+                    ItemAttribute::Weight(100),
+                    ItemAttribute::Inventory(InventorySlot::Head),
+                    ItemAttribute::Armor(8),
+                ]),
+            )),
+            1,
+        )
+    }
+
+    /// Both directions, because only one of them broke: the equip half passed while the
+    /// un-equip half silently kept the armour, leaving a player protected by a helmet
+    /// lying on the floor.
+    #[test]
+    fn equipping_and_unequipping_track_the_armour_total() {
+        let (mut map, agent, source, target, guid) = a_player_beside(an_armoured_helmet());
+        assert_eq!(map.get_player(agent).unwrap().armor, 0);
+
+        move_item(
+            &mut map,
+            agent,
+            ItemRef {
+                guid: guid.clone(),
+                placement: ItemPlacement::Map(source),
+            },
+            1,
+            ItemPlacement::Inventory(InventorySlot::Head, agent),
+            None,
+        );
+
+        assert_eq!(
+            map.get_player(agent).unwrap().armor,
+            8,
+            "equipping should count it"
+        );
+
+        move_item(
+            &mut map,
+            agent,
+            ItemRef {
+                guid,
+                placement: ItemPlacement::Inventory(InventorySlot::Head, agent),
+            },
+            1,
+            ItemPlacement::Map(target),
+            None,
+        );
+
+        assert_eq!(
+            map.get_player(agent).unwrap().armor,
+            0,
+            "unequipping should drop it"
+        );
     }
 }
