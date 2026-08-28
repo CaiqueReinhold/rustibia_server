@@ -12,6 +12,7 @@ use crate::{
         items::{ContainerId, ItemId},
         player::InventorySlot,
         position::{Direction, Position},
+        skills::SkillType,
     },
     game::game_config::Color,
 };
@@ -130,11 +131,22 @@ const SRV_AGENT_LIFE_UPDATED: u8 = 24;
 const SRV_SHOW_EFFECT: u8 = 25;
 const SRV_LAUNCH_MISSILE: u8 = 26;
 const SRV_AGENT_MANA_CHANGED: u8 = 27;
+const SRV_PLAYER_SKILLS: u8 = 28;
+const SRV_SKILL_CHANGED: u8 = 29;
+const SRV_EXPERIENCE_CHANGED: u8 = 30;
 
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
     ActionDenied,
     Look,
+}
+
+/// A skill as the client draws it: a level, and progress toward the next one in
+/// hundredths of a percent (`0..=10_000`).
+#[derive(Clone, Copy, Debug)]
+pub struct SkillProgress {
+    pub level: u16,
+    pub percent_bp: u16,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -277,6 +289,17 @@ pub enum ServerMessage {
         agent_id: AgentId,
         current: u32,
         max: u32,
+    },
+    PlayerSkills {
+        experience: u64,
+        skills: Vec<(SkillType, SkillProgress)>,
+    },
+    SkillChanged {
+        skill: SkillType,
+        progress: SkillProgress,
+    },
+    ExperienceChanged {
+        experience: u64,
     },
 }
 
@@ -744,6 +767,26 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u16_le(agent_id);
                 dst.put_u32_le(current);
                 dst.put_u32_le(max);
+            }
+            ServerMessage::PlayerSkills { experience, skills } => {
+                dst.put_u8(SRV_PLAYER_SKILLS);
+                dst.put_u64_le(experience);
+                dst.put_u8(skills.len() as u8);
+                for (skill, progress) in skills {
+                    dst.put_u8(skill.as_id());
+                    dst.put_u16_le(progress.level);
+                    dst.put_u16_le(progress.percent_bp);
+                }
+            }
+            ServerMessage::SkillChanged { skill, progress } => {
+                dst.put_u8(SRV_SKILL_CHANGED);
+                dst.put_u8(skill.as_id());
+                dst.put_u16_le(progress.level);
+                dst.put_u16_le(progress.percent_bp);
+            }
+            ServerMessage::ExperienceChanged { experience } => {
+                dst.put_u8(SRV_EXPERIENCE_CHANGED);
+                dst.put_u64_le(experience);
             }
         }
 
@@ -1328,5 +1371,111 @@ mod tests {
             .unwrap();
         assert_eq!(dst[2], SRV_TARGET_CHANGED);
         assert_eq!(u16::from_le_bytes([dst[3], dst[4]]), 0xFFFF);
+    }
+
+    /// The client decodes these exact frames in its own test. The codec is
+    /// asymmetric — the server only encodes, the client only decodes — so this
+    /// pair of literals is the only thing that catches a field-order or width
+    /// divergence between the repositories.
+    #[test]
+    fn player_skills_encodes_a_known_frame() {
+        let mut dst = BytesMut::new();
+        GameMessageCodec {}
+            .encode(
+                ServerMessage::PlayerSkills {
+                    experience: 4231,
+                    skills: vec![(
+                        SkillType::Level,
+                        SkillProgress {
+                            level: 8,
+                            percent_bp: 4321,
+                        },
+                    )],
+                },
+                &mut dst,
+            )
+            .unwrap();
+
+        assert_eq!(
+            &dst[..],
+            &[
+                15,
+                0, // payload length
+                SRV_PLAYER_SKILLS,
+                0x87,
+                0x10,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0, // experience 4231
+                1, // one row
+                0, // SkillType::Level
+                8,
+                0, // level
+                0xE1,
+                0x10, // 43.21%
+            ]
+        );
+    }
+
+    #[test]
+    fn skill_changed_encodes_a_known_frame() {
+        let mut dst = BytesMut::new();
+        GameMessageCodec {}
+            .encode(
+                ServerMessage::SkillChanged {
+                    skill: SkillType::Sword,
+                    progress: SkillProgress {
+                        level: 12,
+                        percent_bp: 4909,
+                    },
+                },
+                &mut dst,
+            )
+            .unwrap();
+
+        assert_eq!(
+            &dst[..],
+            &[
+                6,
+                0, // payload length
+                SRV_SKILL_CHANGED,
+                3, // SkillType::Sword
+                12,
+                0, // level
+                0x2D,
+                0x13, // 49.09%
+            ]
+        );
+    }
+
+    #[test]
+    fn experience_changed_encodes_a_known_frame() {
+        let mut dst = BytesMut::new();
+        GameMessageCodec {}
+            .encode(
+                ServerMessage::ExperienceChanged { experience: 4231 },
+                &mut dst,
+            )
+            .unwrap();
+
+        assert_eq!(
+            &dst[..],
+            &[
+                9,
+                0, // payload length
+                SRV_EXPERIENCE_CHANGED,
+                0x87,
+                0x10,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+            ]
+        );
     }
 }
