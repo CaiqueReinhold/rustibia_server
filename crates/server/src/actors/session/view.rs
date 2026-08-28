@@ -7,8 +7,7 @@ use std::sync::Arc;
 use anyhow::Result;
 use tracing::error;
 
-use crate::actors::player_query::get_agent_desc;
-use crate::actors::player_query::get_player_desc;
+use crate::actors::player_query::{get_agent_desc, get_player_desc, get_player_skills};
 use crate::actors::session::{SessionActor, SessionError};
 use crate::actors::world::WorldCommand;
 use crate::entities::agent::AgentKey;
@@ -38,6 +37,11 @@ impl SessionActor {
             } else {
                 return Err(SessionError::FailedToInitialize.into());
             }
+
+            if let Some(skills_msg) = get_player_skills(&map, self.player_key) {
+                self.connection.send_message(skills_msg).await?;
+            }
+
             Ok(())
         } else {
             let Some(agent) = map.get_agent(agent_key) else {
