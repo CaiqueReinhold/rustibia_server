@@ -461,7 +461,7 @@ impl GameMap {
                         fluid: None,
                         content: None,
                     },
-                    Some((item.guid.clone(), idx)),
+                    Some((parent_guid.clone(), idx)),
                 ));
             } else if current_amount == amount {
                 return Some((items.remove(idx), Some((parent_guid.clone(), idx))));
@@ -562,9 +562,11 @@ mod tests {
     use super::*;
     use crate::entities::agent::{Agent, Pool};
     use crate::entities::creature::{BloodType, CreatureKind};
+    use crate::entities::items::ItemConfig;
     use crate::entities::player::InventorySlot;
     use crate::entities::position::Position;
     use crate::persistence::test_fixtures::a_player_with_a_full_backpack;
+    use std::collections::HashSet;
 
     fn new_creature() -> Agent {
         Agent::from_creature_kind(Arc::new(CreatureKind {
@@ -586,6 +588,79 @@ mod tests {
         let mut map = GameMap::new();
         map.insert_tile(pos.clone(), MapTile::new());
         map
+    }
+
+    fn a_stack_of(amount: u8) -> Item {
+        Item::new(
+            Arc::new(ItemConfig::new(
+                2148,
+                "gold coin".to_string(),
+                None,
+                None,
+                HashSet::from([ItemFlag::Cumulative, ItemFlag::Take]),
+                HashSet::new(),
+            )),
+            amount,
+        )
+    }
+
+    fn a_bag() -> Item {
+        Item::new(
+            Arc::new(ItemConfig::new(
+                1987,
+                "bag".to_string(),
+                None,
+                None,
+                HashSet::from([ItemFlag::Container]),
+                HashSet::from([ItemAttribute::Capacity(8)]),
+            )),
+            1,
+        )
+    }
+
+    /// The `Option<(ItemGuid, usize)>` a removal returns is the *container* the item came
+    /// out of: callers re-insert into that guid to roll a failed move back, and broadcast
+    /// it so the client redraws that container. Taking part of a stack used to answer with
+    /// the stack's own guid, which names nothing the caller can open or insert into.
+    #[test]
+    fn removing_part_of_a_stack_names_the_container_it_came_from() {
+        let pos = Position::new(10, 10, 7);
+        let mut map = map_with_one_tile(&pos);
+        let bag = a_bag();
+        let bag_guid = bag.guid.clone();
+        map.place_item(&pos, None, None, bag).unwrap();
+        let stack = a_stack_of(50);
+        let stack_guid = stack.guid.clone();
+        map.place_item(&pos, None, Some((&bag_guid, 0)), stack)
+            .unwrap();
+
+        let (removed, tile_index, parent) =
+            map.remove_item_from_tile(&pos, &stack_guid, 20).unwrap();
+
+        assert_eq!(removed.amount, 20);
+        assert_eq!(
+            tile_index, None,
+            "the stack was in the bag, not on the tile"
+        );
+        assert_eq!(parent, Some((bag_guid, 0)));
+    }
+
+    /// The whole-stack branch already did this; the two must not disagree.
+    #[test]
+    fn removing_a_whole_stack_names_the_same_container() {
+        let pos = Position::new(10, 10, 7);
+        let mut map = map_with_one_tile(&pos);
+        let bag = a_bag();
+        let bag_guid = bag.guid.clone();
+        map.place_item(&pos, None, None, bag).unwrap();
+        let stack = a_stack_of(20);
+        let stack_guid = stack.guid.clone();
+        map.place_item(&pos, None, Some((&bag_guid, 0)), stack)
+            .unwrap();
+
+        let (_, _, parent) = map.remove_item_from_tile(&pos, &stack_guid, 20).unwrap();
+
+        assert_eq!(parent, Some((bag_guid, 0)));
     }
 
     fn map_with_players(count: u32) -> (GameMap, Vec<AgentKey>) {

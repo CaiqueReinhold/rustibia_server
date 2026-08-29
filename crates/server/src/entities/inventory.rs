@@ -182,7 +182,7 @@ fn remove_from_container(
                     fluid: None,
                     content: None,
                 },
-                Some((item.guid.clone(), idx)),
+                Some((parent_guid.clone(), idx)),
             ));
         } else if current_amount == amount {
             return Some((items.remove(idx), Some((parent_guid.clone(), idx))));

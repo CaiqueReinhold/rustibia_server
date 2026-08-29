@@ -238,14 +238,17 @@ pub fn execute_attack(
         tick_skill(player, plan.target, SkillType::Shielding, 1, msgs);
     }
 
-    let writes_to_player = !matches!(plan.cost, AttackCost::None) || plan.trains.is_some();
+    let writes_to_player =
+        !matches!(plan.cost, AttackCost::None) || plan.trains.is_some() && plan.damage.value > 0;
     if writes_to_player && let Some(player) = map.get_player_mut(plan.attacker) {
         match plan.cost {
             AttackCost::Ammo(guid) => consume_ammo(player, plan.attacker, guid, msgs),
             AttackCost::Mana(mana_cost) => consume_mana(plan.attacker, player, mana_cost, msgs),
             AttackCost::None => {}
         }
-        if let Some(skill_type) = plan.trains {
+        if let Some(skill_type) = plan.trains
+            && plan.damage.value > 0
+        {
             tick_skill(player, plan.attacker, skill_type, 1, msgs);
         }
     }
@@ -341,7 +344,9 @@ mod tests {
     use crate::entities::map::MapTile;
     use crate::entities::skills::SkillValue;
     use crate::persistence::player::PlayerSnapshot;
-    use crate::persistence::test_fixtures::{a_test_creature, a_test_snapshot};
+    use crate::persistence::test_fixtures::{
+        a_test_creature, a_test_creature_with_defences, a_test_snapshot,
+    };
     use std::collections::HashSet;
     use std::sync::Arc;
 
@@ -421,6 +426,50 @@ mod tests {
             attrs.insert(ItemAttribute::MissileId(missile));
         }
         Item::new(a_config(3, HashSet::new(), attrs), 10)
+    }
+
+    fn an_arrow_with_attack(attack: u16) -> Item {
+        Item::new(
+            a_config(
+                9,
+                HashSet::new(),
+                HashSet::from([
+                    ItemAttribute::AmmoType(AmmoType::Arrow),
+                    ItemAttribute::WeaponAttack(attack),
+                ]),
+            ),
+            10,
+        )
+    }
+
+    fn an_arrow_of(element: CombatElement) -> Item {
+        Item::new(
+            a_config(
+                10,
+                HashSet::new(),
+                HashSet::from([
+                    ItemAttribute::AmmoType(AmmoType::Arrow),
+                    ItemAttribute::WeaponAttack(25),
+                    ItemAttribute::WeaponElement(element),
+                ]),
+            ),
+            10,
+        )
+    }
+
+    fn a_bow_of(element: CombatElement) -> Item {
+        Item::new(
+            a_config(
+                11,
+                HashSet::new(),
+                HashSet::from([
+                    ItemAttribute::WeaponType(WeaponType::Bow),
+                    ItemAttribute::WeaponAttack(10),
+                    ItemAttribute::WeaponElement(element),
+                ]),
+            ),
+            1,
+        )
     }
 
     fn a_quiver_holding(arrow: Item) -> Item {
@@ -709,6 +758,36 @@ mod tests {
         assert_eq!(arrows, 9);
     }
 
+    /// The count drawn on the arrow stack comes from `UpdateContainer`, and the session
+    /// only sends one for a guid it holds as an open container. Naming the arrow instead of
+    /// the quiver dropped the message on the floor, freezing the number until the stack ran
+    /// out — the last arrow took the whole-removal branch, which named the quiver correctly.
+    #[test]
+    fn executing_a_shot_updates_the_quiver_rather_than_the_arrow() {
+        let quiver = a_quiver_of_arrows();
+        let quiver_guid = quiver.guid.clone();
+        let arrow_guid = quiver.content.as_ref().unwrap()[0].guid.clone();
+        let (mut map, attacker, _) = duel(
+            Agent::from_player(armed(Some(a_bow(None)), Some(quiver))),
+            a_test_creature("Rat", 100, (1, 2)),
+        );
+        let mut roll = Rolls::new(1);
+        let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
+        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
+
+        execute_attack(&mut map, plan, 0, &mut msgs, &mut cmds);
+
+        let updated = msgs
+            .iter()
+            .find_map(|m| match m {
+                BroadcastMessage::ContainerUpdated { item } => Some(item),
+                _ => None,
+            })
+            .expect("spending an arrow must announce the container it came out of");
+        assert_eq!(updated.guid, quiver_guid);
+        assert_ne!(updated.guid, arrow_guid);
+    }
+
     fn broadcast_kinds(msgs: &[BroadcastMessage]) -> Vec<&'static str> {
         msgs.iter()
             .map(|m| match m {
@@ -823,6 +902,77 @@ mod tests {
 
         assert!(matches!(plan.damage.element, CombatElement::Physical));
         assert_eq!(plan.damage.value, 0, "a zero-attack weapon deals nothing");
+        assert!(!plan.damage.blocked_shield);
+        assert!(!plan.damage.blocked_armor);
+    }
+
+    /// The bow in `items.yaml` carries no `attack` at all — the arrow does (25). Reading
+    /// only the weapon slot dropped every distance shot to the unarmed fallback of 5, which
+    /// against a creature with any armour at all is a permanent block.
+    #[test]
+    fn a_bow_rolls_with_the_ammos_attack() {
+        let player = Agent::from_player(armed(
+            Some(a_bow(None)),
+            Some(a_quiver_holding(an_arrow_with_attack(25))),
+        ));
+
+        assert_eq!(player.get_player().unwrap().weapon_attack(), 25);
+    }
+
+    /// The ammo wins over the weapon, rather than filling in for a weapon that has none:
+    /// an `attack` that strays onto a bow must not override the arrow it fires.
+    #[test]
+    fn a_melee_weapon_still_rolls_with_its_own_attack() {
+        let player = Agent::from_player(armed(Some(a_weapon_with_attack(40)), None));
+
+        assert_eq!(player.get_player().unwrap().weapon_attack(), 40);
+    }
+
+    /// Elemental ammo governs the shot: a fire arrow burns whatever bow launches it.
+    #[test]
+    fn a_bow_fires_with_the_ammos_element() {
+        let player = Agent::from_player(armed(
+            Some(a_bow(None)),
+            Some(a_quiver_holding(an_arrow_of(CombatElement::Fire))),
+        ));
+
+        assert_eq!(
+            player.get_player().unwrap().weapon_element(),
+            CombatElement::Fire
+        );
+    }
+
+    /// The other half of the `or_else`: an enchanted bow still colours a plain arrow.
+    #[test]
+    fn an_elemental_bow_keeps_its_element_when_the_ammo_has_none() {
+        let player = Agent::from_player(armed(
+            Some(a_bow_of(CombatElement::Energy)),
+            Some(a_quiver_of_arrows()),
+        ));
+
+        assert_eq!(
+            player.get_player().unwrap().weapon_element(),
+            CombatElement::Energy
+        );
+    }
+
+    /// Why the element has to reach the plan at all: only `Physical` is blockable, so an
+    /// elemental shot must walk past both the shield and the armour of a defended target.
+    #[test]
+    fn an_elemental_shot_is_not_blocked() {
+        let (map, attacker, _) = duel(
+            Agent::from_player(armed(
+                Some(a_bow(None)),
+                Some(a_quiver_holding(an_arrow_of(CombatElement::Fire))),
+            )),
+            a_test_creature_with_defences("Elf", 100, (0, 15), 6, 6),
+        );
+        let mut roll = Rolls::new(1);
+
+        let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
+
+        assert_eq!(plan.damage.element, CombatElement::Fire);
+        assert!(plan.damage.value > 0);
         assert!(!plan.damage.blocked_shield);
         assert!(!plan.damage.blocked_armor);
     }

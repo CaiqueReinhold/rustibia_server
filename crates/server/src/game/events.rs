@@ -78,6 +78,7 @@ pub enum BroadcastMessage {
     },
     DamageTaken {
         agent_key: AgentKey,
+        position: Position,
         damage: CombatDamage,
     },
     MissileLaunched {

@@ -43,6 +43,7 @@ pub fn apply_damage(
         if damage.blocked_shield || damage.blocked_armor {
             msgs.push(BroadcastMessage::DamageTaken {
                 agent_key: target,
+                position: target_pos,
                 damage,
             });
         }
@@ -58,6 +59,7 @@ pub fn apply_damage(
 
     msgs.push(BroadcastMessage::DamageTaken {
         agent_key: target,
+        position: target_pos.clone(),
         damage,
     });
 

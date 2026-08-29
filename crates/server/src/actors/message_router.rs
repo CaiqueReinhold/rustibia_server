@@ -358,16 +358,14 @@ impl MessageRouterActor {
                     );
                 }
             }
-            BroadcastMessage::DamageTaken { agent_key, .. } => {
-                if let Some(position) = map.agent_position(*agent_key) {
-                    self.send_to_rect(
-                        message,
-                        map,
-                        Rect::player_viewport(position),
-                        position.z,
-                        None,
-                    );
-                }
+            BroadcastMessage::DamageTaken { position, .. } => {
+                self.send_to_rect(
+                    message,
+                    map,
+                    Rect::player_viewport(position),
+                    position.z,
+                    None,
+                );
             }
             BroadcastMessage::MissileLaunched { from, to, .. } => {
                 self.send_to_rects(

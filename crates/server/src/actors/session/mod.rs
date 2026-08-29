@@ -432,9 +432,9 @@ impl SessionActor {
                 self.agent_said(agent_key, message).await
             }
             BroadcastMessage::TargetChanged { target, .. } => self.target_changed(target).await,
-            BroadcastMessage::DamageTaken { agent_key, damage } => {
-                self.agent_took_damage(agent_key, damage).await
-            }
+            BroadcastMessage::DamageTaken {
+                agent_key, damage, ..
+            } => self.agent_took_damage(agent_key, damage).await,
             BroadcastMessage::MissileLaunched {
                 from,
                 to,

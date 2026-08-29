@@ -80,6 +80,20 @@ pub struct Player {
     pub defense: u16,
 }
 
+fn item_attack(item: &Item) -> Option<u16> {
+    item.config.get_attributes().find_map(|attr| match attr {
+        ItemAttribute::WeaponAttack(att) => Some(*att),
+        _ => None,
+    })
+}
+
+fn item_element(item: &Item) -> Option<CombatElement> {
+    item.config.get_attributes().find_map(|attr| match attr {
+        ItemAttribute::WeaponElement(el) => Some(*el),
+        _ => None,
+    })
+}
+
 impl Player {
     pub fn inventory_mut(&mut self) -> &mut Inventory {
         Arc::make_mut(&mut self.inventory)
@@ -105,24 +119,16 @@ impl Player {
     }
 
     pub fn weapon_element(&self) -> CombatElement {
-        self.weapon()
-            .and_then(|it| {
-                it.config.get_attributes().find_map(|attr| match attr {
-                    ItemAttribute::WeaponElement(el) => Some(*el),
-                    _ => None,
-                })
-            })
+        self.weapon_ammo()
+            .and_then(item_element)
+            .or_else(|| self.weapon().and_then(item_element))
             .unwrap_or(CombatElement::Physical)
     }
 
     pub fn weapon_attack(&self) -> u16 {
-        self.weapon()
-            .and_then(|it| {
-                it.config.get_attributes().find_map(|attr| match attr {
-                    ItemAttribute::WeaponAttack(att) => Some(*att),
-                    _ => None,
-                })
-            })
+        self.weapon_ammo()
+            .and_then(item_attack)
+            .or_else(|| self.weapon().and_then(item_attack))
             .unwrap_or(5)
     }
 
