@@ -73,7 +73,7 @@ pub struct Player {
     pub position: Position,
     pub origin: Position,
     pub mana: Pool,
-    pub capacity: Pool,
+    pub capacity: u32,
     pub inventory: Arc<Inventory>,
     pub skills: HashMap<SkillType, SkillValue>,
     pub armor: u16,
@@ -99,8 +99,12 @@ impl Player {
         Arc::make_mut(&mut self.inventory)
     }
 
+    pub fn capacity_available(&self) -> u32 {
+        self.capacity.saturating_sub(self.inventory.carried_weight)
+    }
+
     pub fn can_carry(&self, additional_weight: u32) -> bool {
-        self.capacity.current + additional_weight <= self.capacity.maximum
+        self.inventory.carried_weight + additional_weight <= self.capacity
     }
 
     pub fn has_enough_mana(&self, mana_cost: u32) -> bool {

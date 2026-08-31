@@ -415,7 +415,7 @@ impl WorldActor {
                 Ok(())
             }
             WorldCommand::Say { agent_key, message } => {
-                let msgs = chat::say(&self.map, agent_key, message);
+                let msgs = chat::say(&mut self.map, agent_key, message);
                 broadcast_messages.extend(msgs);
                 Ok(())
             }

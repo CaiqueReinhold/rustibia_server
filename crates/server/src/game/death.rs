@@ -3,7 +3,7 @@ use tracing::info;
 use crate::entities::agent::AgentKey;
 use crate::entities::map::GameMap;
 use crate::game::events::BroadcastMessage;
-use crate::game::targeting;
+use crate::game::{experience, targeting};
 
 pub fn reap(
     map: &mut GameMap,
@@ -23,6 +23,8 @@ pub fn reap(
         Some(killer) => info!("{killer} killed {victim}"),
         None => info!("{victim} died"),
     }
+
+    experience::award(map, agent, msgs);
 
     let still_targeting: Vec<AgentKey> = map
         .iter_agents()
@@ -48,7 +50,9 @@ mod tests {
     use crate::entities::agent::Agent;
     use crate::entities::map::MapTile;
     use crate::entities::position::Position;
-    use crate::persistence::test_fixtures::{a_test_creature, a_test_snapshot};
+    use crate::persistence::test_fixtures::{
+        a_test_creature, a_test_creature_worth, a_test_snapshot,
+    };
 
     #[test]
     fn removes_the_creature_and_announces_it() {
@@ -163,5 +167,63 @@ mod tests {
 
         assert!(map.get_agent(player).is_some());
         assert!(msgs.is_empty());
+    }
+
+    #[test]
+    fn a_kill_awards_the_creatures_experience_before_removing_it() {
+        let rat_pos = Position::new(10, 10, 7);
+        let hunter_pos = Position::new(11, 10, 7);
+        let mut map = GameMap::new();
+        map.insert_tile(rat_pos.clone(), MapTile::new());
+        map.insert_tile(hunter_pos.clone(), MapTile::new());
+        let rat = map
+            .insert_agent(a_test_creature_worth("Rat", 0, (1, 2), 100), &rat_pos)
+            .unwrap();
+        let hunter = map
+            .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &hunter_pos)
+            .unwrap();
+        map.get_agent_mut(rat).unwrap().record_damage(hunter, 100);
+        let mut msgs = Vec::new();
+
+        reap(&mut map, rat, Some(hunter), &mut msgs);
+
+        assert!(map.get_agent(rat).is_none());
+        assert_eq!(
+            map.get_player(hunter)
+                .unwrap()
+                .skills
+                .get(&crate::entities::skills::SkillType::Level)
+                .unwrap()
+                .value,
+            2
+        );
+    }
+
+    #[test]
+    fn a_creature_nobody_damaged_awards_nothing() {
+        let rat_pos = Position::new(10, 10, 7);
+        let hunter_pos = Position::new(11, 10, 7);
+        let mut map = GameMap::new();
+        map.insert_tile(rat_pos.clone(), MapTile::new());
+        map.insert_tile(hunter_pos.clone(), MapTile::new());
+        let rat = map
+            .insert_agent(a_test_creature_worth("Rat", 0, (1, 2), 100), &rat_pos)
+            .unwrap();
+        let hunter = map
+            .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &hunter_pos)
+            .unwrap();
+        let mut msgs = Vec::new();
+
+        reap(&mut map, rat, Some(hunter), &mut msgs);
+
+        assert_eq!(
+            map.get_player(hunter)
+                .unwrap()
+                .skills
+                .get(&crate::entities::skills::SkillType::Level)
+                .unwrap()
+                .value,
+            1
+        );
     }
 }

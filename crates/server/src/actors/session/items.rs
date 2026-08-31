@@ -355,21 +355,6 @@ impl SessionActor {
         Ok(())
     }
 
-    pub(super) async fn update_player_capacity(&self, agent_key: AgentKey) -> Result<()> {
-        let map = self.shared_map.load();
-        if let Some(cap) = map.get_player(agent_key).map(|player| &player.capacity) {
-            self.connection
-                .send_message(ServerMessage::PlayerCapacityUpdated {
-                    cap: cap.available(),
-                })
-                .await?;
-        } else {
-            return Err(SessionError::InvalidState.into());
-        }
-
-        Ok(())
-    }
-
     pub(super) async fn drop_unreachable_containers(&mut self) -> Result<()> {
         let map = self.shared_map.load();
         let mut remove: Vec<ContainerId> = Vec::new();
@@ -404,6 +389,21 @@ impl SessionActor {
                 .await?;
         }
 
+        Ok(())
+    }
+
+    pub(super) async fn check_capacity_changed(&mut self) -> Result<()> {
+        let map = self.shared_map.load();
+        if let Some(player) = map.get_player(self.player_key)
+            && player.capacity_available() != self.prev_capacity
+        {
+            self.connection
+                .send_message(ServerMessage::PlayerCapacityUpdated {
+                    cap: player.capacity_available(),
+                })
+                .await?;
+            self.prev_capacity = player.capacity_available();
+        }
         Ok(())
     }
 }

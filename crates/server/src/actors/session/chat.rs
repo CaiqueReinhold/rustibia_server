@@ -9,7 +9,8 @@ use crate::entities::agent::AgentId;
 use crate::entities::agent::AgentKey;
 use crate::entities::chat::ChannelId;
 use crate::entities::chat::ChatMessageType;
-use crate::game::game_config::GAME_CONFIG;
+use crate::game::config::GAME_CONFIG;
+use crate::messages::FloatingTextType;
 use crate::messages::ServerMessage;
 use crate::messages::TextMessageType;
 
@@ -55,6 +56,18 @@ impl SessionActor {
         let Some(author) = self.introduce(author).await? else {
             return Ok(());
         };
+
+        if matches!(message_type, ChatMessageType::Local) {
+            self.connection
+                .send_message(ServerMessage::FloatingText {
+                    text: message.clone(),
+                    agent_id: author,
+                    text_type: FloatingTextType::PlayerMessage,
+                    color: None,
+                })
+                .await?;
+        }
+
         self.connection
             .send_message(ServerMessage::ChatMessage {
                 author,
@@ -63,6 +76,7 @@ impl SessionActor {
                 message,
             })
             .await?;
+
         Ok(())
     }
 

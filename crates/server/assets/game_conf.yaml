@@ -45,7 +45,7 @@ text_colors:
   pastelred: [255, 102, 102]
   orange: [255, 153, 0]
   yellow: [255, 255, 0]
-  white_exp: [255, 255, 255]
+  white: [255, 255, 255]
   eletric_purple: [204, 51, 255]
 
 combat:

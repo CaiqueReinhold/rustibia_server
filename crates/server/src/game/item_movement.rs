@@ -1,13 +1,16 @@
 use thiserror::Error;
 use tracing::error;
 
-use crate::entities::{
-    agent::AgentKey,
-    combat::WeaponType,
-    items::{Item, ItemAttribute, ItemFlag, ItemGuid, ItemRef},
-    map::{GameMap, MapError, RemovedItem},
-    player::InventorySlot,
-    position::ItemPlacement,
+use crate::{
+    entities::{
+        agent::AgentKey,
+        combat::WeaponType,
+        items::{Item, ItemAttribute, ItemFlag, ItemGuid, ItemRef},
+        map::{GameMap, MapError, RemovedItem},
+        player::InventorySlot,
+        position::ItemPlacement,
+    },
+    game::map_query::find_item_in_placement,
 };
 
 use super::events::BroadcastMessage;
@@ -262,7 +265,7 @@ pub fn move_item(
                 return broadcasts;
             }
         }
-        (_, Some(container_guid)) => {
+        (placement, Some(container_guid)) => {
             let item = match &source.placement {
                 ItemPlacement::Map(pos) => map.get_item_by_id(pos, &source.guid),
                 ItemPlacement::Inventory(slot, _) => map
@@ -273,7 +276,21 @@ pub fn move_item(
             let take_ok = item
                 .map(|it| it.config.has_flag(ItemFlag::Take))
                 .unwrap_or(false);
-            if !take_ok || container_guid == &source.guid {
+            let target_is_ammo_container = find_item_in_placement(
+                map,
+                &ItemRef {
+                    guid: container_guid.clone(),
+                    placement: placement.clone(),
+                },
+            )
+            .map(|it| it.config.has_flag(ItemFlag::AmmoContainer))
+            .unwrap_or(false);
+            let can_drop_to_container = item
+                .filter(|_| container_guid == &source.guid)
+                .filter(|_| target_is_ammo_container)
+                .map(|it| it.config.attr_ammo_type().is_some())
+                .unwrap_or(true);
+            if !take_ok && can_drop_to_container {
                 broadcasts.push(BroadcastMessage::MoveItemDenied {
                     agent_key: agent,
                     message: "Can't move this".to_string(),
@@ -362,14 +379,6 @@ pub fn move_item(
         player.update_equipment_stats();
     }
 
-    let carried_weight = map
-        .get_player(agent)
-        .filter(|player| player.capacity.current != player.inventory.carried_weight)
-        .map(|player| player.inventory.carried_weight);
-    if let Some(carried_weight) = carried_weight {
-        map.get_player_mut(agent).unwrap().capacity.current = carried_weight;
-        broadcasts.push(BroadcastMessage::UpdatePlayerCapacity { agent_key: agent });
-    }
     broadcasts
 }
 
@@ -584,7 +593,7 @@ mod tests {
         let (mut map, agent, source, target, guid) = a_player_beside(a_movable_item(100));
         let before = map.clone();
 
-        let broadcasts = move_item(
+        move_item(
             &mut map,
             agent,
             ItemRef {
@@ -597,11 +606,6 @@ mod tests {
         );
 
         assert!(map.get_item_by_id(&target, &guid).is_some());
-        assert!(
-            !broadcasts
-                .iter()
-                .any(|m| matches!(m, BroadcastMessage::UpdatePlayerCapacity { .. }))
-        );
         assert!(std::ptr::eq(
             map.get_player(agent).unwrap(),
             before.get_player(agent).unwrap()
@@ -612,8 +616,9 @@ mod tests {
     fn a_move_into_the_inventory_copies_the_player_and_refreshes_capacity() {
         let (mut map, agent, source, _, guid) = a_player_beside(a_movable_item(100));
         let before = map.clone();
+        let available_before = before.get_player(agent).unwrap().capacity_available();
 
-        let broadcasts = move_item(
+        move_item(
             &mut map,
             agent,
             ItemRef {
@@ -625,12 +630,10 @@ mod tests {
             None,
         );
 
-        assert!(
-            broadcasts
-                .iter()
-                .any(|m| matches!(m, BroadcastMessage::UpdatePlayerCapacity { .. }))
+        assert_eq!(
+            map.get_player(agent).unwrap().capacity_available(),
+            available_before - 100
         );
-        assert_eq!(map.get_player(agent).unwrap().capacity.current, 100);
         assert!(!std::ptr::eq(
             map.get_player(agent).unwrap(),
             before.get_player(agent).unwrap()

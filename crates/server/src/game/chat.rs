@@ -1,15 +1,20 @@
 use crate::entities::agent::AgentKey;
 use crate::entities::map::GameMap;
+use crate::game::admin::parse_command;
 use crate::game::events::BroadcastMessage;
 
-/// Local speech. Read-only against the map — an utterance changes no state — but it runs
-/// inside the world loop so that speech is ordered against movement, and so that spell
-/// dispatch and NPC hearing have one place to land later.
-pub fn say(map: &GameMap, agent_key: AgentKey, message: String) -> Vec<BroadcastMessage> {
+pub fn say(map: &mut GameMap, agent_key: AgentKey, message: String) -> Vec<BroadcastMessage> {
     if map.get_agent(agent_key).is_none() {
         return Vec::new();
     }
-    vec![BroadcastMessage::AgentSaid { agent_key, message }]
+    let mut msgs = Vec::new();
+
+    if parse_command(&message, map, agent_key, &mut msgs) {
+        return msgs;
+    }
+
+    msgs.push(BroadcastMessage::AgentSaid { agent_key, message });
+    msgs
 }
 
 #[cfg(test)]
@@ -29,7 +34,7 @@ mod tests {
             .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &pos)
             .unwrap();
 
-        let events = say(&map, key, "hello".to_owned());
+        let events = say(&mut map, key, "hello".to_owned());
 
         assert_eq!(events.len(), 1);
         match &events[0] {
@@ -44,7 +49,7 @@ mod tests {
     /// A player can log out between sending and the tick that processes it.
     #[test]
     fn an_agent_no_longer_on_the_map_produces_nothing() {
-        let events = say(&GameMap::new(), AgentKey::default(), "hello".to_owned());
+        let events = say(&mut GameMap::new(), AgentKey::default(), "hello".to_owned());
         assert!(events.is_empty());
     }
 }

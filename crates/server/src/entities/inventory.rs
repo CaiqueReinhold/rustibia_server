@@ -200,3 +200,184 @@ fn remove_from_container(
     }
     None
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::entities::items::{ItemAttribute, ItemConfig, ItemFlag};
+    use std::collections::HashSet;
+    use std::sync::Arc;
+
+    /// `carried_weight` is accumulated per mutation; `total_weight` recomputes from the slots.
+    /// `Player::capacity_available` reads the accumulated one, so any mutation path that lets the
+    /// two disagree silently gives the player free capacity.
+    fn assert_accounted(inventory: &Inventory) {
+        assert_eq!(
+            inventory.carried_weight,
+            inventory.total_weight(),
+            "carried_weight drifted from the slots it is supposed to total"
+        );
+    }
+
+    fn a_thing(weight: u32, amount: u8) -> Item {
+        Item::new(
+            Arc::new(ItemConfig::new(
+                1234,
+                "thing".to_string(),
+                None,
+                None,
+                HashSet::from([ItemFlag::Take, ItemFlag::Cumulative]),
+                HashSet::from([ItemAttribute::Weight(weight)]),
+            )),
+            amount,
+        )
+    }
+
+    fn a_backpack() -> Item {
+        Item::new(
+            Arc::new(ItemConfig::new(
+                1988,
+                "backpack".to_string(),
+                None,
+                None,
+                HashSet::from([ItemFlag::Take, ItemFlag::Container]),
+                HashSet::from([ItemAttribute::Weight(18), ItemAttribute::Capacity(20)]),
+            )),
+            1,
+        )
+    }
+
+    #[test]
+    fn an_empty_inventory_carries_nothing() {
+        let inventory = Inventory::from_snapshot(HashMap::new());
+        assert_eq!(inventory.carried_weight, 0);
+        assert_accounted(&inventory);
+    }
+
+    #[test]
+    fn a_snapshot_totals_what_it_was_given() {
+        let mut backpack = a_backpack();
+        backpack.content = Some(vec![a_thing(5, 3)]);
+        let inventory = Inventory::from_snapshot(HashMap::from([
+            (InventorySlot::Backpack, backpack),
+            (InventorySlot::Head, a_thing(40, 1)),
+        ]));
+
+        assert_eq!(inventory.carried_weight, 18 + 15 + 40);
+        assert_accounted(&inventory);
+    }
+
+    #[test]
+    fn equipping_over_an_occupied_slot_drops_the_displaced_weight() {
+        let mut inventory = Inventory::from_snapshot(HashMap::from([(
+            InventorySlot::Head,
+            a_thing(40, 1),
+        )]));
+
+        let displaced = inventory
+            .insert(InventorySlot::Head, None, a_thing(7, 1))
+            .unwrap();
+
+        assert!(displaced.is_some());
+        assert_eq!(inventory.carried_weight, 7);
+        assert_accounted(&inventory);
+    }
+
+    #[test]
+    fn inserting_into_a_container_counts_through_the_nesting() {
+        let backpack = a_backpack();
+        let backpack_guid = backpack.guid.clone();
+        let mut inventory =
+            Inventory::from_snapshot(HashMap::from([(InventorySlot::Backpack, backpack)]));
+
+        inventory
+            .insert(
+                InventorySlot::Backpack,
+                Some((&backpack_guid, 0)),
+                a_thing(5, 4),
+            )
+            .unwrap();
+
+        assert_eq!(inventory.carried_weight, 18 + 20);
+        assert_accounted(&inventory);
+    }
+
+    #[test]
+    fn a_full_container_insert_leaves_the_total_untouched() {
+        let mut backpack = a_backpack();
+        let backpack_guid = backpack.guid.clone();
+        backpack.content = Some((0..20).map(|_| a_thing(1, 1)).collect());
+        let mut inventory =
+            Inventory::from_snapshot(HashMap::from([(InventorySlot::Backpack, backpack)]));
+        let before = inventory.carried_weight;
+
+        let result = inventory.insert(
+            InventorySlot::Backpack,
+            Some((&backpack_guid, 0)),
+            a_thing(5, 1),
+        );
+
+        assert!(matches!(result, Err(ItemMovementError::ContainerIsFull)));
+        assert_eq!(inventory.carried_weight, before);
+        assert_accounted(&inventory);
+    }
+
+    #[test]
+    fn removing_a_whole_stack_removes_all_of_its_weight() {
+        let coins = a_thing(5, 4);
+        let guid = coins.guid.clone();
+        let mut inventory = Inventory::from_snapshot(HashMap::from([(InventorySlot::Head, coins)]));
+
+        inventory.remove(InventorySlot::Head, &guid, 4).unwrap();
+
+        assert_eq!(inventory.carried_weight, 0);
+        assert_accounted(&inventory);
+    }
+
+    #[test]
+    fn splitting_a_stack_only_removes_the_part_that_left() {
+        let coins = a_thing(5, 4);
+        let guid = coins.guid.clone();
+        let mut inventory = Inventory::from_snapshot(HashMap::from([(InventorySlot::Head, coins)]));
+
+        let (taken, _) = inventory.remove(InventorySlot::Head, &guid, 1).unwrap();
+
+        assert_eq!(taken.amount, 1);
+        assert_eq!(inventory.carried_weight, 15);
+        assert_accounted(&inventory);
+    }
+
+    #[test]
+    fn removing_from_a_container_counts_through_the_nesting() {
+        let mut backpack = a_backpack();
+        let backpack_guid = backpack.guid.clone();
+        let coins = a_thing(5, 4);
+        let coins_guid = coins.guid.clone();
+        backpack.content = Some(vec![coins]);
+        let mut inventory =
+            Inventory::from_snapshot(HashMap::from([(InventorySlot::Backpack, backpack)]));
+
+        inventory
+            .remove(InventorySlot::Backpack, &coins_guid, 1)
+            .unwrap();
+
+        assert_eq!(inventory.carried_weight, 18 + 15);
+        assert_accounted(&inventory);
+        assert!(inventory.get(&InventorySlot::Backpack).unwrap().guid == backpack_guid);
+    }
+
+    #[test]
+    fn taking_a_slot_drops_the_container_and_everything_in_it() {
+        let mut backpack = a_backpack();
+        backpack.content = Some(vec![a_thing(5, 4)]);
+        let mut inventory = Inventory::from_snapshot(HashMap::from([
+            (InventorySlot::Backpack, backpack),
+            (InventorySlot::Head, a_thing(40, 1)),
+        ]));
+
+        inventory.take_slot(&InventorySlot::Backpack).unwrap();
+
+        assert_eq!(inventory.carried_weight, 40);
+        assert_accounted(&inventory);
+    }
+}

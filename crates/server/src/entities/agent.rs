@@ -7,6 +7,7 @@ use crate::{
     config,
     constants::{SPEED_PARAM_A, SPEED_PARAM_B, SPEED_PARAM_C},
     entities::{
+        combat::Participation,
         creature::{BloodType, CreatureKind},
         position::Position,
     },
@@ -79,6 +80,7 @@ pub struct Agent {
     pub next_wander_tick: Tick,
 
     target: Option<AgentKey>,
+    participation: Participation,
 }
 
 impl Agent {
@@ -117,10 +119,7 @@ impl Agent {
             position: player.position,
             origin: player.origin,
             mana: player.mana,
-            capacity: Pool {
-                current: inventory.total_weight(),
-                maximum: player.capacity,
-            },
+            capacity: player.capacity,
             inventory: Arc::new(inventory),
             skills: player.skills,
             armor: 0,
@@ -138,6 +137,7 @@ impl Agent {
             next_wander_tick: 0,
             next_attack_tick: 0,
             target: None,
+            participation: Participation::default(),
             modifiers: Modifiers::default(),
         }
     }
@@ -157,6 +157,7 @@ impl Agent {
             next_wander_tick: 0,
             next_attack_tick: 0,
             target: None,
+            participation: Participation::default(),
             modifiers: Modifiers::default(),
         }
     }
@@ -198,6 +199,14 @@ impl Agent {
 
     pub fn set_target(&mut self, target: Option<AgentKey>) {
         self.target = target;
+    }
+
+    pub fn participation(&self) -> &Participation {
+        &self.participation
+    }
+
+    pub fn record_damage(&mut self, attacker: AgentKey, damage: u32) {
+        self.participation.record(attacker, damage);
     }
 
     pub fn calculate_walk_ticks(&self, tile_friction: u16, diagonal: bool) -> Tick {
@@ -258,7 +267,7 @@ impl Agent {
             facing: self.facing,
             life: self.life.clone(),
             mana: player.mana.clone(),
-            capacity: player.capacity.maximum,
+            capacity: player.capacity,
             speed: self.base_speed,
             outfit: self.outfit,
             skills: player.skills.clone(),
@@ -337,6 +346,7 @@ mod tests {
             blood_type: BloodType::Blood,
             armor: 1,
             defense: 1,
+            experience: 0,
         }));
         let pos = Position {
             x: 200,
@@ -399,6 +409,7 @@ mod tests {
             blood_type: BloodType::Blood,
             armor: 1,
             defense: 1,
+            experience: 0,
         }));
         assert!(!player.is_creature());
         assert!(creature.is_creature());
@@ -419,6 +430,7 @@ mod tests {
             blood_type: BloodType::Blood,
             armor: 1,
             defense: 1,
+            experience: 0,
         };
         let agent = Agent::from_creature_kind(Arc::new(kind));
         assert!(agent.is_creature());
@@ -450,6 +462,66 @@ mod tests {
         // 260 is the friction of `ornamented stone floor` (id 21718), one of the
         // ten values the client used to truncate through a `u8`.
         assert_eq!(agent.calculate_walk_ticks(260, false), 18, "900ms");
+    }
+
+    #[test]
+    fn a_new_agent_has_no_participation() {
+        let agent = Agent::from_player(make_snapshot(1));
+
+        assert_eq!(agent.participation().total(), 0);
+    }
+
+    #[test]
+    fn recording_damage_accumulates_per_attacker() {
+        let mut map = GameMap::new();
+        map.insert_tile(Position::new(1, 1, 7), crate::entities::map::MapTile::new());
+        map.insert_tile(Position::new(2, 1, 7), crate::entities::map::MapTile::new());
+        let first = map
+            .insert_agent(
+                Agent::from_player(make_snapshot(2)),
+                &Position::new(1, 1, 7),
+            )
+            .unwrap();
+        let second = map
+            .insert_agent(
+                Agent::from_player(make_snapshot(3)),
+                &Position::new(2, 1, 7),
+            )
+            .unwrap();
+
+        let mut agent = Agent::from_player(make_snapshot(1));
+        agent.record_damage(first, 10);
+        agent.record_damage(second, 30);
+        agent.record_damage(first, 10);
+
+        assert_eq!(agent.participation().total(), 50);
+        assert_eq!(
+            agent.participation().shares(100),
+            vec![(first, 40), (second, 60)]
+        );
+    }
+
+    /// Participation is live state, like the target. A character that logs out mid-fight
+    /// must not come back still owed a share.
+    #[test]
+    fn to_snapshot_does_not_carry_participation() {
+        let mut map = GameMap::new();
+        map.insert_tile(Position::new(1, 1, 7), crate::entities::map::MapTile::new());
+        let attacker = map
+            .insert_agent(
+                Agent::from_player(make_snapshot(2)),
+                &Position::new(1, 1, 7),
+            )
+            .unwrap();
+
+        let mut agent = Agent::from_player(make_snapshot(1));
+        agent.record_damage(attacker, 50);
+        assert_eq!(agent.participation().total(), 50);
+
+        let snapshot = agent.to_snapshot(Position::new(1, 1, 7)).unwrap();
+        let restored = Agent::from_player(snapshot);
+
+        assert_eq!(restored.participation().total(), 0);
     }
 
     #[test]

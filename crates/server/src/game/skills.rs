@@ -5,7 +5,7 @@ use crate::{
         player::Player,
         skills::{SkillType, SkillValue},
     },
-    game::{events::BroadcastMessage, game_config::GAME_CONFIG},
+    game::{config::GAME_CONFIG, events::BroadcastMessage},
 };
 
 /// Total experience to reach `level`
@@ -54,8 +54,6 @@ pub fn progress_bp(vocation: Vocation, skill: &SkillType, value: &SkillValue) ->
     )
 }
 
-/// Total experience for a `SkillType::Level` row: what every level below cost,
-/// plus progress through the current one.
 pub fn total_experience(value: &SkillValue) -> u64 {
     exp_for_level(value.value).saturating_add(value.current_ticks)
 }
@@ -108,6 +106,7 @@ pub fn tick_skill(
         BroadcastMessage::SkillProgressUpdated {
             agent_key,
             skill_type: skill,
+            amount: ticks,
         }
     });
 }

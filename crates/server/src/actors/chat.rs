@@ -10,7 +10,7 @@ use crate::{
         agent::AgentKey,
         chat::{Channel, ChannelId},
     },
-    game::game_config::GAME_CONFIG,
+    game::config::GAME_CONFIG,
 };
 
 #[derive(Debug)]

@@ -14,7 +14,7 @@ use crate::{
         position::{Direction, Position},
         skills::SkillType,
     },
-    game::game_config::Color,
+    game::config::Color,
 };
 
 pub type ItemStack = [Option<(ItemId, u8)>; MAX_VISIBLE_ITEMS];
@@ -141,8 +141,6 @@ pub enum TextMessageType {
     Look,
 }
 
-/// A skill as the client draws it: a level, and progress toward the next one in
-/// hundredths of a percent (`0..=10_000`).
 #[derive(Clone, Copy, Debug)]
 pub struct SkillProgress {
     pub level: u16,

@@ -166,6 +166,13 @@ impl ItemConfig {
             _ => None,
         })
     }
+
+    pub fn attr_ammo_type(&self) -> Option<AmmoType> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::AmmoType(a) => Some(*a),
+            _ => None,
+        })
+    }
 }
 
 #[derive(Debug, Clone)]

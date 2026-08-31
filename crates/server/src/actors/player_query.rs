@@ -30,7 +30,7 @@ pub fn get_player_desc(map: &GameMap, key: AgentKey, id: AgentId) -> Option<Serv
         mana: player.mana.clone(),
         outfit: agent.outfit(),
         speed: agent.speed(),
-        capacity: player.capacity.available(),
+        capacity: player.capacity_available(),
         inventory_head: slot_item(InventorySlot::Head),
         inventory_amulet: slot_item(InventorySlot::Amulet),
         inventory_backpack: slot_item(InventorySlot::Backpack),

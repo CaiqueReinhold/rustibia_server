@@ -93,6 +93,7 @@ pub struct Color(pub u8, pub u8, pub u8);
 
 #[derive(Deserialize)]
 pub struct TextColors {
+    pub white: Color,
     pub red: Color,
     pub lightgreen: Color,
     pub lightblue: Color,
@@ -189,6 +190,7 @@ effect_ids:
   fire_hit: 1
   energy_hit: 1
 text_colors:
+  white: [255, 255, 255]
   red: [255, 0, 0]
   lightgreen: [0, 255, 0]
   lightblue: [0, 255, 255]

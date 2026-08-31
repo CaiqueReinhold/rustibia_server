@@ -581,6 +581,7 @@ mod tests {
             blood_type: BloodType::Blood,
             armor: 1,
             defense: 1,
+            experience: 0,
         }))
     }
 

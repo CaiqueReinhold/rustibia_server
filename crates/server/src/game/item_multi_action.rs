@@ -10,8 +10,8 @@ use crate::{
     },
     game::{
         Tick,
+        config::GAME_CONFIG,
         events::BroadcastMessage,
-        game_config::GAME_CONFIG,
         item_action::{ItemActionError, transform},
         item_movement::{insert_item_at, remove_item_at},
         map_query::find_item_in_placement,
@@ -126,7 +126,7 @@ fn shovel(
     )
 }
 
-fn firt_available_position_up(
+fn first_available_position_up(
     map: &GameMap,
     pos: &Position,
     agent_key: AgentKey,
@@ -153,7 +153,7 @@ fn rope(
         ItemPlacement::Map(pos) => pos,
         ItemPlacement::Inventory(..) => return Err(ItemActionError::ActionFailed),
     };
-    let Some(target_pos) = firt_available_position_up(map, pos, agent_key) else {
+    let Some(target_pos) = first_available_position_up(map, pos, agent_key) else {
         return Err(ItemActionError::InvalidState);
     };
 

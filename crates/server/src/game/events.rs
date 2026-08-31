@@ -47,9 +47,6 @@ pub enum BroadcastMessage {
         agent_key: AgentKey,
         slot: InventorySlot,
     },
-    UpdatePlayerCapacity {
-        agent_key: AgentKey,
-    },
     AgentChangedDirection {
         agent_key: AgentKey,
         facing: Facing,
@@ -89,6 +86,7 @@ pub enum BroadcastMessage {
     SkillProgressUpdated {
         agent_key: AgentKey,
         skill_type: SkillType,
+        amount: u64,
     },
     SkillUpgraded {
         agent_key: AgentKey,

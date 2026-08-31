@@ -11,9 +11,10 @@ use crate::{
         skills::SkillType,
     },
     game::{
-        Tick, damage,
+        Tick,
+        config::{Color, GAME_CONFIG},
+        damage,
         events::BroadcastMessage,
-        game_config::{Color, GAME_CONFIG},
         map_query::can_throw,
         random::Rolls,
         skills::tick_skill,

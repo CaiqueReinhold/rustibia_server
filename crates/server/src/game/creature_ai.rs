@@ -69,6 +69,7 @@ mod tests {
             blood_type: BloodType::Blood,
             armor: 1,
             defense: 1,
+            experience: 0,
         }));
         creature.next_walk_tick = next_walk_tick;
         let key = map.insert_agent(creature, at).unwrap();

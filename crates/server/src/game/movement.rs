@@ -5,7 +5,7 @@ use crate::{
         map::GameMap,
         position::{Direction, Position},
     },
-    game::game_config::GAME_CONFIG,
+    game::config::GAME_CONFIG,
 };
 use anyhow::Result;
 
@@ -52,6 +52,7 @@ pub fn walk(
     if agent.is_creature() {
         agent.next_wander_tick = current_tick + GAME_CONFIG.movement.wander_ticks;
     }
+    agent.set_facing(direction_to_facing(&direction));
     map.move_agent(agent_key, &new_pos)?;
     let floor_change = map.get_floor_change(&new_pos);
 
@@ -97,6 +98,19 @@ pub fn walk(
     }
 
     Ok(broadcasts)
+}
+
+fn direction_to_facing(direction: &Direction) -> Facing {
+    match direction {
+        Direction::North => Facing::North,
+        Direction::East => Facing::East,
+        Direction::South => Facing::South,
+        Direction::West => Facing::West,
+        Direction::NorthEast => Facing::East,
+        Direction::NorthWest => Facing::West,
+        Direction::SouthEast => Facing::East,
+        Direction::SouthWest => Facing::West,
+    }
 }
 
 pub fn change_direction(

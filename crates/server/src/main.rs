@@ -29,7 +29,7 @@ use crate::{
         message_router::MessageRouterActor, persistence::PersistenceActor, spawning::SpawningActor,
         world::WorldActor,
     },
-    game::game_config::GAME_CONFIG,
+    game::config::GAME_CONFIG,
     online_registry::OnlineRegistry,
     persistence::{
         login::{HttpLoginRepository, LoginRepository},

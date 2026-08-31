@@ -338,9 +338,6 @@ impl MessageRouterActor {
             BroadcastMessage::UpdateInventorySlot { agent_key, .. } => {
                 self.send_to(message, agent_key);
             }
-            BroadcastMessage::UpdatePlayerCapacity { agent_key } => {
-                self.send_to(message, agent_key);
-            }
             BroadcastMessage::UseItemDenied { agent_key, .. } => {
                 self.send_to(message, agent_key);
             }

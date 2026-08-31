@@ -154,6 +154,7 @@ pub struct SessionActor {
     next_chat_tick: Tick,
     queued_walk: Option<Direction>,
     logout_pending: bool,
+    prev_capacity: u32,
 }
 
 #[cfg(test)]
@@ -206,6 +207,7 @@ impl SessionActor {
                         next_chat_tick: 0,
                         queued_walk: None,
                         logout_pending: false,
+                        prev_capacity: 0,
                     };
                     actor.run().await;
                 }
@@ -411,9 +413,6 @@ impl SessionActor {
             BroadcastMessage::UpdateInventorySlot { agent_key, slot } => {
                 self.update_inventory_slot(agent_key, slot).await
             }
-            BroadcastMessage::UpdatePlayerCapacity { agent_key } => {
-                self.update_player_capacity(agent_key).await
-            }
             BroadcastMessage::AgentChangedDirection {
                 agent_key, facing, ..
             } => self.actor_direction_changed(agent_key, facing).await,
@@ -440,12 +439,12 @@ impl SessionActor {
                 to,
                 sprite_id,
             } => self.missile_launched(from, to, sprite_id).await,
-            BroadcastMessage::SkillProgressUpdated { skill_type, .. } => {
-                self.skill_progress(skill_type).await
-            }
-            BroadcastMessage::SkillUpgraded { skill_type, .. } => {
-                self.skill_upgraded(skill_type).await
-            }
+            BroadcastMessage::SkillProgressUpdated {
+                skill_type, amount, ..
+            } => self.skill_progress(skill_type, amount).await,
+            BroadcastMessage::SkillUpgraded {
+                skill_type, gained, ..
+            } => self.skill_upgraded(skill_type, gained).await,
             BroadcastMessage::PlayerManaUpdated { .. } => self.mana_updated().await,
         }
     }
@@ -457,6 +456,7 @@ impl SessionActor {
 
     async fn tick_schedules(&mut self) -> Result<()> {
         self.check_walk_queue().await?;
+        self.check_capacity_changed().await?;
         Ok(())
     }
 
@@ -512,6 +512,7 @@ impl SessionActor {
                 next_chat_tick: 0,
                 queued_walk: None,
                 logout_pending: false,
+                prev_capacity: 0,
             },
             connection_rx,
             world_rx,

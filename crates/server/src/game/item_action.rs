@@ -11,7 +11,7 @@ use crate::{
     },
     game::{
         Tick,
-        game_config::GAME_CONFIG,
+        config::GAME_CONFIG,
         item_movement::{ItemMovementError, insert_item_at, remove_item_at},
     },
 };

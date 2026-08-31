@@ -33,4 +33,5 @@ pub struct CreatureKind {
     pub blood_type: BloodType,
     pub armor: u16,
     pub defense: u16,
+    pub experience: u32,
 }
