@@ -115,6 +115,7 @@ impl Agent {
             id: player.id,
             name: player.name,
             account_id: player.account_id,
+            admin: player.admin,
             vocation: player.vocation,
             position: player.position,
             origin: player.origin,
@@ -260,6 +261,7 @@ impl Agent {
         Some(PlayerSnapshot {
             id: player.id,
             account_id: player.account_id,
+            admin: player.admin,
             name: player.name.clone(),
             vocation: player.vocation,
             position,
@@ -293,6 +295,7 @@ mod tests {
         PlayerSnapshot {
             id,
             account_id: 1,
+            admin: false,
             name: "Rizael".to_string(),
             position: Position {
                 x: 100,

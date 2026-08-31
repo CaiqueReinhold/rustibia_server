@@ -92,6 +92,7 @@ pub fn snapshot_from_record(
     Ok(PlayerSnapshot {
         id,
         account_id: record.account_id,
+        admin: record.admin,
         name: record.name,
         vocation,
         position: coords(record.position, "position")?,
@@ -275,6 +276,7 @@ impl SqlLoginRepository {
                 vocation: row.try_get("vocation")?,
                 id: row.try_get("id")?,
                 account_id: row.try_get("account_id")?,
+                admin: false,
                 name: row.try_get("name")?,
                 position: rustibia_contract::Coords {
                     x: row.try_get("pos_x")?,
@@ -466,6 +468,7 @@ mod tests {
         CharacterRecord {
             id: 7,
             account_id: 3,
+            admin: false,
             name: "Rizael".to_string(),
             vocation: 0,
             position: Coords {

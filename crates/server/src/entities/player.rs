@@ -69,6 +69,7 @@ pub struct Player {
     pub id: PlayerId,
     pub name: String,
     pub account_id: i32,
+    pub admin: bool,
     pub vocation: Vocation,
     pub position: Position,
     pub origin: Position,

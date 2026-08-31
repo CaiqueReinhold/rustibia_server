@@ -96,6 +96,7 @@ pub fn a_test_snapshot(id: u32, account_id: i32) -> PlayerSnapshot {
     PlayerSnapshot {
         id,
         account_id,
+        admin: false,
         name: "Rizael".to_string(),
         vocation: Vocation::Knight,
         position: Position {

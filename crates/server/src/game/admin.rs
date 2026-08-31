@@ -1,4 +1,4 @@
-use tracing::{error, info};
+use tracing::error;
 
 use crate::{
     entities::{
@@ -14,17 +14,21 @@ use crate::{
 pub fn parse_command(
     command: &str,
     map: &mut GameMap,
-    agent: AgentKey,
+    agent_key: AgentKey,
     msgs: &mut Vec<BroadcastMessage>,
 ) -> bool {
+    if !map.get_player(agent_key).map(|p| p.admin).unwrap_or(false) {
+        return false;
+    }
+
     let parts: Vec<&str> = command.split(" ").collect();
     match parts.first() {
         Some(&"/create") => {
             let Some(item_id): Option<u16> = parts.get(1).and_then(|p| p.parse().ok()) else {
-                return false;
+                return true;
             };
             let amount: u8 = parts.get(2).and_then(|p| p.parse().ok()).unwrap_or(1);
-            create_item(item_id, amount, agent, map, msgs);
+            create_item(item_id, amount, agent_key, map, msgs);
             true
         }
         Some(cmd) => {

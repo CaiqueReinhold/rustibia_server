@@ -21,6 +21,7 @@ pub struct RedeemRequest {
 pub struct CharacterRecord {
     pub id: i32,
     pub account_id: i32,
+    pub admin: bool,
     pub name: String,
     pub vocation: i16,
     pub position: Coords,
@@ -86,6 +87,7 @@ mod tests {
         CharacterRecord {
             id: 7,
             account_id: 3,
+            admin: false,
             name: "Rizael".to_string(),
             vocation: 3,
             position: Coords {

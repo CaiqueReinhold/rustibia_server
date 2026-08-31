@@ -27,6 +27,7 @@ pub enum PlayerRepositoryError {
 pub struct PlayerSnapshot {
     pub id: PlayerId,
     pub account_id: i32,
+    pub admin: bool,
     pub position: Position,
     pub origin: Position,
     pub facing: Facing,

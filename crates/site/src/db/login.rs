@@ -38,7 +38,7 @@ pub async fn redeem(pool: &PgPool, token: &str) -> Result<Option<CharacterRecord
     let row = sqlx::query(
         "SELECT id, account_id, name, vocation, pos_x, pos_y, pos_z, origin_x, origin_y, origin_z, \
          facing, life_cur, life_max, mana_cur, mana_max, capacity, speed, \
-         outfit_id, outfit_head, outfit_body, outfit_legs, outfit_feet, inventory \
+         outfit_id, outfit_head, outfit_body, outfit_legs, outfit_feet, inventory, admin \
          FROM players WHERE id = $1 AND deleted_at IS NULL",
     )
     .bind(character_id)
@@ -83,6 +83,7 @@ pub async fn redeem(pool: &PgPool, token: &str) -> Result<Option<CharacterRecord
     let record = CharacterRecord {
         id: row.try_get("id")?,
         account_id: row.try_get("account_id")?,
+        admin: row.try_get("admin")?,
         name: row.try_get("name")?,
         vocation: row.try_get("vocation")?,
         position: Coords {

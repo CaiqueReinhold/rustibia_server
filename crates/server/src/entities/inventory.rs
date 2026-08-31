@@ -18,10 +18,6 @@ impl Inventory {
         }
     }
 
-    pub fn total_weight(&self) -> u32 {
-        self.slots.values().map(|it| it.total_weight()).sum()
-    }
-
     /// Insert `item` into `slot`.
     ///
     /// - `container`: if `None`, replaces the slot item directly and returns the displaced item.
@@ -147,6 +143,11 @@ impl Inventory {
     pub fn slots(&self) -> &HashMap<InventorySlot, Item> {
         &self.slots
     }
+
+    #[cfg(test)]
+    pub fn total_weight(&self) -> u32 {
+        self.slots.values().map(|it| it.total_weight()).sum()
+    }
 }
 
 fn find_available_container(item: &Item) -> Option<&ItemGuid> {
@@ -269,10 +270,8 @@ mod tests {
 
     #[test]
     fn equipping_over_an_occupied_slot_drops_the_displaced_weight() {
-        let mut inventory = Inventory::from_snapshot(HashMap::from([(
-            InventorySlot::Head,
-            a_thing(40, 1),
-        )]));
+        let mut inventory =
+            Inventory::from_snapshot(HashMap::from([(InventorySlot::Head, a_thing(40, 1))]));
 
         let displaced = inventory
             .insert(InventorySlot::Head, None, a_thing(7, 1))
