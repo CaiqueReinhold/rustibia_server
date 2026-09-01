@@ -93,6 +93,33 @@ mod tests {
         })
     }
 
+    fn awarded(msgs: &[BroadcastMessage], key: AgentKey) -> Option<u64> {
+        msgs.iter().find_map(|m| match m {
+            BroadcastMessage::SkillUpgraded {
+                agent_key,
+                skill_type: SkillType::Level,
+                amount,
+                ..
+            } if *agent_key == key => Some(*amount),
+            _ => None,
+        })
+    }
+
+    /// The level-up branch used to drop the experience on the floor, and the session
+    /// floated a `0` over the player that had just levelled.
+    #[test]
+    fn a_kill_that_levels_still_reports_the_experience_it_awarded() {
+        let (mut map, rat) = a_victim(100);
+        let hunter = add_player(&mut map, 1, Position::new(11, 10, 7));
+        hit(&mut map, rat, hunter, 100);
+        let mut msgs = Vec::new();
+
+        award(&mut map, rat, &mut msgs);
+
+        assert!(upgraded(&msgs, hunter));
+        assert_eq!(awarded(&msgs, hunter), Some(100));
+    }
+
     /// `a_test_snapshot` starts at level 1 with no progress, and the step into level 2
     /// costs exactly 100 experience.
     #[test]

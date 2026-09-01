@@ -236,8 +236,13 @@ impl SessionActor {
         Ok(())
     }
 
-    pub(super) async fn skill_upgraded(&self, skill: SkillType, gained: u16) -> Result<()> {
-        self.send_skill_update(skill.clone(), 0).await?;
+    pub(super) async fn skill_upgraded(
+        &self,
+        skill: SkillType,
+        gained: u16,
+        amount: u64,
+    ) -> Result<()> {
+        self.send_skill_update(skill.clone(), amount).await?;
         let map = self.shared_map.load();
         let message = map.get_player(self.player_key).map(|p| match skill {
             SkillType::Axe => format!("You advanced to axe fighting {}", p.skill_axe()),
@@ -433,6 +438,36 @@ mod tests {
                 ServerMessage::ExperienceChanged { experience: 4255 }
             ))
         ));
+    }
+
+    /// The floating number over a player that just levelled is the experience the kill
+    /// awarded. It used to be a hard-coded `0`, because `SkillUpgraded` did not carry it.
+    #[tokio::test]
+    async fn a_level_up_floats_the_experience_it_awarded() {
+        let mut map = GameMap::new();
+        let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        map.get_player_mut(me).unwrap().skills.insert(
+            SkillType::Level,
+            SkillValue {
+                value: 2,
+                current_ticks: 0,
+            },
+        );
+        let (mut session, mut connection_rx, _world_rx, _tick_tx) = SessionActor::for_test(me, map);
+        session.agents.get_or_insert(me);
+
+        session
+            .skill_upgraded(SkillType::Level, 1, 40)
+            .await
+            .unwrap();
+
+        let mut floated = None;
+        while let Ok(ConnectionCommand::SendPlayerMessage(message)) = connection_rx.try_recv() {
+            if let ServerMessage::FloatingText { text, .. } = message {
+                floated = Some(text);
+            }
+        }
+        assert_eq!(floated.as_deref(), Some("40"));
     }
 
     /// `tick_skill` returns without emitting for a skill the player has no row

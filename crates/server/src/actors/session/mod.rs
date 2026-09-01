@@ -425,8 +425,11 @@ impl SessionActor {
                 skill_type, amount, ..
             } => self.skill_progress(skill_type, amount).await,
             BroadcastMessage::SkillUpgraded {
-                skill_type, gained, ..
-            } => self.skill_upgraded(skill_type, gained).await,
+                skill_type,
+                gained,
+                amount,
+                ..
+            } => self.skill_upgraded(skill_type, gained, amount).await,
             BroadcastMessage::PlayerManaUpdated { .. } => self.mana_updated().await,
             BroadcastMessage::AgentLifeUpdated { agent_key } => self.life_updated(agent_key).await,
             BroadcastMessage::PotionDrunk { target, position } => {

@@ -21,7 +21,7 @@ use crate::game::events::BroadcastMessage;
 use crate::game::item_multi_action::UseTarget;
 use crate::game::random::Rolls;
 use crate::game::{
-    Tick, chat, combat, item_action, item_movement, item_multi_action, movement, targeting,
+    Tick, chat, combat, events, item_action, item_movement, item_multi_action, movement, targeting,
 };
 
 #[derive(Debug)]
@@ -241,16 +241,7 @@ impl WorldActor {
 
             self.drive_combat(&mut broadcast_messages);
 
-            let clone_start = time::Instant::now();
-            let snapshot = self.map.clone();
-            debug!(
-                "Tick {} map clone took {:?}",
-                self.tick,
-                clone_start.elapsed()
-            );
-            self.shared_map.store(Arc::new(snapshot));
-            let _ = self.tick_tx.send(self.tick);
-            self.message_router.broadcast(broadcast_messages).await;
+            self.end_tick(broadcast_messages).await;
 
             let elapsed = tick_start.elapsed();
             debug!("Tick {} took {} ms", self.tick, elapsed.as_millis());
@@ -262,6 +253,15 @@ impl WorldActor {
                 );
             }
         }
+    }
+
+    async fn end_tick(&mut self, mut broadcast_messages: Vec<BroadcastMessage>) {
+        events::dedupe_refreshes(&mut broadcast_messages);
+
+        let snapshot = self.map.clone();
+        self.shared_map.store(Arc::new(snapshot));
+        let _ = self.tick_tx.send(self.tick);
+        self.message_router.broadcast(broadcast_messages).await;
     }
 
     fn apply_commands(&mut self, cmds: Vec<ScheduledCommand>) {
@@ -500,6 +500,8 @@ impl WorldActor {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::actors::message_router::MessageRouterCommand;
+    use crate::entities::combat::{CombatDamage, CombatElement};
     use crate::entities::map::MapTile;
     use crate::entities::player::InventorySlot;
     use crate::persistence::test_fixtures::{
@@ -525,6 +527,43 @@ mod tests {
             tick_tx,
             roll: Rolls::new(1),
         }
+    }
+
+    /// Pins the call site rather than the collapsing itself — `dedupe_refreshes` has its
+    /// own tests in `game::events`. Verified by hand: dropping the call from `end_tick`
+    /// makes this fail with `left: 3, right: 2`.
+    #[tokio::test]
+    async fn the_tick_hands_the_router_one_refresh_per_tile() {
+        let mut actor = a_test_world_actor(GameMap::new());
+        let (message_router, mut router_rx) = MessageRouterActorHandle::for_test();
+        actor.message_router = message_router;
+        let position = Position::new(10, 10, 7);
+
+        actor
+            .end_tick(vec![
+                BroadcastMessage::TileChanged {
+                    position: position.clone(),
+                },
+                BroadcastMessage::DamageTaken {
+                    agent_key: AgentKey::default(),
+                    position: position.clone(),
+                    damage: CombatDamage {
+                        element: CombatElement::Physical,
+                        value: 5,
+                        blocked_shield: false,
+                        blocked_armor: false,
+                    },
+                },
+                BroadcastMessage::TileChanged {
+                    position: position.clone(),
+                },
+            ])
+            .await;
+
+        let Some(MessageRouterCommand::Broadcast { messages }) = router_rx.recv().await else {
+            panic!("the tick did not broadcast");
+        };
+        assert_eq!(messages.len(), 2, "{messages:?}");
     }
 
     /// Goes through the real `WorldCommand::SetTarget` dispatch arm in

@@ -101,6 +101,7 @@ pub fn tick_skill(
             agent_key,
             skill_type: skill,
             gained,
+            amount: ticks,
         }
     } else {
         BroadcastMessage::SkillProgressUpdated {
