@@ -55,7 +55,7 @@ async fn main() -> Result<()> {
 
     let map = persistence::map::load_map(&CONFIG.map_file_path, &ITEM_CONFIGS).unwrap();
     let creatures =
-        Arc::new(persistence::creatures::load_creatures(&CONFIG.creatures_file_path).unwrap());
+        Arc::new(persistence::creatures::load_creatures(&CONFIG.creatures_dir_path).unwrap());
     let spawns = persistence::spawns::load_spawns(&CONFIG.spawns_file_path).unwrap();
 
     let shared_map = Arc::new(ArcSwap::from_pointee(map.clone()));

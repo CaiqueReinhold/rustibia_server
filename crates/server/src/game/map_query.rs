@@ -1,7 +1,7 @@
 use crate::{
     constants::{
         BASE_FLOOR, MAX_FLOOR, MAX_VISIBLE_ITEMS, MIN_FLOOR, PLAYER_VIEWPORT_HEIGHT,
-        PLAYER_VIEWPORT_WIDTH, VIEWPORT_SIZE,
+        PLAYER_VIEWPORT_WIDTH, UNDERGROUND_REACH, VIEWPORT_SIZE,
     },
     entities::{
         agent::{Agent, AgentKey},
@@ -18,34 +18,42 @@ pub fn iter_visible_floors(z: u8) -> impl Iterator<Item = u8> {
     let (min_z, max_z) = if z <= BASE_FLOOR {
         (MIN_FLOOR, BASE_FLOOR)
     } else {
-        let min_z = if (z as i32) - 2 >= (BASE_FLOOR + 1) as i32 {
-            z
-        } else {
-            BASE_FLOOR + 1
-        };
-        let max_z = if z + 2 <= MAX_FLOOR { z } else { MAX_FLOOR };
-        (min_z, max_z)
+        (
+            z.saturating_sub(UNDERGROUND_REACH).max(BASE_FLOOR + 1),
+            (z + UNDERGROUND_REACH).min(MAX_FLOOR),
+        )
     };
     min_z..=max_z
+}
+
+/// The tiles `floor` contributes to a viewport centred on `viewport_center`. A
+/// floor is drawn one tile up-left per floor above the centre, so the tiles it
+/// covers slide down-right by the same amount. Items and agents must sweep the
+/// same rectangle or they disagree by a tile per floor.
+pub fn floor_viewport_rect(viewport_center: &Position, floor: u8) -> Rect {
+    let half_w = (PLAYER_VIEWPORT_WIDTH / 2) as i32;
+    let half_h = (PLAYER_VIEWPORT_HEIGHT / 2) as i32;
+    let floor_offset = viewport_center.z as i32 - floor as i32;
+    let cx = viewport_center.x as i32 + floor_offset;
+    let cy = viewport_center.y as i32 + floor_offset;
+
+    Rect::new(
+        (cx - half_w).max(0) as u16,
+        (cy - half_h).max(0) as u16,
+        (cx + half_w).max(0) as u16,
+        (cy + half_h).max(0) as u16,
+    )
 }
 
 pub fn get_map_desc_on_viewport(
     map: &GameMap,
     viewport_center: &Position,
 ) -> Vec<(u8, Box<[ItemStack; VIEWPORT_SIZE]>)> {
-    let half_w = (PLAYER_VIEWPORT_WIDTH / 2) as i32;
-    let half_h = (PLAYER_VIEWPORT_HEIGHT / 2) as i32;
-
     let mut floors = Vec::new();
     for floor in iter_visible_floors(viewport_center.z) {
-        let floor_offset = viewport_center.z as i32 - floor as i32;
-        let cx = viewport_center.x as i32 + floor_offset;
-        let cy = viewport_center.y as i32 + floor_offset;
-        let x_start = (cx - half_w).max(0) as u16;
-        let y_start = (cy - half_h).max(0) as u16;
-        let x_end = (cx + half_w).max(0) as u16;
-        let y_end = (cy + half_h).max(0) as u16;
-        let rect = Rect::new(x_start, y_start, x_end, y_end);
+        let rect = floor_viewport_rect(viewport_center, floor);
+        let x_start = rect.min_x();
+        let y_start = rect.min_y();
 
         let mut tiles = Box::new([[None; MAX_VISIBLE_ITEMS]; VIEWPORT_SIZE]);
         let mut found_any = false;
@@ -150,7 +158,7 @@ pub fn get_agents_in_viewport<'a>(
     position: &'a Position,
 ) -> impl Iterator<Item = (AgentKey, &'a Agent, Position)> + 'a {
     iter_visible_floors(position.z)
-        .flat_map(|floor| map.iter_agents_in_rect(&Rect::player_viewport(position), floor))
+        .flat_map(|floor| map.iter_agents_in_rect(&floor_viewport_rect(position, floor), floor))
         .flat_map(|key: &AgentKey| {
             map.get_agent(*key).map(|agent| {
                 (
@@ -417,5 +425,76 @@ mod tests {
 
         assert!(!can_target(&from, &Position::new(101, 100, 6)));
         assert!(!can_target(&from, &Position::new(100, 100, 8)));
+    }
+
+    /// Above ground the whole surface stack is described. Nothing below
+    /// `BASE_FLOOR` is included: the client hides those floors.
+    #[test]
+    fn the_surface_describes_every_floor_above_ground() {
+        let floors: Vec<u8> = iter_visible_floors(7).collect();
+
+        assert_eq!(floors, (MIN_FLOOR..=BASE_FLOOR).collect::<Vec<u8>>());
+        assert_eq!(
+            iter_visible_floors(3).collect::<Vec<u8>>(),
+            (MIN_FLOOR..=BASE_FLOOR).collect::<Vec<u8>>(),
+            "the window does not depend on where in the stack the player stands"
+        );
+    }
+
+    /// Underground the window spans `UNDERGROUND_REACH` either side of the
+    /// player, which is what the client draws.
+    #[test]
+    fn underground_describes_two_floors_either_side() {
+        assert_eq!(
+            iter_visible_floors(10).collect::<Vec<u8>>(),
+            vec![8, 9, 10, 11, 12]
+        );
+    }
+
+    /// Clamped at both ends, and never up into the surface stack — those floors
+    /// are drawn under a different rule.
+    #[test]
+    fn the_underground_window_is_clamped_to_the_underground_range() {
+        assert_eq!(iter_visible_floors(8).collect::<Vec<u8>>(), vec![8, 9, 10]);
+        assert_eq!(
+            iter_visible_floors(9).collect::<Vec<u8>>(),
+            vec![8, 9, 10, 11]
+        );
+        assert_eq!(
+            iter_visible_floors(MAX_FLOOR).collect::<Vec<u8>>(),
+            vec![13, 14, 15]
+        );
+    }
+
+    /// The window slides a tile per floor, in the direction that floor is drawn.
+    /// `get_agents_in_viewport` and `get_map_desc_on_viewport` both go through
+    /// here, so an agent standing on a described tile is always described with it.
+    #[test]
+    fn every_floors_window_slides_with_the_floor() {
+        let center = Position::new(100, 100, 9);
+
+        let own = floor_viewport_rect(&center, 9);
+        assert_eq!((own.min_x(), own.min_y()), (91, 93));
+        assert_eq!((own.max_x(), own.max_y()), (109, 107));
+
+        // One floor up is drawn one tile up-left, so it covers the tiles one
+        // down-right.
+        let above = floor_viewport_rect(&center, 8);
+        assert_eq!((above.min_x(), above.min_y()), (92, 94));
+        assert_eq!((above.max_x(), above.max_y()), (110, 108));
+
+        let below = floor_viewport_rect(&center, 11);
+        assert_eq!((below.min_x(), below.min_y()), (89, 91));
+        assert_eq!((below.max_x(), below.max_y()), (107, 105));
+    }
+
+    /// At the map's north-west corner the window clamps rather than wrapping
+    /// through `u16`.
+    #[test]
+    fn a_window_at_the_map_corner_is_clamped() {
+        let rect = floor_viewport_rect(&Position::new(2, 3, 10), 8);
+
+        assert_eq!((rect.min_x(), rect.min_y()), (0, 0));
+        assert_eq!((rect.max_x(), rect.max_y()), (13, 12));
     }
 }

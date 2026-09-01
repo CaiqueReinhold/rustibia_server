@@ -1,0 +1,38 @@
+name: Elf
+life: 100
+speed: 190
+blood_type: blood
+armor: 6
+defense: 6
+experience: 30
+outfit:
+  id: 62
+  colors: [0, 0, 0, 0]
+damage:
+  min: 0
+  max: 15
+corpse: 6003
+loot:
+  - item_id: 3031 # gold coin
+    amount: 30
+    chance: 44661
+  - item_id: 8011 # plum
+    amount: 2
+    chance: 20013
+  - item_id: 3376 # studded helmet
+    chance: 15055
+  - item_id: 3552 # leather boots
+    chance: 11113
+  - item_id: 3285 # longsword
+    chance: 10918
+  - item_id: 3378 # studded armor
+    chance: 9010
+  - item_id: 3410 # plate shield
+    chance: 8957
+  - item_id: 3447 # arrow
+    amount: 5
+    chance: 7026
+  - item_id: 9635 # elvish talisman
+    chance: 1984
+  - item_id: 5921 # heaven blossom
+    chance: 1011

@@ -1,0 +1,59 @@
+name: Dragon
+life: 1000
+speed: 172
+blood_type: blood
+armor: 25
+defense: 25
+experience: 700
+outfit:
+  id: 34
+  colors: [0, 0, 0, 0]
+damage:
+  min: 0
+  max: 120
+corpse: 5973
+loot:
+  - item_id: 3031 # gold coin
+    chance: 90082
+    amount: 105
+  - item_id: 3583 # dragon ham
+    chance: 65143
+  - item_id: 3409 # steel shield
+    chance: 14893
+  - item_id: 3349 # crossbow
+    chance: 10085
+  - item_id: 11457 # dragon's tail
+    chance: 9883
+  - item_id: 3449 # burst arrow
+    chance: 7976
+    amount: 10
+  - item_id: 3285 # longsword
+    chance: 4027
+  - item_id: 3351 # steel helmet
+    chance: 3005
+  - item_id: 3301 # broadsword
+    chance: 1995
+  - item_id: 3557 # plate legs
+    chance: 1909
+  - item_id: 236 # strong health potion
+    chance: 1055
+  - item_id: 3071 # wand of inferno
+    chance: 1053
+  - item_id: 5920 # green dragon scale
+    chance: 1038
+  - item_id: 5877 # green dragon leather
+    chance: 1018
+  - item_id: 3275 # double axe
+    chance: 1008
+  - item_id: 3322 # dragon hammer
+    chance: 517
+  - item_id: 3297 # serpent sword
+    chance: 504
+  - item_id: 3028 # small diamond
+    chance: 384
+  - item_id: 3416 # dragon shield
+    chance: 301
+  - item_id: 3061 # life crystal
+    chance: 113
+  - item_id: 7430 # dragonbone staff
+    chance: 102

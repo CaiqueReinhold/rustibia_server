@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use serde::Deserialize;
@@ -12,10 +12,18 @@ use crate::entities::items::ItemId;
 
 #[derive(Error, Debug)]
 pub enum CreaturesLoadError {
-    #[error("I/O error: {0}")]
-    ReadError(#[from] std::io::Error),
-    #[error("YAML parse error: {0}")]
-    ParseError(#[from] serde_yaml::Error),
+    #[error("I/O error reading {path}: {source}")]
+    ReadError {
+        path: PathBuf,
+        source: std::io::Error,
+    },
+    #[error("YAML parse error in {path}: {source}")]
+    ParseError {
+        path: PathBuf,
+        source: serde_yaml::Error,
+    },
+    #[error("{path} has no file stem to take a creature kind id from")]
+    UnnamedFile { path: PathBuf },
 }
 
 #[derive(Deserialize)]
@@ -58,47 +66,89 @@ struct RawCreature {
     loot: Vec<RawLootEntry>,
 }
 
-#[derive(Deserialize)]
-struct CreaturesFile {
-    creatures: HashMap<String, RawCreature>,
+impl RawCreature {
+    fn into_kind(self) -> CreatureKind {
+        CreatureKind {
+            name: self.name,
+            life: Pool {
+                current: self.life,
+                maximum: self.life,
+            },
+            auto_attack_damage: (self.damage.min, self.damage.max),
+            outfit: (self.outfit.id, self.outfit.colors),
+            speed: self.speed,
+            blood_type: self.blood_type,
+            armor: self.armor,
+            defense: self.defense,
+            experience: self.experience,
+            corpse: self.corpse,
+            loot_table: self
+                .loot
+                .into_iter()
+                .map(|loot| LootEntry {
+                    item_id: loot.item_id,
+                    chance: loot.chance,
+                    amount: loot.amount,
+                })
+                .collect(),
+        }
+    }
 }
 
+/// Each `.yaml` file in `dir` is one creature, and **its file stem is the
+/// `CreatureKindId`** — the name `spawns.yaml` refers to. Renaming a file renames the
+/// kind, which nothing but a spawn point's `kind:` will notice.
 pub fn load_creatures(
-    path: impl AsRef<Path>,
+    dir: impl AsRef<Path>,
 ) -> Result<HashMap<CreatureKindId, Arc<CreatureKind>>, CreaturesLoadError> {
-    let contents = fs::read_to_string(path)?;
-    let file: CreaturesFile = serde_yaml::from_str(&contents)?;
-    Ok(file
-        .creatures
-        .into_iter()
-        .map(|(id, raw)| {
-            let kind = CreatureKind {
-                name: raw.name,
-                life: Pool {
-                    current: raw.life,
-                    maximum: raw.life,
-                },
-                auto_attack_damage: (raw.damage.min, raw.damage.max),
-                outfit: (raw.outfit.id, raw.outfit.colors),
-                speed: raw.speed,
-                blood_type: raw.blood_type,
-                armor: raw.armor,
-                defense: raw.defense,
-                experience: raw.experience,
-                corpse: raw.corpse,
-                loot_table: raw
-                    .loot
-                    .into_iter()
-                    .map(|loot| LootEntry {
-                        item_id: loot.item_id,
-                        chance: loot.chance,
-                        amount: loot.amount,
-                    })
-                    .collect(),
-            };
-            (id, Arc::new(kind))
+    let dir = dir.as_ref();
+    let mut paths: Vec<PathBuf> = fs::read_dir(dir)
+        .map_err(|source| CreaturesLoadError::ReadError {
+            path: dir.to_path_buf(),
+            source,
+        })?
+        .map(|entry| {
+            entry
+                .map(|entry| entry.path())
+                .map_err(|source| CreaturesLoadError::ReadError {
+                    path: dir.to_path_buf(),
+                    source,
+                })
         })
-        .collect())
+        .collect::<Result<_, _>>()?;
+    paths.retain(|path| {
+        path.is_file()
+            && matches!(
+                path.extension().and_then(|ext| ext.to_str()),
+                Some("yaml" | "yml")
+            )
+    });
+    paths.sort();
+
+    paths
+        .into_iter()
+        .map(|path| {
+            let id = path
+                .file_stem()
+                .and_then(|stem| stem.to_str())
+                .ok_or_else(|| CreaturesLoadError::UnnamedFile {
+                    path: path.to_path_buf(),
+                })?
+                .to_string();
+            let contents =
+                fs::read_to_string(&path).map_err(|source| CreaturesLoadError::ReadError {
+                    path: path.to_path_buf(),
+                    source,
+                })?;
+            let raw: RawCreature = serde_yaml::from_str(&contents).map_err(|source| {
+                CreaturesLoadError::ParseError {
+                    path: path.to_path_buf(),
+                    source,
+                }
+            })?;
+            Ok((id, Arc::new(raw.into_kind())))
+        })
+        .collect()
 }
 
 #[cfg(test)]
@@ -112,7 +162,12 @@ mod tests {
     /// is logged and swallowed — so nothing but this test notices.
     #[test]
     fn every_shipped_loot_and_corpse_id_resolves_to_an_item() {
-        let creatures = load_creatures(&CONFIG.creatures_file_path).unwrap();
+        let creatures = load_creatures(&CONFIG.creatures_dir_path).unwrap();
+        assert!(
+            !creatures.is_empty(),
+            "loaded no creatures at all; the rest of this test would pass vacuously"
+        );
+
         let unknown: Vec<ItemId> = creatures
             .values()
             .flat_map(|kind| {
@@ -124,6 +179,26 @@ mod tests {
         assert!(
             unknown.is_empty(),
             "ids missing from items.yaml: {unknown:?}"
+        );
+    }
+
+    /// A creature's kind id is its file name, so a rename or a typo severs every spawn
+    /// point naming it. The spawner logs and skips, which is quiet enough to ship.
+    #[test]
+    fn every_shipped_spawn_names_a_creature_that_exists() {
+        let creatures = load_creatures(&CONFIG.creatures_dir_path).unwrap();
+        let spawns = crate::persistence::spawns::load_spawns(&CONFIG.spawns_file_path).unwrap();
+
+        let unknown: Vec<&str> = spawns
+            .iter()
+            .map(|spawn| spawn.kind.as_str())
+            .filter(|kind| !creatures.contains_key(*kind))
+            .collect();
+
+        assert!(
+            unknown.is_empty(),
+            "spawns.yaml names creatures with no file in {}: {unknown:?}",
+            CONFIG.creatures_dir_path
         );
     }
 }
