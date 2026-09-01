@@ -106,6 +106,7 @@ pub struct TextColors {
 pub struct CombatConfig {
     pub auto_attack_ticks: Tick,
     pub pool_item_id: u16,
+    pub human_corpose_item_id: u16,
     pub unarmed_skill: u16,
 }
 

@@ -9,7 +9,6 @@ use tracing::error;
 
 use crate::actors::player_query::{get_agent_desc, get_player_desc, get_player_skills};
 use crate::actors::session::{SessionActor, SessionError};
-use crate::actors::world::WorldCommand;
 use crate::entities::agent::AgentKey;
 use crate::entities::map::GameMap;
 use crate::entities::position::Position;
@@ -125,13 +124,6 @@ impl SessionActor {
             .send_message(ServerMessage::RemoveAgent { agent_id })
             .await?;
 
-        self.world
-            .send(WorldCommand::ClearTargetIfCurrent {
-                agent: self.player_key,
-                expected: agent_key,
-            })
-            .await;
-
         Ok(())
     }
 
@@ -158,6 +150,29 @@ impl SessionActor {
         }
 
         self.forget_agent(agent_key).await?;
+        Ok(())
+    }
+
+    pub(super) async fn life_updated(&self, agent_key: AgentKey) -> Result<()> {
+        let map = self.shared_map.load();
+        let Some(agent) = map.get_agent(agent_key) else {
+            return Ok(());
+        };
+        let Some(agent_id) = self.agents.get_local(&agent_key) else {
+            return Ok(());
+        };
+        let (current, max) = if agent_key == self.player_key {
+            (agent.life().current, agent.life().maximum)
+        } else {
+            (agent.life().to_wire(), 100)
+        };
+        self.connection
+            .send_message(ServerMessage::AgentLifeChanged {
+                agent_id,
+                current,
+                max,
+            })
+            .await?;
         Ok(())
     }
 
@@ -267,6 +282,39 @@ mod tests {
     use tokio::sync::mpsc;
 
     #[tokio::test]
+    pub(super) async fn target_lost_forwards_the_seq_verbatim() {
+        let mut map = GameMap::new();
+        let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let (session, mut connection_rx, _world_rx, _tick_tx) = SessionActor::for_test(me, map);
+
+        session.target_lost(77).await.unwrap();
+
+        assert!(matches!(
+            connection_rx.try_recv(),
+            Ok(ConnectionCommand::SendPlayerMessage(
+                ServerMessage::TargetLost { seq: 77 }
+            ))
+        ));
+    }
+
+    #[tokio::test]
+    pub(super) async fn set_target_forwards_the_seq_to_the_world() {
+        let mut map = GameMap::new();
+        let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let victim = seat_player(&mut map, &Position::new(101, 100, 7), 2);
+        let (mut session, _connection_rx, mut world_rx, _tick_tx) = SessionActor::for_test(me, map);
+        let local = session.agents.get_or_insert(victim);
+
+        session.handle_set_target(Some(local), 12).await.unwrap();
+
+        let (cmd, _) = world_rx.try_recv().unwrap();
+        assert!(matches!(
+            cmd,
+            WorldCommand::SetTarget { target: Some(t), seq: 12, .. } if t == victim
+        ));
+    }
+
+    #[tokio::test]
     pub(super) async fn set_target_translates_the_local_id_to_a_key() {
         let mut map = GameMap::new();
         let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
@@ -274,7 +322,7 @@ mod tests {
         let (mut session, _connection_rx, mut world_rx, _tick_tx) = SessionActor::for_test(me, map);
         let local = session.agents.get_or_insert(victim);
 
-        session.handle_set_target(Some(local)).await.unwrap();
+        session.handle_set_target(Some(local), 0).await.unwrap();
 
         let (cmd, _) = world_rx.try_recv().unwrap();
         assert!(matches!(
@@ -291,47 +339,10 @@ mod tests {
         let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
         let (mut session, _connection_rx, mut world_rx, _tick_tx) = SessionActor::for_test(me, map);
 
-        session.handle_set_target(Some(4242)).await.unwrap();
+        session.handle_set_target(Some(4242), 0).await.unwrap();
 
         let (cmd, _) = world_rx.try_recv().unwrap();
         assert!(matches!(cmd, WorldCommand::SetTarget { target: None, .. }));
-    }
-
-    #[tokio::test]
-    pub(super) async fn target_changed_sends_the_local_id() {
-        let mut map = GameMap::new();
-        let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
-        let victim = seat_player(&mut map, &Position::new(101, 100, 7), 2);
-        let (mut session, mut connection_rx, _world_rx, _tick_tx) = SessionActor::for_test(me, map);
-        let local = session.agents.get_or_insert(victim);
-
-        session.target_changed(Some(victim)).await.unwrap();
-
-        assert!(matches!(
-            connection_rx.try_recv(),
-            Ok(ConnectionCommand::SendPlayerMessage(
-                ServerMessage::TargetChanged { agent_id: Some(id) }
-            )) if id == local
-        ));
-    }
-
-    /// A target the player cannot see has no local id, and "no id" is a clear.
-    #[tokio::test]
-    pub(super) async fn an_unmapped_target_key_sends_a_clear() {
-        let mut map = GameMap::new();
-        let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
-        let stranger = seat_player(&mut map, &Position::new(101, 100, 7), 2);
-        let (mut session, mut connection_rx, _world_rx, _tick_tx) = SessionActor::for_test(me, map);
-        // deliberately never introduced: no local id exists for `stranger`
-
-        session.target_changed(Some(stranger)).await.unwrap();
-
-        assert!(matches!(
-            connection_rx.try_recv(),
-            Ok(ConnectionCommand::SendPlayerMessage(
-                ServerMessage::TargetChanged { agent_id: None }
-            ))
-        ));
     }
 
     /// Seats a player, a victim it is already targeting (map state kept for
@@ -349,74 +360,22 @@ mod tests {
         let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
         let victim = seat_player(&mut map, &Position::new(101, 100, 7), 2);
         let bystander = seat_player(&mut map, &Position::new(102, 100, 7), 3);
-        map.get_agent_mut(me).unwrap().set_target(Some(victim));
+        map.get_agent_mut(me).unwrap().set_target(Some(victim), 0);
 
         let (session, connection_rx, world_rx, _tick_tx) = SessionActor::for_test(me, map);
         (session, victim, bystander, connection_rx, world_rx)
     }
 
-    /// The id is recycled the moment the agent leaves view. `forget_agent` no
-    /// longer decides whether this was the player's target — it just reports who
-    /// left and lets the world's compare-and-swap decide, so the assertion here
-    /// is on the *command shape*, not on an outcome this layer can no longer see.
-    #[tokio::test]
-    pub(super) async fn forgetting_a_known_agent_asks_the_world_to_clear_it_if_current() {
-        let (mut session, victim, _bystander, mut connection_rx, mut world_rx) =
-            a_session_with_a_target();
-        session.agents.get_or_insert(victim);
-
-        session.forget_agent(victim).await.unwrap();
-
-        assert!(matches!(
-            connection_rx.try_recv(),
-            Ok(ConnectionCommand::SendPlayerMessage(
-                ServerMessage::RemoveAgent { .. }
-            ))
-        ));
-        let (cmd, _) = world_rx.try_recv().unwrap();
-        assert!(matches!(
-            cmd,
-            WorldCommand::ClearTargetIfCurrent { expected, .. } if expected == victim
-        ));
-    }
-
-    /// A bystander leaving still reports it as `expected` — `forget_agent` does
-    /// not special-case "is this actually my target" any more (see the previous
-    /// test's doc comment for why: only the world can answer that without a
-    /// race). Whether the clear actually applies is `clear_target_if_current`'s
-    /// job, covered in `game::targeting`'s tests, not here.
-    #[tokio::test]
-    pub(super) async fn forgetting_a_bystander_also_names_it_as_expected() {
-        let (mut session, _victim, bystander, mut connection_rx, mut world_rx) =
-            a_session_with_a_target();
-        session.agents.get_or_insert(bystander);
-
-        session.forget_agent(bystander).await.unwrap();
-
-        assert!(matches!(
-            connection_rx.try_recv(),
-            Ok(ConnectionCommand::SendPlayerMessage(
-                ServerMessage::RemoveAgent { .. }
-            ))
-        ));
-        let (cmd, _) = world_rx.try_recv().unwrap();
-        assert!(matches!(
-            cmd,
-            WorldCommand::ClearTargetIfCurrent { expected, .. } if expected == bystander
-        ));
-    }
-
     /// An agent that was never introduced has no id to drop and nothing to announce.
     #[tokio::test]
     pub(super) async fn forgetting_an_unknown_agent_does_nothing() {
-        let (mut session, victim, _bystander, mut connection_rx, mut world_rx) =
+        let (mut session, victim, _bystander, mut connection_rx, _world_rx) =
             a_session_with_a_target();
         // `victim` is the target but was never introduced, so it has no local id.
 
         session.forget_agent(victim).await.unwrap();
 
         assert!(connection_rx.try_recv().is_err());
-        assert!(world_rx.try_recv().is_err());
     }
 
     #[tokio::test]

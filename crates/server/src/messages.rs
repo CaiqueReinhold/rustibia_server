@@ -99,6 +99,7 @@ pub enum ClientMessage {
     },
     SetTarget {
         agent_id: Option<AgentId>,
+        seq: u32,
     },
 }
 
@@ -126,7 +127,7 @@ const SRV_CHAT_MESSAGE: u8 = 19;
 const SRV_CHANNEL_LIST: u8 = 20;
 const SRV_INTRODUCE_PLAYER: u8 = 21;
 const SRV_FLOATING_TEXT: u8 = 22;
-const SRV_TARGET_CHANGED: u8 = 23;
+const SRV_TARGET_LOST: u8 = 23;
 const SRV_AGENT_LIFE_UPDATED: u8 = 24;
 const SRV_SHOW_EFFECT: u8 = 25;
 const SRV_LAUNCH_MISSILE: u8 = 26;
@@ -265,8 +266,8 @@ pub enum ServerMessage {
         text_type: FloatingTextType,
         color: Option<Color>,
     },
-    TargetChanged {
-        agent_id: Option<AgentId>,
+    TargetLost {
+        seq: u32,
     },
     ShowEffect {
         effect_id: u16,
@@ -425,6 +426,7 @@ impl Decoder for GameMessageCodec {
             }
             CLI_SET_TARGET => Ok(Some(ClientMessage::SetTarget {
                 agent_id: decode_optional_agent(buf.get_u16_le()),
+                seq: buf.get_u32_le(),
             })),
             _ => Err(MessageDecodeError::WrongSequence),
         }
@@ -719,9 +721,9 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                     None => dst.put_u8(0x00),
                 }
             }
-            ServerMessage::TargetChanged { agent_id } => {
-                dst.put_u8(SRV_TARGET_CHANGED);
-                encode_optional_agent(agent_id, dst);
+            ServerMessage::TargetLost { seq } => {
+                dst.put_u8(SRV_TARGET_LOST);
+                dst.put_u32_le(seq);
             }
             ServerMessage::AgentLifeChanged {
                 agent_id,
@@ -850,10 +852,6 @@ fn encode_optional_item(item_id: Option<ItemId>, dst: &mut BytesMut) {
     } else {
         dst.put_u16_le(0xFFFF);
     }
-}
-
-fn encode_optional_agent(agent_id: Option<AgentId>, dst: &mut BytesMut) {
-    dst.put_u16_le(agent_id.unwrap_or(0xFFFF));
 }
 
 fn decode_optional_agent(raw: u16) -> Option<AgentId> {
@@ -1329,52 +1327,57 @@ mod tests {
         }
     }
 
+    /// The literal frame the client's `target_lost_decodes_its_seq`
+    /// (rustibia-client, src/network/messages.rs) reads. The opcode is a number on
+    /// purpose: writing `SRV_TARGET_LOST` here would pin the layout and leave the
+    /// opcode free to drift on one side only.
+    #[test]
+    fn target_lost_encodes_its_seq() {
+        let mut dst = BytesMut::new();
+        GameMessageCodec {}
+            .encode(ServerMessage::TargetLost { seq: 77 }, &mut dst)
+            .unwrap();
+
+        assert_eq!(u16::from_le_bytes([dst[0], dst[1]]), 5);
+        assert_eq!(dst[2], 23);
+        assert_eq!(u32::from_le_bytes([dst[3], dst[4], dst[5], dst[6]]), 77);
+    }
+
+    /// The literal frame the client's `set_target_encodes_some_and_none`
+    /// (rustibia-client, src/network/messages.rs) builds. The pair is the pin: the
+    /// opcode is written as a number on purpose, so that changing the constant on
+    /// one side fails a test instead of silently desyncing the wire.
     #[test]
     fn set_target_decodes_some_and_none() {
         let mut buf = BytesMut::new();
-        // payload: opcode + u16 agent id
-        buf.put_u16_le(3);
-        buf.put_u8(CLI_SET_TARGET);
         buf.put_u16_le(7);
+        buf.put_u8(17);
+        buf.put_u16_le(7);
+        buf.put_u32_le(5);
         let decoded = GameMessageCodec {}.decode(&mut buf).unwrap().unwrap();
         assert!(matches!(
             decoded,
-            ClientMessage::SetTarget { agent_id: Some(7) }
+            ClientMessage::SetTarget {
+                agent_id: Some(7),
+                seq: 5
+            }
         ));
 
         let mut buf = BytesMut::new();
-        buf.put_u16_le(3);
-        buf.put_u8(CLI_SET_TARGET);
+        buf.put_u16_le(7);
+        buf.put_u8(17);
         buf.put_u16_le(0xFFFF);
+        buf.put_u32_le(6);
         let decoded = GameMessageCodec {}.decode(&mut buf).unwrap().unwrap();
         assert!(matches!(
             decoded,
-            ClientMessage::SetTarget { agent_id: None }
+            ClientMessage::SetTarget {
+                agent_id: None,
+                seq: 6
+            }
         ));
     }
 
-    #[test]
-    fn target_changed_encodes_some_and_none() {
-        let mut dst = BytesMut::new();
-        GameMessageCodec {}
-            .encode(ServerMessage::TargetChanged { agent_id: Some(9) }, &mut dst)
-            .unwrap();
-        // 2 bytes length prefix, then opcode, then the id
-        assert_eq!(dst[2], SRV_TARGET_CHANGED);
-        assert_eq!(u16::from_le_bytes([dst[3], dst[4]]), 9);
-
-        let mut dst = BytesMut::new();
-        GameMessageCodec {}
-            .encode(ServerMessage::TargetChanged { agent_id: None }, &mut dst)
-            .unwrap();
-        assert_eq!(dst[2], SRV_TARGET_CHANGED);
-        assert_eq!(u16::from_le_bytes([dst[3], dst[4]]), 0xFFFF);
-    }
-
-    /// The client decodes these exact frames in its own test. The codec is
-    /// asymmetric — the server only encodes, the client only decodes — so this
-    /// pair of literals is the only thing that catches a field-order or width
-    /// divergence between the repositories.
     #[test]
     fn player_skills_encodes_a_known_frame() {
         let mut dst = BytesMut::new();

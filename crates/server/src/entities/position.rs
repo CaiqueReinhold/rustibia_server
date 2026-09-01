@@ -220,6 +220,11 @@ impl Rect {
         }
     }
 
+    /// x/y only — `Rect` has no floor, so `z` is the caller's clause.
+    pub fn contains(&self, pos: &Position) -> bool {
+        pos.x >= self.min.x && pos.x <= self.max.x && pos.y >= self.min.y && pos.y <= self.max.y
+    }
+
     pub fn min_x(&self) -> u16 {
         self.min.x
     }
@@ -234,5 +239,30 @@ impl Rect {
 
     pub fn max_y(&self) -> u16 {
         self.max.y
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rect_contains_its_edges_but_not_beyond() {
+        let rect = Rect::new(10, 20, 14, 24);
+
+        assert!(rect.contains(&Position::new(12, 22, 7)));
+        assert!(rect.contains(&Position::new(10, 20, 7)));
+        assert!(rect.contains(&Position::new(14, 24, 7)));
+        assert!(!rect.contains(&Position::new(9, 22, 7)));
+        assert!(!rect.contains(&Position::new(15, 22, 7)));
+        assert!(!rect.contains(&Position::new(12, 25, 7)));
+    }
+
+    #[test]
+    fn rect_contains_ignores_the_floor() {
+        let rect = Rect::new(10, 20, 14, 24);
+
+        assert!(rect.contains(&Position::new(12, 22, 0)));
+        assert!(rect.contains(&Position::new(12, 22, 15)));
     }
 }

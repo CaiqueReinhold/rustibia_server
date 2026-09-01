@@ -1,54 +1,84 @@
 use crate::entities::agent::AgentKey;
 use crate::entities::map::GameMap;
 use crate::game::events::BroadcastMessage;
+use crate::game::map_query::can_target;
 
 pub fn set_target(
     map: &mut GameMap,
     agent: AgentKey,
     target: Option<AgentKey>,
+    seq: u32,
 ) -> Vec<BroadcastMessage> {
     if map.get_agent(agent).is_none() {
         return Vec::new();
     }
 
+    let requested_a_target = target.is_some();
     let accepted = match target {
         Some(t) if t != agent && map.get_agent(t).is_some() => Some(t),
         _ => None,
     };
 
-    let Some(actor) = map.get_agent_mut(agent) else {
-        return Vec::new();
-    };
-    actor.set_target(accepted);
+    map.get_agent_mut(agent)
+        .expect("agent was just found by get_agent above")
+        .set_target(accepted, if accepted.is_some() { seq } else { 0 });
 
-    vec![BroadcastMessage::TargetChanged {
-        agent_key: agent,
-        target: accepted,
-    }]
+    if requested_a_target && accepted.is_none() {
+        vec![BroadcastMessage::AgentLostTarget {
+            agent_key: agent,
+            seq,
+        }]
+    } else {
+        Vec::new()
+    }
 }
 
-pub fn clear_target_if_current(
-    map: &mut GameMap,
-    agent: AgentKey,
-    expected: AgentKey,
-) -> Vec<BroadcastMessage> {
+/// Clears `agent`'s target and announces the loss, stamped with the seq that set
+/// it.
+pub fn lose_target(map: &mut GameMap, agent: AgentKey) -> Vec<BroadcastMessage> {
     let Some(actor) = map.get_agent(agent) else {
         return Vec::new();
     };
+    if actor.target().is_none() {
+        return Vec::new();
+    }
+    let seq = actor.target_seq();
 
-    if actor.target() != Some(expected) {
+    map.get_agent_mut(agent)
+        .expect("agent was just found by get_agent above")
+        .set_target(None, 0);
+
+    vec![BroadcastMessage::AgentLostTarget {
+        agent_key: agent,
+        seq,
+    }]
+}
+
+/// Drops `agent`'s target if it is gone or no longer targetable. Returns the
+/// events to broadcast — empty when nothing changed.
+///
+/// An absent attacker returns empty rather than clearing: it died earlier in the
+/// same pass, and a dead agent's loss has no session to reach.
+pub fn drop_unreachable_target(map: &mut GameMap, agent: AgentKey) -> Vec<BroadcastMessage> {
+    let Some(actor) = map.get_agent(agent) else {
+        return Vec::new();
+    };
+    let Some(target) = actor.target() else {
+        return Vec::new();
+    };
+    let Some(from) = map.agent_position(agent) else {
+        return Vec::new();
+    };
+
+    let reachable = match (map.get_agent(target), map.agent_position(target)) {
+        (Some(_), Some(to)) => can_target(from, to),
+        _ => false,
+    };
+    if reachable {
         return Vec::new();
     }
 
-    let actor = map
-        .get_agent_mut(agent)
-        .expect("agent was just found by get_agent above");
-    actor.set_target(None);
-
-    vec![BroadcastMessage::TargetChanged {
-        agent_key: agent,
-        target: None,
-    }]
+    lose_target(map, agent)
 }
 
 #[cfg(test)]
@@ -58,6 +88,12 @@ mod tests {
     use crate::entities::map::{GameMap, MapTile};
     use crate::entities::position::Position;
     use crate::persistence::test_fixtures::a_test_snapshot;
+
+    fn seat(map: &mut GameMap, at: &Position, id: u32) -> AgentKey {
+        map.insert_tile(at.clone(), MapTile::new());
+        map.insert_agent(Agent::from_player(a_test_snapshot(id, 1)), at)
+            .unwrap()
+    }
 
     fn map_with_two_players() -> (GameMap, AgentKey, AgentKey) {
         let mut map = GameMap::new();
@@ -79,145 +115,172 @@ mod tests {
     }
 
     #[test]
-    fn sets_a_valid_target_and_announces_it() {
+    fn sets_a_valid_target_and_says_nothing() {
         let (mut map, attacker, victim) = map_with_two_players();
 
-        let msgs = set_target(&mut map, attacker, Some(victim));
+        let msgs = set_target(&mut map, attacker, Some(victim), 5);
 
         assert_eq!(target_of(&map, attacker), Some(victim));
-        assert!(matches!(
-            msgs.as_slice(),
-            [BroadcastMessage::TargetChanged { agent_key, target: Some(t) }]
-                if *agent_key == attacker && *t == victim
-        ));
+        assert_eq!(map.get_agent(attacker).unwrap().target_seq(), 5);
+        assert!(
+            msgs.is_empty(),
+            "the client applied it optimistically; there is nothing to tell it"
+        );
     }
 
     #[test]
-    fn clears_on_none_and_announces_it() {
+    fn clears_on_none_and_says_nothing() {
         let (mut map, attacker, victim) = map_with_two_players();
-        set_target(&mut map, attacker, Some(victim));
+        set_target(&mut map, attacker, Some(victim), 5);
 
-        let msgs = set_target(&mut map, attacker, None);
+        let msgs = set_target(&mut map, attacker, None, 6);
 
         assert_eq!(target_of(&map, attacker), None);
-        assert!(matches!(
-            msgs.as_slice(),
-            [BroadcastMessage::TargetChanged { agent_key, target: None }]
-                if *agent_key == attacker
-        ));
+        assert!(msgs.is_empty());
     }
 
-    /// A rejection must still announce a clear. Returning nothing would leave the
-    /// client drawing a square the server does not believe in.
+    /// A rejection must reach the client, or it is left drawing a square the
+    /// server does not hold. It carries the seq just rejected, because that is the
+    /// one the client applied.
     #[test]
-    fn rejecting_a_missing_agent_announces_a_clear() {
+    fn rejecting_a_missing_agent_announces_the_loss_with_the_new_seq() {
         let (mut map, attacker, victim) = map_with_two_players();
-        set_target(&mut map, attacker, Some(victim));
+        set_target(&mut map, attacker, Some(victim), 5);
         map.remove_agent(victim);
 
-        let msgs = set_target(&mut map, attacker, Some(victim));
+        let msgs = set_target(&mut map, attacker, Some(victim), 6);
 
         assert_eq!(target_of(&map, attacker), None);
         assert!(matches!(
             msgs.as_slice(),
-            [BroadcastMessage::TargetChanged { target: None, .. }]
+            [BroadcastMessage::AgentLostTarget { agent_key, seq }]
+                if *agent_key == attacker && *seq == 6
         ));
     }
 
     #[test]
-    fn rejecting_self_target_announces_a_clear() {
-        let (mut map, attacker, _victim) = map_with_two_players();
+    fn rejects_self_targeting() {
+        let (mut map, attacker, _) = map_with_two_players();
 
-        let msgs = set_target(&mut map, attacker, Some(attacker));
+        let msgs = set_target(&mut map, attacker, Some(attacker), 7);
 
         assert_eq!(target_of(&map, attacker), None);
         assert!(matches!(
             msgs.as_slice(),
-            [BroadcastMessage::TargetChanged { target: None, .. }]
+            [BroadcastMessage::AgentLostTarget { seq: 7, .. }]
         ));
     }
 
-    /// Switching targets is one event, not a clear followed by a set. A client
-    /// that saw two would flicker.
     #[test]
-    fn replacing_a_target_emits_exactly_one_event() {
+    fn an_absent_actor_changes_nothing() {
         let (mut map, attacker, victim) = map_with_two_players();
-        let third = Position::new(12, 10, 7);
-        map.insert_tile(third.clone(), MapTile::new());
-        let other = map
-            .insert_agent(Agent::from_player(a_test_snapshot(3, 1)), &third)
-            .unwrap();
-        set_target(&mut map, attacker, Some(victim));
+        map.remove_agent(attacker);
 
-        let msgs = set_target(&mut map, attacker, Some(other));
+        assert!(set_target(&mut map, attacker, Some(victim), 1).is_empty());
+    }
 
+    #[test]
+    fn a_reachable_target_is_kept() {
+        let (mut map, attacker, victim) = map_with_two_players();
+        set_target(&mut map, attacker, Some(victim), 5);
+
+        let msgs = drop_unreachable_target(&mut map, attacker);
+
+        assert_eq!(target_of(&map, attacker), Some(victim));
+        assert!(msgs.is_empty());
+    }
+
+    /// Out of weapon range is not out of reach: the attacker walks closer.
+    #[test]
+    fn a_target_out_of_weapon_range_but_in_view_is_kept() {
+        let mut map = GameMap::new();
+        let attacker = seat(&mut map, &Position::new(100, 100, 7), 1);
+        let victim = seat(&mut map, &Position::new(105, 105, 7), 2);
+        set_target(&mut map, attacker, Some(victim), 5);
+
+        let msgs = drop_unreachable_target(&mut map, attacker);
+
+        assert_eq!(target_of(&map, attacker), Some(victim));
+        assert!(msgs.is_empty());
+    }
+
+    #[test]
+    fn a_target_outside_the_viewport_is_dropped_with_its_seq() {
+        let mut map = GameMap::new();
+        let attacker = seat(&mut map, &Position::new(100, 100, 7), 1);
+        let victim = seat(&mut map, &Position::new(110, 100, 7), 2);
+        set_target(&mut map, attacker, Some(victim), 9);
+
+        let msgs = drop_unreachable_target(&mut map, attacker);
+
+        assert_eq!(target_of(&map, attacker), None);
+        assert!(matches!(
+            msgs.as_slice(),
+            [BroadcastMessage::AgentLostTarget { agent_key, seq }]
+                if *agent_key == attacker && *seq == 9
+        ));
+    }
+
+    #[test]
+    fn a_target_just_inside_the_viewport_is_kept() {
+        let mut map = GameMap::new();
+        let attacker = seat(&mut map, &Position::new(100, 100, 7), 1);
+        let victim = seat(&mut map, &Position::new(109, 107, 7), 2);
+        set_target(&mut map, attacker, Some(victim), 5);
+
+        assert!(drop_unreachable_target(&mut map, attacker).is_empty());
+        assert_eq!(target_of(&map, attacker), Some(victim));
+    }
+
+    #[test]
+    fn a_target_one_floor_up_is_dropped() {
+        let mut map = GameMap::new();
+        let attacker = seat(&mut map, &Position::new(100, 100, 7), 1);
+        let victim = seat(&mut map, &Position::new(101, 100, 6), 2);
+        set_target(&mut map, attacker, Some(victim), 5);
+
+        let msgs = drop_unreachable_target(&mut map, attacker);
+
+        assert_eq!(target_of(&map, attacker), None);
         assert_eq!(msgs.len(), 1);
-        assert_eq!(target_of(&map, attacker), Some(other));
     }
 
-    /// An actor that has left the map produces nothing at all — there is no
-    /// session left to tell.
+    /// The dangling `AgentKey` a logout or a reaped corpse leaves behind. No
+    /// session has to notice for it to be cleared.
     #[test]
-    fn a_missing_actor_produces_no_events() {
+    fn a_target_that_left_the_map_is_dropped() {
         let (mut map, attacker, victim) = map_with_two_players();
-        map.remove_agent(attacker);
+        set_target(&mut map, attacker, Some(victim), 5);
+        map.remove_agent(victim);
 
-        let msgs = set_target(&mut map, attacker, Some(victim));
-
-        assert!(msgs.is_empty());
-    }
-
-    #[test]
-    fn clear_target_if_current_clears_when_the_target_still_matches() {
-        let (mut map, attacker, victim) = map_with_two_players();
-        set_target(&mut map, attacker, Some(victim));
-
-        let msgs = clear_target_if_current(&mut map, attacker, victim);
+        let msgs = drop_unreachable_target(&mut map, attacker);
 
         assert_eq!(target_of(&map, attacker), None);
-        assert!(matches!(
-            msgs.as_slice(),
-            [BroadcastMessage::TargetChanged { agent_key, target: None }]
-                if *agent_key == attacker
-        ));
-    }
-
-    /// The clobber case this function exists to prevent: a `SetTarget` that
-    /// applied after the session decided to clear must not be reverted.
-    #[test]
-    fn clear_target_if_current_does_nothing_when_the_target_has_moved_on() {
-        let (mut map, attacker, victim) = map_with_two_players();
-        let third_pos = Position::new(12, 10, 7);
-        map.insert_tile(third_pos.clone(), MapTile::new());
-        let new_target = map
-            .insert_agent(Agent::from_player(a_test_snapshot(3, 1)), &third_pos)
-            .unwrap();
-        set_target(&mut map, attacker, Some(new_target));
-
-        let msgs = clear_target_if_current(&mut map, attacker, victim);
-
-        assert_eq!(target_of(&map, attacker), Some(new_target));
-        assert!(msgs.is_empty());
+        assert_eq!(msgs.len(), 1);
     }
 
     #[test]
-    fn clear_target_if_current_does_nothing_when_there_is_no_target() {
-        let (mut map, attacker, victim) = map_with_two_players();
+    fn an_agent_with_no_target_produces_nothing() {
+        let (mut map, attacker, _) = map_with_two_players();
 
-        let msgs = clear_target_if_current(&mut map, attacker, victim);
-
-        assert_eq!(target_of(&map, attacker), None);
-        assert!(msgs.is_empty());
+        assert!(drop_unreachable_target(&mut map, attacker).is_empty());
     }
 
+    /// It died earlier in the same pass. Clearing a dead agent's target must not
+    /// emit an event for a session to translate.
     #[test]
-    fn clear_target_if_current_does_nothing_when_the_actor_is_absent() {
+    fn an_absent_attacker_produces_nothing() {
         let (mut map, attacker, victim) = map_with_two_players();
-        set_target(&mut map, attacker, Some(victim));
+        set_target(&mut map, attacker, Some(victim), 5);
         map.remove_agent(attacker);
 
-        let msgs = clear_target_if_current(&mut map, attacker, victim);
+        assert!(drop_unreachable_target(&mut map, attacker).is_empty());
+    }
 
-        assert!(msgs.is_empty());
+    #[test]
+    fn lose_target_on_an_agent_with_no_target_says_nothing() {
+        let (mut map, attacker, _) = map_with_two_players();
+
+        assert!(lose_target(&mut map, attacker).is_empty());
     }
 }

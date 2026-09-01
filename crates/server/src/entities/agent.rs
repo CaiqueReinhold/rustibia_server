@@ -9,9 +9,10 @@ use crate::{
     entities::{
         combat::Participation,
         creature::{BloodType, CreatureKind},
+        items::ItemId,
         position::Position,
     },
-    game::Tick,
+    game::{Tick, config::GAME_CONFIG},
     persistence::player::PlayerSnapshot,
 };
 
@@ -32,6 +33,10 @@ impl Pool {
 
     pub fn remove(&mut self, amount: u32) {
         self.current = self.current.saturating_sub(amount)
+    }
+
+    pub fn add(&mut self, amount: u32) {
+        self.current = self.current.saturating_add(amount).min(self.maximum)
     }
 
     pub fn to_wire(&self) -> u32 {
@@ -80,6 +85,7 @@ pub struct Agent {
     pub next_wander_tick: Tick,
 
     target: Option<AgentKey>,
+    target_seq: u32,
     participation: Participation,
 }
 
@@ -138,6 +144,7 @@ impl Agent {
             next_wander_tick: 0,
             next_attack_tick: 0,
             target: None,
+            target_seq: 0,
             participation: Participation::default(),
             modifiers: Modifiers::default(),
         }
@@ -158,6 +165,7 @@ impl Agent {
             next_wander_tick: 0,
             next_attack_tick: 0,
             target: None,
+            target_seq: 0,
             participation: Participation::default(),
             modifiers: Modifiers::default(),
         }
@@ -176,6 +184,10 @@ impl Agent {
 
     pub fn take_hit(&mut self, damage: u32) {
         self.life.current = self.life.current.saturating_sub(damage);
+    }
+
+    pub fn restore_life(&mut self, amount: u32) {
+        self.life.add(amount);
     }
 
     pub fn outfit(&self) -> (OutfitId, OutfitColors) {
@@ -198,8 +210,13 @@ impl Agent {
         self.target
     }
 
-    pub fn set_target(&mut self, target: Option<AgentKey>) {
+    pub fn target_seq(&self) -> u32 {
+        self.target_seq
+    }
+
+    pub fn set_target(&mut self, target: Option<AgentKey>, seq: u32) {
         self.target = target;
+        self.target_seq = seq;
     }
 
     pub fn participation(&self) -> &Participation {
@@ -253,6 +270,13 @@ impl Agent {
         match &self.inner {
             AgentInner::Creature(c) => c.defense,
             AgentInner::Player(p) => p.defense,
+        }
+    }
+
+    pub fn get_corpse(&self) -> ItemId {
+        match &self.inner {
+            AgentInner::Creature(c) => c.corpse,
+            AgentInner::Player(..) => GAME_CONFIG.combat.human_corpose_item_id,
         }
     }
 
@@ -350,6 +374,7 @@ mod tests {
             armor: 1,
             defense: 1,
             experience: 0,
+            corpse: 1,
         }));
         let pos = Position {
             x: 200,
@@ -413,6 +438,7 @@ mod tests {
             armor: 1,
             defense: 1,
             experience: 0,
+            corpse: 1,
         }));
         assert!(!player.is_creature());
         assert!(creature.is_creature());
@@ -434,6 +460,7 @@ mod tests {
             armor: 1,
             defense: 1,
             experience: 0,
+            corpse: 1,
         };
         let agent = Agent::from_creature_kind(Arc::new(kind));
         assert!(agent.is_creature());
@@ -534,7 +561,7 @@ mod tests {
     }
 
     #[test]
-    fn set_target_stores_and_clears() {
+    fn set_target_stores_the_seq_and_clearing_resets_it() {
         let mut agent = Agent::from_player(make_snapshot(1));
         let mut map = GameMap::new();
         map.insert_tile(Position::new(1, 1, 7), crate::entities::map::MapTile::new());
@@ -545,11 +572,13 @@ mod tests {
             )
             .unwrap();
 
-        agent.set_target(Some(victim));
+        agent.set_target(Some(victim), 42);
         assert_eq!(agent.target(), Some(victim));
+        assert_eq!(agent.target_seq(), 42);
 
-        agent.set_target(None);
+        agent.set_target(None, 0);
         assert!(agent.target().is_none());
+        assert_eq!(agent.target_seq(), 0);
     }
 
     /// The target is session state. A character that logs out and back in must not
@@ -566,7 +595,7 @@ mod tests {
             .unwrap();
 
         let mut agent = Agent::from_player(make_snapshot(1));
-        agent.set_target(Some(victim));
+        agent.set_target(Some(victim), 0);
 
         let snapshot = agent.to_snapshot(Position::new(1, 1, 7)).unwrap();
         let restored = Agent::from_player(snapshot);
@@ -603,7 +632,7 @@ mod tests {
 
         a.next_walk_tick = 42;
         a.set_facing(Facing::North);
-        a.set_target(None);
+        a.set_target(None, 0);
 
         assert!(Arc::ptr_eq(player_arc(&a), player_arc(&b)));
     }

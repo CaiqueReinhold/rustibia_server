@@ -382,7 +382,9 @@ impl SessionActor {
             ClientMessage::OpenChannel { channel } => self.handle_open_channel(channel).await,
             ClientMessage::CloseChannel { channel } => self.handle_close_channel(channel).await,
             ClientMessage::OpenPmChat { name } => self.handle_open_pm_chat(name).await,
-            ClientMessage::SetTarget { agent_id } => self.handle_set_target(agent_id).await,
+            ClientMessage::SetTarget { agent_id, seq } => {
+                self.handle_set_target(agent_id, seq).await
+            }
         }
     }
 
@@ -430,7 +432,7 @@ impl SessionActor {
             BroadcastMessage::AgentSaid { agent_key, message } => {
                 self.agent_said(agent_key, message).await
             }
-            BroadcastMessage::TargetChanged { target, .. } => self.target_changed(target).await,
+            BroadcastMessage::AgentLostTarget { seq, .. } => self.target_lost(seq).await,
             BroadcastMessage::DamageTaken {
                 agent_key, damage, ..
             } => self.agent_took_damage(agent_key, damage).await,
@@ -446,6 +448,7 @@ impl SessionActor {
                 skill_type, gained, ..
             } => self.skill_upgraded(skill_type, gained).await,
             BroadcastMessage::PlayerManaUpdated { .. } => self.mana_updated().await,
+            BroadcastMessage::AgentLifeUpdated { agent_key } => self.life_updated(agent_key).await,
         }
     }
 

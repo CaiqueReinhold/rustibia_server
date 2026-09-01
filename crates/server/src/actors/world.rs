@@ -76,10 +76,7 @@ pub enum WorldCommand {
     SetTarget {
         agent: AgentKey,
         target: Option<AgentKey>,
-    },
-    ClearTargetIfCurrent {
-        agent: AgentKey,
-        expected: AgentKey,
+        seq: u32,
     },
 }
 
@@ -241,7 +238,7 @@ impl WorldActor {
                 }
             }
 
-            self.drive_auto_attacks(&mut broadcast_messages);
+            self.drive_combat(&mut broadcast_messages);
 
             let clone_start = time::Instant::now();
             let snapshot = self.map.clone();
@@ -272,8 +269,8 @@ impl WorldActor {
         }
     }
 
-    fn drive_auto_attacks(&mut self, broadcast_messages: &mut Vec<BroadcastMessage>) {
-        let attackers: Vec<AgentKey> = self
+    fn drive_combat(&mut self, broadcast_messages: &mut Vec<BroadcastMessage>) {
+        let with_targets: Vec<AgentKey> = self
             .map
             .iter_agents()
             .filter(|(_, agent)| agent.target().is_some())
@@ -281,7 +278,12 @@ impl WorldActor {
             .collect();
 
         let mut scheduled = Vec::new();
-        for agent_key in attackers {
+        for agent_key in with_targets {
+            let lost = targeting::drop_unreachable_target(&mut self.map, agent_key);
+            if !lost.is_empty() {
+                broadcast_messages.extend(lost);
+                continue;
+            }
             let Some(plan) =
                 combat::plan_auto_attack(&self.map, agent_key, &mut self.roll, self.tick)
             else {
@@ -293,6 +295,7 @@ impl WorldActor {
                 self.tick,
                 broadcast_messages,
                 &mut scheduled,
+                &mut self.roll,
             );
         }
         self.apply_commands(scheduled);
@@ -349,6 +352,7 @@ impl WorldActor {
                     source,
                     target,
                     self.tick,
+                    &mut self.roll,
                 );
                 broadcast_messages.extend(msgs);
                 self.apply_commands(cmds);
@@ -359,13 +363,8 @@ impl WorldActor {
                 broadcast_messages.extend(msgs);
                 Ok(())
             }
-            WorldCommand::SetTarget { agent, target } => {
-                let msgs = targeting::set_target(&mut self.map, agent, target);
-                broadcast_messages.extend(msgs);
-                Ok(())
-            }
-            WorldCommand::ClearTargetIfCurrent { agent, expected } => {
-                let msgs = targeting::clear_target_if_current(&mut self.map, agent, expected);
+            WorldCommand::SetTarget { agent, target, seq } => {
+                let msgs = targeting::set_target(&mut self.map, agent, target, seq);
                 broadcast_messages.extend(msgs);
                 Ok(())
             }
@@ -551,6 +550,7 @@ mod tests {
             WorldCommand::SetTarget {
                 agent: attacker,
                 target: Some(victim),
+                seq: 0,
             },
             &mut broadcasts,
         );
@@ -559,11 +559,75 @@ mod tests {
             actor.map.get_agent(attacker).unwrap().target(),
             Some(victim)
         );
+        assert!(
+            broadcasts.is_empty(),
+            "a successful set is silent; the client already applied it"
+        );
+    }
+
+    /// The walk applies before the sweep in the same tick, so the drop lands with
+    /// the movement rather than a tick behind it.
+    #[tokio::test]
+    async fn a_target_out_of_view_is_dropped_by_the_loop() {
+        let here = Position::new(100, 100, 7);
+        let far = Position::new(120, 100, 7);
+        let mut map = GameMap::new();
+        map.insert_tile(here.clone(), MapTile::new());
+        map.insert_tile(far.clone(), MapTile::new());
+        let attacker = map
+            .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &here)
+            .unwrap();
+        let victim = map
+            .insert_agent(Agent::from_player(a_test_snapshot(2, 1)), &far)
+            .unwrap();
+        map.get_agent_mut(attacker)
+            .unwrap()
+            .set_target(Some(victim), 4);
+
+        let mut actor = a_test_world_actor(map);
+        let mut broadcasts = Vec::new();
+
+        actor.drive_combat(&mut broadcasts);
+
+        assert_eq!(actor.map.get_agent(attacker).unwrap().target(), None);
         assert!(matches!(
             broadcasts.as_slice(),
-            [BroadcastMessage::TargetChanged { agent_key, target: Some(t) }]
-                if *agent_key == attacker && *t == victim
+            [BroadcastMessage::AgentLostTarget { agent_key, seq: 4 }]
+                if *agent_key == attacker
         ));
+    }
+
+    #[tokio::test]
+    async fn a_reachable_target_is_not_dropped_by_the_loop() {
+        let here = Position::new(100, 100, 7);
+        let next = Position::new(101, 100, 7);
+        let mut map = GameMap::new();
+        map.insert_tile(here.clone(), MapTile::new());
+        map.insert_tile(next.clone(), MapTile::new());
+        let attacker = map
+            .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &here)
+            .unwrap();
+        let victim = map
+            .insert_agent(Agent::from_player(a_test_snapshot(2, 1)), &next)
+            .unwrap();
+        map.get_agent_mut(attacker)
+            .unwrap()
+            .set_target(Some(victim), 4);
+
+        let mut actor = a_test_world_actor(map);
+        let mut broadcasts = Vec::new();
+
+        actor.drive_combat(&mut broadcasts);
+
+        assert_eq!(
+            actor.map.get_agent(attacker).unwrap().target(),
+            Some(victim)
+        );
+        assert!(
+            !broadcasts
+                .iter()
+                .any(|m| matches!(m, BroadcastMessage::AgentLostTarget { .. }))
+        );
     }
 
     /// The behavioural claim of the whole change: a creature killed earlier in the pass
@@ -582,13 +646,17 @@ mod tests {
         let victim = map
             .insert_agent(a_test_creature("Victim", 1, (7, 7)), &b)
             .unwrap();
-        map.get_agent_mut(killer).unwrap().set_target(Some(victim));
-        map.get_agent_mut(victim).unwrap().set_target(Some(killer));
+        map.get_agent_mut(killer)
+            .unwrap()
+            .set_target(Some(victim), 0);
+        map.get_agent_mut(victim)
+            .unwrap()
+            .set_target(Some(killer), 0);
 
         let mut actor = a_test_world_actor(map);
         let mut broadcasts = Vec::new();
 
-        actor.drive_auto_attacks(&mut broadcasts);
+        actor.drive_combat(&mut broadcasts);
 
         assert!(actor.map.get_agent(victim).is_none());
         assert_eq!(actor.map.get_agent(killer).unwrap().life().current, 100);

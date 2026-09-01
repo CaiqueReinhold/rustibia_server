@@ -36,7 +36,7 @@ pub fn decay_item(
     let Some(item) = find_item_in_placement(map, &item_ref) else {
         return (broadcasts, commands);
     };
-    let Some((_, decay_to)) = item.get_decay() else {
+    let Some((_, decay_to)) = item.config.attr_decay() else {
         return (broadcasts, commands);
     };
     let Some(config) = ITEM_CONFIGS.get(&decay_to) else {
@@ -97,7 +97,7 @@ pub fn check_decay(
     placement: ItemPlacement,
     current_tick: Tick,
 ) {
-    if let Some((duration, _)) = item.get_decay() {
+    if let Some((duration, _)) = item.config.attr_decay() {
         commands.push(ScheduledCommand {
             at_tick: current_tick + duration,
             command: WorldCommand::DecayItem {
@@ -147,7 +147,7 @@ pub fn use_item(
     }
 
     let is_container = item.config.has_flag(ItemFlag::Container);
-    let action = item.get_action();
+    let action = item.config.attr_action();
 
     if is_container {
         return (

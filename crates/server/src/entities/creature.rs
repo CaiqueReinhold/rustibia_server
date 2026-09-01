@@ -2,7 +2,7 @@ use serde::Deserialize;
 
 use crate::entities::{
     agent::{OutfitColors, OutfitId, Pool},
-    items::FluidType,
+    items::{FluidType, ItemId},
 };
 
 pub type CreatureKindId = String;
@@ -34,4 +34,5 @@ pub struct CreatureKind {
     pub armor: u16,
     pub defense: u16,
     pub experience: u32,
+    pub corpse: ItemId,
 }

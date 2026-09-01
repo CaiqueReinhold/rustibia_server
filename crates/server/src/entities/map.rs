@@ -344,24 +344,18 @@ impl GameMap {
         let Ok(tile) = self.get_tile(pos) else {
             return None;
         };
-        tile.items.iter().find_map(|i| {
-            i.config.get_attributes().find_map(|attr| match attr {
-                ItemAttribute::TileFriction(f) => Some(*f),
-                _ => None,
-            })
-        })
+        tile.items
+            .iter()
+            .find_map(|i| i.config.attr_tile_friction())
     }
 
     pub fn get_floor_change(&self, pos: &Position) -> Option<FloorChangeDirection> {
         let Ok(tile) = self.get_tile(pos) else {
             return None;
         };
-        tile.items.iter().find_map(|it| {
-            it.config.get_attributes().find_map(|attr| match attr {
-                ItemAttribute::FloorChange(dir) => Some(*dir),
-                _ => None,
-            })
-        })
+        tile.items
+            .iter()
+            .find_map(|it| it.config.attr_floor_change())
     }
 
     pub fn get_visible_items(
@@ -582,6 +576,7 @@ mod tests {
             armor: 1,
             defense: 1,
             experience: 0,
+            corpse: 1,
         }))
     }
 

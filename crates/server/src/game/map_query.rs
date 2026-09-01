@@ -354,6 +354,18 @@ pub fn is_sight_clear(map: &GameMap, from: &Position, to: &Position, z: u8) -> b
     })
 }
 
+/// Whether `from` may hold `to` as an attack target.
+///
+/// Not the session's visibility rule: `get_agents_in_viewport` spans
+/// `iter_visible_floors` because its question is "what do I draw", while this one
+/// is "what can I fight", and `combat::is_in_range` cannot reach across floors.
+///
+/// Says nothing about weapon range or line of sight — failing those skips the
+/// swing and keeps the target, so the attacker can close the distance.
+pub fn can_target(from: &Position, to: &Position) -> bool {
+    from.z == to.z && Rect::player_viewport(from).contains(to)
+}
+
 pub fn can_throw(map: &GameMap, from: &Position, to: &Position, same_floor: bool) -> bool {
     if (from.z > 7 && to.z < 8) || (from.z < 8 && to.z > 7) {
         return false;
@@ -375,5 +387,37 @@ pub fn can_throw(map: &GameMap, from: &Position, to: &Position, same_floor: bool
     } else {
         // same floor
         is_sight_clear(map, from, to, from.z)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn can_target_accepts_the_same_tile_and_the_viewport_edge() {
+        let from = Position::new(100, 100, 7);
+
+        assert!(can_target(&from, &Position::new(100, 100, 7)));
+        assert!(can_target(&from, &Position::new(109, 107, 7)));
+        assert!(can_target(&from, &Position::new(91, 93, 7)));
+    }
+
+    #[test]
+    fn can_target_rejects_beyond_the_viewport() {
+        let from = Position::new(100, 100, 7);
+
+        assert!(!can_target(&from, &Position::new(110, 100, 7)));
+        assert!(!can_target(&from, &Position::new(100, 108, 7)));
+    }
+
+    /// Still drawn on screen — the client viewport spans several floors — but
+    /// `combat::is_in_range` can never reach it.
+    #[test]
+    fn can_target_rejects_another_floor() {
+        let from = Position::new(100, 100, 7);
+
+        assert!(!can_target(&from, &Position::new(101, 100, 6)));
+        assert!(!can_target(&from, &Position::new(100, 100, 8)));
     }
 }

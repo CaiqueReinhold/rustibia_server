@@ -229,5 +229,6 @@ fn a_creature(
         armor,
         defense,
         experience,
+        corpse: 1,
     }))
 }

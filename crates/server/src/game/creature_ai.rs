@@ -70,6 +70,7 @@ mod tests {
             armor: 1,
             defense: 1,
             experience: 0,
+            corpse: 1,
         }));
         creature.next_walk_tick = next_walk_tick;
         let key = map.insert_agent(creature, at).unwrap();

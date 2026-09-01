@@ -80,14 +80,8 @@ fn displace_inventory_items(
 
     let is_bow_or_quiver = |it: &Item| {
         it.config
-            .get_attributes()
-            .find(|attr| {
-                matches!(
-                    attr,
-                    ItemAttribute::WeaponType(WeaponType::Bow)
-                        | ItemAttribute::WeaponType(WeaponType::Crossbow)
-                )
-            })
+            .attr_weapon_type()
+            .filter(|wt| matches!(wt, WeaponType::Bow | WeaponType::Crossbow))
             .is_some()
             || it.config.has_flag(ItemFlag::AmmoContainer)
     };

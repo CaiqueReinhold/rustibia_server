@@ -10,7 +10,8 @@ use thiserror::Error;
 use crate::config::CONFIG;
 use crate::entities::combat::{AmmoType, CombatElement, WeaponType};
 use crate::entities::items::{
-    FloorChangeDirection, ItemAction, ItemAttribute, ItemConfig, ItemFlag, ItemId,
+    Bounds, FloorChangeDirection, ItemAction, ItemAttribute, ItemConfig, ItemFlag, ItemId,
+    ItemMultiAction,
 };
 use crate::entities::player::InventorySlot;
 use crate::game::Tick;
@@ -74,6 +75,18 @@ fn parse_inventory_slot(s: u64) -> Option<InventorySlot> {
     InventorySlot::from_id(s as u16)
 }
 
+/// A `{min, max}` mapping. Both halves are required: a range missing one of them
+/// is corrupt data, not a range with a default, and rolling it would invent an
+/// amount rather than refuse one.
+fn parse_bounds(value: &serde_yaml::Value) -> Option<Bounds> {
+    let min = value.get("min")?.as_u64()? as u32;
+    let max = value.get("max")?.as_u64()? as u32;
+    if min > max {
+        return None;
+    }
+    Some(Bounds { min, max })
+}
+
 fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute> {
     match key {
         "slot" => {
@@ -104,6 +117,27 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
                 _ => return None,
             };
             Some(ItemAttribute::Action(action))
+        }
+        // An absent pool means the potion does not touch it, so `health` and `mana`
+        // are optional -- but a pool that IS there and does not parse fails the
+        // whole attribute. Dropping just the malformed half would leave a great
+        // spirit potion quietly restoring only mana.
+        "potion" => {
+            let health = match value.get("health") {
+                Some(bounds) => Some(parse_bounds(bounds)?),
+                None => None,
+            };
+            let mana = match value.get("mana") {
+                Some(bounds) => Some(parse_bounds(bounds)?),
+                None => None,
+            };
+            if health.is_none() && mana.is_none() {
+                return None;
+            }
+            Some(ItemAttribute::MultiAction(ItemMultiAction::Potion {
+                health,
+                mana,
+            }))
         }
         "decay" => {
             let duration = value.get("duration")?.as_u64()? as Tick;
@@ -181,8 +215,14 @@ fn convert(id: u16, raw: RawItemConfig) -> ItemConfig {
 pub fn load_items(
     path: impl AsRef<Path>,
 ) -> Result<HashMap<ItemId, Arc<ItemConfig>>, ItemsLoadError> {
-    let contents = fs::read_to_string(path)?;
-    let file: ItemsFile = serde_yaml::from_str(&contents)?;
+    load_items_from_str(&fs::read_to_string(path)?)
+}
+
+/// Split out from `load_items` so the whole read path -- deserialize, `convert`,
+/// `parse_attribute`, the `filter_map` that drops what it cannot read -- can be
+/// exercised over a document the caller owns rather than over the shipped file.
+fn load_items_from_str(contents: &str) -> Result<HashMap<ItemId, Arc<ItemConfig>>, ItemsLoadError> {
+    let file: ItemsFile = serde_yaml::from_str(contents)?;
     Ok(file
         .items
         .into_iter()
@@ -237,5 +277,130 @@ mod tests {
         assert!(armoured > 300, "only {armoured} items carry armour");
         assert!(defended > 500, "only {defended} items carry defence");
         assert!(extra > 0, "no item kept a negative extra defence");
+    }
+
+    fn bounds(min: u32, max: u32) -> Option<Bounds> {
+        Some(Bounds { min, max })
+    }
+
+    fn potion(value: &str) -> Option<ItemAttribute> {
+        parse("potion", value)
+    }
+
+    #[test]
+    fn a_potion_carries_only_the_pools_it_restores() {
+        assert_eq!(
+            potion("health:\n  min: 125\n  max: 175"),
+            Some(ItemAttribute::MultiAction(ItemMultiAction::Potion {
+                health: bounds(125, 175),
+                mana: None,
+            }))
+        );
+        assert_eq!(
+            potion("mana:\n  min: 75\n  max: 125"),
+            Some(ItemAttribute::MultiAction(ItemMultiAction::Potion {
+                health: None,
+                mana: bounds(75, 125),
+            }))
+        );
+        assert_eq!(
+            potion("health:\n  min: 420\n  max: 580\nmana:\n  min: 180\n  max: 220"),
+            Some(ItemAttribute::MultiAction(ItemMultiAction::Potion {
+                health: bounds(420, 580),
+                mana: bounds(180, 220),
+            }))
+        );
+    }
+
+    /// The half-parsed potion is the dangerous one. `filter_map` in `convert`
+    /// drops whatever this returns `None` for, so a spirit potion that kept only
+    /// its readable half would restore mana and no life, in game, with nothing
+    /// logged -- worse than an item that refuses to work.
+    #[test]
+    fn a_pool_that_does_not_parse_takes_the_whole_potion_with_it() {
+        assert_eq!(potion("health:\n  min: 125"), None, "no max");
+        assert_eq!(potion("health:\n  max: 175"), None, "no min");
+        assert_eq!(
+            potion("health:\n  min: 175\n  max: 125"),
+            None,
+            "min above max"
+        );
+        assert_eq!(
+            potion("health:\n  min: 250\n  max: 350\nmana:\n  min: 100"),
+            None,
+            "the second pool is the broken one"
+        );
+        assert_eq!(
+            potion("health: 125"),
+            None,
+            "a scalar where a range belongs"
+        );
+    }
+
+    /// A potion that restores nothing is a data error, not a potion. Accepting it
+    /// would put an item in the game that spends a charge for no effect.
+    #[test]
+    fn a_potion_with_neither_pool_is_refused() {
+        assert_eq!(potion("{}"), None);
+        assert_eq!(potion("level: 80"), None, "gates alone are not an effect");
+    }
+
+    /// The unit tests above prove `parse_attribute` alone. This proves the rest of
+    /// the read path: that `convert`'s `filter_map` keeps the attribute rather than
+    /// dropping it, and that `attr_multi_action` finds it again on the far side.
+    /// The document is the test's own -- what `items.yaml` happens to carry is
+    /// config, and pinning it here would make it a constant.
+    #[test]
+    fn a_potion_survives_the_whole_load_path() {
+        let items = load_items_from_str(
+            "
+items:
+  1:
+    name: a health potion
+    flags: [usable, multiuse]
+    attributes:
+      weight: 270
+      potion:
+        health:
+          min: 125
+          max: 175
+  2:
+    name: a spirit potion
+    attributes:
+      potion:
+        health:
+          min: 250
+          max: 350
+        mana:
+          min: 100
+          max: 200
+  3:
+    name: a broken potion
+    attributes:
+      potion:
+        health:
+          min: 125
+",
+        )
+        .unwrap();
+
+        assert_eq!(
+            items[&1].attr_multi_action(),
+            Some(ItemMultiAction::Potion {
+                health: Some(Bounds { min: 125, max: 175 }),
+                mana: None,
+            })
+        );
+        assert_eq!(
+            items[&2].attr_multi_action(),
+            Some(ItemMultiAction::Potion {
+                health: Some(Bounds { min: 250, max: 350 }),
+                mana: Some(Bounds { min: 100, max: 200 }),
+            })
+        );
+        // Dropped, and the item still loads -- which is exactly why the emitter has
+        // a gate of its own: nothing here can tell you the potion went missing.
+        assert_eq!(items[&3].attr_multi_action(), None);
+        assert_eq!(items[&3].name, "a broken potion");
     }
 }

@@ -7,6 +7,7 @@ use crate::entities::position::{ItemPlacement, Position};
 use crate::game::config::GAME_CONFIG;
 use crate::game::events::BroadcastMessage;
 use crate::game::item_action::check_decay;
+use crate::game::random::Rolls;
 use crate::game::{Tick, death};
 use crate::persistence::items::ITEM_CONFIGS;
 
@@ -21,6 +22,7 @@ pub fn apply_damage(
     current_tick: Tick,
     msgs: &mut Vec<BroadcastMessage>,
     cmds: &mut Vec<ScheduledCommand>,
+    rolls: &mut Rolls,
 ) {
     let Some(agent) = map.get_agent(target) else {
         return;
@@ -74,7 +76,7 @@ pub fn apply_damage(
         .get_agent(target)
         .is_some_and(|agent| agent.life().current == 0)
     {
-        death::reap(map, target, source, msgs);
+        death::reap(map, target, source, msgs, rolls);
     }
 }
 
@@ -222,8 +224,18 @@ mod tests {
     fn overkill_reports_only_the_damage_that_landed() {
         let (mut map, rat, _) = map_with_creature(3);
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
+        let mut rolls = Rolls::new(1);
 
-        apply_damage(&mut map, rat, physical(50), None, 0, &mut msgs, &mut cmds);
+        apply_damage(
+            &mut map,
+            rat,
+            physical(50),
+            None,
+            0,
+            &mut msgs,
+            &mut cmds,
+            &mut rolls,
+        );
 
         assert_eq!(reported_damage(&msgs), Some(3));
     }
@@ -232,8 +244,18 @@ mod tests {
     fn a_lethal_hit_removes_the_creature() {
         let (mut map, rat, _) = map_with_creature(3);
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
+        let mut rolls = Rolls::new(1);
 
-        apply_damage(&mut map, rat, physical(50), None, 0, &mut msgs, &mut cmds);
+        apply_damage(
+            &mut map,
+            rat,
+            physical(50),
+            None,
+            0,
+            &mut msgs,
+            &mut cmds,
+            &mut rolls,
+        );
 
         assert!(map.get_agent(rat).is_none());
     }
@@ -242,8 +264,18 @@ mod tests {
     fn a_survivable_hit_leaves_the_creature_in_the_map() {
         let (mut map, rat, _) = map_with_creature(10);
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
+        let mut rolls = Rolls::new(1);
 
-        apply_damage(&mut map, rat, physical(3), None, 0, &mut msgs, &mut cmds);
+        apply_damage(
+            &mut map,
+            rat,
+            physical(3),
+            None,
+            0,
+            &mut msgs,
+            &mut cmds,
+            &mut rolls,
+        );
 
         assert_eq!(map.get_agent(rat).unwrap().life().current, 7);
         assert_eq!(reported_damage(&msgs), Some(3));
@@ -253,6 +285,7 @@ mod tests {
     fn a_lethal_hit_on_a_player_leaves_one_life() {
         let (mut map, player) = map_with_player();
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
+        let mut rolls = Rolls::new(1);
 
         apply_damage(
             &mut map,
@@ -262,6 +295,7 @@ mod tests {
             0,
             &mut msgs,
             &mut cmds,
+            &mut rolls,
         );
 
         assert_eq!(map.get_agent(player).unwrap().life().current, 1);
@@ -272,6 +306,7 @@ mod tests {
     fn a_player_at_one_life_takes_no_further_damage() {
         let (mut map, player) = map_with_player();
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
+        let mut rolls = Rolls::new(1);
         apply_damage(
             &mut map,
             player,
@@ -280,6 +315,7 @@ mod tests {
             0,
             &mut msgs,
             &mut cmds,
+            &mut rolls,
         );
         msgs.clear();
 
@@ -291,6 +327,7 @@ mod tests {
             0,
             &mut msgs,
             &mut cmds,
+            &mut rolls,
         );
 
         assert_eq!(map.get_agent(player).unwrap().life().current, 1);
@@ -302,8 +339,18 @@ mod tests {
         let (mut map, rat, _) = map_with_creature(10);
         map.remove_agent(rat);
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
+        let mut rolls = Rolls::new(1);
 
-        apply_damage(&mut map, rat, physical(3), None, 0, &mut msgs, &mut cmds);
+        apply_damage(
+            &mut map,
+            rat,
+            physical(3),
+            None,
+            0,
+            &mut msgs,
+            &mut cmds,
+            &mut rolls,
+        );
 
         assert!(msgs.is_empty());
     }
@@ -312,8 +359,18 @@ mod tests {
     fn physical_damage_splashes_blood() {
         let (mut map, rat, pos) = map_with_creature(10);
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
+        let mut rolls = Rolls::new(1);
 
-        apply_damage(&mut map, rat, physical(3), None, 0, &mut msgs, &mut cmds);
+        apply_damage(
+            &mut map,
+            rat,
+            physical(3),
+            None,
+            0,
+            &mut msgs,
+            &mut cmds,
+            &mut rolls,
+        );
 
         let pooled = map
             .iter_items(&pos)
@@ -326,8 +383,18 @@ mod tests {
     fn a_non_physical_element_does_not_splash() {
         let (mut map, rat, pos) = map_with_creature(10);
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
+        let mut rolls = Rolls::new(1);
 
-        apply_damage(&mut map, rat, fire(3), None, 0, &mut msgs, &mut cmds);
+        apply_damage(
+            &mut map,
+            rat,
+            fire(3),
+            None,
+            0,
+            &mut msgs,
+            &mut cmds,
+            &mut rolls,
+        );
 
         let pooled = map
             .iter_items(&pos)
@@ -340,6 +407,7 @@ mod tests {
     fn a_hit_records_the_attackers_participation() {
         let (mut map, rat, hunter) = an_attacked_creature(100);
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
+        let mut rolls = Rolls::new(1);
 
         apply_damage(
             &mut map,
@@ -349,6 +417,7 @@ mod tests {
             0,
             &mut msgs,
             &mut cmds,
+            &mut rolls,
         );
 
         let table = map.get_agent(rat).unwrap().participation();
@@ -360,6 +429,7 @@ mod tests {
     fn repeated_hits_from_one_attacker_accumulate() {
         let (mut map, rat, hunter) = an_attacked_creature(100);
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
+        let mut rolls = Rolls::new(1);
 
         for _ in 0..3 {
             apply_damage(
@@ -370,6 +440,7 @@ mod tests {
                 0,
                 &mut msgs,
                 &mut cmds,
+                &mut rolls,
             );
         }
 
@@ -380,8 +451,18 @@ mod tests {
     fn a_hit_with_no_source_records_nothing() {
         let (mut map, rat, _) = an_attacked_creature(100);
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
+        let mut rolls = Rolls::new(1);
 
-        apply_damage(&mut map, rat, physical(30), None, 0, &mut msgs, &mut cmds);
+        apply_damage(
+            &mut map,
+            rat,
+            physical(30),
+            None,
+            0,
+            &mut msgs,
+            &mut cmds,
+            &mut rolls,
+        );
 
         assert_eq!(map.get_agent(rat).unwrap().life().current, 70);
         assert_eq!(map.get_agent(rat).unwrap().participation().total(), 0);
@@ -391,6 +472,7 @@ mod tests {
     fn a_fully_blocked_hit_records_nothing() {
         let (mut map, rat, hunter) = an_attacked_creature(100);
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
+        let mut rolls = Rolls::new(1);
 
         apply_damage(
             &mut map,
@@ -400,6 +482,7 @@ mod tests {
             0,
             &mut msgs,
             &mut cmds,
+            &mut rolls,
         );
 
         assert_eq!(reported_damage(&msgs), Some(0));
@@ -412,6 +495,7 @@ mod tests {
     fn a_players_participation_table_is_never_written() {
         let (mut map, player, rat) = an_attacked_player();
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
+        let mut rolls = Rolls::new(1);
 
         apply_damage(
             &mut map,
@@ -421,6 +505,7 @@ mod tests {
             0,
             &mut msgs,
             &mut cmds,
+            &mut rolls,
         );
 
         assert_eq!(map.get_agent(player).unwrap().life().current, 70);
@@ -452,6 +537,7 @@ mod tests {
             .insert_agent(Agent::from_player(a_test_snapshot(2, 2)), &second_pos)
             .unwrap();
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
+        let mut rolls = Rolls::new(1);
 
         apply_damage(
             &mut map,
@@ -461,7 +547,9 @@ mod tests {
             0,
             &mut msgs,
             &mut cmds,
+            &mut rolls,
         );
+
         apply_damage(
             &mut map,
             rat,
@@ -470,6 +558,7 @@ mod tests {
             0,
             &mut msgs,
             &mut cmds,
+            &mut rolls,
         );
 
         assert!(map.get_agent(rat).is_none());

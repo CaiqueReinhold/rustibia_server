@@ -8,6 +8,7 @@ use thiserror::Error;
 
 use crate::entities::agent::{OutfitColors, OutfitId, Pool};
 use crate::entities::creature::{BloodType, CreatureKind, CreatureKindId};
+use crate::entities::items::ItemId;
 
 #[derive(Error, Debug)]
 pub enum CreaturesLoadError {
@@ -40,6 +41,7 @@ struct RawCreature {
     armor: u16,
     defense: u16,
     experience: u32,
+    corpse: ItemId,
 }
 
 #[derive(Deserialize)]
@@ -69,6 +71,7 @@ pub fn load_creatures(
                 armor: raw.armor,
                 defense: raw.defense,
                 experience: raw.experience,
+                corpse: raw.corpse,
             };
             (id, Arc::new(kind))
         })

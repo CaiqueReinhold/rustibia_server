@@ -258,13 +258,9 @@ impl SessionActor {
             }
         };
 
-        let Some(capacity) = item.config.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::Capacity(c) => Some(c),
-            _ => None,
-        }) else {
+        let Some(capacity) = item.config.attr_capacity() else {
             return Err(SessionError::InvalidState.into());
         };
-        let capacity = *capacity;
         let Some(ref content) = item.content else {
             return Err(SessionError::InvalidState.into());
         };

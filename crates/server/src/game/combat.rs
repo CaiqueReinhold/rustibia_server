@@ -98,13 +98,6 @@ pub struct AttackPlan {
     pub missile: Option<u16>,
 }
 
-fn missile_id(item: &Item) -> Option<u16> {
-    item.config.get_attributes().find_map(|attr| match attr {
-        ItemAttribute::MissileId(id) => Some(*id),
-        _ => None,
-    })
-}
-
 fn apply_shield(base_attack_value: u32, target: &Agent, roll: &mut Rolls) -> u32 {
     let defense_value = if target.is_creature() {
         target.defense() as u32
@@ -172,9 +165,12 @@ pub fn plan_auto_attack(
                 }
                 _ => AttackCost::None,
             };
-            let missile = player
-                .weapon()
-                .and_then(|weapon| missile_id(weapon).or_else(|| ammo.and_then(missile_id)));
+            let missile = player.weapon().and_then(|weapon| {
+                weapon
+                    .config
+                    .attr_missile_id()
+                    .or_else(|| ammo.and_then(|it| it.config.attr_missile_id()))
+            });
             (cost, missile)
         }
         None => (AttackCost::None, None),
@@ -220,6 +216,7 @@ pub fn execute_attack(
     current_tick: Tick,
     msgs: &mut Vec<BroadcastMessage>,
     cmds: &mut Vec<ScheduledCommand>,
+    roll: &mut Rolls,
 ) {
     if let Some(attacker) = map.get_agent_mut(plan.attacker) {
         attacker.next_attack_tick = GAME_CONFIG.combat.auto_attack_ticks + current_tick;
@@ -262,6 +259,7 @@ pub fn execute_attack(
         current_tick,
         msgs,
         cmds,
+        roll,
     );
 }
 
@@ -507,7 +505,7 @@ mod tests {
         let target = map.insert_agent(target, &b).unwrap();
         map.get_agent_mut(attacker)
             .unwrap()
-            .set_target(Some(target));
+            .set_target(Some(target), 0);
         (map, attacker, target)
     }
 
@@ -604,7 +602,7 @@ mod tests {
             .unwrap();
         map.get_agent_mut(attacker)
             .unwrap()
-            .set_target(Some(target));
+            .set_target(Some(target), 0);
         let mut roll = Rolls::new(1);
 
         assert!(plan_auto_attack(&map, attacker, &mut roll, 0).is_none());
@@ -643,7 +641,7 @@ mod tests {
             .unwrap();
         map.get_agent_mut(attacker)
             .unwrap()
-            .set_target(Some(target));
+            .set_target(Some(target), 0);
         let mut roll = Rolls::new(1);
 
         assert!(plan_auto_attack(&map, attacker, &mut roll, 0).is_none());
@@ -656,7 +654,7 @@ mod tests {
             a_test_creature("Rat", 10, (1, 2)),
         );
         let mut map = map;
-        map.get_agent_mut(attacker).unwrap().set_target(None);
+        map.get_agent_mut(attacker).unwrap().set_target(None, 0);
         let mut roll = Rolls::new(1);
 
         assert!(plan_auto_attack(&map, attacker, &mut roll, 0).is_none());
@@ -695,7 +693,7 @@ mod tests {
         let plan = plan_auto_attack(&map, attacker, &mut roll, 7).unwrap();
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
 
-        execute_attack(&mut map, plan, 7, &mut msgs, &mut cmds);
+        execute_attack(&mut map, plan, 7, &mut msgs, &mut cmds, &mut roll);
 
         let agent = map.get_agent(attacker).unwrap();
         assert_eq!(
@@ -742,7 +740,7 @@ mod tests {
         let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
 
-        execute_attack(&mut map, plan, 0, &mut msgs, &mut cmds);
+        execute_attack(&mut map, plan, 0, &mut msgs, &mut cmds, &mut roll);
 
         let arrows = map
             .get_agent(attacker)
@@ -776,7 +774,7 @@ mod tests {
         let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
 
-        execute_attack(&mut map, plan, 0, &mut msgs, &mut cmds);
+        execute_attack(&mut map, plan, 0, &mut msgs, &mut cmds, &mut roll);
 
         let updated = msgs
             .iter()
@@ -861,7 +859,8 @@ mod tests {
 
         let snapshot = map.clone();
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
-        execute_attack(&mut map, plan, 0, &mut msgs, &mut cmds);
+
+        execute_attack(&mut map, plan, 0, &mut msgs, &mut cmds, &mut roll);
 
         assert!(std::ptr::eq(
             map.get_player(attacker).unwrap(),
@@ -880,7 +879,8 @@ mod tests {
 
         let snapshot = map.clone();
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
-        execute_attack(&mut map, plan, 0, &mut msgs, &mut cmds);
+        let mut rolls = Rolls::new(1);
+        execute_attack(&mut map, plan, 0, &mut msgs, &mut cmds, &mut roll);
 
         assert!(!std::ptr::eq(
             map.get_player(attacker).unwrap(),

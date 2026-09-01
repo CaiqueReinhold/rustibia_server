@@ -1,10 +1,10 @@
-use tracing::warn;
+use tracing::{error, warn};
 
 use crate::{
     actors::world::ScheduledCommand,
     entities::{
         agent::AgentKey,
-        items::{ItemFlag, ItemMultiAction, ItemRef},
+        items::{Bounds, ItemFlag, ItemMultiAction, ItemRef},
         map::GameMap,
         position::{ItemPlacement, Position},
     },
@@ -15,6 +15,7 @@ use crate::{
         item_action::{ItemActionError, transform},
         item_movement::{insert_item_at, remove_item_at},
         map_query::find_item_in_placement,
+        random::Rolls,
     },
 };
 
@@ -24,6 +25,7 @@ pub fn use_item_with(
     source: ItemRef,
     target: ItemRef,
     current_tick: Tick,
+    roll: &mut Rolls,
 ) -> (Vec<BroadcastMessage>, Vec<ScheduledCommand>) {
     let use_item_failed = |message| {
         (
@@ -50,7 +52,7 @@ pub fn use_item_with(
         .filter(|player_pos| player_pos.placement_is_adjacent(&source.placement))
         .is_none()
     {
-        return use_item_failed("Item is too fat".to_owned());
+        return use_item_failed("Item is too far".to_owned());
     }
 
     if !source_item.config.has_flag(ItemFlag::Usable) {
@@ -61,9 +63,23 @@ pub fn use_item_with(
         return use_item_failed("Item was not found".to_owned());
     };
 
-    let action = GAME_CONFIG.multi_action.tool_action(source_item.item_id);
+    // Two sources, and they answer different questions. What a shovel does is a
+    // property of the world, so it stays in `game_conf.yaml`'s id lists; what a
+    // potion restores is a property of the item, so it rides in the catalogue.
+    let action = GAME_CONFIG
+        .multi_action
+        .tool_action(source_item.item_id)
+        .or_else(|| source_item.config.attr_multi_action());
     if let Some(action) = action {
-        match route_multi_action(&action, map, agent_key, &source, &target, current_tick) {
+        match route_multi_action(
+            &action,
+            map,
+            agent_key,
+            &source,
+            &target,
+            current_tick,
+            roll,
+        ) {
             Ok((action_broadcasts, scheduled_commands)) => {
                 map.get_agent_mut(agent_key).unwrap().next_use_tick =
                     current_tick + GAME_CONFIG.action.use_item_cooldown_ticks;
@@ -82,13 +98,15 @@ pub fn use_item_with(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn route_multi_action(
     action: &ItemMultiAction,
     map: &mut GameMap,
     agent_key: AgentKey,
-    _source: &ItemRef,
+    source: &ItemRef,
     target: &ItemRef,
     current_tick: Tick,
+    roll: &mut Rolls,
 ) -> Result<(Vec<BroadcastMessage>, Vec<ScheduledCommand>), ItemActionError> {
     let mut broadcasts = Vec::new();
     let mut commands = Vec::new();
@@ -97,6 +115,15 @@ fn route_multi_action(
             shovel(&mut broadcasts, &mut commands, map, target, current_tick)?
         }
         ItemMultiAction::Rope => rope(&mut broadcasts, map, agent_key, target)?,
+        ItemMultiAction::Potion { health, mana } => potion(
+            &mut broadcasts,
+            map,
+            agent_key,
+            source,
+            *health,
+            *mana,
+            roll,
+        )?,
     };
     Ok((broadcasts, commands))
 }
@@ -226,16 +253,57 @@ fn rope(
     Err(ItemActionError::ActionFailed)
 }
 
+#[allow(clippy::too_many_arguments)]
+fn potion(
+    broadcasts: &mut Vec<BroadcastMessage>,
+    map: &mut GameMap,
+    agent_key: AgentKey,
+    potion: &ItemRef,
+    health: Option<Bounds>,
+    mana: Option<Bounds>,
+    roll: &mut Rolls,
+) -> Result<(), ItemActionError> {
+    let health_roll = health.map(|b| roll.uniform(b.min, b.max));
+    let mana_roll = mana.map(|b| roll.uniform(b.min, b.max));
+
+    if remove_item_at(broadcasts, map, potion, 1).is_err() {
+        return Err(ItemActionError::ActionFailed);
+    }
+
+    if let Some(amount) = health_roll {
+        match map.get_agent_mut(agent_key) {
+            Some(agent) => {
+                agent.restore_life(amount);
+                broadcasts.push(BroadcastMessage::AgentLifeUpdated { agent_key });
+            }
+            None => error!("agent {agent_key:?} vanished mid-drink; life not restored"),
+        }
+    }
+    if let Some(amount) = mana_roll {
+        match map.get_player_mut(agent_key) {
+            Some(player) => {
+                player.mana.add(amount);
+                broadcasts.push(BroadcastMessage::PlayerManaUpdated { agent_key });
+            }
+            None => error!("agent {agent_key:?} vanished mid-drink; mana not restored"),
+        }
+    }
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::entities::{
-        agent::Agent,
-        items::{Item, ItemId},
+        agent::{Agent, Pool},
+        items::{Item, ItemAttribute, ItemConfig, ItemId},
         map::MapTile,
     };
     use crate::persistence::items::ITEM_CONFIGS;
     use crate::persistence::test_fixtures::a_test_snapshot;
+    use std::collections::HashSet;
+    use std::sync::Arc;
 
     fn an_item(id: ItemId) -> Item {
         Item::new(
@@ -341,6 +409,7 @@ mod tests {
                 placement: ItemPlacement::Map(there.clone()),
             },
             0,
+            &mut Rolls::new(1),
         );
 
         let denied = broadcasts
@@ -403,6 +472,7 @@ mod tests {
                     placement: ItemPlacement::Map(spot),
                 },
                 0,
+                &mut Rolls::new(1),
             );
 
             let name = &ITEM_CONFIGS[rope_id].name;
@@ -448,6 +518,7 @@ mod tests {
                 placement: ItemPlacement::Map(sand_pos.clone()),
             },
             0,
+            &mut Rolls::new(1),
         );
 
         assert!(
@@ -456,5 +527,256 @@ mod tests {
                 .any(|b| matches!(b, BroadcastMessage::UseItemDenied { .. })),
         );
         assert!(map.get_item_by_id(&sand_pos, &sand_guid).is_some());
+    }
+
+    // ── Potions ───────────────────────────────────────────────────────────────
+
+    /// Built here rather than looked up: these tests are about what `drink` does
+    /// with the bounds it is handed, not about the amounts `items.yaml` happens to
+    /// carry. Id 9999 is in no tool list in `game_conf.yaml` either, so reaching
+    /// this at all proves the catalogue is a real second source for the lookup.
+    fn a_potion(amount: u8, health: Option<Bounds>, mana: Option<Bounds>) -> Item {
+        Item::new(
+            Arc::new(ItemConfig::new(
+                9999,
+                "test potion".to_string(),
+                None,
+                None,
+                HashSet::from([
+                    ItemFlag::Usable,
+                    ItemFlag::Multiuse,
+                    ItemFlag::Cumulative,
+                    ItemFlag::Take,
+                ]),
+                HashSet::from([ItemAttribute::MultiAction(ItemMultiAction::Potion {
+                    health,
+                    mana,
+                })]),
+            )),
+            amount,
+        )
+    }
+
+    fn a_plain_item() -> Item {
+        Item::new(
+            Arc::new(ItemConfig::new(
+                9998,
+                "something to click".to_string(),
+                None,
+                None,
+                HashSet::new(),
+                HashSet::new(),
+            )),
+            1,
+        )
+    }
+
+    fn bounds(min: u32, max: u32) -> Option<Bounds> {
+        Some(Bounds { min, max })
+    }
+
+    fn pool(current: u32, maximum: u32) -> Pool {
+        Pool { current, maximum }
+    }
+
+    struct Drunk {
+        denied: bool,
+        life: Pool,
+        mana: Pool,
+        charges_left: Option<u8>,
+        broadcasts: Vec<BroadcastMessage>,
+    }
+
+    impl Drunk {
+        fn broadcast_kinds(&self) -> Vec<&'static str> {
+            self.broadcasts
+                .iter()
+                .filter_map(|b| match b {
+                    BroadcastMessage::AgentLifeUpdated { .. } => Some("life"),
+                    BroadcastMessage::PlayerManaUpdated { .. } => Some("mana"),
+                    BroadcastMessage::UseItemDenied { .. } => Some("denied"),
+                    _ => None,
+                })
+                .collect()
+        }
+    }
+
+    /// Puts the potion on the drinker's own tile and something else beside them to
+    /// be the thing clicked, then drinks `times` times at tick 0.
+    fn drink_potion(potion: Item, life: Pool, mana: Pool, times: u8) -> Drunk {
+        let (here, there) = (Position::new(10, 10, 7), Position::new(10, 11, 7));
+        let mut map = GameMap::new();
+
+        let potion_guid = potion.guid.clone();
+        let target = a_plain_item();
+        let target_guid = target.guid.clone();
+        map.insert_tile(here.clone(), a_tile_with(potion));
+        map.insert_tile(there.clone(), a_tile_with(target));
+
+        let mut snapshot = a_test_snapshot(1, 1);
+        snapshot.life = life;
+        snapshot.mana = mana;
+        let agent = map
+            .insert_agent(Agent::from_player(snapshot), &here)
+            .unwrap();
+
+        let mut roll = Rolls::new(1);
+        let mut broadcasts = Vec::new();
+        for _ in 0..times {
+            let (msgs, _) = use_item_with(
+                &mut map,
+                agent,
+                ItemRef {
+                    guid: potion_guid.clone(),
+                    placement: ItemPlacement::Map(here.clone()),
+                },
+                ItemRef {
+                    guid: target_guid.clone(),
+                    placement: ItemPlacement::Map(there.clone()),
+                },
+                0,
+                &mut roll,
+            );
+            broadcasts.extend(msgs);
+        }
+
+        Drunk {
+            denied: broadcasts
+                .iter()
+                .any(|b| matches!(b, BroadcastMessage::UseItemDenied { .. })),
+            life: map.get_agent(agent).unwrap().life().clone(),
+            mana: map.get_player(agent).unwrap().mana.clone(),
+            charges_left: map.get_top_item(&here).map(|item| item.amount),
+            broadcasts,
+        }
+    }
+
+    #[test]
+    fn a_health_potion_restores_life_within_its_bounds_and_spends_one_charge() {
+        let drunk = drink_potion(
+            a_potion(3, bounds(100, 200), None),
+            pool(10, 1000),
+            pool(50, 1000),
+            1,
+        );
+
+        assert!(!drunk.denied);
+        assert!(
+            (110..=210).contains(&drunk.life.current),
+            "life {} is outside 10 + 100..200",
+            drunk.life.current
+        );
+        assert_eq!(drunk.mana.current, 50, "a health potion touched the mana");
+        assert_eq!(drunk.charges_left, Some(2));
+        assert_eq!(drunk.broadcast_kinds(), ["life"]);
+    }
+
+    #[test]
+    fn a_mana_potion_restores_mana_and_leaves_life_alone() {
+        let drunk = drink_potion(
+            a_potion(3, None, bounds(75, 125)),
+            pool(10, 1000),
+            pool(50, 1000),
+            1,
+        );
+
+        assert!(!drunk.denied);
+        assert_eq!(drunk.life.current, 10, "a mana potion healed");
+        assert!(
+            (125..=175).contains(&drunk.mana.current),
+            "mana {} is outside 50 + 75..125",
+            drunk.mana.current
+        );
+        assert_eq!(drunk.charges_left, Some(2));
+        assert_eq!(drunk.broadcast_kinds(), ["mana"]);
+    }
+
+    /// The whole reason the two pools live in one action: a spirit potion cannot be
+    /// two actions on one item, so this is the shape that has to work.
+    #[test]
+    fn a_spirit_potion_restores_both_pools_from_one_charge() {
+        let drunk = drink_potion(
+            a_potion(3, bounds(420, 580), bounds(180, 220)),
+            pool(100, 2000),
+            pool(100, 2000),
+            1,
+        );
+
+        assert!(!drunk.denied);
+        assert!(
+            (520..=680).contains(&drunk.life.current),
+            "life {}",
+            drunk.life.current
+        );
+        assert!(
+            (280..=320).contains(&drunk.mana.current),
+            "mana {}",
+            drunk.mana.current
+        );
+        assert_eq!(drunk.charges_left, Some(2), "one charge, both pools");
+        assert_eq!(drunk.broadcast_kinds(), ["life", "mana"]);
+    }
+
+    #[test]
+    fn neither_pool_can_be_filled_past_its_maximum() {
+        let drunk = drink_potion(
+            a_potion(1, bounds(500, 500), bounds(500, 500)),
+            pool(990, 1000),
+            pool(995, 1000),
+            1,
+        );
+
+        assert_eq!(drunk.life.current, 1000);
+        assert_eq!(drunk.mana.current, 1000);
+    }
+
+    /// TFS spends the flask regardless, and so does this. A potion that refused at
+    /// full life would be a nicer rule and a different game.
+    #[test]
+    fn drinking_at_full_life_still_spends_the_charge() {
+        let drunk = drink_potion(
+            a_potion(3, bounds(100, 200), None),
+            pool(1000, 1000),
+            pool(50, 1000),
+            1,
+        );
+
+        assert!(!drunk.denied);
+        assert_eq!(drunk.life.current, 1000);
+        assert_eq!(drunk.charges_left, Some(2));
+    }
+
+    /// `use_item_cooldown_ticks` is what stops a hotkey emptying a whole stack in
+    /// one tick, and it is applied by `use_item_with` only when the action succeeded.
+    #[test]
+    fn a_second_drink_in_the_same_tick_is_refused() {
+        let drunk = drink_potion(
+            a_potion(3, bounds(100, 200), None),
+            pool(10, 1000),
+            pool(50, 1000),
+            2,
+        );
+
+        assert!(drunk.denied, "the second drink went through");
+        assert_eq!(drunk.charges_left, Some(2), "two charges were spent");
+        assert_eq!(drunk.broadcast_kinds(), ["life", "denied"]);
+    }
+
+    /// The last stone in the stack leaves no item behind, and the pools still move.
+    #[test]
+    fn the_last_charge_removes_the_potion_entirely() {
+        let drunk = drink_potion(
+            a_potion(1, bounds(100, 200), None),
+            pool(10, 1000),
+            pool(50, 1000),
+            1,
+        );
+
+        assert!(!drunk.denied);
+        assert_eq!(
+            drunk.charges_left, None,
+            "an empty stack was left on the tile"
+        );
+        assert!(drunk.life.current > 10);
     }
 }

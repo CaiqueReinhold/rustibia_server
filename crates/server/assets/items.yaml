@@ -1024,6 +1024,10 @@ items:
     - take
     attributes:
       weight: 290
+      potion:
+        health:
+          min: 250
+          max: 350
   237:
     name: strong mana potion
     article: a
@@ -1034,6 +1038,10 @@ items:
     - take
     attributes:
       weight: 290
+      potion:
+        mana:
+          min: 115
+          max: 185
   238:
     name: great mana potion
     article: a
@@ -1044,6 +1052,10 @@ items:
     - take
     attributes:
       weight: 310
+      potion:
+        mana:
+          min: 150
+          max: 250
   239:
     name: great health potion
     article: a
@@ -1054,6 +1066,10 @@ items:
     - take
     attributes:
       weight: 310
+      potion:
+        health:
+          min: 425
+          max: 575
   240:
     name: linen
     flags:
@@ -1216,6 +1232,10 @@ items:
     - take
     attributes:
       weight: 270
+      potion:
+        health:
+          min: 125
+          max: 175
   267:
     name: linen
     flags:
@@ -1232,6 +1252,10 @@ items:
     - take
     attributes:
       weight: 270
+      potion:
+        mana:
+          min: 75
+          max: 125
   269:
     name: dead dragon hatchling
     article: a
@@ -55212,6 +55236,13 @@ items:
     - take
     attributes:
       weight: 310
+      potion:
+        health:
+          min: 250
+          max: 350
+        mana:
+          min: 100
+          max: 200
   7643:
     name: ultimate health potion
     article: an
@@ -55222,6 +55253,10 @@ items:
     - take
     attributes:
       weight: 310
+      potion:
+        health:
+          min: 650
+          max: 850
   7644:
     name: antidote potion
     article: an
@@ -56849,6 +56884,10 @@ items:
     - take
     attributes:
       weight: 265
+      potion:
+        health:
+          min: 60
+          max: 90
   7877:
     name: balloons
     flags:
@@ -146580,6 +146619,10 @@ items:
     - take
     attributes:
       weight: 310
+      potion:
+        mana:
+          min: 425
+          max: 575
   23374:
     name: ultimate spirit potion
     article: an
@@ -146590,6 +146633,13 @@ items:
     - take
     attributes:
       weight: 310
+      potion:
+        health:
+          min: 420
+          max: 580
+        mana:
+          min: 180
+          max: 220
   23375:
     name: supreme health potion
     article: a
@@ -146600,6 +146650,10 @@ items:
     - take
     attributes:
       weight: 350
+      potion:
+        health:
+          min: 875
+          max: 1125
   23376:
     name: unknown item
     flags:

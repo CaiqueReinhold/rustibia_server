@@ -88,6 +88,7 @@ pub enum ItemAttribute {
     Inventory(InventorySlot),
     TileFriction(u16),
     Action(ItemAction),
+    MultiAction(ItemMultiAction),
     Decay { duration: Tick, decay_to: ItemId },
     WeaponType(WeaponType),
     WeaponAttack(u16),
@@ -135,8 +136,57 @@ impl ItemConfig {
         self.flags.contains(&flag)
     }
 
-    pub fn get_attributes(&self) -> impl Iterator<Item = &ItemAttribute> {
+    fn get_attributes(&self) -> impl Iterator<Item = &ItemAttribute> {
         self.attributes.iter()
+    }
+
+    pub fn attr_capacity(&self) -> Option<u8> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::Capacity(a) => Some(*a),
+            _ => None,
+        })
+    }
+
+    pub fn attr_weight(&self) -> Option<u32> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::Weight(a) => Some(*a),
+            _ => None,
+        })
+    }
+
+    pub fn attr_floor_change(&self) -> Option<FloorChangeDirection> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::FloorChange(a) => Some(*a),
+            _ => None,
+        })
+    }
+
+    pub fn attr_tile_friction(&self) -> Option<u16> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::TileFriction(a) => Some(*a),
+            _ => None,
+        })
+    }
+
+    pub fn attr_action(&self) -> Option<ItemAction> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::Action(a) => Some(*a),
+            _ => None,
+        })
+    }
+
+    pub fn attr_multi_action(&self) -> Option<ItemMultiAction> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::MultiAction(a) => Some(*a),
+            _ => None,
+        })
+    }
+
+    pub fn attr_decay(&self) -> Option<(Tick, ItemId)> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::Decay { decay_to, duration } => Some((*duration, *decay_to)),
+            _ => None,
+        })
     }
 
     pub fn attr_armor(&self) -> Option<u16> {
@@ -167,9 +217,51 @@ impl ItemConfig {
         })
     }
 
+    pub fn attr_weapon_attack(&self) -> Option<u16> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::WeaponAttack(a) => Some(*a),
+            _ => None,
+        })
+    }
+
+    pub fn attr_weapon_element(&self) -> Option<CombatElement> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::WeaponElement(a) => Some(*a),
+            _ => None,
+        })
+    }
+
     pub fn attr_ammo_type(&self) -> Option<AmmoType> {
         self.get_attributes().find_map(|attr| match attr {
             ItemAttribute::AmmoType(a) => Some(*a),
+            _ => None,
+        })
+    }
+
+    pub fn attr_weapon_range(&self) -> Option<u8> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::WeaponRange(a) => Some(*a),
+            _ => None,
+        })
+    }
+
+    pub fn attr_mana_cost(&self) -> Option<u32> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::ManaCost(a) => Some(*a),
+            _ => None,
+        })
+    }
+
+    pub fn attr_missile_id(&self) -> Option<u16> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::MissileId(a) => Some(*a),
+            _ => None,
+        })
+    }
+
+    pub fn attr_speed(&self) -> Option<i16> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::Speed(a) => Some(*a),
             _ => None,
         })
     }
@@ -279,20 +371,6 @@ impl Item {
             .iter_mut()
             .find_map(|i| i.find_by_guid_mut(guid))
     }
-
-    pub fn get_action(&self) -> Option<ItemAction> {
-        self.config.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::Action(a) => Some(a.clone()),
-            _ => None,
-        })
-    }
-
-    pub fn get_decay(&self) -> Option<(Tick, ItemId)> {
-        self.config.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::Decay { duration, decay_to } => Some((*duration, *decay_to)),
-            _ => None,
-        })
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -301,15 +379,29 @@ pub struct ItemRef {
     pub placement: ItemPlacement,
 }
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug, Copy)]
 pub enum ItemAction {
     Transform { into: ItemId },
 }
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug)]
+/// An inclusive range rolled at the moment of use. `min == max` is a fixed amount.
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+pub struct Bounds {
+    pub min: u32,
+    pub max: u32,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum ItemMultiAction {
     Shovel,
     Rope,
+    /// A pool is `None` when the potion does not touch it, which is why a health
+    /// potion is not the same thing as one that restores zero mana: the absent
+    /// key in `items.yaml` is the data, not a default.
+    Potion {
+        health: Option<Bounds>,
+        mana: Option<Bounds>,
+    },
 }
 
 #[cfg(test)]

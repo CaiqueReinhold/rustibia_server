@@ -12,21 +12,25 @@ use crate::{
 };
 
 impl SessionActor {
-    pub(super) async fn handle_set_target(&mut self, agent_id: Option<AgentId>) -> Result<()> {
+    pub(super) async fn handle_set_target(
+        &mut self,
+        agent_id: Option<AgentId>,
+        seq: u32,
+    ) -> Result<()> {
         let target = agent_id.and_then(|id| self.agents.get_global(id).copied());
         self.world
             .send(WorldCommand::SetTarget {
                 agent: self.player_key,
                 target,
+                seq,
             })
             .await;
         Ok(())
     }
 
-    pub(super) async fn target_changed(&mut self, target: Option<AgentKey>) -> Result<()> {
-        let agent_id = target.and_then(|key| self.agents.get_local(&key));
+    pub(super) async fn target_lost(&self, seq: u32) -> Result<()> {
         self.connection
-            .send_message(ServerMessage::TargetChanged { agent_id })
+            .send_message(ServerMessage::TargetLost { seq })
             .await?;
         Ok(())
     }

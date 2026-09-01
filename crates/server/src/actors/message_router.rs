@@ -315,7 +315,7 @@ impl MessageRouterActor {
             BroadcastMessage::AgentWalkDenied { agent_key } => {
                 self.send_to(message, agent_key);
             }
-            BroadcastMessage::TargetChanged { agent_key, .. } => {
+            BroadcastMessage::AgentLostTarget { agent_key, .. } => {
                 self.send_to(message, agent_key);
             }
             BroadcastMessage::TileChanged { position } => {
@@ -382,6 +382,17 @@ impl MessageRouterActor {
             }
             BroadcastMessage::PlayerManaUpdated { agent_key } => {
                 self.send_to(message, agent_key);
+            }
+            BroadcastMessage::AgentLifeUpdated { agent_key } => {
+                if let Some(position) = map.agent_position(*agent_key) {
+                    self.send_to_rect(
+                        message,
+                        map,
+                        Rect::player_viewport(position),
+                        position.z,
+                        None,
+                    );
+                }
             }
         }
     }

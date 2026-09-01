@@ -6,7 +6,7 @@ use crate::entities::{
     agent::Pool,
     combat::{AmmoType, CombatElement, WeaponType},
     inventory::Inventory,
-    items::{Item, ItemAttribute, ItemFlag},
+    items::{Item, ItemFlag},
     skills::{SkillType, SkillValue},
 };
 
@@ -81,20 +81,6 @@ pub struct Player {
     pub defense: u16,
 }
 
-fn item_attack(item: &Item) -> Option<u16> {
-    item.config.get_attributes().find_map(|attr| match attr {
-        ItemAttribute::WeaponAttack(att) => Some(*att),
-        _ => None,
-    })
-}
-
-fn item_element(item: &Item) -> Option<CombatElement> {
-    item.config.get_attributes().find_map(|attr| match attr {
-        ItemAttribute::WeaponElement(el) => Some(*el),
-        _ => None,
-    })
-}
-
 impl Player {
     pub fn inventory_mut(&mut self) -> &mut Inventory {
         Arc::make_mut(&mut self.inventory)
@@ -125,26 +111,21 @@ impl Player {
 
     pub fn weapon_element(&self) -> CombatElement {
         self.weapon_ammo()
-            .and_then(item_element)
-            .or_else(|| self.weapon().and_then(item_element))
+            .and_then(|it| it.config.attr_weapon_element())
+            .or_else(|| self.weapon().and_then(|it| it.config.attr_weapon_element()))
             .unwrap_or(CombatElement::Physical)
     }
 
     pub fn weapon_attack(&self) -> u16 {
         self.weapon_ammo()
-            .and_then(item_attack)
-            .or_else(|| self.weapon().and_then(item_attack))
+            .and_then(|it| it.config.attr_weapon_attack())
+            .or_else(|| self.weapon().and_then(|it| it.config.attr_weapon_attack()))
             .unwrap_or(5)
     }
 
     pub fn weapon_type(&self) -> WeaponType {
         self.weapon()
-            .and_then(|it| {
-                it.config.get_attributes().find_map(|attr| match attr {
-                    ItemAttribute::WeaponType(wt) => Some(*wt),
-                    _ => None,
-                })
-            })
+            .and_then(|it| it.config.attr_weapon_type())
             .unwrap_or(WeaponType::None)
     }
 
@@ -157,19 +138,13 @@ impl Player {
                 .and_then(|quiv| {
                     quiv.content.as_ref().and_then(|content| {
                         content.iter().find(|it| {
-                            it.config
-                                .get_attributes()
-                                .find_map(|attr| match attr {
-                                    ItemAttribute::AmmoType(at) => Some(*at),
-                                    _ => None,
-                                })
-                                .is_some_and(|at| {
-                                    matches!(
-                                        (at, weapon_type),
-                                        (AmmoType::Arrow, WeaponType::Bow)
-                                            | (AmmoType::Bolt, WeaponType::Crossbow)
-                                    )
-                                })
+                            it.config.attr_ammo_type().is_some_and(|at| {
+                                matches!(
+                                    (at, weapon_type),
+                                    (AmmoType::Arrow, WeaponType::Bow)
+                                        | (AmmoType::Bolt, WeaponType::Crossbow)
+                                )
+                            })
                         })
                     })
                 })
@@ -180,23 +155,13 @@ impl Player {
 
     pub fn weapon_range(&self) -> u8 {
         self.weapon()
-            .and_then(|it| {
-                it.config.get_attributes().find_map(|attr| match attr {
-                    ItemAttribute::WeaponRange(wr) => Some(*wr),
-                    _ => None,
-                })
-            })
+            .and_then(|it| it.config.attr_weapon_range())
             .unwrap_or(1)
     }
 
     pub fn weapon_mana_cost(&self) -> u32 {
         self.weapon()
-            .and_then(|it| {
-                it.config.get_attributes().find_map(|attr| match attr {
-                    ItemAttribute::ManaCost(mc) => Some(*mc),
-                    _ => None,
-                })
-            })
+            .and_then(|it| it.config.attr_mana_cost())
             .unwrap_or(0)
     }
 

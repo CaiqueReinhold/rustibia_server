@@ -1,17 +1,23 @@
-use tracing::info;
+use tracing::{error, info};
 
-use crate::entities::agent::AgentKey;
+use crate::entities::agent::{Agent, AgentKey};
+use crate::entities::items::Item;
 use crate::entities::map::GameMap;
+use crate::entities::position::ItemPlacement;
 use crate::game::events::BroadcastMessage;
+use crate::game::item_movement::insert_item_at;
+use crate::game::random::Rolls;
 use crate::game::{experience, targeting};
+use crate::persistence::items::ITEM_CONFIGS;
 
 pub fn reap(
     map: &mut GameMap,
-    agent: AgentKey,
+    agent_key: AgentKey,
     source: Option<AgentKey>,
     msgs: &mut Vec<BroadcastMessage>,
+    rolls: &mut Rolls,
 ) {
-    let Some(dead) = map.get_agent(agent) else {
+    let Some(dead) = map.get_agent(agent_key) else {
         return;
     };
     if !dead.is_creature() || dead.life().current > 0 {
@@ -24,24 +30,38 @@ pub fn reap(
         None => info!("{victim} died"),
     }
 
-    experience::award(map, agent, msgs);
+    experience::award(map, agent_key, msgs);
 
     let still_targeting: Vec<AgentKey> = map
         .iter_agents()
-        .filter(|(_, other)| other.target() == Some(agent))
+        .filter(|(_, other)| other.target() == Some(agent_key))
         .map(|(key, _)| key)
         .collect();
     for key in still_targeting {
-        msgs.extend(targeting::clear_target_if_current(map, key, agent));
+        msgs.extend(targeting::lose_target(map, key));
     }
 
-    if let Some((_, position)) = map.remove_agent(agent) {
-        msgs.push(BroadcastMessage::AgentDespawned {
-            agent_key: agent,
-            position,
-            snapshot: None,
-        });
-    }
+    let Some((agent, position)) = map.remove_agent(agent_key) else {
+        return;
+    };
+    msgs.push(BroadcastMessage::AgentDespawned {
+        agent_key,
+        position: position.clone(),
+        snapshot: None,
+    });
+
+    let agent_corpse = agent.get_corpse();
+    let Some(config) = ITEM_CONFIGS.get(&agent_corpse) else {
+        error!("creature corpse with id {} not found", agent_corpse);
+        return;
+    };
+    let mut corpse = Item::new(config.clone(), 1);
+    roll_creature_loot(&mut corpse, &agent, rolls);
+    insert_item_at(msgs, map, corpse, None, &ItemPlacement::Map(position), None);
+}
+
+fn roll_creature_loot(corpse: &mut Item, agent: &Agent, rolls: &mut Rolls) {
+    todo!()
 }
 
 #[cfg(test)]
@@ -63,8 +83,9 @@ mod tests {
             .insert_agent(a_test_creature("Rat", 0, (1, 2)), &pos)
             .unwrap();
         let mut msgs = Vec::new();
+        let mut rolls = Rolls::new(1);
 
-        reap(&mut map, rat, None, &mut msgs);
+        reap(&mut map, rat, None, &mut msgs, &mut rolls);
 
         assert!(map.get_agent(rat).is_none());
         assert!(matches!(
@@ -82,8 +103,9 @@ mod tests {
             .insert_agent(a_test_creature("Rat", 5, (1, 2)), &pos)
             .unwrap();
         let mut msgs = Vec::new();
+        let mut rolls = Rolls::new(1);
 
-        reap(&mut map, rat, None, &mut msgs);
+        reap(&mut map, rat, None, &mut msgs, &mut rolls);
 
         assert!(map.get_agent(rat).is_some());
         assert!(msgs.is_empty());
@@ -102,15 +124,16 @@ mod tests {
         let hunter = map
             .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &hunter_pos)
             .unwrap();
-        map.get_agent_mut(hunter).unwrap().set_target(Some(rat));
+        map.get_agent_mut(hunter).unwrap().set_target(Some(rat), 0);
         let mut msgs = Vec::new();
+        let mut rolls = Rolls::new(1);
 
-        reap(&mut map, rat, Some(hunter), &mut msgs);
+        reap(&mut map, rat, Some(hunter), &mut msgs, &mut rolls);
 
         assert_eq!(map.get_agent(hunter).unwrap().target(), None);
         assert!(msgs.iter().any(|m| matches!(
             m,
-            BroadcastMessage::TargetChanged { agent_key, target: None } if *agent_key == hunter
+            BroadcastMessage::AgentLostTarget { agent_key, .. } if *agent_key == hunter
         )));
     }
 
@@ -137,19 +160,20 @@ mod tests {
         let third = map
             .insert_agent(a_test_creature("Cave Rat", 0, (1, 2)), &third_pos)
             .unwrap();
-        map.get_agent_mut(hunter).unwrap().set_target(Some(rat));
+        map.get_agent_mut(hunter).unwrap().set_target(Some(rat), 0);
         map.get_agent_mut(bystander)
             .unwrap()
-            .set_target(Some(third));
+            .set_target(Some(third), 0);
         let mut msgs = Vec::new();
+        let mut rolls = Rolls::new(1);
 
-        reap(&mut map, rat, Some(hunter), &mut msgs);
+        reap(&mut map, rat, Some(hunter), &mut msgs, &mut rolls);
 
         assert_eq!(map.get_agent(hunter).unwrap().target(), None);
         assert_eq!(map.get_agent(bystander).unwrap().target(), Some(third));
         assert!(!msgs.iter().any(|m| matches!(
             m,
-            BroadcastMessage::TargetChanged { agent_key, .. } if *agent_key == bystander
+            BroadcastMessage::AgentLostTarget { agent_key, .. } if *agent_key == bystander
         )));
     }
 
@@ -162,8 +186,9 @@ mod tests {
             .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &pos)
             .unwrap();
         let mut msgs = Vec::new();
+        let mut rolls = Rolls::new(1);
 
-        reap(&mut map, player, None, &mut msgs);
+        reap(&mut map, player, None, &mut msgs, &mut rolls);
 
         assert!(map.get_agent(player).is_some());
         assert!(msgs.is_empty());
@@ -184,8 +209,9 @@ mod tests {
             .unwrap();
         map.get_agent_mut(rat).unwrap().record_damage(hunter, 100);
         let mut msgs = Vec::new();
+        let mut rolls = Rolls::new(1);
 
-        reap(&mut map, rat, Some(hunter), &mut msgs);
+        reap(&mut map, rat, Some(hunter), &mut msgs, &mut rolls);
 
         assert!(map.get_agent(rat).is_none());
         assert_eq!(
@@ -213,8 +239,9 @@ mod tests {
             .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &hunter_pos)
             .unwrap();
         let mut msgs = Vec::new();
+        let mut rolls = Rolls::new(1);
 
-        reap(&mut map, rat, Some(hunter), &mut msgs);
+        reap(&mut map, rat, Some(hunter), &mut msgs, &mut rolls);
 
         assert_eq!(
             map.get_player(hunter)

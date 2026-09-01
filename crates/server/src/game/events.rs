@@ -69,9 +69,9 @@ pub enum BroadcastMessage {
         agent_key: AgentKey,
         message: String,
     },
-    TargetChanged {
+    AgentLostTarget {
         agent_key: AgentKey,
-        target: Option<AgentKey>,
+        seq: u32,
     },
     DamageTaken {
         agent_key: AgentKey,
@@ -94,6 +94,9 @@ pub enum BroadcastMessage {
         gained: u16,
     },
     PlayerManaUpdated {
+        agent_key: AgentKey,
+    },
+    AgentLifeUpdated {
         agent_key: AgentKey,
     },
 }
