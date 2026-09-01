@@ -585,6 +585,7 @@ mod tests {
             defense: 1,
             experience: 0,
             corpse: 1,
+            loot_table: vec![],
         }))
     }
 

@@ -276,7 +276,7 @@ impl Agent {
     pub fn get_corpse(&self) -> ItemId {
         match &self.inner {
             AgentInner::Creature(c) => c.corpse,
-            AgentInner::Player(..) => GAME_CONFIG.combat.human_corpose_item_id,
+            AgentInner::Player(..) => GAME_CONFIG.combat.human_corpse_item_id,
         }
     }
 
@@ -375,6 +375,7 @@ mod tests {
             defense: 1,
             experience: 0,
             corpse: 1,
+            loot_table: vec![],
         }));
         let pos = Position {
             x: 200,
@@ -439,6 +440,7 @@ mod tests {
             defense: 1,
             experience: 0,
             corpse: 1,
+            loot_table: vec![],
         }));
         assert!(!player.is_creature());
         assert!(creature.is_creature());
@@ -461,6 +463,7 @@ mod tests {
             defense: 1,
             experience: 0,
             corpse: 1,
+            loot_table: vec![],
         };
         let agent = Agent::from_creature_kind(Arc::new(kind));
         assert!(agent.is_creature());

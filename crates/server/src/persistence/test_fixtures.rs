@@ -230,5 +230,6 @@ fn a_creature(
         defense,
         experience,
         corpse: 1,
+        loot_table: vec![],
     }))
 }

@@ -24,6 +24,13 @@ impl BloodType {
 }
 
 #[derive(Clone, Debug)]
+pub struct LootEntry {
+    pub item_id: ItemId,
+    pub chance: u32,
+    pub amount: u32,
+}
+
+#[derive(Clone, Debug)]
 pub struct CreatureKind {
     pub name: String,
     pub life: Pool,
@@ -35,4 +42,5 @@ pub struct CreatureKind {
     pub defense: u16,
     pub experience: u32,
     pub corpse: ItemId,
+    pub loot_table: Vec<LootEntry>,
 }

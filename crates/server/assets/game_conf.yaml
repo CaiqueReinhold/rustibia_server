@@ -31,7 +31,7 @@ effect_ids:
   earth_hit: 1
   fire_hit: 1
   energy_hit: 1
-  potion_use: 12
+  potion_use: 13
 
 text_colors:
   blue: [0, 0, 255]
@@ -53,6 +53,7 @@ combat:
   auto_attack_ticks: 40
   pool_item_id: 2886
   unarmed_skill: 100
+  human_corpse_item_id: 111
 
 skills:
   min_level: 10

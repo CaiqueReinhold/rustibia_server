@@ -1,4 +1,7 @@
-use std::ops::{Add, Sub};
+use std::{
+    fmt::Display,
+    ops::{Add, Sub},
+};
 
 use crate::{
     constants::{
@@ -149,6 +152,12 @@ impl Sub<Direction> for Position {
                 z: self.z,
             },
         }
+    }
+}
+
+impl Display for Position {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {}, {})", self.x, self.y, self.z)
     }
 }
 

@@ -290,8 +290,7 @@ fn potion(
     let health_roll = health.map(|b| roll.uniform(b.min, b.max));
     let mana_roll = mana.map(|b| roll.uniform(b.min, b.max));
 
-    // Where the potion was is where the flask goes back to.
-    let Ok((_, source_index, source_container)) = remove_item_at(broadcasts, map, potion, 1) else {
+    let Ok((_, _, source_container)) = remove_item_at(broadcasts, map, potion, 1) else {
         return Err(ItemActionError::ActionFailed);
     };
 
@@ -328,7 +327,7 @@ fn potion(
                     agent_key,
                     &potion.placement,
                     source_container.as_ref(),
-                    source_index,
+                    None,
                     flask,
                 ) {
                     error!("could not give the empty flask to {agent_key:?}: {e}");
@@ -393,7 +392,7 @@ mod tests {
                     "tool {id} ({}) lost its usable flag",
                     item.name
                 );
-                assert_eq!(config.tool_action(*id), Some(expected.clone()));
+                assert_eq!(config.tool_action(*id), Some(expected));
             }
         }
     }
@@ -1204,6 +1203,9 @@ mod tests {
         assert_eq!(pouches.contents[1], vec![(283, 1), (9999, 2)]);
     }
 
+    /// The order is the assertion, not incidental: a flask returned to a tile is
+    /// appended, so it sits on top of the charges still there. In a container it
+    /// goes back to the potion's own slot instead -- see the pouch test above.
     #[test]
     fn a_potion_drunk_from_the_ground_leaves_the_flask_on_that_tile() {
         let drunk = drink_potion_on(
@@ -1215,6 +1217,6 @@ mod tests {
         );
 
         assert!(!drunk.denied);
-        assert_eq!(drunk.at_the_users_feet, vec![(283, 1), (9999, 2)]);
+        assert_eq!(drunk.at_the_users_feet, vec![(9999, 2), (283, 1)]);
     }
 }

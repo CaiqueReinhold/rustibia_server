@@ -71,6 +71,7 @@ mod tests {
             defense: 1,
             experience: 0,
             corpse: 1,
+            loot_table: vec![],
         }));
         creature.next_walk_tick = next_walk_tick;
         let key = map.insert_agent(creature, at).unwrap();

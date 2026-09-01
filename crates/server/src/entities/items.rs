@@ -316,10 +316,7 @@ impl Item {
     }
 
     pub fn container_capacity(&self) -> Option<u8> {
-        self.config.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::Capacity(c) => Some(*c),
-            _ => None,
-        })
+        self.config.attr_capacity()
     }
 
     pub fn available_capacity(&self) -> Option<usize> {

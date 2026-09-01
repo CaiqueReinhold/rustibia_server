@@ -511,7 +511,11 @@ mod tests {
         .await
         .unwrap();
 
-        assert_eq!(skills.len(), 2, "both starting skills must be inserted");
+        assert_eq!(
+            skills.len(),
+            template().starting_skills.len(),
+            "every configured starting skill must be inserted"
+        );
         assert_eq!(skills[0], (0, 1), "Level starts at 1");
     }
 

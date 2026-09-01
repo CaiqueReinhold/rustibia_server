@@ -1,6 +1,8 @@
 use rand::{RngExt, SeedableRng, rngs::Xoshiro256PlusPlus, seq::IndexedRandom};
 use rand_distr::{Distribution, Normal};
 
+use crate::constants::MAX_DROP_CHANCE;
+
 pub struct Rolls {
     rng: Xoshiro256PlusPlus,
     normal: Normal<f32>,
@@ -32,5 +34,21 @@ impl Rolls {
 
     pub fn category_roll<'a, T>(&mut self, choices: &'a [T]) -> Option<&'a T> {
         choices.choose(&mut self.rng)
+    }
+
+    // loot chance is expressed as 1/100000
+    pub fn drop_chance(&mut self, chance: u32) -> bool {
+        self.uniform(0, MAX_DROP_CHANCE - 1) < chance
+    }
+
+    // loot rate is expressed as integer percent value, e.g. 100 for regular 100% chance.
+    pub fn drop_rolls(&mut self, loot_rate: u32) -> u32 {
+        let scaled = loot_rate * MAX_DROP_CHANCE / 100;
+        scaled / MAX_DROP_CHANCE
+            + if self.uniform(0, MAX_DROP_CHANCE) < (scaled % MAX_DROP_CHANCE) {
+                1
+            } else {
+                0
+            }
     }
 }

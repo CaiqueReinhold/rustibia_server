@@ -73,6 +73,7 @@ mod tests {
              \x20\x20life: 150\n\
              \x20\x20mana: 0\n\
              \x20\x20capacity: 400\n\
+             \x20\x20speed: 100\n\
              \x20\x20outfit_id_female: 136\n\
              \x20\x20outfit_id_male: 128\n\
              \x20\x20outfit_head: 78\n\
@@ -107,23 +108,25 @@ mod tests {
         let cfg = SiteConfig::load("config.yaml").unwrap();
         assert_eq!(cfg.new_character.pos_x, 1028);
         assert_eq!(cfg.new_character.life, 150);
-        assert_eq!(
-            cfg.new_character.starting_skills.len(),
-            2,
-            "Level and Speed are the only skill types the game server understands"
-        );
     }
 
     #[test]
     fn starting_skills_only_reference_skill_types_the_game_server_knows() {
         let cfg = SiteConfig::load("config.yaml").unwrap();
-        for skill in &cfg.new_character.starting_skills {
-            assert!(
-                skill.skill_type == 0 || skill.skill_type == 1,
-                "skill_type {} is not in the game server's SkillType enum (0 = Level, \
-                 1 = Speed); seeding it would silently destroy the row on first logout",
-                skill.skill_type
-            );
-        }
+        let mut seeded: Vec<i16> = cfg
+            .new_character
+            .starting_skills
+            .iter()
+            .map(|skill| skill.skill_type)
+            .collect();
+        seeded.sort_unstable();
+
+        assert_eq!(
+            seeded,
+            (0..=6).collect::<Vec<i16>>(),
+            "the game server's SkillType enum is 0 = Level, 1 = Axe, 2 = Club, 3 = Sword, \
+             4 = Distance, 5 = Magic, 6 = Shielding; seeding anything else would silently \
+             destroy the row on first logout, and seeding fewer leaves a skill unseeded"
+        );
     }
 }

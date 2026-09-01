@@ -4,7 +4,7 @@ use crate::{
         agent::{Agent, AgentKey},
         combat::{CombatDamage, CombatElement, WeaponType},
         creature::{BloodType, CreatureKind},
-        items::{Item, ItemAttribute, ItemGuid, ItemRef},
+        items::{ItemGuid, ItemRef},
         map::GameMap,
         player::{InventorySlot, Player},
         position::{ItemPlacement, Position},
@@ -338,8 +338,7 @@ mod tests {
     use super::*;
     use crate::entities::agent::Agent;
     use crate::entities::combat::AmmoType;
-    use crate::entities::items::{ItemAttribute, ItemFlag};
-    use crate::entities::items::{ItemConfig, ItemId};
+    use crate::entities::items::{Item, ItemAttribute, ItemConfig, ItemFlag, ItemId};
     use crate::entities::map::MapTile;
     use crate::entities::skills::SkillValue;
     use crate::persistence::player::PlayerSnapshot;

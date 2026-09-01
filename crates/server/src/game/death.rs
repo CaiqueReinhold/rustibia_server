@@ -1,7 +1,9 @@
 use tracing::{error, info};
 
-use crate::entities::agent::{Agent, AgentKey};
-use crate::entities::items::Item;
+use crate::constants::MAX_STACK_AMOUNT;
+use crate::entities::agent::AgentKey;
+use crate::entities::creature::CreatureKind;
+use crate::entities::items::{Item, ItemFlag, ItemId};
 use crate::entities::map::GameMap;
 use crate::entities::position::ItemPlacement;
 use crate::game::events::BroadcastMessage;
@@ -56,12 +58,84 @@ pub fn reap(
         return;
     };
     let mut corpse = Item::new(config.clone(), 1);
-    roll_creature_loot(&mut corpse, &agent, rolls);
-    insert_item_at(msgs, map, corpse, None, &ItemPlacement::Map(position), None);
+    if let Some(creature) = agent.get_creature_kind() {
+        roll_creature_loot(&mut corpse, creature, rolls);
+    }
+    if let Err(e) = insert_item_at(
+        msgs,
+        map,
+        corpse,
+        None,
+        &ItemPlacement::Map(position.clone()),
+        None,
+    ) {
+        error!(
+            "Error inserting creature corpse at tile {}: {}",
+            position, e
+        );
+    }
 }
 
-fn roll_creature_loot(corpse: &mut Item, agent: &Agent, rolls: &mut Rolls) {
-    todo!()
+fn roll_creature_loot(corpse: &mut Item, creature: &CreatureKind, rolls: &mut Rolls) {
+    for loot in &creature.loot_table {
+        let mut total = 0;
+        for _ in 0..rolls.drop_rolls(100) {
+            if rolls.drop_chance(loot.chance) {
+                total += if loot.amount > 1 {
+                    rolls.uniform(1, loot.amount)
+                } else {
+                    1
+                };
+            }
+        }
+        if total > 0 && add_to_corpse(corpse, loot.item_id, total) {
+            break;
+        }
+    }
+}
+
+// returns true when the corpse is full
+fn add_to_corpse(corpse: &mut Item, item_id: ItemId, amount: u32) -> bool {
+    let Some(config) = ITEM_CONFIGS.get(&item_id) else {
+        error!(
+            "Item id {} present in loot table but missing from item config",
+            item_id
+        );
+        return false;
+    };
+
+    let mut add_content = |item: Item| {
+        if let Some(content) = &mut corpse.content {
+            content.push(item);
+        } else {
+            error!("Corpse {} is not a container", corpse.item_id);
+        }
+        corpse.available_capacity() == Some(0) || corpse.available_capacity().is_none()
+    };
+
+    if config.has_flag(ItemFlag::Cumulative) {
+        let (full, remaining) = (
+            amount / MAX_STACK_AMOUNT as u32,
+            amount % MAX_STACK_AMOUNT as u32,
+        );
+        for _ in 0..full {
+            if add_content(Item::new(config.clone(), MAX_STACK_AMOUNT)) {
+                return true;
+            }
+        }
+
+        if remaining > 0 && add_content(Item::new(config.clone(), remaining as u8)) {
+            return true;
+        }
+    } else {
+        for _ in 0..amount {
+            if add_content(Item::new(config.clone(), 1)) {
+                return true;
+            }
+        }
+    }
+
+    false
 }
 
 #[cfg(test)]
@@ -90,7 +164,10 @@ mod tests {
         assert!(map.get_agent(rat).is_none());
         assert!(matches!(
             msgs.as_slice(),
-            [BroadcastMessage::AgentDespawned { agent_key, .. }] if *agent_key == rat
+            [
+                BroadcastMessage::AgentDespawned { agent_key, .. },
+                BroadcastMessage::TileChanged { position },
+            ] if *agent_key == rat && *position == pos
         ));
     }
 

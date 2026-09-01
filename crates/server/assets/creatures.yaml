@@ -15,82 +15,82 @@ creatures:
       max: 500
     corpse: 5995
     loot:
-      - id: 2148
+      - item_id: 3031 # gold coin
         chance: 99518
         amount: 200
-      - id: 2152
+      - item_id: 3035 # platinum coin
         chance: 99513
         amount: 8
-      - id: 7590
+      - item_id: 238 # great mana potion
         chance: 25108
         amount: 3
-      - id: 8472
+      - item_id: 7642 # great spirit potion
         chance: 24763
         amount: 3
-      - id: 5954
+      - item_id: 5954 # demon horn
         chance: 20187
-      - id: 8473
+      - item_id: 7643 # ultimate health potion
         chance: 19831
         amount: 3
-      - id: 2795
+      - item_id: 3731 # fire mushroom
         chance: 19782
         amount: 6
-      - id: 6500
+      - item_id: 6499 # demonic essence
         chance: 19738
-      - id: 7368
+      - item_id: 7368 # assassin star
         chance: 15452
         amount: 10
-      - id: 9970
+      - item_id: 9057 # small topaz
         chance: 10167
         amount: 5
-      - id: 2147
+      - item_id: 3030 # small ruby
         chance: 10006
         amount: 5
-      - id: 2149
+      - item_id: 3032 # small emerald
         chance: 9802
         amount: 5
-      - id: 2150
+      - item_id: 3033 # small amethyst
         chance: 9789
         amount: 5
-      - id: 2432
+      - item_id: 3320 # fire axe
         chance: 4037
-      - id: 2151
+      - item_id: 3034 # talon
         chance: 3420
-      - id: 2156
+      - item_id: 3039 # red gem
         chance: 2959
-      - id: 2176
+      - item_id: 3060 # orb
         chance: 2852
-      - id: 2214
+      - item_id: 3098 # ring of healing
         chance: 2658
-      - id: 2164
+      - item_id: 3048 # might ring
         chance: 2492
-      - id: 2165
+      - item_id: 3049 # stealth ring
         chance: 2391
-      - id: 2393
+      - item_id: 3281 # giant sword
         chance: 1950
-      - id: 2396
+      - item_id: 3284 # ice rapier
         chance: 1906
-      - id: 2418
+      - item_id: 3306 # golden sickle
         chance: 1367
-      - id: 1982
+      - item_id: 2848 # purple tome
         chance: 1232
-      - id: 2462
+      - item_id: 3356 # devil helmet
         chance: 1227
-      - id: 2179
+      - item_id: 3063 # gold ring
         chance: 1035
-      - id: 2520
+      - item_id: 3420 # demon shield
         chance: 755
-      - id: 2171
+      - item_id: 3055 # platinum amulet
         chance: 705
-      - id: 2514
+      - item_id: 3414 # mastermind shield
         chance: 475
-      - id: 2470
+      - item_id: 3364 # golden legs
         chance: 397
-      - id: 7393
+      - item_id: 7393 # demon trophy
         chance: 88
-      - id: 2472
+      - item_id: 3366 # magic plate armor
         chance: 88
-      - id: 7382
+      - item_id: 7382 # demonrage sword
         chance: 54
   elf:
     name: Elf
@@ -108,26 +108,26 @@ creatures:
       max: 15
     corpse: 6003
     loot:
-      - id: 2148
+      - item_id: 3031 # gold coin
         amount: 30
         chance: 44661
-      - id: 8839
+      - item_id: 8011 # plum
         amount: 2
         chance: 20013
-      - id: 2482
+      - item_id: 3376 # studded helmet
         chance: 15055
-      - id: 2643
+      - item_id: 3552 # leather boots
         chance: 11113
-      - id: 2397
+      - item_id: 3285 # longsword
         chance: 10918
-      - id: 2484
+      - item_id: 3378 # studded armor
         chance: 9010
-      - id: 2510
+      - item_id: 3410 # plate shield
         chance: 8957
-      - id: 2544
+      - item_id: 3447 # arrow
         amount: 5
         chance: 7026
-      - id: 10552
+      - item_id: 9635 # elvish talisman
         chance: 1984
-      - id: 5921
+      - item_id: 5921 # heaven blossom
         chance: 1011

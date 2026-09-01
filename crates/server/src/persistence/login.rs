@@ -834,6 +834,7 @@ mod http_tests {
         serde_json::json!({
             "id": 7,
             "account_id": 3,
+            "admin": false,
             "name": "Rizael",
             "vocation": 0,
             "position": { "x": 1028, "y": 1029, "z": 7 },
