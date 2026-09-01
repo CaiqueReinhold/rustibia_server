@@ -878,7 +878,7 @@ mod tests {
 
         let snapshot = map.clone();
         let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
-        let mut rolls = Rolls::new(1);
+
         execute_attack(&mut map, plan, 0, &mut msgs, &mut cmds, &mut roll);
 
         assert!(!std::ptr::eq(

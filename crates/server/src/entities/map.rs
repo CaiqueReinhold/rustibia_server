@@ -5,7 +5,7 @@ use thiserror::Error;
 
 use crate::constants::MAX_VISIBLE_ITEMS;
 use crate::entities::agent::{Agent, AgentKey};
-use crate::entities::items::{FloorChangeDirection, Item, ItemAttribute, ItemFlag, ItemGuid};
+use crate::entities::items::{FloorChangeDirection, Item, ItemFlag, ItemGuid};
 use crate::entities::player::Player;
 use crate::entities::position::{Position, Rect};
 
@@ -564,7 +564,7 @@ mod tests {
     use super::*;
     use crate::entities::agent::{Agent, Pool};
     use crate::entities::creature::{BloodType, CreatureKind};
-    use crate::entities::items::ItemConfig;
+    use crate::entities::items::{ItemAttribute, ItemConfig};
     use crate::entities::player::InventorySlot;
     use crate::entities::position::Position;
     use crate::persistence::test_fixtures::a_player_with_a_full_backpack;
