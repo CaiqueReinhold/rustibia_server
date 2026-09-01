@@ -118,10 +118,6 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
             };
             Some(ItemAttribute::Action(action))
         }
-        // An absent pool means the potion does not touch it, so `health` and `mana`
-        // are optional -- but a pool that IS there and does not parse fails the
-        // whole attribute. Dropping just the malformed half would leave a great
-        // spirit potion quietly restoring only mana.
         "potion" => {
             let health = match value.get("health") {
                 Some(bounds) => Some(parse_bounds(bounds)?),
@@ -131,12 +127,17 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
                 Some(bounds) => Some(parse_bounds(bounds)?),
                 None => None,
             };
+            let flask = match value.get("flask") {
+                Some(flask) => Some(u16::try_from(flask.as_u64()?).ok()?),
+                None => None,
+            };
             if health.is_none() && mana.is_none() {
                 return None;
             }
             Some(ItemAttribute::MultiAction(ItemMultiAction::Potion {
                 health,
                 mana,
+                flask,
             }))
         }
         "decay" => {
@@ -294,6 +295,7 @@ mod tests {
             Some(ItemAttribute::MultiAction(ItemMultiAction::Potion {
                 health: bounds(125, 175),
                 mana: None,
+                flask: None,
             }))
         );
         assert_eq!(
@@ -301,6 +303,7 @@ mod tests {
             Some(ItemAttribute::MultiAction(ItemMultiAction::Potion {
                 health: None,
                 mana: bounds(75, 125),
+                flask: None,
             }))
         );
         assert_eq!(
@@ -308,6 +311,7 @@ mod tests {
             Some(ItemAttribute::MultiAction(ItemMultiAction::Potion {
                 health: bounds(420, 580),
                 mana: bounds(180, 220),
+                flask: None,
             }))
         );
     }
@@ -364,6 +368,7 @@ items:
         health:
           min: 125
           max: 175
+        flask: 284
   2:
     name: a spirit potion
     attributes:
@@ -374,6 +379,7 @@ items:
         mana:
           min: 100
           max: 200
+        flask: 284
   3:
     name: a broken potion
     attributes:
@@ -389,6 +395,7 @@ items:
             Some(ItemMultiAction::Potion {
                 health: Some(Bounds { min: 125, max: 175 }),
                 mana: None,
+                flask: Some(284),
             })
         );
         assert_eq!(
@@ -396,11 +403,30 @@ items:
             Some(ItemMultiAction::Potion {
                 health: Some(Bounds { min: 250, max: 350 }),
                 mana: Some(Bounds { min: 100, max: 200 }),
+                flask: Some(284),
             })
         );
         // Dropped, and the item still loads -- which is exactly why the emitter has
         // a gate of its own: nothing here can tell you the potion went missing.
         assert_eq!(items[&3].attr_multi_action(), None);
         assert_eq!(items[&3].name, "a broken potion");
+    }
+
+    #[test]
+    fn a_potion_carries_the_flask_it_leaves_behind() {
+        assert_eq!(
+            potion("health:\n  min: 125\n  max: 175\nflask: 284"),
+            Some(ItemAttribute::MultiAction(ItemMultiAction::Potion {
+                health: bounds(125, 175),
+                mana: None,
+                flask: Some(284),
+            }))
+        );
+    }
+
+    #[test]
+    fn a_flask_that_is_not_an_item_id_takes_the_whole_potion_with_it() {
+        assert_eq!(potion("health:\n  min: 1\n  max: 2\nflask: 99999"), None);
+        assert_eq!(potion("health:\n  min: 1\n  max: 2\nflask: nope"), None);
     }
 }

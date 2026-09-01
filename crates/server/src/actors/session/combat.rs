@@ -7,7 +7,7 @@ use crate::{
         combat::CombatDamage,
         position::Position,
     },
-    game::combat::get_damage_visuals,
+    game::{combat::get_damage_visuals, config::GAME_CONFIG},
     messages::{FloatingTextType, ServerMessage},
 };
 
@@ -80,6 +80,28 @@ impl SessionActor {
         Ok(())
     }
 
+    pub(super) async fn potion_drunk(&self, target: AgentKey, position: Position) -> Result<()> {
+        self.connection
+            .send_message(ServerMessage::ShowEffect {
+                effect_id: GAME_CONFIG.effect_ids.potion_use,
+                position,
+                delta: Vec::new(),
+            })
+            .await?;
+
+        if let Some(agent_id) = self.agents.get_local(&target) {
+            self.connection
+                .send_message(ServerMessage::FloatingText {
+                    text: "Aaaah...".to_string(),
+                    agent_id,
+                    text_type: FloatingTextType::CreatureSay,
+                    color: None,
+                })
+                .await?;
+        }
+        Ok(())
+    }
+
     pub(super) async fn missile_launched(
         &self,
         from: Position,
@@ -94,5 +116,45 @@ impl SessionActor {
             })
             .await?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::actors::connection::ConnectionCommand;
+    use crate::actors::session::test_support::seat_player;
+    use crate::entities::map::GameMap;
+
+    #[tokio::test]
+    async fn drinking_sends_the_effect_and_the_creature_say() {
+        let mut map = GameMap::new();
+        let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let (mut session, mut connection_rx, _world_rx, _tick_tx) = SessionActor::for_test(me, map);
+        session.agents.get_or_insert(me);
+
+        session
+            .potion_drunk(me, Position::new(100, 100, 7))
+            .await
+            .unwrap();
+
+        let sent: Vec<_> = std::iter::from_fn(|| connection_rx.try_recv().ok()).collect();
+        assert!(
+            sent.iter().any(|c| matches!(
+                c,
+                ConnectionCommand::SendPlayerMessage(ServerMessage::ShowEffect { .. })
+            )),
+            "no effect was sent: {sent:?}"
+        );
+        assert!(
+            sent.iter().any(|c| matches!(
+                c,
+                ConnectionCommand::SendPlayerMessage(ServerMessage::FloatingText {
+                    text_type: FloatingTextType::CreatureSay,
+                    ..
+                })
+            )),
+            "no creature say was sent: {sent:?}"
+        );
     }
 }

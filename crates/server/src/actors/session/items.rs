@@ -6,11 +6,12 @@ use anyhow::Result;
 use crate::actors::player_query::client_position_to_placement;
 use crate::actors::session::{SessionActor, SessionError};
 use crate::actors::world::WorldCommand;
-use crate::entities::agent::AgentKey;
-use crate::entities::items::{ContainerId, ItemAttribute, ItemFlag, ItemId, ItemRef};
+use crate::entities::agent::{AgentId, AgentKey};
+use crate::entities::items::{ClientItemRef, ContainerId, ItemFlag, ItemId, ItemRef};
 use crate::entities::player::InventorySlot;
 use crate::entities::position::{ItemPlacement, Position};
 use crate::game::description::get_look_description;
+use crate::game::item_multi_action::UseTarget;
 use crate::game::map_query::{
     find_item_in_reach, find_item_in_slot, find_parent_container, get_tile, retrieve_item,
 };
@@ -20,10 +21,8 @@ use crate::messages::TextMessageType;
 impl SessionActor {
     pub(super) async fn handle_move_item(
         &self,
-        from: Position,
-        item_id: ItemId,
+        item: ClientItemRef,
         amount: u8,
-        stack_index: u8,
         to: Position,
     ) -> Result<()> {
         let map = self.shared_map.load();
@@ -31,14 +30,9 @@ impl SessionActor {
 
         // Resolve source: Position → (item_guid, ItemPlacement).
         // Uses the session-local container map to translate container coords.
-        let Some((item, source_placement)) = retrieve_item(
-            &map,
-            &from,
-            item_id,
-            stack_index,
-            &self.containers,
-            player_key,
-        ) else {
+        let Some((item, source_placement)) =
+            retrieve_item(&map, &item, &self.containers, player_key)
+        else {
             return Ok(());
         };
         let item_guid = item.guid.clone();
@@ -87,22 +81,11 @@ impl SessionActor {
         Ok(())
     }
 
-    pub(super) async fn handle_use_item(
-        &self,
-        position: Position,
-        item_id: ItemId,
-        stack_index: u8,
-    ) -> Result<()> {
+    pub(super) async fn handle_use_item(&self, item: ClientItemRef) -> Result<()> {
         let map = self.shared_map.load();
 
-        let Some((item, placement)) = retrieve_item(
-            &map,
-            &position,
-            item_id,
-            stack_index,
-            &self.containers,
-            self.player_key,
-        ) else {
+        let Some((item, placement)) = retrieve_item(&map, &item, &self.containers, self.player_key)
+        else {
             return Ok(());
         };
 
@@ -121,36 +104,19 @@ impl SessionActor {
 
     pub(super) async fn handle_use_item_with(
         &self,
-        source: Position,
-        source_item_id: ItemId,
-        source_index: u8,
-        target: Position,
-        target_item_id: ItemId,
-        target_index: u8,
+        source: ClientItemRef,
+        target: ClientItemRef,
+        target_agent: Option<AgentId>,
     ) -> Result<()> {
         let map = self.shared_map.load();
 
-        let Some((source_item, source_placement)) = retrieve_item(
-            &map,
-            &source,
-            source_item_id,
-            source_index,
-            &self.containers,
-            self.player_key,
-        ) else {
+        let Some((source_item, source_placement)) =
+            retrieve_item(&map, &source, &self.containers, self.player_key)
+        else {
             return Ok(());
         };
 
-        let Some((target_item, target_placement)) = retrieve_item(
-            &map,
-            &target,
-            target_item_id,
-            target_index,
-            &self.containers,
-            self.player_key,
-        ) else {
-            return Ok(());
-        };
+        let target_item = retrieve_item(&map, &target, &self.containers, self.player_key);
 
         self.world
             .send(WorldCommand::UseItemWith {
@@ -159,9 +125,12 @@ impl SessionActor {
                     guid: source_item.guid.clone(),
                     placement: source_placement,
                 },
-                target: ItemRef {
-                    guid: target_item.guid.clone(),
-                    placement: target_placement,
+                target: UseTarget {
+                    item: target_item.map(|(item, placement)| ItemRef {
+                        guid: item.guid.clone(),
+                        placement,
+                    }),
+                    agent: target_agent.and_then(|id| self.agents.get_global(id).copied()),
                 },
             })
             .await;

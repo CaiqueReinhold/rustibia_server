@@ -25,6 +25,8 @@ pub enum ItemActionError {
     ActionFailed,
     #[error("Invalid State")]
     InvalidState,
+    #[error("No target")]
+    NoTarget,
 }
 
 pub fn decay_item(

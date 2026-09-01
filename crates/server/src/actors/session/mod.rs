@@ -329,21 +329,10 @@ impl SessionActor {
             ClientMessage::Login { .. } => Err(SessionError::WrongMessageType.into()),
             ClientMessage::MovePlayer { direction } => self.handle_move_player(direction).await,
             ClientMessage::GetPlayerPosition => self.handle_get_position().await,
-            ClientMessage::MoveItem {
-                from,
-                item_id,
-                amount,
-                stack_index,
-                to,
-            } => {
-                self.handle_move_item(from, item_id, amount, stack_index, to)
-                    .await
+            ClientMessage::MoveItem { item, amount, to } => {
+                self.handle_move_item(item, amount, to).await
             }
-            ClientMessage::UseItem {
-                position,
-                item_id,
-                stack_index,
-            } => self.handle_use_item(position, item_id, stack_index).await,
+            ClientMessage::UseItem { item } => self.handle_use_item(item).await,
             ClientMessage::CloseContainer { container_id } => {
                 self.handle_close_container(container_id)
             }
@@ -356,21 +345,12 @@ impl SessionActor {
             ClientMessage::Logout => self.handle_logout().await,
             ClientMessage::UseItemWith {
                 source,
-                source_item_id,
-                source_index,
+
                 target,
-                target_item_id,
-                target_index,
+                target_agent,
             } => {
-                self.handle_use_item_with(
-                    source,
-                    source_item_id,
-                    source_index,
-                    target,
-                    target_item_id,
-                    target_index,
-                )
-                .await
+                self.handle_use_item_with(source, target, target_agent)
+                    .await
             }
             ClientMessage::Look { position } => self.handle_look(position).await,
             ClientMessage::Say {
@@ -449,6 +429,9 @@ impl SessionActor {
             } => self.skill_upgraded(skill_type, gained).await,
             BroadcastMessage::PlayerManaUpdated { .. } => self.mana_updated().await,
             BroadcastMessage::AgentLifeUpdated { agent_key } => self.life_updated(agent_key).await,
+            BroadcastMessage::PotionDrunk { target, position } => {
+                self.potion_drunk(target, position).await
+            }
         }
     }
 

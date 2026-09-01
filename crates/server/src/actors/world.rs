@@ -18,6 +18,7 @@ use crate::entities::items::{ItemGuid, ItemRef};
 use crate::entities::map::GameMap;
 use crate::entities::position::{Direction, ItemPlacement, Position};
 use crate::game::events::BroadcastMessage;
+use crate::game::item_multi_action::UseTarget;
 use crate::game::random::Rolls;
 use crate::game::{
     Tick, chat, combat, item_action, item_movement, item_multi_action, movement, targeting,
@@ -48,7 +49,7 @@ pub enum WorldCommand {
     UseItemWith {
         agent: AgentKey,
         source: ItemRef,
-        target: ItemRef,
+        target: UseTarget,
     },
     ChangeDirection {
         agent: AgentKey,

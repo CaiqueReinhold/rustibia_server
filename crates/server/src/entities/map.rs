@@ -140,6 +140,14 @@ impl GameMap {
         Ok(tile.items.iter())
     }
 
+    pub fn iter_items_mut(
+        &mut self,
+        pos: &Position,
+    ) -> Result<impl Iterator<Item = &mut Item>, MapError> {
+        let tile = self.get_tile_mut(pos)?;
+        Ok(tile.items.iter_mut())
+    }
+
     pub fn insert_agent(&mut self, agent: Agent, pos: &Position) -> Result<AgentKey, MapError> {
         if !self.contains_tile(pos) {
             return Err(MapError::TileDoesNotExist);

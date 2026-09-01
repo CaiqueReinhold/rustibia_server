@@ -5,7 +5,7 @@ use crate::{
     },
     entities::{
         agent::{Agent, AgentKey},
-        items::{ContainerId, Item, ItemGuid, ItemId, ItemRef},
+        items::{ClientItemRef, ContainerId, Item, ItemGuid, ItemRef},
         map::GameMap,
         player::InventorySlot,
         position::{Direction, ItemPlacement, Position, Rect},
@@ -198,32 +198,30 @@ pub fn get_tile(map: &GameMap, position: &Position) -> Box<ItemStack> {
 
 pub fn retrieve_item<'a>(
     map: &'a GameMap,
-    position: &'a Position,
-    item_id: ItemId,
-    stack_index: u8,
+    cli_item: &'a ClientItemRef,
     containers: &'a LocalIdMap<ItemGuid>,
     agent_key: AgentKey,
 ) -> Option<(&'a Item, ItemPlacement)> {
-    if position.is_container_coord() {
-        let container_id = position.y as ContainerId;
+    if cli_item.position.is_container_coord() {
+        let container_id = cli_item.position.y as ContainerId;
         let guid = containers.get_global(container_id)?;
         let (container, placement) = find_item_in_reach(map, guid, agent_key)?;
-        let slot = position.z as usize;
+        let slot = cli_item.position.z as usize;
         let item = container.content.as_ref()?.get(slot);
-        item.filter(|it| it.item_id == item_id)
+        item.filter(|it| it.item_id == cli_item.item_id)
             .map(|item| (item, placement))
-    } else if position.is_inventory_coord() {
+    } else if cli_item.position.is_inventory_coord() {
         let player = map.get_player(agent_key)?;
-        let slot = InventorySlot::from_id(position.y)?;
+        let slot = InventorySlot::from_id(cli_item.position.y)?;
         player
             .inventory
             .get(&slot)
-            .filter(|it| it.item_id == item_id)
+            .filter(|it| it.item_id == cli_item.item_id)
             .map(|it| (it, ItemPlacement::Inventory(slot, agent_key)))
     } else {
-        let item = map.get_item_at(position, stack_index as usize);
-        item.filter(|it| it.item_id == item_id)
-            .map(|item| (item, ItemPlacement::Map(position.clone())))
+        let item = map.get_item_at(&cli_item.position, cli_item.stack_index as usize);
+        item.filter(|it| it.item_id == cli_item.item_id)
+            .map(|item| (item, ItemPlacement::Map(cli_item.position.clone())))
     }
 }
 

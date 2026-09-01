@@ -99,4 +99,8 @@ pub enum BroadcastMessage {
     AgentLifeUpdated {
         agent_key: AgentKey,
     },
+    PotionDrunk {
+        target: AgentKey,
+        position: Position,
+    },
 }

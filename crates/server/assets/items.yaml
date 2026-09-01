@@ -1028,6 +1028,7 @@ items:
         health:
           min: 250
           max: 350
+        flask: 284
   237:
     name: strong mana potion
     article: a
@@ -1042,6 +1043,7 @@ items:
         mana:
           min: 115
           max: 185
+        flask: 284
   238:
     name: great mana potion
     article: a
@@ -1056,6 +1058,7 @@ items:
         mana:
           min: 150
           max: 250
+        flask: 285
   239:
     name: great health potion
     article: a
@@ -1070,6 +1073,7 @@ items:
         health:
           min: 425
           max: 575
+        flask: 285
   240:
     name: linen
     flags:
@@ -1236,6 +1240,7 @@ items:
         health:
           min: 125
           max: 175
+        flask: 284
   267:
     name: linen
     flags:
@@ -1256,6 +1261,7 @@ items:
         mana:
           min: 75
           max: 125
+        flask: 284
   269:
     name: dead dragon hatchling
     article: a
@@ -55243,6 +55249,7 @@ items:
         mana:
           min: 100
           max: 200
+        flask: 285
   7643:
     name: ultimate health potion
     article: an
@@ -55257,6 +55264,7 @@ items:
         health:
           min: 650
           max: 850
+        flask: 285
   7644:
     name: antidote potion
     article: an
@@ -56888,6 +56896,7 @@ items:
         health:
           min: 60
           max: 90
+        flask: 283
   7877:
     name: balloons
     flags:
@@ -146623,6 +146632,7 @@ items:
         mana:
           min: 425
           max: 575
+        flask: 285
   23374:
     name: ultimate spirit potion
     article: an
@@ -146640,6 +146650,7 @@ items:
         mana:
           min: 180
           max: 220
+        flask: 285
   23375:
     name: supreme health potion
     article: a
@@ -146654,6 +146665,7 @@ items:
         health:
           min: 875
           max: 1125
+        flask: 285
   23376:
     name: unknown item
     flags:

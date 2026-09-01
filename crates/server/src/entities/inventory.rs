@@ -123,18 +123,9 @@ impl Inventory {
         self.slots.get(slot)
     }
 
-    // pub fn get_mut(&mut self, slot: &InventorySlot) -> Option<&mut Item> {
-    //     self.slots.get_mut(slot)
-    // }
-
-    // pub fn find_by_guid(&self, guid: &ItemGuid) -> Option<(&Item, InventorySlot)> {
-    //     for (slot, item) in &self.slots {
-    //         if let Some(found) = item.find_by_guid(guid) {
-    //             return Some((found, *slot));
-    //         }
-    //     }
-    //     None
-    // }
+    pub fn get_mut(&mut self, slot: &InventorySlot) -> Option<&mut Item> {
+        self.slots.get_mut(slot)
+    }
 
     pub fn keys(&self) -> impl Iterator<Item = &InventorySlot> {
         self.slots.keys()

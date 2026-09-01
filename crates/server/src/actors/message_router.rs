@@ -394,6 +394,15 @@ impl MessageRouterActor {
                     );
                 }
             }
+            BroadcastMessage::PotionDrunk { position, .. } => {
+                self.send_to_rect(
+                    message,
+                    map,
+                    Rect::player_viewport(position),
+                    position.z,
+                    None,
+                );
+            }
         }
     }
 

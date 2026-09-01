@@ -6,7 +6,7 @@ use crate::{
     entities::{
         combat::{AmmoType, CombatElement, WeaponType},
         player::InventorySlot,
-        position::ItemPlacement,
+        position::{ItemPlacement, Position},
     },
     game::Tick,
 };
@@ -379,6 +379,13 @@ pub struct ItemRef {
     pub placement: ItemPlacement,
 }
 
+#[derive(Debug, Clone)]
+pub struct ClientItemRef {
+    pub position: Position,
+    pub item_id: ItemId,
+    pub stack_index: u8,
+}
+
 #[derive(Clone, PartialEq, Eq, Hash, Debug, Copy)]
 pub enum ItemAction {
     Transform { into: ItemId },
@@ -395,12 +402,10 @@ pub struct Bounds {
 pub enum ItemMultiAction {
     Shovel,
     Rope,
-    /// A pool is `None` when the potion does not touch it, which is why a health
-    /// potion is not the same thing as one that restores zero mana: the absent
-    /// key in `items.yaml` is the data, not a default.
     Potion {
         health: Option<Bounds>,
         mana: Option<Bounds>,
+        flask: Option<ItemId>,
     },
 }
 

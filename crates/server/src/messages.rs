@@ -9,7 +9,7 @@ use crate::{
     entities::{
         agent::{AgentId, Facing, OutfitColors, OutfitId, Pool},
         chat::{ChannelId, ChatMessageType},
-        items::{ContainerId, ItemId},
+        items::{ClientItemRef, ContainerId, ItemId},
         player::InventorySlot,
         position::{Direction, Position},
         skills::SkillType,
@@ -50,16 +50,12 @@ pub enum ClientMessage {
     },
     GetPlayerPosition,
     MoveItem {
-        from: Position,
-        item_id: ItemId,
+        item: ClientItemRef,
         amount: u8,
-        stack_index: u8,
         to: Position,
     },
     UseItem {
-        position: Position,
-        item_id: ItemId,
-        stack_index: u8,
+        item: ClientItemRef,
     },
     CloseContainer {
         container_id: ContainerId,
@@ -72,12 +68,9 @@ pub enum ClientMessage {
     },
     Logout,
     UseItemWith {
-        source: Position,
-        source_item_id: ItemId,
-        source_index: u8,
-        target: Position,
-        target_item_id: ItemId,
-        target_index: u8,
+        source: ClientItemRef,
+        target: ClientItemRef,
+        target_agent: Option<AgentId>,
     },
     Look {
         position: Position,
@@ -152,6 +145,7 @@ pub struct SkillProgress {
 pub enum FloatingTextType {
     HitPoints,
     PlayerMessage,
+    CreatureSay,
 }
 
 #[derive(Clone, Debug)]
@@ -361,17 +355,21 @@ impl Decoder for GameMessageCodec {
                 let stack_index = buf.get_u8();
                 let to = decode_position(buf);
                 Ok(Some(ClientMessage::MoveItem {
-                    from,
-                    item_id,
+                    item: ClientItemRef {
+                        position: from,
+                        item_id,
+                        stack_index,
+                    },
                     amount,
-                    stack_index,
                     to,
                 }))
             }
             CLI_USE_ITEM => Ok(Some(ClientMessage::UseItem {
-                position: decode_position(buf),
-                item_id: buf.get_u16_le(),
-                stack_index: buf.get_u8(),
+                item: ClientItemRef {
+                    position: decode_position(buf),
+                    item_id: buf.get_u16_le(),
+                    stack_index: buf.get_u8(),
+                },
             })),
             CLI_CLOSE_CONTAINER => Ok(Some(ClientMessage::CloseContainer {
                 container_id: buf.get_u16_le(),
@@ -384,20 +382,22 @@ impl Decoder for GameMessageCodec {
             })),
             CLI_LOGOUT => Ok(Some(ClientMessage::Logout)),
             CLI_USE_ITEM_WITH => Ok(Some(ClientMessage::UseItemWith {
-                source: decode_position(buf),
-                source_item_id: buf.get_u16_le(),
-                source_index: buf.get_u8(),
-                target: decode_position(buf),
-                target_item_id: buf.get_u16_le(),
-                target_index: buf.get_u8(),
+                source: ClientItemRef {
+                    position: decode_position(buf),
+                    item_id: buf.get_u16_le(),
+                    stack_index: buf.get_u8(),
+                },
+                target: ClientItemRef {
+                    position: decode_position(buf),
+                    item_id: buf.get_u16_le(),
+                    stack_index: buf.get_u8(),
+                },
+                target_agent: decode_optional_agent(buf.get_u16_le()),
             })),
             CLI_LOOK => Ok(Some(ClientMessage::Look {
                 position: decode_position(buf),
             })),
             CLI_SAY => {
-                // opcode + message type + 2 target bytes. Guard before subtracting: a
-                // hand-crafted short frame would otherwise wrap to `usize::MAX` in
-                // release and panic inside `split_to`.
                 if payload_len < 4 {
                     return Err(MessageDecodeError::WrongSequence);
                 }
@@ -870,6 +870,7 @@ fn encode_floating_text_type(text_type: FloatingTextType) -> u8 {
     match text_type {
         FloatingTextType::HitPoints => 0x01,
         FloatingTextType::PlayerMessage => 0x02,
+        FloatingTextType::CreatureSay => 0x03,
     }
 }
 
@@ -879,6 +880,16 @@ mod tests {
     use tokio_util::bytes::BytesMut;
     use tokio_util::codec::Decoder;
     use tokio_util::codec::Encoder;
+
+    /// The client repeats this enum and decodes these bytes; nothing links the two
+    /// but this number.
+    #[test]
+    fn creature_say_is_three_on_the_wire() {
+        assert_eq!(
+            encode_floating_text_type(FloatingTextType::CreatureSay),
+            0x03
+        );
+    }
 
     #[test]
     fn decode_logout_message() {
@@ -938,6 +949,68 @@ mod tests {
             Err(MessageDecodeError::WrongSequence) => {}
             other => panic!("expected a junk token or WrongSequence, got {other:?}"),
         }
+    }
+
+    #[test]
+    fn use_item_with_carries_an_optional_target_agent() {
+        let mut codec = GameMessageCodec {};
+        let mut payload = BytesMut::new();
+        payload.put_u8(CLI_USE_ITEM_WITH);
+        payload.put_u16_le(10);
+        payload.put_u16_le(11);
+        payload.put_u8(7);
+        payload.put_u16_le(1234);
+        payload.put_u8(0);
+        payload.put_u16_le(12);
+        payload.put_u16_le(13);
+        payload.put_u8(7);
+        payload.put_u16_le(5678);
+        payload.put_u8(1);
+        payload.put_u16_le(42);
+
+        let mut buf = BytesMut::new();
+        buf.put_u16_le(payload.len() as u16);
+        buf.extend_from_slice(&payload);
+
+        let decoded = codec.decode(&mut buf).unwrap().unwrap();
+        assert!(matches!(
+            decoded,
+            ClientMessage::UseItemWith {
+                target_agent: Some(42),
+                ..
+            }
+        ));
+    }
+
+    #[test]
+    fn the_optional_target_agent_sentinel_decodes_as_none() {
+        let mut codec = GameMessageCodec {};
+        let mut payload = BytesMut::new();
+        payload.put_u8(CLI_USE_ITEM_WITH);
+        payload.put_u16_le(10);
+        payload.put_u16_le(11);
+        payload.put_u8(7);
+        payload.put_u16_le(1234);
+        payload.put_u8(0);
+        payload.put_u16_le(12);
+        payload.put_u16_le(13);
+        payload.put_u8(7);
+        payload.put_u16_le(5678);
+        payload.put_u8(1);
+        payload.put_u16_le(0xFFFF);
+
+        let mut buf = BytesMut::new();
+        buf.put_u16_le(payload.len() as u16);
+        buf.extend_from_slice(&payload);
+
+        let decoded = codec.decode(&mut buf).unwrap().unwrap();
+        assert!(matches!(
+            decoded,
+            ClientMessage::UseItemWith {
+                target_agent: None,
+                ..
+            }
+        ));
     }
 
     /// A two-byte frame declaring a zero-length payload. Before the length guard this
