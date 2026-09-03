@@ -33,6 +33,7 @@ pub fn apply_damage(
 
     // TODO: apply element modifier
 
+    let blood_type = agent.get_creature_kind().map(|c| c.blood_type.clone());
     let life = agent.life().current;
     let (survivable, records_participation) = if agent.is_creature() {
         (life, true)
@@ -46,6 +47,7 @@ pub fn apply_damage(
             msgs.push(BroadcastMessage::DamageTaken {
                 agent_key: target,
                 position: target_pos,
+                blood_type,
                 damage,
             });
         }
@@ -65,6 +67,7 @@ pub fn apply_damage(
     msgs.push(BroadcastMessage::DamageTaken {
         agent_key: target,
         position: target_pos.clone(),
+        blood_type,
         damage,
     });
 

@@ -575,6 +575,7 @@ mod tests {
                 BroadcastMessage::DamageTaken {
                     agent_key: AgentKey::default(),
                     position: position.clone(),
+                    blood_type: None,
                     damage: CombatDamage {
                         element: CombatElement::Physical,
                         value: 5,

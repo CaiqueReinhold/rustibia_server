@@ -284,8 +284,7 @@ fn consume_mana(
     tick_skill(player, agent_key, SkillType::Magic, mana_cost as u64, msgs);
 }
 
-pub fn get_damage_visuals(damage: &CombatDamage, attacked: &Agent) -> (u16, Color) {
-    let blood_type = attacked.get_creature_kind().map(|c| &c.blood_type);
+pub fn get_damage_visuals(damage: &CombatDamage, blood_type: Option<&BloodType>) -> (u16, Color) {
     if damage.blocked_shield {
         return (
             GAME_CONFIG.effect_ids.shield_hit,

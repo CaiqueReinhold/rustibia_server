@@ -244,6 +244,7 @@ pub enum ServerMessage {
         author: AgentId,
         message_type: ChatMessageType,
         channel: u16,
+        position: Option<Position>,
         message: String,
     },
     ChannelList {
@@ -255,7 +256,7 @@ pub enum ServerMessage {
     },
     FloatingText {
         text: String,
-        agent_id: AgentId,
+        position: Position,
         text_type: FloatingTextType,
         color: Option<Color>,
     },
@@ -671,12 +672,20 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 author,
                 message_type,
                 channel,
+                position,
                 message,
             } => {
                 dst.put_u8(SRV_CHAT_MESSAGE);
                 dst.put_u16_le(author);
                 dst.put_u8(encode_chat_message_type(message_type));
                 dst.put_u16_le(channel);
+                match position {
+                    Some(position) => {
+                        dst.put_u8(0x01);
+                        encode_position(position, dst);
+                    }
+                    None => dst.put_u8(0x00),
+                }
                 let message_bytes = message.as_bytes();
                 dst.put_u16_le(message_bytes.len() as u16);
                 dst.put_slice(message_bytes);
@@ -700,7 +709,7 @@ impl Encoder<ServerMessage> for GameMessageCodec {
             }
             ServerMessage::FloatingText {
                 text,
-                agent_id,
+                position,
                 text_type,
                 color,
             } => {
@@ -708,7 +717,7 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 let text_bytes = text.as_bytes();
                 dst.put_u16_le(text_bytes.len() as u16);
                 dst.put_slice(text_bytes);
-                dst.put_u16_le(agent_id);
+                encode_position(position, dst);
                 dst.put_u8(encode_floating_text_type(text_type));
                 match color {
                     Some(Color(r, g, b)) => {
@@ -868,7 +877,7 @@ fn encode_chat_message_type(message_type: ChatMessageType) -> u8 {
 fn encode_floating_text_type(text_type: FloatingTextType) -> u8 {
     match text_type {
         FloatingTextType::HitPoints => 0x01,
-        FloatingTextType::CreatureSay => 0x03,
+        FloatingTextType::CreatureSay => 0x02,
     }
 }
 
@@ -882,10 +891,10 @@ mod tests {
     /// The client repeats this enum and decodes these bytes; nothing links the two
     /// but this number.
     #[test]
-    fn creature_say_is_three_on_the_wire() {
+    fn creature_say_is_two_on_the_wire() {
         assert_eq!(
             encode_floating_text_type(FloatingTextType::CreatureSay),
-            0x03
+            0x02
         );
     }
 
@@ -1075,6 +1084,71 @@ mod tests {
         assert_eq!(&buf[7..], b"Rizael");
     }
 
+    /// The position is an `Option` behind a flag byte, exactly like the colour on
+    /// `FloatingText`, so the two forms differ in length and a decoder that always
+    /// reads five position bytes corrupts every non-local line. The client decodes
+    /// this same literal frame in `decodes_a_local_chat_message`.
+    #[test]
+    fn encode_chat_message_carries_the_speaker_s_tile_for_local_speech() {
+        let mut codec = GameMessageCodec {};
+        let mut buf = BytesMut::new();
+
+        codec
+            .encode(
+                ServerMessage::ChatMessage {
+                    author: 3,
+                    message_type: ChatMessageType::Local,
+                    channel: 0,
+                    position: Some(Position::new(300, 400, 7)),
+                    message: "hello".to_owned(),
+                },
+                &mut buf,
+            )
+            .unwrap();
+
+        assert_eq!(buf[2], SRV_CHAT_MESSAGE);
+        assert_eq!(u16::from_le_bytes([buf[3], buf[4]]), 3, "author");
+        assert_eq!(buf[5], 0x01, "Local");
+        assert_eq!(u16::from_le_bytes([buf[6], buf[7]]), 0, "channel");
+        assert_eq!(buf[8], 0x01, "position present");
+        assert_eq!(u16::from_le_bytes([buf[9], buf[10]]), 300, "position x");
+        assert_eq!(u16::from_le_bytes([buf[11], buf[12]]), 400, "position y");
+        assert_eq!(buf[13], 7, "position z");
+        assert_eq!(u16::from_le_bytes([buf[14], buf[15]]), 5, "text length");
+        assert_eq!(&buf[16..21], b"hello");
+        assert_eq!(buf.len(), 21, "no trailing bytes");
+    }
+
+    /// Everything but local speech is spoken from nowhere the client can draw, and
+    /// the flag byte is all that is sent.
+    #[test]
+    fn encode_chat_message_sends_no_tile_for_a_channel_line() {
+        let mut codec = GameMessageCodec {};
+        let mut buf = BytesMut::new();
+
+        codec
+            .encode(
+                ServerMessage::ChatMessage {
+                    author: 3,
+                    message_type: ChatMessageType::Channel,
+                    channel: 7,
+                    position: None,
+                    message: "hello".to_owned(),
+                },
+                &mut buf,
+            )
+            .unwrap();
+
+        assert_eq!(buf[8], 0x00, "position absent");
+        assert_eq!(u16::from_le_bytes([buf[9], buf[10]]), 5, "text length");
+        assert_eq!(&buf[11..16], b"hello");
+        assert_eq!(
+            buf.len(),
+            16,
+            "the None form is five bytes shorter than the Some form"
+        );
+    }
+
     /// The colour is an `Option` behind a flag byte, so the two forms differ in
     /// length. Both are asserted because a decoder that always reads three colour
     /// bytes passes the `Some` case and corrupts the `None` case.
@@ -1087,7 +1161,7 @@ mod tests {
             .encode(
                 ServerMessage::FloatingText {
                     text: "-25".to_owned(),
-                    agent_id: 100,
+                    position: Position::new(0x0201, 0x0403, 7),
                     text_type: FloatingTextType::HitPoints,
                     color: Some(Color(255, 0, 64)),
                 },
@@ -1104,11 +1178,13 @@ mod tests {
         assert_eq!(buf[2], SRV_FLOATING_TEXT);
         assert_eq!(u16::from_le_bytes([buf[3], buf[4]]), 3, "text length");
         assert_eq!(&buf[5..8], b"-25");
-        assert_eq!(u16::from_le_bytes([buf[8], buf[9]]), 100, "agent id");
-        assert_eq!(buf[10], 0x01, "HitPoints");
-        assert_eq!(buf[11], 0x01, "colour present");
-        assert_eq!(&buf[12..15], &[255, 0, 64], "rgb");
-        assert_eq!(buf.len(), 15, "no trailing bytes");
+        assert_eq!(u16::from_le_bytes([buf[8], buf[9]]), 0x0201, "position x");
+        assert_eq!(u16::from_le_bytes([buf[10], buf[11]]), 0x0403, "position y");
+        assert_eq!(buf[12], 7, "position z");
+        assert_eq!(buf[13], 0x01, "HitPoints");
+        assert_eq!(buf[14], 0x01, "colour present");
+        assert_eq!(&buf[15..18], &[255, 0, 64], "rgb");
+        assert_eq!(buf.len(), 18, "no trailing bytes");
     }
 
     /// The length prefix is a *byte* count. This codebase has been bitten by
@@ -1125,7 +1201,7 @@ mod tests {
             .encode(
                 ServerMessage::FloatingText {
                     text: text.to_owned(),
-                    agent_id: 1,
+                    position: Position::new(10, 10, 7),
                     text_type: FloatingTextType::CreatureSay,
                     color: None,
                 },
@@ -1151,7 +1227,7 @@ mod tests {
             .encode(
                 ServerMessage::FloatingText {
                     text: "hi".to_owned(),
-                    agent_id: 1,
+                    position: Position::new(300, 400, 7),
                     text_type: FloatingTextType::CreatureSay,
                     color: None,
                 },
@@ -1162,12 +1238,14 @@ mod tests {
         assert_eq!(buf[2], SRV_FLOATING_TEXT);
         assert_eq!(u16::from_le_bytes([buf[3], buf[4]]), 2, "text length");
         assert_eq!(&buf[5..7], b"hi");
-        assert_eq!(u16::from_le_bytes([buf[7], buf[8]]), 1, "agent id");
-        assert_eq!(buf[9], 0x02, "PlayerMessage");
-        assert_eq!(buf[10], 0x00, "colour absent");
+        assert_eq!(u16::from_le_bytes([buf[7], buf[8]]), 300, "position x");
+        assert_eq!(u16::from_le_bytes([buf[9], buf[10]]), 400, "position y");
+        assert_eq!(buf[11], 7, "position z");
+        assert_eq!(buf[12], 0x02, "CreatureSay");
+        assert_eq!(buf[13], 0x00, "colour absent");
         assert_eq!(
             buf.len(),
-            11,
+            14,
             "the None form is three bytes shorter than the Some form"
         );
     }

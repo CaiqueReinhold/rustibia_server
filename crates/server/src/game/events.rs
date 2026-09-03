@@ -4,6 +4,7 @@ use std::sync::Arc;
 use crate::entities::{
     agent::{AgentKey, Facing},
     combat::CombatDamage,
+    creature::BloodType,
     inventory::InventorySlot,
     items::{ItemGuid, ItemRef},
     position::{Direction, Position},
@@ -77,6 +78,7 @@ pub enum BroadcastMessage {
     DamageTaken {
         agent_key: AgentKey,
         position: Position,
+        blood_type: Option<BloodType>,
         damage: CombatDamage,
     },
     MissileLaunched {
@@ -180,6 +182,7 @@ mod tests {
         BroadcastMessage::DamageTaken {
             agent_key,
             position: Position::new(10, 10, 7),
+            blood_type: Some(BloodType::Blood),
             damage: CombatDamage {
                 element: CombatElement::Physical,
                 value,

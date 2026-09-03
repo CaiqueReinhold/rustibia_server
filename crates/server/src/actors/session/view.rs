@@ -204,7 +204,7 @@ impl SessionActor {
     }
 
     async fn send_skill_update(&self, skill: SkillType, amount: u64) -> Result<()> {
-        let (progress, experience) = {
+        let (progress, experience, position) = {
             let map = self.shared_map.load();
             let Some(player) = map.get_player(self.player_key) else {
                 return Ok(());
@@ -218,6 +218,7 @@ impl SessionActor {
                     percent_bp: progress_bp(player.vocation(), &skill, value),
                 },
                 (skill == SkillType::Level).then(|| total_experience(value)),
+                map.agent_position(self.player_key).cloned(),
             )
         };
 
@@ -226,11 +227,11 @@ impl SessionActor {
             .await?;
 
         if let Some(experience) = experience {
-            if let Some(agent_id) = self.agents.get_local(&self.player_key) {
+            if let Some(position) = position {
                 self.connection
                     .send_message(ServerMessage::FloatingText {
                         text: amount.to_string(),
-                        agent_id,
+                        position,
                         text_type: FloatingTextType::HitPoints,
                         color: Some(GAME_CONFIG.text_colors.white),
                     })
@@ -437,6 +438,15 @@ mod tests {
             connection_rx.try_recv(),
             Ok(ConnectionCommand::SendPlayerMessage(
                 ServerMessage::SkillChanged { .. }
+            ))
+        ));
+        // The floating number rides between the two, and now goes out whether or
+        // not this session has a local id for the player: it is pinned to a tile,
+        // and nothing about it is addressed to an agent.
+        assert!(matches!(
+            connection_rx.try_recv(),
+            Ok(ConnectionCommand::SendPlayerMessage(
+                ServerMessage::FloatingText { .. }
             ))
         ));
         assert!(matches!(
