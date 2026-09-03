@@ -6,6 +6,7 @@ pub const MIN_FLOOR: u8 = 0;
 pub const MAX_FLOOR: u8 = 15;
 pub const BASE_FLOOR: u8 = 7;
 pub const UNDERGROUND_REACH: u8 = 2;
+pub const AGENT_DESPAWN_RADIUS: (u16, u16) = (38, 30);
 
 pub const SPEED_PARAM_A: f32 = 857.36;
 pub const SPEED_PARAM_B: f32 = 261.29;

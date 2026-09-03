@@ -10,8 +10,8 @@ use crate::entities::agent::AgentKey;
 use crate::entities::agent::Facing;
 use crate::entities::position::{Direction, Position};
 use crate::game::Tick;
-use crate::game::map_query::get_agents_in_expansion;
 use crate::game::map_query::get_map_expansion;
+use crate::game::map_query::{get_agents_in_expansion, iter_visible_floors};
 use crate::messages::ServerMessage;
 
 impl SessionActor {
@@ -107,32 +107,24 @@ impl SessionActor {
 
             Ok(())
         } else {
-            let Some(my_pos) = map.agent_position(self.player_key) else {
-                return Ok(());
-            };
-
-            if my_pos.in_viewport(&to_position) {
-                if let Some(agent_id) = self.agents.get_local(&agent_key) {
-                    let from = to_position.clone() - direction;
-                    self.connection
-                        .send_message(ServerMessage::MoveAgent {
-                            agent_id,
-                            direction,
-                            from,
-                        })
-                        .await?;
-                } else {
-                    let Some(agent) = map.get_agent(agent_key) else {
-                        return Ok(());
-                    };
-                    let agent_id = self.agents.get_or_insert(agent_key);
-
-                    self.connection
-                        .send_message(get_agent_desc(agent, agent_id, to_position))
-                        .await?;
-                }
+            if let Some(agent_id) = self.agents.get_local(&agent_key) {
+                let from = to_position.clone() - direction;
+                self.connection
+                    .send_message(ServerMessage::MoveAgent {
+                        agent_id,
+                        direction,
+                        from,
+                    })
+                    .await?;
             } else {
-                self.forget_agent(agent_key).await?;
+                let Some(agent) = map.get_agent(agent_key) else {
+                    return Ok(());
+                };
+                let agent_id = self.agents.get_or_insert(agent_key);
+
+                self.connection
+                    .send_message(get_agent_desc(agent, agent_id, to_position))
+                    .await?;
             }
 
             Ok(())
@@ -155,7 +147,7 @@ impl SessionActor {
         let map = self.shared_map.load();
         if agent_key == self.player_key {
             self.send_map_description(&to_position, &map).await?;
-            let visible = self.send_agents_description(&to_position, &map).await?;
+            self.send_agents_description(&to_position, &map).await?;
 
             let self_id = self
                 .agents
@@ -168,15 +160,16 @@ impl SessionActor {
                 })
                 .await?;
 
-            self.remove_agents_not_in_reach(visible).await?;
-
             Ok(())
         } else {
             let Some(my_pos) = map.agent_position(self.player_key) else {
                 return Ok(());
             };
 
-            if my_pos.in_viewport(&to_position) {
+            if iter_visible_floors(my_pos.z)
+                .find(|z| *z == to_position.z)
+                .is_some()
+            {
                 if let Some(agent_id) = self.agents.get_local(&agent_key) {
                     self.connection
                         .send_message(ServerMessage::TeleportAgent {
@@ -193,8 +186,6 @@ impl SessionActor {
                         .send_message(get_agent_desc(agent, agent_id, to_position))
                         .await?;
                 }
-            } else {
-                self.forget_agent(agent_key).await?;
             }
 
             Ok(())

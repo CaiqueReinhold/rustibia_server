@@ -242,6 +242,7 @@ impl MessageRouterActor {
                 map,
                 Rect::player_viewport(position),
                 position.z,
+                false,
                 None,
             ),
             BroadcastMessage::AgentMoved {
@@ -262,6 +263,7 @@ impl MessageRouterActor {
                         u16::max(from_viewport.max_y(), to_viewport.max_y()),
                     ),
                     to_position.z,
+                    false,
                     Some(*agent_key),
                 );
 
@@ -299,6 +301,7 @@ impl MessageRouterActor {
                     map,
                     Rect::player_viewport(position),
                     position.z,
+                    false,
                     None,
                 );
                 self.send_to(message, agent_key); // player was already removed from the map, send using key.
@@ -309,6 +312,7 @@ impl MessageRouterActor {
                     map,
                     Rect::player_viewport(position),
                     position.z,
+                    false,
                     None,
                 );
             }
@@ -324,6 +328,7 @@ impl MessageRouterActor {
                     map,
                     Rect::player_viewport(position),
                     position.z,
+                    false,
                     None,
                 );
             }
@@ -332,7 +337,7 @@ impl MessageRouterActor {
                     self.send_to(message, agent_key);
                 }
                 ItemPlacement::Map(pos) => {
-                    self.send_to_rect(message, map, Rect::player_viewport(pos), pos.z, None);
+                    self.send_to_rect(message, map, Rect::player_viewport(pos), pos.z, true, None);
                 }
             },
             BroadcastMessage::UpdateInventorySlot { agent_key, .. } => {
@@ -351,6 +356,7 @@ impl MessageRouterActor {
                         map,
                         Rect::player_viewport(position),
                         position.z,
+                        true,
                         None,
                     );
                 }
@@ -361,6 +367,7 @@ impl MessageRouterActor {
                     map,
                     Rect::player_viewport(position),
                     position.z,
+                    false,
                     None,
                 );
             }
@@ -390,6 +397,7 @@ impl MessageRouterActor {
                         map,
                         Rect::player_viewport(position),
                         position.z,
+                        false,
                         None,
                     );
                 }
@@ -400,6 +408,7 @@ impl MessageRouterActor {
                     map,
                     Rect::player_viewport(position),
                     position.z,
+                    true,
                     None,
                 );
             }
@@ -411,10 +420,12 @@ impl MessageRouterActor {
         message: &BroadcastMessage,
         map: &GameMap,
         rect: Rect,
-        z: u8,
+        floor: u8,
+        same_floor: bool,
         originator: Option<AgentKey>,
     ) {
-        iter_visible_floors(z)
+        iter_visible_floors(floor)
+            .filter(|z| !same_floor || floor == *z)
             .flat_map(|floor| map.iter_agents_in_rect(&rect, floor))
             .for_each(|agent_key| {
                 if Some(*agent_key) != originator {

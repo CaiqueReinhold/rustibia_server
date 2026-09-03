@@ -1,7 +1,6 @@
 //! What the client currently knows about: viewport descriptions, the agent
 //! id map and its recycling, spawn/despawn, and the current target.
 
-use std::collections::HashSet;
 use std::sync::Arc;
 
 use anyhow::Result;
@@ -9,9 +8,10 @@ use tracing::error;
 
 use crate::actors::player_query::{get_agent_desc, get_player_desc, get_player_skills};
 use crate::actors::session::{SessionActor, SessionError};
+use crate::constants::AGENT_DESPAWN_RADIUS;
 use crate::entities::agent::AgentKey;
 use crate::entities::map::GameMap;
-use crate::entities::position::Position;
+use crate::entities::position::{Position, Rect};
 use crate::entities::skills::SkillType;
 use crate::game::config::GAME_CONFIG;
 use crate::game::map_query::get_agents_in_viewport;
@@ -63,19 +63,19 @@ impl SessionActor {
         &mut self,
         position: &Position,
         map: &GameMap,
-    ) -> Result<HashSet<AgentKey>> {
-        let mut visible = HashSet::new();
+    ) -> Result<()> {
         for (key, agent, pos) in get_agents_in_viewport(map, position) {
             if key == self.player_key {
                 continue;
             }
-            let agent_id = self.agents.get_or_insert(key);
-            self.connection
-                .send_message(get_agent_desc(agent, agent_id, pos))
-                .await?;
-            visible.insert(key);
+            if self.agents.get_local(&key).is_none() {
+                let agent_id = self.agents.get_or_insert(key);
+                self.connection
+                    .send_message(get_agent_desc(agent, agent_id, pos))
+                    .await?;
+            }
         }
-        Ok(visible)
+        Ok(())
     }
 
     pub(super) async fn send_map_description(
@@ -96,14 +96,21 @@ impl SessionActor {
         Ok(())
     }
 
-    pub(super) async fn remove_agents_not_in_reach(
-        &mut self,
-        visible: HashSet<AgentKey>,
-    ) -> Result<()> {
+    pub(super) async fn remove_agents_not_in_reach(&mut self) -> Result<()> {
+        let map = self.shared_map.load();
+        let Some(pos) = map.agent_position(self.player_key) else {
+            return Err(SessionError::InvalidState.into());
+        };
         let gone: Vec<AgentKey> = self
             .agents
             .iter_global()
-            .filter(|key| **key != self.player_key && !visible.contains(key))
+            .filter(|key| {
+                **key != self.player_key
+                    && map.agent_position(**key).is_some_and(|agent_pos| {
+                        !Rect::radius(pos, AGENT_DESPAWN_RADIUS).contains(agent_pos)
+                            || pos.z.abs_diff(agent_pos.z) > 2
+                    })
+            })
             .copied()
             .collect();
 

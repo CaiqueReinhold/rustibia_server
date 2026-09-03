@@ -1,8 +1,10 @@
 use anyhow::{Result, anyhow};
 use arc_swap::ArcSwap;
 use std::collections::binary_heap::BinaryHeap;
+
 use std::sync::Arc;
 use std::time::Duration;
+use strum::Display;
 use tokio::sync::{oneshot, watch};
 use tokio::time;
 use tokio::{select, sync::mpsc};
@@ -25,7 +27,7 @@ use crate::game::{
     Tick, chat, combat, events, item_action, item_movement, item_multi_action, movement, targeting,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum WorldCommand {
     SpawnPlayer {
         player: Agent,
@@ -328,7 +330,7 @@ impl WorldActor {
         command: WorldCommand,
         broadcast_messages: &mut Vec<BroadcastMessage>,
     ) {
-        info!("{:?}", command);
+        info!("Executing command: {}", command);
         let result: Result<()> = match command {
             WorldCommand::SpawnPlayer {
                 player,

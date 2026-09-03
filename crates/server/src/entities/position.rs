@@ -178,17 +178,18 @@ impl Rect {
     pub fn player_viewport(pos: &Position) -> Self {
         let half_w = (PLAYER_VIEWPORT_WIDTH / 2) as u16;
         let half_h = (PLAYER_VIEWPORT_HEIGHT / 2) as u16;
-        let x = pos.x;
-        let y = pos.y;
+        Self::radius(pos, (half_w, half_h))
+    }
 
+    pub fn radius(pos: &Position, radius: (u16, u16)) -> Self {
         Rect {
             min: Point {
-                x: x.saturating_sub(half_w),
-                y: y.saturating_sub(half_h),
+                x: pos.x.saturating_sub(radius.0),
+                y: pos.y.saturating_sub(radius.1),
             },
             max: Point {
-                x: x + half_w,
-                y: y + half_h,
+                x: pos.x.saturating_add(radius.0),
+                y: pos.y.saturating_add(radius.1),
             },
         }
     }

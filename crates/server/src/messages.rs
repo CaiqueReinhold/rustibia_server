@@ -144,7 +144,6 @@ pub struct SkillProgress {
 #[derive(Clone, Copy, Debug)]
 pub enum FloatingTextType {
     HitPoints,
-    PlayerMessage,
     CreatureSay,
 }
 
@@ -869,7 +868,6 @@ fn encode_chat_message_type(message_type: ChatMessageType) -> u8 {
 fn encode_floating_text_type(text_type: FloatingTextType) -> u8 {
     match text_type {
         FloatingTextType::HitPoints => 0x01,
-        FloatingTextType::PlayerMessage => 0x02,
         FloatingTextType::CreatureSay => 0x03,
     }
 }
@@ -1128,7 +1126,7 @@ mod tests {
                 ServerMessage::FloatingText {
                     text: text.to_owned(),
                     agent_id: 1,
-                    text_type: FloatingTextType::PlayerMessage,
+                    text_type: FloatingTextType::CreatureSay,
                     color: None,
                 },
                 &mut buf,
@@ -1154,7 +1152,7 @@ mod tests {
                 ServerMessage::FloatingText {
                     text: "hi".to_owned(),
                     agent_id: 1,
-                    text_type: FloatingTextType::PlayerMessage,
+                    text_type: FloatingTextType::CreatureSay,
                     color: None,
                 },
                 &mut buf,

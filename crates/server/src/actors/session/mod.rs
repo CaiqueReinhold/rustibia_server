@@ -446,6 +446,7 @@ impl SessionActor {
     async fn tick_schedules(&mut self) -> Result<()> {
         self.check_walk_queue().await?;
         self.check_capacity_changed().await?;
+        self.remove_agents_not_in_reach().await?;
         Ok(())
     }
 

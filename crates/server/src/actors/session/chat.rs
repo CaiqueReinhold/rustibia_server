@@ -53,24 +53,28 @@ impl SessionActor {
         channel: ChannelId,
         message: String,
     ) -> Result<()> {
-        let Some(author) = self.introduce(author).await? else {
+        let Some(agent_id) = self.introduce(author).await? else {
             return Ok(());
         };
+        let map = self.shared_map.load();
 
-        if matches!(message_type, ChatMessageType::Local) {
+        if matches!(message_type, ChatMessageType::Local)
+            && map.get_agent(author).is_some_and(|a| a.is_creature())
+        {
             self.connection
                 .send_message(ServerMessage::FloatingText {
                     text: message.clone(),
-                    agent_id: author,
-                    text_type: FloatingTextType::PlayerMessage,
+                    agent_id,
+                    text_type: FloatingTextType::CreatureSay,
                     color: None,
                 })
                 .await?;
+            return Ok(());
         }
 
         self.connection
             .send_message(ServerMessage::ChatMessage {
-                author,
+                author: agent_id,
                 message_type,
                 channel,
                 message,

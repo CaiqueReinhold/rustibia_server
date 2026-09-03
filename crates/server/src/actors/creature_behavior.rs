@@ -61,7 +61,9 @@ impl CreatureBehaviorActor {
                 .filter(|(_, a)| a.is_creature())
                 .map(|(k, _)| k)
                 .flat_map(|agent_key| {
-                    let creature_state = states.get_mut(&agent_key)?;
+                    let creature_state = states
+                        .entry(agent_key)
+                        .or_insert_with(CreatureState::default);
                     let roll = Rolls::stream(global_seed, tick, agent_key.data().as_ffi());
                     decide_action(CreatureBehaviourContext {
                         creature: agent_key,
