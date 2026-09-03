@@ -99,25 +99,9 @@ fn idle(mut ctx: CreatureBehaviourContext) -> Option<CreatureAction> {
         });
     }
 
-    let can_wander = ctx
-        .map
-        .get_agent(ctx.creature)
-        .is_some_and(|a| a.next_wander_tick <= ctx.world_tick);
-    if can_wander && let Some(creature_pos) = ctx.map.agent_position(ctx.creature) {
-        let available_directions = WANDER_DIRECTIONS
-            .into_iter()
-            .filter(|dir| {
-                let pos = creature_pos.clone() + *dir;
-                ctx.map.can_move(&pos, ctx.creature)
-            })
-            .collect::<Vec<Direction>>();
-        let direction = ctx.roll.category_roll(&available_directions);
-        if let Some(direction) = direction {
-            return Some(CreatureAction::Walk {
-                agent_key: ctx.creature,
-                direction: *direction,
-            });
-        }
+    let wander_action = wander(&mut ctx);
+    if wander_action.is_some() {
+        return wander_action;
     }
 
     // TODO: roll creature say
@@ -227,6 +211,30 @@ fn returning(ctx: CreatureBehaviourContext) -> Option<CreatureAction> {
         pathfinding::Step::Unreachable => return idle(ctx),
     }
 
+    None
+}
+
+fn wander(ctx: &mut CreatureBehaviourContext) -> Option<CreatureAction> {
+    let can_wander = ctx
+        .map
+        .get_agent(ctx.creature)
+        .is_some_and(|a| a.next_wander_tick <= ctx.world_tick);
+    if can_wander && let Some(creature_pos) = ctx.map.agent_position(ctx.creature) {
+        let available_directions = WANDER_DIRECTIONS
+            .into_iter()
+            .filter(|dir| {
+                let pos = creature_pos.clone() + *dir;
+                ctx.map.can_move(&pos, ctx.creature)
+            })
+            .collect::<Vec<Direction>>();
+        let direction = ctx.roll.category_roll(&available_directions);
+        if let Some(direction) = direction {
+            return Some(CreatureAction::Walk {
+                agent_key: ctx.creature,
+                direction: *direction,
+            });
+        }
+    }
     None
 }
 

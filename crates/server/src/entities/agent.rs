@@ -5,7 +5,7 @@ use slotmap::new_key_type;
 use super::{inventory::Inventory, player::Player};
 use crate::{
     config,
-    constants::{SPEED_PARAM_A, SPEED_PARAM_B, SPEED_PARAM_C},
+    constants::{DIAGONAL_STEP_FACTOR, SPEED_PARAM_A, SPEED_PARAM_B, SPEED_PARAM_C},
     entities::{
         combat::Participation,
         creature::{BloodType, CreatureKind},
@@ -245,12 +245,14 @@ impl Agent {
             .round()
             .max(1.0);
 
-        let mut tile_speed = (1000.0 * (tile_friction as f32) / move_speed).floor();
-        if diagonal {
-            tile_speed *= 2.5;
-        }
+        let tile_speed = (1000.0 * (tile_friction as f32) / move_speed).floor();
+        let ticks = (tile_speed / (config::CONFIG.tick_duration.as_millis() as f32)).ceil() as Tick;
 
-        (tile_speed / (config::CONFIG.tick_duration.as_millis() as f32)).ceil() as Tick
+        if diagonal {
+            ticks * DIAGONAL_STEP_FACTOR
+        } else {
+            ticks
+        }
     }
 
     pub fn can_logout(&self, current_tick: Tick) -> bool {
@@ -471,10 +473,13 @@ mod tests {
         );
 
         assert_eq!(agent.calculate_walk_ticks(150, false), 10, "500ms");
-        assert_eq!(agent.calculate_walk_ticks(150, true), 25, "1250ms diagonal");
+        assert_eq!(agent.calculate_walk_ticks(150, true), 30, "1500ms diagonal");
         // 260 is the friction of `ornamented stone floor` (id 21718), one of the
         // ten values the client used to truncate through a `u8`.
         assert_eq!(agent.calculate_walk_ticks(260, false), 18, "900ms");
+        // Rounding before the multiply, not after: 52 here would mean the diagonal
+        // had been scaled first and is no whole multiple of the step it replaces.
+        assert_eq!(agent.calculate_walk_ticks(260, true), 54, "2700ms diagonal");
     }
 
     #[test]
