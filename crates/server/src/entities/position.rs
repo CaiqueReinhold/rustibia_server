@@ -7,7 +7,7 @@ use crate::{
     constants::{
         CONTAINER_COORD_FLAG, INVENTORY_COORD_FLAG, PLAYER_VIEWPORT_HEIGHT, PLAYER_VIEWPORT_WIDTH,
     },
-    entities::{agent::AgentKey, player::InventorySlot},
+    entities::{agent::AgentKey, inventory::InventorySlot},
 };
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Default, serde::Deserialize)]

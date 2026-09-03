@@ -9,8 +9,8 @@ use crate::{
     entities::{
         agent::{AgentId, Facing, OutfitColors, OutfitId, Pool},
         chat::{ChannelId, ChatMessageType},
+        inventory::InventorySlot,
         items::{ClientItemRef, ContainerId, ItemId},
-        player::InventorySlot,
         position::{Direction, Position},
         skills::SkillType,
     },

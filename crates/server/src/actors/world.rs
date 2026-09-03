@@ -495,7 +495,7 @@ impl WorldActor {
             .get_player()
             .ok_or(anyhow!("Agent {:?} is not a player", agent))?;
         let origin = agent.get_origin().clone();
-        let position = player.position.clone();
+        let position = player.last_logout_position().clone();
 
         let agent_key = self
             .map
@@ -528,8 +528,8 @@ mod tests {
     use super::*;
     use crate::actors::message_router::MessageRouterCommand;
     use crate::entities::combat::{CombatDamage, CombatElement};
+    use crate::entities::inventory::InventorySlot;
     use crate::entities::map::MapTile;
-    use crate::entities::player::InventorySlot;
     use crate::persistence::test_fixtures::{
         a_player_with_a_full_backpack, a_test_creature, a_test_snapshot,
     };
@@ -758,7 +758,7 @@ mod tests {
             published
                 .get_player(key)
                 .unwrap()
-                .inventory
+                .inventory()
                 .get(&InventorySlot::Backpack)
                 .is_some()
         );
@@ -767,7 +767,7 @@ mod tests {
                 .map
                 .get_player(key)
                 .unwrap()
-                .inventory
+                .inventory()
                 .get(&InventorySlot::Backpack)
                 .is_none()
         );

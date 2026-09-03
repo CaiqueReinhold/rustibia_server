@@ -67,7 +67,7 @@ mod tests {
         let value = map
             .get_player(key)
             .unwrap()
-            .skills
+            .skills()
             .get(&SkillType::Level)
             .unwrap();
         (value.value, value.current_ticks)

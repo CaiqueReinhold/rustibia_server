@@ -87,8 +87,8 @@ pub fn tick_skill(
     ticks: u64,
     messages: &mut Vec<BroadcastMessage>,
 ) {
-    let vocation = player.vocation;
-    let Some(skill_value) = player.skills.get_mut(&skill) else {
+    let vocation = player.vocation();
+    let Some(skill_value) = player.skills_mut().get_mut(&skill) else {
         return;
     };
 

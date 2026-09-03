@@ -4,8 +4,8 @@ use std::sync::Arc;
 use crate::entities::{
     agent::{AgentKey, Facing},
     combat::CombatDamage,
+    inventory::InventorySlot,
     items::{ItemGuid, ItemRef},
-    player::InventorySlot,
     position::{Direction, Position},
     skills::SkillType,
 };

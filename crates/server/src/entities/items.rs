@@ -5,7 +5,7 @@ use uuid::Uuid;
 use crate::{
     entities::{
         combat::{AmmoType, CombatElement, WeaponType},
-        player::InventorySlot,
+        inventory::InventorySlot,
         position::{ItemPlacement, Position},
     },
     game::Tick,

@@ -43,8 +43,7 @@ impl Rolls {
         choices.choose(&mut self.rng)
     }
 
-    // loot chance is expressed as 1/100000
-    pub fn drop_chance(&mut self, chance: u32) -> bool {
+    pub fn chance(&mut self, chance: u32) -> bool {
         self.uniform(0, MAX_DROP_CHANCE - 1) < chance
     }
 

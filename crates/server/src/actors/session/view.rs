@@ -184,8 +184,8 @@ impl SessionActor {
             self.connection
                 .send_message(ServerMessage::AgentManaChanged {
                     agent_id,
-                    current: player.mana.current,
-                    max: player.mana.maximum,
+                    current: player.mana().current,
+                    max: player.mana().maximum,
                 })
                 .await?;
         }
@@ -202,13 +202,13 @@ impl SessionActor {
             let Some(player) = map.get_player(self.player_key) else {
                 return Ok(());
             };
-            let Some(value) = player.skills.get(&skill) else {
+            let Some(value) = player.skills().get(&skill) else {
                 return Ok(());
             };
             (
                 SkillProgress {
                     level: value.value,
-                    percent_bp: progress_bp(player.vocation, &skill, value),
+                    percent_bp: progress_bp(player.vocation(), &skill, value),
                 },
                 (skill == SkillType::Level).then(|| total_experience(value)),
             )
@@ -387,7 +387,7 @@ mod tests {
     async fn a_ticked_skill_sends_its_level_and_progress() {
         let mut map = GameMap::new();
         let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
-        map.get_player_mut(me).unwrap().skills.insert(
+        map.get_player_mut(me).unwrap().skills_mut().insert(
             SkillType::Sword,
             SkillValue {
                 value: 11,
@@ -415,7 +415,7 @@ mod tests {
     async fn the_level_skill_also_sends_the_experience_total() {
         let mut map = GameMap::new();
         let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
-        map.get_player_mut(me).unwrap().skills.insert(
+        map.get_player_mut(me).unwrap().skills_mut().insert(
             SkillType::Level,
             SkillValue {
                 value: 8,
@@ -446,7 +446,7 @@ mod tests {
     async fn a_level_up_floats_the_experience_it_awarded() {
         let mut map = GameMap::new();
         let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
-        map.get_player_mut(me).unwrap().skills.insert(
+        map.get_player_mut(me).unwrap().skills_mut().insert(
             SkillType::Level,
             SkillValue {
                 value: 2,
@@ -477,7 +477,7 @@ mod tests {
     async fn a_skill_the_player_does_not_have_sends_nothing() {
         let mut map = GameMap::new();
         let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
-        map.get_player_mut(me).unwrap().skills.clear();
+        map.get_player_mut(me).unwrap().skills_mut().clear();
         let (session, mut connection_rx, _world_rx, _tick_tx) = SessionActor::for_test(me, map);
 
         session.skill_progress(SkillType::Axe, 1).await.unwrap();

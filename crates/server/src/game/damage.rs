@@ -565,7 +565,7 @@ mod tests {
         let ticks = |key| {
             map.get_player(key)
                 .unwrap()
-                .skills
+                .skills()
                 .get(&crate::entities::skills::SkillType::Level)
                 .unwrap()
                 .current_ticks

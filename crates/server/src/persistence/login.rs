@@ -12,8 +12,8 @@ use tracing::warn;
 use crate::entities::vocation::Vocation;
 use crate::entities::{
     agent::Pool,
+    inventory::InventorySlot,
     items::{Item, ItemConfig, ItemId},
-    player::InventorySlot,
     position::Position,
     skills::{SkillType, SkillValue},
 };

@@ -5,9 +5,9 @@ use crate::{
     },
     entities::{
         agent::{Agent, AgentKey},
+        inventory::InventorySlot,
         items::{ClientItemRef, ContainerId, Item, ItemGuid, ItemRef},
         map::GameMap,
-        player::InventorySlot,
         position::{Direction, ItemPlacement, Position, Rect},
     },
     local_id::LocalIdMap,
@@ -222,7 +222,7 @@ pub fn retrieve_item<'a>(
         let player = map.get_player(agent_key)?;
         let slot = InventorySlot::from_id(cli_item.position.y)?;
         player
-            .inventory
+            .inventory()
             .get(&slot)
             .filter(|it| it.item_id == cli_item.item_id)
             .map(|it| (it, ItemPlacement::Inventory(slot, agent_key)))
@@ -249,7 +249,7 @@ pub fn find_item_in_slot<'a>(
     guid: &'a ItemGuid,
 ) -> Option<&'a Item> {
     let player = agent.get_player()?;
-    player.inventory.get(&slot)?.find_by_guid(guid)
+    player.inventory().get(&slot)?.find_by_guid(guid)
 }
 
 pub fn find_item_in_reach<'a>(
@@ -266,7 +266,7 @@ pub fn find_item_in_reach<'a>(
 
     let agent = map.get_agent(agent_key)?;
     let player = agent.get_player()?;
-    for slot in player.inventory.keys() {
+    for slot in player.inventory().keys() {
         if let Some(item) = find_item_in_slot(agent, *slot, guid) {
             return Some((item, ItemPlacement::Inventory(*slot, agent_key)));
         }
@@ -294,7 +294,7 @@ pub fn find_item_in_placement<'a>(map: &'a GameMap, item_ref: &ItemRef) -> Optio
         ItemPlacement::Map(item_pos) => map.get_item_by_id(item_pos, &item_ref.guid),
         ItemPlacement::Inventory(slot, inv_agent_key) => map
             .get_player(*inv_agent_key)
-            .and_then(|player| player.inventory.get(slot))
+            .and_then(|player| player.inventory().get(slot))
             .map(|item| item.find_by_guid(&item_ref.guid))
             .unwrap_or(None),
     }

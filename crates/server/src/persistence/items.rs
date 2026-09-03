@@ -9,11 +9,11 @@ use thiserror::Error;
 
 use crate::config::CONFIG;
 use crate::entities::combat::{AmmoType, CombatElement, WeaponType};
+use crate::entities::inventory::InventorySlot;
 use crate::entities::items::{
     Bounds, FloorChangeDirection, ItemAction, ItemAttribute, ItemConfig, ItemFlag, ItemId,
     ItemMultiAction,
 };
-use crate::entities::player::InventorySlot;
 use crate::game::Tick;
 
 /// The item catalogue, loaded once from `assets/items.yaml`. Immutable after load and

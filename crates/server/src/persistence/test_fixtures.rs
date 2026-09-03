@@ -11,12 +11,13 @@ use std::sync::Arc;
 
 use sqlx::PgPool;
 
+use crate::entities::creature::CreatureVoices;
 use crate::entities::vocation::Vocation;
 use crate::entities::{
     agent::{Agent, Facing, Pool},
     creature::{BloodType, CreatureKind},
+    inventory::InventorySlot,
     items::{Item, ItemAttribute, ItemConfig, ItemFlag, ItemId},
-    player::InventorySlot,
     position::Position,
     skills::{SkillType, SkillValue},
 };
@@ -239,6 +240,11 @@ pub fn a_creature_kind(name: &str) -> CreatureKind {
         corpse: 1,
         loot_table: vec![],
         flee_threshold: None,
+        say: CreatureVoices {
+            cooldown: 100,
+            chance: 10000,
+            sentences: vec!["sentence".to_owned()],
+        },
     }
 }
 

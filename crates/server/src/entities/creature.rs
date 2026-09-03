@@ -1,8 +1,11 @@
 use serde::Deserialize;
 
-use crate::entities::{
-    agent::{OutfitColors, OutfitId, Pool},
-    items::{FluidType, ItemId},
+use crate::{
+    entities::{
+        agent::{OutfitColors, OutfitId, Pool},
+        items::{FluidType, ItemId},
+    },
+    game::Tick,
 };
 
 pub type CreatureKindId = String;
@@ -31,6 +34,13 @@ pub struct LootEntry {
 }
 
 #[derive(Clone, Debug)]
+pub struct CreatureVoices {
+    pub cooldown: Tick,
+    pub chance: u32,
+    pub sentences: Vec<String>,
+}
+
+#[derive(Clone, Debug)]
 pub struct CreatureKind {
     pub name: String,
     pub life: Pool,
@@ -44,4 +54,5 @@ pub struct CreatureKind {
     pub corpse: ItemId,
     pub loot_table: Vec<LootEntry>,
     pub flee_threshold: Option<u32>,
+    pub say: CreatureVoices,
 }

@@ -563,8 +563,8 @@ impl GameMap {
 mod tests {
     use super::*;
     use crate::entities::agent::Agent;
+    use crate::entities::inventory::InventorySlot;
     use crate::entities::items::{ItemAttribute, ItemConfig};
-    use crate::entities::player::InventorySlot;
     use crate::entities::position::Position;
     use crate::persistence::test_fixtures::{a_creature_kind, a_player_with_a_full_backpack};
     use std::collections::HashSet;
@@ -682,13 +682,13 @@ mod tests {
             .inventory_mut()
             .take_slot(&InventorySlot::Backpack);
 
-        assert!(!Arc::ptr_eq(
-            &map.get_player(keys[0]).unwrap().inventory,
-            &snapshot.get_player(keys[0]).unwrap().inventory
+        assert!(!std::ptr::eq(
+            map.get_player(keys[0]).unwrap().inventory(),
+            snapshot.get_player(keys[0]).unwrap().inventory()
         ));
-        assert!(Arc::ptr_eq(
-            &map.get_player(keys[1]).unwrap().inventory,
-            &snapshot.get_player(keys[1]).unwrap().inventory
+        assert!(std::ptr::eq(
+            map.get_player(keys[1]).unwrap().inventory(),
+            snapshot.get_player(keys[1]).unwrap().inventory()
         ));
     }
 
@@ -706,7 +706,7 @@ mod tests {
             snapshot
                 .get_player(keys[0])
                 .unwrap()
-                .inventory
+                .inventory()
                 .get(&InventorySlot::Backpack)
                 .is_some(),
             "the snapshot lost the backpack the live map removed"
@@ -714,7 +714,7 @@ mod tests {
         assert!(
             map.get_player(keys[0])
                 .unwrap()
-                .inventory
+                .inventory()
                 .get(&InventorySlot::Backpack)
                 .is_none()
         );
@@ -725,10 +725,10 @@ mod tests {
         let (mut map, keys) = map_with_players(1);
         let snapshot = map.clone();
 
-        map.get_player_mut(keys[0]).unwrap().mana.current = 7;
+        map.get_player_mut(keys[0]).unwrap().mana_mut().current = 7;
 
-        assert_eq!(snapshot.get_player(keys[0]).unwrap().mana.current, 100);
-        assert_eq!(map.get_player(keys[0]).unwrap().mana.current, 7);
+        assert_eq!(snapshot.get_player(keys[0]).unwrap().mana().current, 100);
+        assert_eq!(map.get_player(keys[0]).unwrap().mana().current, 7);
     }
 
     #[test]
@@ -741,7 +741,7 @@ mod tests {
             let start = std::time::Instant::now();
             for _ in 0..ROUNDS {
                 for key in &keys {
-                    map.get_player_mut(*key).unwrap().mana.current += 1;
+                    map.get_player_mut(*key).unwrap().mana_mut().current += 1;
                 }
             }
             let elapsed = start.elapsed();

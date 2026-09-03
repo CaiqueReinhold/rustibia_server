@@ -9,8 +9,9 @@ use thiserror::Error;
 use crate::entities::vocation::Vocation;
 use crate::entities::{
     agent::{Facing, OutfitColors, OutfitId, Pool},
+    inventory::InventorySlot,
     items::Item,
-    player::{InventorySlot, PlayerId},
+    player::PlayerId,
     position::Position,
     skills::{SkillType, SkillValue},
 };

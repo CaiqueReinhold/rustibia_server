@@ -7,8 +7,8 @@ use crate::actors::player_query::client_position_to_placement;
 use crate::actors::session::{SessionActor, SessionError};
 use crate::actors::world::WorldCommand;
 use crate::entities::agent::{AgentId, AgentKey};
+use crate::entities::inventory::InventorySlot;
 use crate::entities::items::{ClientItemRef, ContainerId, ItemFlag, ItemId, ItemRef};
-use crate::entities::player::InventorySlot;
 use crate::entities::position::{ItemPlacement, Position};
 use crate::game::description::get_look_description;
 use crate::game::item_multi_action::UseTarget;
@@ -312,7 +312,7 @@ impl SessionActor {
         let Some(player) = agent.get_player() else {
             return Ok(());
         };
-        let item_id = player.inventory.get(&slot).map(|it| it.item_id);
+        let item_id = player.inventory().get(&slot).map(|it| it.item_id);
         self.connection
             .send_message(ServerMessage::IventorySlotUpdated { slot, item_id })
             .await?;

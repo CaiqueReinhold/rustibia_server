@@ -1,95 +1,133 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use crate::entities::position::Position;
-use crate::entities::vocation::Vocation;
 use crate::entities::{
     agent::Pool,
     combat::{AmmoType, CombatElement, WeaponType},
-    inventory::Inventory,
+    inventory::{Inventory, InventorySlot},
     items::{Item, ItemFlag},
+    position::Position,
     skills::{SkillType, SkillValue},
+    vocation::Vocation,
 };
 
 pub type PlayerId = u32;
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, Copy)]
-pub enum InventorySlot {
-    Head,
-    Amulet,
-    Chest,
-    Backpack,
-    LeftHand,
-    RightHand,
-    BothHands,
-    Ring,
-    Legs,
-    Feet,
-    Trinket,
-}
-
-impl InventorySlot {
-    pub fn as_id(&self) -> u32 {
-        match self {
-            InventorySlot::BothHands => 0,
-            InventorySlot::Head => 1,
-            InventorySlot::Amulet => 2,
-            InventorySlot::Backpack => 3,
-            InventorySlot::Chest => 4,
-            InventorySlot::RightHand => 5,
-            InventorySlot::LeftHand => 6,
-            InventorySlot::Legs => 7,
-            InventorySlot::Feet => 8,
-            InventorySlot::Ring => 9,
-            InventorySlot::Trinket => 10,
-        }
-    }
-
-    pub fn from_id(id: u16) -> Option<Self> {
-        match id {
-            0 => Some(InventorySlot::BothHands),
-            1 => Some(InventorySlot::Head),
-            2 => Some(InventorySlot::Amulet),
-            3 => Some(InventorySlot::Backpack),
-            4 => Some(InventorySlot::Chest),
-            5 => Some(InventorySlot::RightHand),
-            6 => Some(InventorySlot::LeftHand),
-            7 => Some(InventorySlot::Legs),
-            8 => Some(InventorySlot::Feet),
-            9 => Some(InventorySlot::Ring),
-            10 => Some(InventorySlot::Trinket),
-            _ => None,
-        }
-    }
-}
-
 #[derive(Clone, Debug)]
 pub struct Player {
-    pub id: PlayerId,
-    pub name: String,
-    pub account_id: i32,
-    pub admin: bool,
-    pub position: Position,
-    pub vocation: Vocation,
-    pub mana: Pool,
-    pub capacity: u32,
-    pub inventory: Arc<Inventory>,
-    pub skills: HashMap<SkillType, SkillValue>,
-    pub armor: u16,
-    pub defense: u16,
+    id: PlayerId,
+    name: String,
+    account_id: i32,
+    admin: bool,
+    last_logout_position: Position,
+    vocation: Vocation,
+    mana: Pool,
+    capacity: u32,
+    inventory: Arc<Inventory>,
+    skills: HashMap<SkillType, SkillValue>,
+    armor: u16,
+    defense: u16,
 }
 
 impl Player {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        id: PlayerId,
+        name: String,
+        account_id: i32,
+        admin: bool,
+        last_logout_position: Position,
+        vocation: Vocation,
+        mana: Pool,
+        capacity: u32,
+        inventory: Inventory,
+        skills: HashMap<SkillType, SkillValue>,
+    ) -> Self {
+        let mut player = Self {
+            id,
+            name,
+            account_id,
+            admin,
+            last_logout_position,
+            vocation,
+            mana,
+            capacity,
+            inventory: Arc::new(inventory),
+            skills,
+            armor: 0,
+            defense: 0,
+        };
+        player.update_equipment_stats();
+        player
+    }
+
+    pub fn id(&self) -> PlayerId {
+        self.id
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn account_id(&self) -> i32 {
+        self.account_id
+    }
+
+    pub fn admin(&self) -> bool {
+        self.admin
+    }
+
+    pub fn last_logout_position(&self) -> &Position {
+        &self.last_logout_position
+    }
+
+    pub fn vocation(&self) -> Vocation {
+        self.vocation
+    }
+
+    pub fn mana(&self) -> &Pool {
+        &self.mana
+    }
+
+    pub fn mana_mut(&mut self) -> &mut Pool {
+        &mut self.mana
+    }
+
+    pub fn capacity(&self) -> u32 {
+        self.capacity
+    }
+
+    pub fn armor(&self) -> u16 {
+        self.armor
+    }
+
+    pub fn defense(&self) -> u16 {
+        self.defense
+    }
+
+    pub fn inventory(&self) -> &Inventory {
+        &self.inventory
+    }
+
     pub fn inventory_mut(&mut self) -> &mut Inventory {
         Arc::make_mut(&mut self.inventory)
     }
 
+    pub fn skills(&self) -> &HashMap<SkillType, SkillValue> {
+        &self.skills
+    }
+
+    pub fn skills_mut(&mut self) -> &mut HashMap<SkillType, SkillValue> {
+        &mut self.skills
+    }
+
     pub fn capacity_available(&self) -> u32 {
-        self.capacity.saturating_sub(self.inventory.carried_weight)
+        self.capacity
+            .saturating_sub(self.inventory.carried_weight())
     }
 
     pub fn can_carry(&self, additional_weight: u32) -> bool {
-        self.inventory.carried_weight + additional_weight <= self.capacity
+        self.inventory.carried_weight() + additional_weight <= self.capacity
     }
 
     pub fn has_enough_mana(&self, mana_cost: u32) -> bool {

@@ -25,7 +25,7 @@ pub fn get_look_description(
         }),
         ItemPlacement::Inventory(slot, agent_key) => map
             .get_player(*agent_key)
-            .map(|player| player.inventory.get(slot))
+            .map(|player| player.inventory().get(slot))
             .unwrap_or(None)
             .map(|item| {
                 guid.and_then(|guid| {

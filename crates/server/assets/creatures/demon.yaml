@@ -12,6 +12,15 @@ damage:
   min: 0
   max: 500
 corpse: 5995
+say:
+  cooldown: 100
+  chance: 10000
+  sentences:
+    - Your soul will be mine!
+    - MUHAHAHAHA!
+    - CHAMEK ATH UTHUL ARAK!
+    - I SMELL FEEEEAAAAAR!
+    - Your resistance is futile!
 loot:
   - item_id: 3031 # gold coin
     chance: 99518

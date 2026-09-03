@@ -6,9 +6,9 @@ use crate::{
     entities::{
         agent::AgentKey,
         combat::WeaponType,
+        inventory::InventorySlot,
         items::{Item, ItemFlag, ItemGuid, ItemId, ItemRef},
         map::{GameMap, MapError, RemovedItem},
-        player::InventorySlot,
         position::ItemPlacement,
     },
     game::map_query::find_item_in_placement,
@@ -89,7 +89,7 @@ fn displace_inventory_items(
     let left_is_bow_or_quiver = map
         .get_player(agent)
         .unwrap()
-        .inventory
+        .inventory()
         .get(&InventorySlot::LeftHand)
         .map(is_bow_or_quiver)
         .unwrap_or(false);
@@ -119,7 +119,7 @@ fn displace_inventory_items(
     let left_is_two_handed = map
         .get_player(agent)
         .unwrap()
-        .inventory
+        .inventory()
         .get(&InventorySlot::LeftHand)
         .map(|it| it.get_slot().unwrap() == InventorySlot::BothHands)
         .unwrap_or(false);
@@ -179,7 +179,7 @@ pub fn move_item(
             ItemPlacement::Map(pos) => map.get_item_by_id(pos, &source.guid),
             ItemPlacement::Inventory(slot, _) => map
                 .get_player(agent)
-                .and_then(|p| p.inventory.get(slot))
+                .and_then(|p| p.inventory().get(slot))
                 .and_then(|it| it.find_by_guid(&source.guid)),
         };
         if let Some(item) = item
@@ -209,7 +209,7 @@ pub fn move_item(
                 ItemPlacement::Map(pos) => map.get_item_by_id(pos, &source.guid),
                 ItemPlacement::Inventory(slot, _) => map
                     .get_player(agent)
-                    .and_then(|p| p.inventory.get(slot))
+                    .and_then(|p| p.inventory().get(slot))
                     .and_then(|it| it.find_by_guid(&source.guid)),
             };
             let compatible = item
@@ -233,7 +233,7 @@ pub fn move_item(
                 ItemPlacement::Map(pos) => map.get_item_by_id(pos, &source.guid),
                 ItemPlacement::Inventory(slot, _) => map
                     .get_player(agent)
-                    .and_then(|p| p.inventory.get(slot))
+                    .and_then(|p| p.inventory().get(slot))
                     .and_then(|it| it.find_by_guid(&source.guid)),
             };
             let take_ok = item
@@ -354,7 +354,7 @@ pub fn stow_item(
 ) -> Result<(), ItemMovementError> {
     let container = map
         .get_player(agent)
-        .and_then(|player| player.inventory.first_available_container().cloned())
+        .and_then(|player| player.inventory().first_available_container().cloned())
         .ok_or(ItemMovementError::CannotEquip)?;
 
     let player = map
@@ -413,7 +413,7 @@ pub fn return_item(
     let slot_taken = match (placement, container) {
         (ItemPlacement::Inventory(slot, agent_key), None) => map
             .get_player(*agent_key)
-            .map(|player| player.inventory.get(slot).is_some())
+            .map(|player| player.inventory().get(slot).is_some())
             .unwrap_or(true),
         _ => false,
     };
@@ -481,7 +481,7 @@ fn merge_into_like_stack(
             if moved == 0 {
                 return false;
             }
-            inventory.carried_weight += unit_weight * moved as u32;
+            inventory.set_carried_weight(inventory.carried_weight() + unit_weight * moved as u32);
             true
         }
     }
@@ -787,7 +787,7 @@ mod tests {
     #[test]
     fn equipping_and_unequipping_track_the_armour_total() {
         let (mut map, agent, source, target, guid) = a_player_beside(an_armoured_helmet());
-        assert_eq!(map.get_player(agent).unwrap().armor, 0);
+        assert_eq!(map.get_player(agent).unwrap().armor(), 0);
 
         move_item(
             &mut map,
@@ -802,7 +802,7 @@ mod tests {
         );
 
         assert_eq!(
-            map.get_player(agent).unwrap().armor,
+            map.get_player(agent).unwrap().armor(),
             8,
             "equipping should count it"
         );
@@ -820,7 +820,7 @@ mod tests {
         );
 
         assert_eq!(
-            map.get_player(agent).unwrap().armor,
+            map.get_player(agent).unwrap().armor(),
             0,
             "unequipping should drop it"
         );
@@ -847,7 +847,7 @@ mod tests {
         assert!(
             map.get_player(agent)
                 .unwrap()
-                .inventory
+                .inventory()
                 .slots()
                 .values()
                 .any(|slot| slot.find_by_guid(&guid).is_some()),
@@ -963,14 +963,14 @@ mod tests {
         let player = map.get_player(agent).unwrap();
         assert_eq!(
             player
-                .inventory
+                .inventory()
                 .get(&InventorySlot::RightHand)
                 .map(|it| it.guid.clone()),
             Some(shield_guid),
             "the off-hand item left the hand"
         );
         assert!(
-            player.inventory.get(&InventorySlot::LeftHand).is_none(),
+            player.inventory().get(&InventorySlot::LeftHand).is_none(),
             "the two-hander was equipped anyway"
         );
         assert!(
@@ -1027,7 +1027,7 @@ mod tests {
         let agent = map
             .insert_agent(Agent::from_player(snapshot), &pos)
             .unwrap();
-        let before = map.get_player(agent).unwrap().inventory.carried_weight;
+        let before = map.get_player(agent).unwrap().inventory().carried_weight();
 
         let mut broadcasts = Vec::new();
         return_item(
@@ -1043,7 +1043,7 @@ mod tests {
 
         let player = map.get_player(agent).unwrap();
         let content = player
-            .inventory
+            .inventory()
             .get(&InventorySlot::Backpack)
             .unwrap()
             .content
@@ -1058,7 +1058,7 @@ mod tests {
             "it opened a second entry instead of merging"
         );
         assert_eq!(
-            player.inventory.carried_weight,
+            player.inventory().carried_weight(),
             before + 160,
             "the merged flask weighs nothing"
         );
@@ -1097,7 +1097,7 @@ mod tests {
         assert_eq!(
             map.get_player(agent)
                 .unwrap()
-                .inventory
+                .inventory()
                 .get(&InventorySlot::Head)
                 .map(|it| it.guid.clone()),
             Some(helmet_guid),

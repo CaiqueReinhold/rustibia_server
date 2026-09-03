@@ -1,12 +1,61 @@
 use crate::entities::items::{Item, ItemGuid};
-use crate::entities::player::InventorySlot;
 use crate::game::item_movement::ItemMovementError;
 use std::collections::HashMap;
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Copy)]
+pub enum InventorySlot {
+    Head,
+    Amulet,
+    Chest,
+    Backpack,
+    LeftHand,
+    RightHand,
+    BothHands,
+    Ring,
+    Legs,
+    Feet,
+    Trinket,
+}
+
+impl InventorySlot {
+    pub fn as_id(&self) -> u32 {
+        match self {
+            InventorySlot::BothHands => 0,
+            InventorySlot::Head => 1,
+            InventorySlot::Amulet => 2,
+            InventorySlot::Backpack => 3,
+            InventorySlot::Chest => 4,
+            InventorySlot::RightHand => 5,
+            InventorySlot::LeftHand => 6,
+            InventorySlot::Legs => 7,
+            InventorySlot::Feet => 8,
+            InventorySlot::Ring => 9,
+            InventorySlot::Trinket => 10,
+        }
+    }
+
+    pub fn from_id(id: u16) -> Option<Self> {
+        match id {
+            0 => Some(InventorySlot::BothHands),
+            1 => Some(InventorySlot::Head),
+            2 => Some(InventorySlot::Amulet),
+            3 => Some(InventorySlot::Backpack),
+            4 => Some(InventorySlot::Chest),
+            5 => Some(InventorySlot::RightHand),
+            6 => Some(InventorySlot::LeftHand),
+            7 => Some(InventorySlot::Legs),
+            8 => Some(InventorySlot::Feet),
+            9 => Some(InventorySlot::Ring),
+            10 => Some(InventorySlot::Trinket),
+            _ => None,
+        }
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct Inventory {
     slots: HashMap<InventorySlot, Item>,
-    pub carried_weight: u32,
+    carried_weight: u32,
 }
 
 impl Inventory {
@@ -16,6 +65,14 @@ impl Inventory {
             slots,
             carried_weight,
         }
+    }
+
+    pub fn carried_weight(&self) -> u32 {
+        self.carried_weight
+    }
+
+    pub fn set_carried_weight(&mut self, value: u32) {
+        self.carried_weight = value;
     }
 
     /// Insert `item` into `slot`.
@@ -64,15 +121,11 @@ impl Inventory {
         }
     }
 
-    // Find the first container having at least one free slot inside
-    // the InventorySlot::Backpack slot
     pub fn first_available_container(&self) -> Option<&ItemGuid> {
         let backpack = self.slots.get(&InventorySlot::Backpack)?;
         find_available_container(backpack)
     }
 
-    /// Remove item by `guid` from `slot` or from within a container inside that slot.
-    /// Handles partial stack removal via `amount`.
     pub fn remove(
         &mut self,
         slot: InventorySlot,

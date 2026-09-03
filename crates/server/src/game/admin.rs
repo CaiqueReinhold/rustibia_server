@@ -17,7 +17,11 @@ pub fn parse_command(
     agent_key: AgentKey,
     msgs: &mut Vec<BroadcastMessage>,
 ) -> bool {
-    if !map.get_player(agent_key).map(|p| p.admin).unwrap_or(false) {
+    if !map
+        .get_player(agent_key)
+        .map(|p| p.admin())
+        .unwrap_or(false)
+    {
         return false;
     }
 

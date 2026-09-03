@@ -7,7 +7,7 @@ use crate::{
     config,
     constants::{DIAGONAL_STEP_FACTOR, SPEED_PARAM_A, SPEED_PARAM_B, SPEED_PARAM_C},
     entities::{
-        combat::Participation,
+        combat::{Participation, WeaponType},
         creature::{BloodType, CreatureKind},
         items::ItemId,
         position::Position,
@@ -82,9 +82,6 @@ pub struct Agent {
     // player
     pub next_use_tick: Tick,
 
-    // creature
-    pub next_wander_tick: Tick,
-
     target: Option<AgentKey>,
     target_seq: u32,
     participation: Participation,
@@ -121,22 +118,18 @@ impl Agent {
     }
 
     pub fn from_player(player: PlayerSnapshot) -> Self {
-        let inventory = Inventory::from_snapshot(player.inventory);
-        let mut p = Player {
-            id: player.id,
-            name: player.name,
-            account_id: player.account_id,
-            admin: player.admin,
-            position: player.position,
-            vocation: player.vocation,
-            mana: player.mana,
-            capacity: player.capacity,
-            inventory: Arc::new(inventory),
-            skills: player.skills,
-            armor: 0,
-            defense: 0,
-        };
-        p.update_equipment_stats();
+        let p = Player::new(
+            player.id,
+            player.name,
+            player.account_id,
+            player.admin,
+            player.position,
+            player.vocation,
+            player.mana,
+            player.capacity,
+            Inventory::from_snapshot(player.inventory),
+            player.skills,
+        );
         Self {
             inner: AgentInner::Player(Arc::new(p)),
             facing: player.facing,
@@ -145,7 +138,6 @@ impl Agent {
             base_speed: player.speed,
             next_walk_tick: 0,
             next_use_tick: 0,
-            next_wander_tick: 0,
             next_attack_tick: 0,
             target: None,
             target_seq: 0,
@@ -167,7 +159,6 @@ impl Agent {
             facing: Facing::South,
             next_walk_tick: 0,
             next_use_tick: 0,
-            next_wander_tick: 0,
             next_attack_tick: 0,
             target: None,
             target_seq: 0,
@@ -180,7 +171,7 @@ impl Agent {
     pub fn name(&self) -> &str {
         match &self.inner {
             AgentInner::Creature(c) => &c.name,
-            AgentInner::Player(p) => &p.name,
+            AgentInner::Player(p) => p.name(),
         }
     }
 
@@ -276,14 +267,27 @@ impl Agent {
     pub fn armor(&self) -> u16 {
         match &self.inner {
             AgentInner::Creature(c) => c.armor,
-            AgentInner::Player(p) => p.armor,
+            AgentInner::Player(p) => p.armor(),
         }
     }
 
-    pub fn defense(&self) -> u16 {
+    pub fn defense(&self) -> u32 {
         match &self.inner {
-            AgentInner::Creature(c) => c.defense,
-            AgentInner::Player(p) => p.defense,
+            AgentInner::Creature(c) => c.defense as u32,
+            AgentInner::Player(p) => {
+                let def = p.defense() as f32;
+                let skill = if p.has_shield() {
+                    p.skill_shielding() as f32
+                } else {
+                    match p.weapon_type() {
+                        WeaponType::Axe => p.skill_axe() as f32,
+                        WeaponType::Sword => p.skill_sword() as f32,
+                        WeaponType::Club => p.skill_club() as f32,
+                        _ => 0.,
+                    }
+                };
+                ((skill / 4. + 2.23) * def * 0.15) as u32
+            }
         }
     }
 
@@ -297,21 +301,21 @@ impl Agent {
     pub fn to_snapshot(&self, position: Position) -> Option<PlayerSnapshot> {
         let player = self.get_player()?;
         Some(PlayerSnapshot {
-            id: player.id,
-            account_id: player.account_id,
-            admin: player.admin,
-            name: player.name.clone(),
-            vocation: player.vocation,
+            id: player.id(),
+            account_id: player.account_id(),
+            admin: player.admin(),
+            name: player.name().to_owned(),
+            vocation: player.vocation(),
             position,
             origin: self.origin.clone(),
             facing: self.facing,
             life: self.life.clone(),
-            mana: player.mana.clone(),
-            capacity: player.capacity,
+            mana: player.mana().clone(),
+            capacity: player.capacity(),
             speed: self.base_speed,
             outfit: self.outfit,
-            skills: player.skills.clone(),
-            inventory: player.inventory.slots().clone(),
+            skills: player.skills().clone(),
+            inventory: player.inventory().slots().clone(),
         })
     }
 }
@@ -319,8 +323,8 @@ impl Agent {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::entities::inventory::InventorySlot;
     use crate::entities::map::GameMap;
-    use crate::entities::player::InventorySlot;
     use crate::entities::position::Position;
     use crate::entities::skills::{SkillType, SkillValue};
     use crate::entities::vocation::Vocation;
@@ -607,9 +611,9 @@ mod tests {
         let a = a_backpacked_agent();
         let b = a.clone();
         assert!(Arc::ptr_eq(player_arc(&a), player_arc(&b)));
-        assert!(Arc::ptr_eq(
-            &a.get_player().unwrap().inventory,
-            &b.get_player().unwrap().inventory
+        assert!(std::ptr::eq(
+            a.get_player().unwrap().inventory(),
+            b.get_player().unwrap().inventory()
         ));
     }
 
@@ -630,11 +634,11 @@ mod tests {
         let mut a = a_backpacked_agent();
         let b = a.clone();
 
-        a.get_player_mut().unwrap().mana.current = 7;
+        a.get_player_mut().unwrap().mana_mut().current = 7;
         assert!(!Arc::ptr_eq(player_arc(&a), player_arc(&b)));
 
         let after_first = Arc::as_ptr(player_arc(&a));
-        a.get_player_mut().unwrap().mana.current = 8;
+        a.get_player_mut().unwrap().mana_mut().current = 8;
         assert_eq!(Arc::as_ptr(player_arc(&a)), after_first);
     }
 
@@ -643,11 +647,11 @@ mod tests {
         let mut a = a_backpacked_agent();
         let b = a.clone();
 
-        a.get_player_mut().unwrap().mana.current = 7;
+        a.get_player_mut().unwrap().mana_mut().current = 7;
 
-        assert!(Arc::ptr_eq(
-            &a.get_player().unwrap().inventory,
-            &b.get_player().unwrap().inventory
+        assert!(std::ptr::eq(
+            a.get_player().unwrap().inventory(),
+            b.get_player().unwrap().inventory()
         ));
     }
 
@@ -661,14 +665,14 @@ mod tests {
             .inventory_mut()
             .take_slot(&InventorySlot::Backpack);
 
-        assert!(!Arc::ptr_eq(
-            &a.get_player().unwrap().inventory,
-            &b.get_player().unwrap().inventory
+        assert!(!std::ptr::eq(
+            a.get_player().unwrap().inventory(),
+            b.get_player().unwrap().inventory()
         ));
         assert!(
             b.get_player()
                 .unwrap()
-                .inventory
+                .inventory()
                 .get(&InventorySlot::Backpack)
                 .is_some()
         );

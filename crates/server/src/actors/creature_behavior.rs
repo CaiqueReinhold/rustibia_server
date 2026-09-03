@@ -1,4 +1,5 @@
-use std::sync::Arc;
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
 use arc_swap::ArcSwap;
 use slotmap::Key;
@@ -6,9 +7,12 @@ use tokio::sync::watch;
 use tracing::{error, info};
 
 use crate::actors::world::{WorldActorHandle, WorldCommand};
+use crate::entities::agent::AgentKey;
 use crate::entities::map::GameMap;
 use crate::game::Tick;
-use crate::game::creature_behavior::{CreatureAction, CreatureBehaviourContext, decide_action};
+use crate::game::creature_behavior::{
+    CreatureAction, CreatureBehaviourContext, CreatureState, decide_action,
+};
 use crate::game::random::Rolls;
 
 pub struct CreatureBehaviorActor {
@@ -16,6 +20,7 @@ pub struct CreatureBehaviorActor {
     world: WorldActorHandle,
     shared_map: Arc<ArcSwap<GameMap>>,
     seed: u64,
+    states: Arc<Mutex<HashMap<AgentKey, CreatureState>>>,
 }
 
 impl CreatureBehaviorActor {
@@ -30,6 +35,7 @@ impl CreatureBehaviorActor {
             world,
             shared_map,
             seed,
+            states: Arc::new(Mutex::new(HashMap::new())),
         };
         tokio::spawn(actor.run());
     }
@@ -45,17 +51,24 @@ impl CreatureBehaviorActor {
     async fn process_tick(&mut self, tick: Tick) {
         let map = self.shared_map.load_full();
         let global_seed = self.seed;
+        let states = self.states.clone();
+
         let actions = tokio::task::spawn_blocking(move || {
+            let Ok(mut states) = states.lock() else {
+                return Vec::new();
+            };
             map.iter_agents()
                 .filter(|(_, a)| a.is_creature())
                 .map(|(k, _)| k)
                 .flat_map(|agent_key| {
+                    let creature_state = states.get_mut(&agent_key)?;
                     let roll = Rolls::stream(global_seed, tick, agent_key.data().as_ffi());
                     decide_action(CreatureBehaviourContext {
                         creature: agent_key,
                         map: &map,
                         roll,
                         world_tick: tick,
+                        state: creature_state,
                     })
                 })
                 .collect::<Vec<CreatureAction>>()

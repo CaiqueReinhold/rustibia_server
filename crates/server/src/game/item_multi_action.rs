@@ -306,7 +306,7 @@ fn potion(
     if let Some(amount) = mana_roll {
         match map.get_player_mut(target) {
             Some(player) => {
-                player.mana.add(amount);
+                player.mana_mut().add(amount);
                 broadcasts.push(BroadcastMessage::PlayerManaUpdated { agent_key: target });
             }
             None => error!("agent {target:?} vanished mid-drink; mana not restored"),
@@ -346,9 +346,9 @@ mod tests {
     use crate::constants::MAX_STACK_AMOUNT;
     use crate::entities::{
         agent::{Agent, Pool},
+        inventory::InventorySlot,
         items::{Item, ItemAttribute, ItemConfig, ItemGuid, ItemId},
         map::MapTile,
-        player::InventorySlot,
     };
     use crate::persistence::items::ITEM_CONFIGS;
     use crate::persistence::test_fixtures::{a_test_creature, a_test_snapshot};
@@ -746,7 +746,7 @@ mod tests {
                 .iter()
                 .any(|b| matches!(b, BroadcastMessage::UseItemDenied { .. })),
             life: map.get_agent(user).unwrap().life().clone(),
-            mana: map.get_player(user).unwrap().mana.clone(),
+            mana: map.get_player(user).unwrap().mana().clone(),
             target_life,
             charges_left: map
                 .iter_items(&here)
@@ -1119,7 +1119,7 @@ mod tests {
         let backpack = map
             .get_player(user)
             .unwrap()
-            .inventory
+            .inventory()
             .get(&InventorySlot::Backpack)
             .unwrap();
         let contents = guids

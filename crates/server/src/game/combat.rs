@@ -4,9 +4,10 @@ use crate::{
         agent::{Agent, AgentKey},
         combat::{CombatDamage, CombatElement, WeaponType},
         creature::{BloodType, CreatureKind},
+        inventory::InventorySlot,
         items::{ItemGuid, ItemRef},
         map::GameMap,
-        player::{InventorySlot, Player},
+        player::Player,
         position::{ItemPlacement, Position},
         skills::SkillType,
     },
@@ -99,24 +100,7 @@ pub struct AttackPlan {
 }
 
 fn apply_shield(base_attack_value: u32, target: &Agent, roll: &mut Rolls) -> u32 {
-    let defense_value = if target.is_creature() {
-        target.defense() as u32
-    } else {
-        let def = target.defense() as f32;
-        let player = target.get_player().unwrap();
-        let skill = if player.has_shield() {
-            player.skill_shielding() as f32
-        } else {
-            match player.weapon_type() {
-                WeaponType::Axe => player.skill_axe() as f32,
-                WeaponType::Sword => player.skill_sword() as f32,
-                WeaponType::Club => player.skill_club() as f32,
-                _ => 0.,
-            }
-        };
-
-        ((skill / 4. + 2.23) * def * 0.15) as u32
-    };
+    let defense_value = target.defense();
     let defended = roll.uniform(defense_value / 2, defense_value);
     base_attack_value.saturating_sub(defended)
 }
@@ -295,7 +279,7 @@ fn consume_mana(
     mana_cost: u32,
     msgs: &mut Vec<BroadcastMessage>,
 ) {
-    player.mana.remove(mana_cost);
+    player.mana_mut().remove(mana_cost);
     msgs.push(BroadcastMessage::PlayerManaUpdated { agent_key });
     tick_skill(player, agent_key, SkillType::Magic, mana_cost as u64, msgs);
 }
@@ -747,7 +731,7 @@ mod tests {
             agent.next_attack_tick,
             GAME_CONFIG.combat.auto_attack_ticks + 7
         );
-        assert_eq!(agent.get_player().unwrap().mana.current, 80);
+        assert_eq!(agent.get_player().unwrap().mana().current, 80);
         assert_eq!(broadcast_kinds(&msgs), ["mana", "skill", "damage", "blood"]);
     }
 
@@ -794,7 +778,7 @@ mod tests {
             .unwrap()
             .get_player()
             .unwrap()
-            .inventory
+            .inventory()
             .get(&InventorySlot::RightHand)
             .unwrap()
             .content

@@ -1,11 +1,8 @@
-use crate::{
-    entities::{
-        agent::{AgentKey, Facing},
-        items::FloorChangeDirection,
-        map::GameMap,
-        position::{Direction, Position},
-    },
-    game::config::GAME_CONFIG,
+use crate::entities::{
+    agent::{AgentKey, Facing},
+    items::FloorChangeDirection,
+    map::GameMap,
+    position::{Direction, Position},
 };
 use anyhow::Result;
 
@@ -49,9 +46,6 @@ pub fn walk(
 
     let agent = map.get_agent_mut(agent_key).unwrap();
     agent.next_walk_tick = current_tick + walk_ticks;
-    if agent.is_creature() {
-        agent.next_wander_tick = current_tick + GAME_CONFIG.movement.wander_ticks;
-    }
     agent.set_facing(direction_to_facing(&direction));
     map.move_agent(agent_key, &new_pos)?;
     let floor_change = map.get_floor_change(&new_pos);

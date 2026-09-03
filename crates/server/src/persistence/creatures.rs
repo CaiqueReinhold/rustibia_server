@@ -7,8 +7,11 @@ use serde::Deserialize;
 use thiserror::Error;
 
 use crate::entities::agent::{OutfitColors, OutfitId, Pool};
-use crate::entities::creature::{BloodType, CreatureKind, CreatureKindId, LootEntry};
+use crate::entities::creature::{
+    BloodType, CreatureKind, CreatureKindId, CreatureVoices, LootEntry,
+};
 use crate::entities::items::ItemId;
+use crate::game::Tick;
 
 #[derive(Error, Debug)]
 pub enum CreaturesLoadError {
@@ -51,6 +54,14 @@ struct RawLootEntry {
 }
 
 #[derive(Deserialize)]
+struct RawCreatureVoices {
+    cooldown: Tick,
+    chance: u32,
+    #[serde(default)]
+    sentences: Vec<String>,
+}
+
+#[derive(Deserialize)]
 struct RawCreature {
     name: String,
     life: u32,
@@ -66,6 +77,7 @@ struct RawCreature {
     loot: Vec<RawLootEntry>,
     #[serde(default)]
     flee_threshold: Option<u32>,
+    say: RawCreatureVoices,
 }
 
 impl RawCreature {
@@ -94,6 +106,11 @@ impl RawCreature {
                 })
                 .collect(),
             flee_threshold: self.flee_threshold,
+            say: CreatureVoices {
+                cooldown: self.say.cooldown,
+                chance: self.say.chance,
+                sentences: self.say.sentences,
+            },
         }
     }
 }

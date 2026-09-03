@@ -1,6 +1,7 @@
 use tracing::error;
 
 use crate::entities::agent::AgentKey;
+use crate::entities::creature::CreatureKind;
 use crate::entities::map::GameMap;
 use crate::entities::position::{Direction, Position, Rect};
 use crate::game::Tick;
@@ -26,12 +27,29 @@ pub enum CreatureAction {
     },
 }
 
+#[derive(Debug, Default)]
+pub struct CreatureState {
+    next_wander_tick: Tick,
+    next_say_tick: Tick,
+}
+
+impl CreatureState {
+    pub fn stamp_wander(&mut self, current_tick: Tick) {
+        self.next_wander_tick = current_tick + GAME_CONFIG.movement.wander_ticks
+    }
+
+    pub fn stamp_say(&mut self, current_tick: Tick, kind: &CreatureKind) {
+        self.next_say_tick = current_tick + kind.say.cooldown;
+    }
+}
+
 #[derive(Debug)]
 pub struct CreatureBehaviourContext<'a> {
     pub creature: AgentKey,
     pub map: &'a GameMap,
     pub roll: Rolls,
     pub world_tick: Tick,
+    pub state: &'a mut CreatureState,
 }
 
 pub fn decide_action(ctx: CreatureBehaviourContext) -> Option<CreatureAction> {
@@ -48,46 +66,46 @@ const WANDER_DIRECTIONS: [Direction; 4] = [
 ];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum CreatureState {
+enum CreatureBehavior {
     Idle,
     InCombat,
     Fleeing,
     Returning,
 }
 
-fn get_state(ctx: &CreatureBehaviourContext) -> CreatureState {
+fn get_state(ctx: &CreatureBehaviourContext) -> CreatureBehavior {
     let Some(agent) = ctx.map.get_agent(ctx.creature) else {
         error!("Creature {:?} not found on map", ctx.creature);
-        return CreatureState::Idle;
+        return CreatureBehavior::Idle;
     };
     if !agent.is_creature() {
         error!("Agent {:?} is not creature", ctx.creature);
-        return CreatureState::Idle;
+        return CreatureBehavior::Idle;
     }
     let Some(position) = ctx.map.agent_position(ctx.creature) else {
         error!("No position for agent {:?}", ctx.creature);
-        return CreatureState::Idle;
+        return CreatureBehavior::Idle;
     };
 
     if agent.target().is_some() && agent.is_fleeing() {
-        return CreatureState::Fleeing;
+        return CreatureBehavior::Fleeing;
     } else if agent.target().is_some() {
-        return CreatureState::InCombat;
+        return CreatureBehavior::InCombat;
     } else if pathfinding::chebyshev(agent.get_origin(), position)
         > GAME_CONFIG.movement.wander_distance
     {
-        return CreatureState::Returning;
+        return CreatureBehavior::Returning;
     }
 
-    CreatureState::Idle
+    CreatureBehavior::Idle
 }
 
-fn act(state: CreatureState, ctx: CreatureBehaviourContext) -> Option<CreatureAction> {
+fn act(state: CreatureBehavior, ctx: CreatureBehaviourContext) -> Option<CreatureAction> {
     match state {
-        CreatureState::Idle => idle(ctx),
-        CreatureState::InCombat => in_combat(ctx),
-        CreatureState::Fleeing => fleeing(ctx),
-        CreatureState::Returning => returning(ctx),
+        CreatureBehavior::Idle => idle(ctx),
+        CreatureBehavior::InCombat => in_combat(ctx),
+        CreatureBehavior::Fleeing => fleeing(ctx),
+        CreatureBehavior::Returning => returning(ctx),
     }
 }
 
@@ -99,17 +117,24 @@ fn idle(mut ctx: CreatureBehaviourContext) -> Option<CreatureAction> {
         });
     }
 
-    let wander_action = wander(&mut ctx);
-    if wander_action.is_some() {
-        return wander_action;
+    if let Some(wander_dir) = wander(&mut ctx) {
+        return Some(CreatureAction::Walk {
+            agent_key: ctx.creature,
+            direction: wander_dir,
+        });
     }
 
-    // TODO: roll creature say
+    if let Some(sentence) = say(&mut ctx) {
+        return Some(CreatureAction::Say {
+            agent_key: ctx.creature,
+            message: sentence,
+        });
+    }
 
     None
 }
 
-fn in_combat(ctx: CreatureBehaviourContext) -> Option<CreatureAction> {
+fn in_combat(mut ctx: CreatureBehaviourContext) -> Option<CreatureAction> {
     let agent = ctx.map.get_agent(ctx.creature)?;
     let postion = ctx.map.agent_position(ctx.creature)?;
     let target_key = agent.target()?;
@@ -157,7 +182,12 @@ fn in_combat(ctx: CreatureBehaviourContext) -> Option<CreatureAction> {
 
     // TODO: roll change target
 
-    // TODO: roll creature say
+    if let Some(sentence) = say(&mut ctx) {
+        return Some(CreatureAction::Say {
+            agent_key: ctx.creature,
+            message: sentence,
+        });
+    }
 
     None
 }
@@ -214,12 +244,10 @@ fn returning(ctx: CreatureBehaviourContext) -> Option<CreatureAction> {
     None
 }
 
-fn wander(ctx: &mut CreatureBehaviourContext) -> Option<CreatureAction> {
-    let can_wander = ctx
-        .map
-        .get_agent(ctx.creature)
-        .is_some_and(|a| a.next_wander_tick <= ctx.world_tick);
+fn wander(ctx: &mut CreatureBehaviourContext) -> Option<Direction> {
+    let can_wander = ctx.state.next_wander_tick <= ctx.world_tick;
     if can_wander && let Some(creature_pos) = ctx.map.agent_position(ctx.creature) {
+        ctx.state.stamp_wander(ctx.world_tick);
         let available_directions = WANDER_DIRECTIONS
             .into_iter()
             .filter(|dir| {
@@ -229,12 +257,28 @@ fn wander(ctx: &mut CreatureBehaviourContext) -> Option<CreatureAction> {
             .collect::<Vec<Direction>>();
         let direction = ctx.roll.category_roll(&available_directions);
         if let Some(direction) = direction {
-            return Some(CreatureAction::Walk {
-                agent_key: ctx.creature,
-                direction: *direction,
-            });
+            return Some(*direction);
         }
     }
+    None
+}
+
+fn say(ctx: &mut CreatureBehaviourContext) -> Option<String> {
+    if ctx.state.next_say_tick > ctx.world_tick {
+        return None;
+    }
+
+    let kind = ctx
+        .map
+        .get_agent(ctx.creature)
+        .and_then(|a| a.get_creature_kind())?;
+
+    ctx.state.stamp_say(ctx.world_tick, kind);
+
+    if ctx.roll.chance(kind.say.chance) {
+        return ctx.roll.category_roll(&kind.say.sentences).cloned();
+    }
+
     None
 }
 
@@ -705,12 +749,14 @@ mod tests {
             .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &at(16, 10))
             .unwrap();
         map.get_agent_mut(rat).unwrap().set_target(Some(player), 1);
+        let mut state = CreatureState::default();
 
         let action = decide_action(CreatureBehaviourContext {
             creature: rat,
             map: &map,
             roll: Rolls::new(7),
             world_tick: 100,
+            state: &mut state,
         });
 
         assert!(
@@ -737,12 +783,14 @@ mod tests {
             .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &at(20, 10))
             .unwrap();
         map.get_agent_mut(rat).unwrap().set_target(Some(player), 1);
+        let mut state = CreatureState::default();
 
         let action = decide_action(CreatureBehaviourContext {
             creature: rat,
             map: &map,
             roll: Rolls::new(7),
             world_tick: 100,
+            state: &mut state,
         });
 
         assert!(

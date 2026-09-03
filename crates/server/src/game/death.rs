@@ -80,7 +80,7 @@ fn roll_creature_loot(corpse: &mut Item, creature: &CreatureKind, rolls: &mut Ro
     for loot in &creature.loot_table {
         let mut total = 0;
         for _ in 0..rolls.drop_rolls(100) {
-            if rolls.drop_chance(loot.chance) {
+            if rolls.chance(loot.chance) {
                 total += if loot.amount > 1 {
                     rolls.uniform(1, loot.amount)
                 } else {
@@ -294,7 +294,7 @@ mod tests {
         assert_eq!(
             map.get_player(hunter)
                 .unwrap()
-                .skills
+                .skills()
                 .get(&crate::entities::skills::SkillType::Level)
                 .unwrap()
                 .value,
@@ -323,7 +323,7 @@ mod tests {
         assert_eq!(
             map.get_player(hunter)
                 .unwrap()
-                .skills
+                .skills()
                 .get(&crate::entities::skills::SkillType::Level)
                 .unwrap()
                 .value,

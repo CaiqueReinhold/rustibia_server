@@ -1,9 +1,9 @@
 use crate::{
     entities::{
         agent::{Agent, AgentId, AgentKey},
+        inventory::InventorySlot,
         items::{ContainerId, ItemGuid},
         map::GameMap,
-        player::InventorySlot,
         position::{ItemPlacement, Position},
         skills::SkillType,
     },
@@ -18,7 +18,7 @@ pub fn get_player_desc(map: &GameMap, key: AgentKey, id: AgentId) -> Option<Serv
     let position = map.agent_position(key)?;
     let player = agent.get_player()?;
 
-    let slot_item = |slot: InventorySlot| player.inventory.get(&slot).map(|it| it.item_id);
+    let slot_item = |slot: InventorySlot| player.inventory().get(&slot).map(|it| it.item_id);
 
     Some(ServerMessage::DescribePlayer {
         agent_id: id,
@@ -27,7 +27,7 @@ pub fn get_player_desc(map: &GameMap, key: AgentKey, id: AgentId) -> Option<Serv
         name: agent.name().to_string(),
         level: player.level(),
         life: agent.life().clone(),
-        mana: player.mana.clone(),
+        mana: player.mana().clone(),
         outfit: agent.outfit(),
         speed: agent.speed(),
         capacity: player.capacity_available(),
@@ -48,14 +48,14 @@ pub fn get_player_skills(map: &GameMap, key: AgentKey) -> Option<ServerMessage> 
     let player = map.get_player(key)?;
 
     let mut skills: Vec<(SkillType, SkillProgress)> = player
-        .skills
+        .skills()
         .iter()
         .map(|(skill, value)| {
             (
                 skill.clone(),
                 SkillProgress {
                     level: value.value,
-                    percent_bp: progress_bp(player.vocation, skill, value),
+                    percent_bp: progress_bp(player.vocation(), skill, value),
                 },
             )
         })
@@ -64,7 +64,7 @@ pub fn get_player_skills(map: &GameMap, key: AgentKey) -> Option<ServerMessage> 
 
     Some(ServerMessage::PlayerSkills {
         experience: player
-            .skills
+            .skills()
             .get(&SkillType::Level)
             .map(total_experience)
             .unwrap_or(0),
@@ -128,14 +128,14 @@ mod tests {
             .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &position)
             .unwrap();
         let player = map.get_player_mut(key).unwrap();
-        player.skills.insert(
+        player.skills_mut().insert(
             SkillType::Sword,
             SkillValue {
                 value: 11,
                 current_ticks: 27,
             },
         );
-        player.skills.insert(
+        player.skills_mut().insert(
             SkillType::Level,
             SkillValue {
                 value: 8,
@@ -166,7 +166,7 @@ mod tests {
         let key = map
             .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &position)
             .unwrap();
-        map.get_player_mut(key).unwrap().skills.clear();
+        map.get_player_mut(key).unwrap().skills_mut().clear();
 
         let ServerMessage::PlayerSkills { experience, skills } =
             get_player_skills(&map, key).unwrap()
