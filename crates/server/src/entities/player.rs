@@ -25,8 +25,6 @@ pub struct Player {
     capacity: u32,
     inventory: Arc<Inventory>,
     skills: HashMap<SkillType, SkillValue>,
-    armor: u16,
-    defense: u16,
 }
 
 impl Player {
@@ -43,7 +41,7 @@ impl Player {
         inventory: Inventory,
         skills: HashMap<SkillType, SkillValue>,
     ) -> Self {
-        let mut player = Self {
+        Self {
             id,
             name,
             account_id,
@@ -54,11 +52,7 @@ impl Player {
             capacity,
             inventory: Arc::new(inventory),
             skills,
-            armor: 0,
-            defense: 0,
-        };
-        player.update_equipment_stats();
-        player
+        }
     }
 
     pub fn id(&self) -> PlayerId {
@@ -98,11 +92,11 @@ impl Player {
     }
 
     pub fn armor(&self) -> u16 {
-        self.armor
+        self.inventory.stats().armor
     }
 
     pub fn defense(&self) -> u16 {
-        self.defense
+        self.inventory.stats().defense
     }
 
     pub fn inventory(&self) -> &Inventory {
@@ -245,37 +239,5 @@ impl Player {
         self.get_skill(SkillType::Level)
             .map(|st| st.value)
             .unwrap_or(1)
-    }
-
-    pub fn update_equipment_stats(&mut self) {
-        self.update_armor();
-        self.update_defense();
-    }
-
-    fn update_armor(&mut self) {
-        self.armor = self
-            .inventory
-            .slots()
-            .values()
-            .filter_map(|it| it.config.attr_armor())
-            .sum()
-    }
-
-    fn update_defense(&mut self) {
-        let weapon_extra = self
-            .inventory
-            .get(&InventorySlot::LeftHand)
-            .and_then(|w| w.config.attr_extra_def())
-            .unwrap_or(0);
-        self.defense = match self.inventory.get(&InventorySlot::RightHand) {
-            Some(it) => (it.config.attr_defense().unwrap_or(0) as i16 + weapon_extra).max(0) as u16,
-            None => self
-                .inventory
-                .get(&InventorySlot::LeftHand)
-                .map(|it| {
-                    (it.config.attr_defense().unwrap_or(0) as i16 + weapon_extra).max(0) as u16
-                })
-                .unwrap_or(0),
-        }
     }
 }

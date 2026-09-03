@@ -58,11 +58,6 @@ enum AgentInner {
     Creature(Arc<CreatureKind>),
 }
 
-#[derive(Debug, Clone, Default)]
-struct Modifiers {
-    speed: i16,
-}
-
 new_key_type! { pub struct AgentKey; }
 
 #[derive(Clone, Debug)]
@@ -71,7 +66,6 @@ pub struct Agent {
     life: Pool,
     outfit: (OutfitId, OutfitColors),
     base_speed: u16,
-    modifiers: Modifiers,
     facing: Facing,
     origin: Position,
 
@@ -142,7 +136,6 @@ impl Agent {
             target: None,
             target_seq: 0,
             participation: Participation::default(),
-            modifiers: Modifiers::default(),
             origin: player.origin.clone(),
         }
     }
@@ -163,7 +156,6 @@ impl Agent {
             target: None,
             target_seq: 0,
             participation: Participation::default(),
-            modifiers: Modifiers::default(),
             origin,
         }
     }
@@ -198,7 +190,12 @@ impl Agent {
     }
 
     pub fn speed(&self) -> u16 {
-        i16::max(0, (self.base_speed as i16) + self.modifiers.speed) as u16
+        match &self.inner {
+            AgentInner::Creature(c) => c.speed,
+            AgentInner::Player(p) => self
+                .base_speed
+                .saturating_add_signed(p.inventory().stats().speed),
+        }
     }
 
     pub fn facing(&self) -> Facing {

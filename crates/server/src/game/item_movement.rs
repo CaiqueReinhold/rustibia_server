@@ -332,16 +332,6 @@ pub fn move_item(
         return broadcasts;
     }
 
-    let source_is_equip =
-        matches!(source.placement, ItemPlacement::Inventory(..)) && source_container.is_none();
-    let target_is_equip = matches!(to, ItemPlacement::Inventory(..)) && target_container.is_none();
-
-    if (source_is_equip || target_is_equip)
-        && let Some(player) = map.get_player_mut(agent)
-    {
-        player.update_equipment_stats();
-    }
-
     broadcasts
 }
 

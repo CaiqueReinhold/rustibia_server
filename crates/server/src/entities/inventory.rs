@@ -52,19 +52,30 @@ impl InventorySlot {
     }
 }
 
+#[derive(Debug, Clone, Default)]
+pub struct EquipmentStats {
+    pub defense: u16,
+    pub armor: u16,
+    pub speed: i16,
+}
+
 #[derive(Debug, Clone)]
 pub struct Inventory {
     slots: HashMap<InventorySlot, Item>,
     carried_weight: u32,
+    stats: EquipmentStats,
 }
 
 impl Inventory {
     pub fn from_snapshot(slots: HashMap<InventorySlot, Item>) -> Self {
         let carried_weight = slots.values().map(|i| i.total_weight()).sum();
-        Inventory {
+        let mut inventory = Inventory {
             slots,
             carried_weight,
-        }
+            stats: EquipmentStats::default(),
+        };
+        inventory.update_equipment_stats();
+        inventory
     }
 
     pub fn carried_weight(&self) -> u32 {
@@ -73,6 +84,10 @@ impl Inventory {
 
     pub fn set_carried_weight(&mut self, value: u32) {
         self.carried_weight = value;
+    }
+
+    pub fn stats(&self) -> &EquipmentStats {
+        &self.stats
     }
 
     /// Insert `item` into `slot`.
@@ -96,6 +111,7 @@ impl Inventory {
                     self.carried_weight -= old_item.total_weight();
                 }
                 self.carried_weight += weight_added;
+                self.update_equipment_stats();
                 Ok(old)
             }
             Some((target_guid, container_pos)) => {
@@ -149,6 +165,7 @@ impl Inventory {
             } else if slot_item.amount == amount {
                 let removed = self.slots.remove(&slot).unwrap();
                 self.carried_weight -= removed.total_weight();
+                self.update_equipment_stats();
                 return Some((removed, None));
             }
             return None;
@@ -169,6 +186,7 @@ impl Inventory {
     pub fn take_slot(&mut self, slot: &InventorySlot) -> Option<Item> {
         let item = self.slots.remove(slot)?;
         self.carried_weight -= item.total_weight();
+        self.update_equipment_stats();
         Some(item)
     }
 
@@ -186,6 +204,44 @@ impl Inventory {
 
     pub fn slots(&self) -> &HashMap<InventorySlot, Item> {
         &self.slots
+    }
+
+    pub fn update_equipment_stats(&mut self) {
+        self.update_armor();
+        self.update_defense();
+        self.update_speed();
+    }
+
+    fn update_armor(&mut self) {
+        self.stats.armor = self
+            .slots()
+            .values()
+            .filter_map(|it| it.config.attr_armor())
+            .sum()
+    }
+
+    fn update_defense(&mut self) {
+        let weapon_extra = self
+            .get(&InventorySlot::LeftHand)
+            .and_then(|w| w.config.attr_extra_def())
+            .unwrap_or(0);
+        self.stats.defense = match self.get(&InventorySlot::RightHand) {
+            Some(it) => (it.config.attr_defense().unwrap_or(0) as i16 + weapon_extra).max(0) as u16,
+            None => self
+                .get(&InventorySlot::LeftHand)
+                .map(|it| {
+                    (it.config.attr_defense().unwrap_or(0) as i16 + weapon_extra).max(0) as u16
+                })
+                .unwrap_or(0),
+        }
+    }
+
+    fn update_speed(&mut self) {
+        self.stats.speed = self
+            .slots()
+            .values()
+            .filter_map(|it| it.config.attr_speed())
+            .sum();
     }
 
     #[cfg(test)]

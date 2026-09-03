@@ -9,12 +9,10 @@ use crate::game::Tick;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Goal {
+    #[allow(dead_code)]
     Tile(Position),
     /// `range` is Chebyshev, as `Agent::attack_range` is.
-    Within {
-        of: Position,
-        range: u16,
-    },
+    Within { of: Position, range: u16 },
 }
 
 impl Goal {
