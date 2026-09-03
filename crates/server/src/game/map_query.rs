@@ -360,18 +360,12 @@ pub fn is_sight_clear(map: &GameMap, from: &Position, to: &Position, z: u8) -> b
     })
 }
 
-/// Whether `from` may hold `to` as an attack target.
-///
-/// Not the session's visibility rule: `get_agents_in_viewport` spans
-/// `iter_visible_floors` because its question is "what do I draw", while this one
-/// is "what can I fight", and `combat::is_in_range` cannot reach across floors.
-///
-/// Says nothing about weapon range or line of sight — failing those skips the
-/// swing and keeps the target, so the attacker can close the distance.
+/// Weather a target is within bounds
 pub fn can_target(from: &Position, to: &Position) -> bool {
     from.z == to.z && Rect::player_viewport(from).contains(to)
 }
 
+/// Weather a missile can travel wihout being blocked
 pub fn can_throw(map: &GameMap, from: &Position, to: &Position, same_floor: bool) -> bool {
     if (from.z > 7 && to.z < 8) || (from.z < 8 && to.z > 7) {
         return false;

@@ -30,6 +30,7 @@ pub struct GameConfig {
 #[derive(Deserialize)]
 pub struct MovementConfig {
     pub wander_ticks: Tick,
+    pub wander_distance: u16,
 }
 
 #[derive(Deserialize)]

@@ -562,31 +562,18 @@ impl GameMap {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::entities::agent::{Agent, Pool};
-    use crate::entities::creature::{BloodType, CreatureKind};
+    use crate::entities::agent::Agent;
     use crate::entities::items::{ItemAttribute, ItemConfig};
     use crate::entities::player::InventorySlot;
     use crate::entities::position::Position;
-    use crate::persistence::test_fixtures::a_player_with_a_full_backpack;
+    use crate::persistence::test_fixtures::{a_creature_kind, a_player_with_a_full_backpack};
     use std::collections::HashSet;
 
     fn new_creature() -> Agent {
-        Agent::from_creature_kind(Arc::new(CreatureKind {
-            name: "Creature".to_string(),
-            life: Pool {
-                current: 1,
-                maximum: 1,
-            },
-            speed: 1,
-            auto_attack_damage: (1, 2),
-            outfit: (1, (0, 0, 0, 0)),
-            blood_type: BloodType::Blood,
-            armor: 1,
-            defense: 1,
-            experience: 0,
-            corpse: 1,
-            loot_table: vec![],
-        }))
+        Agent::from_creature_kind(
+            Arc::new(a_creature_kind("Creature")),
+            Position::new(1028, 128, 7),
+        )
     }
 
     fn map_with_one_tile(pos: &Position) -> GameMap {

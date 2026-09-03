@@ -144,9 +144,15 @@ pub fn plan_auto_attack(
     if agent.next_attack_tick > current_tick {
         return None;
     }
+
     if !is_in_range(agent, &from, &to) {
         return None;
     }
+
+    if agent.is_fleeing() {
+        return None;
+    }
+
     if agent.attack_range() > 1 && !can_throw(map, &from, &to, true) {
         return None;
     }
@@ -343,7 +349,7 @@ mod tests {
     use crate::entities::skills::SkillValue;
     use crate::persistence::player::PlayerSnapshot;
     use crate::persistence::test_fixtures::{
-        a_test_creature, a_test_creature_with_defences, a_test_snapshot,
+        a_test_creature, a_test_creature_that_flees, a_test_creature_with_defences, a_test_snapshot,
     };
     use std::collections::HashSet;
     use std::sync::Arc;
@@ -572,6 +578,48 @@ mod tests {
         let mut roll = Rolls::new(1);
 
         assert!(plan_auto_attack(&map, attacker, &mut roll, 0).is_none());
+    }
+
+    /// TFS refuses only the *melee* spell blocks while a monster flees, so a fleeing
+    /// ranged monster keeps shooting. Every creature attack is melee today, so a fleeing
+    /// creature plans nothing at all.
+    #[test]
+    fn a_fleeing_creature_plans_no_melee() {
+        let (mut map, attacker, _) = duel(
+            a_test_creature_that_flees("Rat", 10, (1, 2), 5),
+            Agent::from_player(a_test_snapshot(1, 1)),
+        );
+        let mut roll = Rolls::new(1);
+        assert!(
+            plan_auto_attack(&map, attacker, &mut roll, 0).is_some(),
+            "above its threshold the same creature swings"
+        );
+
+        map.get_agent_mut(attacker).unwrap().take_hit(6);
+
+        assert!(plan_auto_attack(&map, attacker, &mut roll, 0).is_none());
+    }
+
+    /// The threshold is inclusive, as `runonhealth` is in the reference.
+    #[test]
+    fn a_creature_exactly_on_its_threshold_flees() {
+        let (mut map, attacker, _) = duel(
+            a_test_creature_that_flees("Rat", 10, (1, 2), 5),
+            Agent::from_player(a_test_snapshot(1, 1)),
+        );
+        let mut roll = Rolls::new(1);
+        map.get_agent_mut(attacker).unwrap().take_hit(4);
+        assert!(
+            plan_auto_attack(&map, attacker, &mut roll, 0).is_some(),
+            "6 of 10"
+        );
+
+        map.get_agent_mut(attacker).unwrap().take_hit(1);
+
+        assert!(
+            plan_auto_attack(&map, attacker, &mut roll, 0).is_none(),
+            "5 of 10"
+        );
     }
 
     #[test]

@@ -17,6 +17,7 @@ use crate::entities::creature::CreatureKind;
 use crate::entities::items::{ItemGuid, ItemRef};
 use crate::entities::map::GameMap;
 use crate::entities::position::{Direction, ItemPlacement, Position};
+use crate::game::creature_behavior::CreatureAction;
 use crate::game::events::BroadcastMessage;
 use crate::game::item_multi_action::UseTarget;
 use crate::game::random::Rolls;
@@ -32,8 +33,8 @@ pub enum WorldCommand {
         tx: oneshot::Sender<(AgentKey, MessageRouterGuard)>,
     },
     Walk {
+        agent_key: AgentKey,
         direction: Direction,
-        actor: AgentKey,
     },
     MoveItem {
         agent: AgentKey,
@@ -75,10 +76,30 @@ pub enum WorldCommand {
         message: String,
     },
     SetTarget {
-        agent: AgentKey,
+        agent_key: AgentKey,
         target: Option<AgentKey>,
         seq: u32,
     },
+}
+
+impl WorldCommand {
+    pub fn from_creature_action(action: CreatureAction) -> Self {
+        match action {
+            CreatureAction::Say { agent_key, message } => WorldCommand::Say { agent_key, message },
+            CreatureAction::SetTarget { agent_key, target } => WorldCommand::SetTarget {
+                agent_key,
+                target,
+                seq: 0,
+            },
+            CreatureAction::Walk {
+                agent_key,
+                direction,
+            } => WorldCommand::Walk {
+                agent_key,
+                direction,
+            },
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -314,10 +335,11 @@ impl WorldActor {
                 session,
                 tx,
             } => self.spawn_player(player, session, tx, broadcast_messages),
-            WorldCommand::Walk { direction, actor } => {
-                movement::walk(&mut self.map, self.tick, direction, actor)
-                    .map(|msgs| broadcast_messages.extend(msgs))
-            }
+            WorldCommand::Walk {
+                direction,
+                agent_key,
+            } => movement::walk(&mut self.map, self.tick, direction, agent_key)
+                .map(|msgs| broadcast_messages.extend(msgs)),
             WorldCommand::MoveItem {
                 agent,
                 source,
@@ -364,8 +386,12 @@ impl WorldActor {
                 broadcast_messages.extend(msgs);
                 Ok(())
             }
-            WorldCommand::SetTarget { agent, target, seq } => {
-                let msgs = targeting::set_target(&mut self.map, agent, target, seq);
+            WorldCommand::SetTarget {
+                agent_key,
+                target,
+                seq,
+            } => {
+                let msgs = targeting::set_target(&mut self.map, agent_key, target, seq);
                 broadcast_messages.extend(msgs);
                 Ok(())
             }
@@ -386,7 +412,7 @@ impl WorldActor {
                 spawning,
                 slot_idx,
             } => {
-                let agent = Agent::from_creature_kind(kind.clone());
+                let agent = Agent::from_creature_kind(kind.clone(), position.clone());
                 match self.map.insert_agent(agent, &position) {
                     Ok(agent_key) => {
                         broadcast_messages.push(BroadcastMessage::PlayerSpawned {
@@ -468,7 +494,7 @@ impl WorldActor {
         let player = agent
             .get_player()
             .ok_or(anyhow!("Agent {:?} is not a player", agent))?;
-        let origin = player.origin.clone();
+        let origin = agent.get_origin().clone();
         let position = player.position.clone();
 
         let agent_key = self
@@ -588,7 +614,7 @@ mod tests {
 
         actor.handle_command(
             WorldCommand::SetTarget {
-                agent: attacker,
+                agent_key: attacker,
                 target: Some(victim),
                 seq: 0,
             },

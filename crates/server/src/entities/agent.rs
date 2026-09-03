@@ -73,6 +73,7 @@ pub struct Agent {
     base_speed: u16,
     modifiers: Modifiers,
     facing: Facing,
+    origin: Position,
 
     // both
     pub next_walk_tick: Tick,
@@ -115,6 +116,10 @@ impl Agent {
         matches!(self.inner, AgentInner::Creature(..))
     }
 
+    pub fn get_origin(&self) -> &Position {
+        &self.origin
+    }
+
     pub fn from_player(player: PlayerSnapshot) -> Self {
         let inventory = Inventory::from_snapshot(player.inventory);
         let mut p = Player {
@@ -122,9 +127,8 @@ impl Agent {
             name: player.name,
             account_id: player.account_id,
             admin: player.admin,
-            vocation: player.vocation,
             position: player.position,
-            origin: player.origin,
+            vocation: player.vocation,
             mana: player.mana,
             capacity: player.capacity,
             inventory: Arc::new(inventory),
@@ -147,10 +151,11 @@ impl Agent {
             target_seq: 0,
             participation: Participation::default(),
             modifiers: Modifiers::default(),
+            origin: player.origin.clone(),
         }
     }
 
-    pub fn from_creature_kind(kind: Arc<CreatureKind>) -> Self {
+    pub fn from_creature_kind(kind: Arc<CreatureKind>, origin: Position) -> Self {
         let life = kind.life.clone();
         let outfit = kind.outfit;
         let speed = kind.speed;
@@ -168,6 +173,7 @@ impl Agent {
             target_seq: 0,
             participation: Participation::default(),
             modifiers: Modifiers::default(),
+            origin,
         }
     }
 
@@ -180,6 +186,12 @@ impl Agent {
 
     pub fn life(&self) -> &Pool {
         &self.life
+    }
+
+    pub fn is_fleeing(&self) -> bool {
+        self.get_creature_kind()
+            .and_then(|kind| kind.flee_threshold)
+            .is_some_and(|threshold| self.life.current <= threshold)
     }
 
     pub fn take_hit(&mut self, damage: u32) {
@@ -289,7 +301,7 @@ impl Agent {
             name: player.name.clone(),
             vocation: player.vocation,
             position,
-            origin: player.origin.clone(),
+            origin: self.origin.clone(),
             facing: self.facing,
             life: self.life.clone(),
             mana: player.mana.clone(),
@@ -305,13 +317,13 @@ impl Agent {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::entities::creature::BloodType;
     use crate::entities::map::GameMap;
     use crate::entities::player::InventorySlot;
     use crate::entities::position::Position;
     use crate::entities::skills::{SkillType, SkillValue};
     use crate::entities::vocation::Vocation;
     use crate::persistence::player::PlayerSnapshot;
+    use crate::persistence::test_fixtures::a_creature_kind;
     use crate::persistence::test_fixtures::a_test_snapshot;
     use std::collections::HashMap;
 
@@ -361,22 +373,10 @@ mod tests {
 
     #[test]
     fn to_snapshot_returns_none_for_creature() {
-        let creature = Agent::from_creature_kind(Arc::new(CreatureKind {
-            name: "Creature".to_string(),
-            life: Pool {
-                current: 1,
-                maximum: 1,
-            },
-            speed: 1,
-            auto_attack_damage: (1, 2),
-            outfit: (1, (0, 0, 0, 0)),
-            blood_type: BloodType::Blood,
-            armor: 1,
-            defense: 1,
-            experience: 0,
-            corpse: 1,
-            loot_table: vec![],
-        }));
+        let creature = Agent::from_creature_kind(
+            Arc::new(a_creature_kind("Creature")),
+            Position::new(1028, 128, 7),
+        );
         let pos = Position {
             x: 200,
             y: 200,
@@ -426,22 +426,10 @@ mod tests {
     #[test]
     fn is_creature_distinguishes_player_and_creature() {
         let player = Agent::from_player(make_snapshot(1));
-        let creature = Agent::from_creature_kind(Arc::new(CreatureKind {
-            name: "Creature".to_string(),
-            life: Pool {
-                current: 1,
-                maximum: 1,
-            },
-            auto_attack_damage: (1, 2),
-            outfit: (1, (0, 0, 0, 0)),
-            speed: 1,
-            blood_type: BloodType::Blood,
-            armor: 1,
-            defense: 1,
-            experience: 0,
-            corpse: 1,
-            loot_table: vec![],
-        }));
+        let creature = Agent::from_creature_kind(
+            Arc::new(a_creature_kind("Creature")),
+            Position::new(1028, 128, 7),
+        );
         assert!(!player.is_creature());
         assert!(creature.is_creature());
     }
@@ -450,22 +438,14 @@ mod tests {
     fn from_creature_kind_produces_creature_agent_with_kind_attributes() {
         use crate::entities::creature::CreatureKind;
         let kind = CreatureKind {
-            name: "Demon".to_string(),
             life: Pool {
                 current: 8200,
                 maximum: 8200,
             },
-            auto_attack_damage: (1, 2),
             outfit: (35, (0, 0, 0, 0)),
-            speed: 1,
-            blood_type: BloodType::Blood,
-            armor: 1,
-            defense: 1,
-            experience: 0,
-            corpse: 1,
-            loot_table: vec![],
+            ..a_creature_kind("Demon")
         };
-        let agent = Agent::from_creature_kind(Arc::new(kind));
+        let agent = Agent::from_creature_kind(Arc::new(kind), Position::new(1028, 128, 7));
         assert!(agent.is_creature());
         assert_eq!(agent.name(), "Demon");
         assert_eq!(agent.life().maximum, 8200);

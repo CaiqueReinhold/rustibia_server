@@ -1,25 +1,32 @@
+use once_cell::sync::Lazy;
 use rand::{RngExt, SeedableRng, rngs::Xoshiro256PlusPlus, seq::IndexedRandom};
 use rand_distr::{Distribution, Normal};
 
 use crate::constants::MAX_DROP_CHANCE;
 
+static DAMAGE_CURVE: Lazy<Normal<f32>> = Lazy::new(|| Normal::new(0.5, 0.25).unwrap());
+
+#[derive(Debug)]
 pub struct Rolls {
     rng: Xoshiro256PlusPlus,
-    normal: Normal<f32>,
 }
 
 impl Rolls {
     pub fn new(seed: u64) -> Self {
         Self {
             rng: Xoshiro256PlusPlus::seed_from_u64(seed),
-            normal: Normal::new(0.5, 0.25).unwrap(),
         }
+    }
+
+    /// An independent, reproducible stream for one (tick, entity) pair.
+    pub fn stream(world_seed: u64, tick: u64, id: u64) -> Self {
+        Self::new(mix64(mix64(world_seed ^ tick) ^ id))
     }
 
     pub fn damage_roll(&mut self, min: u32, max: u32) -> u32 {
         let (a, b) = (min.min(max), min.max(max));
         let v = loop {
-            let v = self.normal.sample(&mut self.rng);
+            let v = DAMAGE_CURVE.sample(&mut self.rng);
             if (0.0..=1.0).contains(&v) {
                 break v;
             }
@@ -51,4 +58,14 @@ impl Rolls {
                 0
             }
     }
+}
+
+/// SplitMix64 finalizer: diffuses a low-entropy integer across all 64 bits.
+const fn mix64(mut x: u64) -> u64 {
+    x ^= x >> 30;
+    x = x.wrapping_mul(0xbf58_476d_1ce4_e5b9);
+    x ^= x >> 27;
+    x = x.wrapping_mul(0x94d0_49bb_1331_11eb);
+    x ^= x >> 31;
+    x
 }

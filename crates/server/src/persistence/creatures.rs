@@ -64,6 +64,8 @@ struct RawCreature {
     corpse: ItemId,
     #[serde(default)]
     loot: Vec<RawLootEntry>,
+    #[serde(default)]
+    flee_threshold: Option<u32>,
 }
 
 impl RawCreature {
@@ -91,6 +93,7 @@ impl RawCreature {
                     amount: loot.amount,
                 })
                 .collect(),
+            flee_threshold: self.flee_threshold,
         }
     }
 }
@@ -155,11 +158,29 @@ pub fn load_creatures(
 mod tests {
     use super::*;
     use crate::config::CONFIG;
+    use crate::entities::agent::Agent;
+    use crate::entities::position::Position;
     use crate::persistence::items::ITEM_CONFIGS;
 
-    /// Loot tables are transcribed from TFS, whose item ids are a different space to the
-    /// one `items.yaml` is generated in. A wrong id fails silently at runtime — the drop
-    /// is logged and swallowed — so nothing but this test notices.
+    #[test]
+    fn every_shipped_creature_walks_at_its_tibia_speed() {
+        let creatures = load_creatures(&CONFIG.creatures_dir_path).unwrap();
+
+        for (name, expected_ms) in [("Demon", 500), ("Dragon", 700), ("Elf", 650)] {
+            let kind = creatures
+                .values()
+                .find(|kind| kind.name == name)
+                .unwrap_or_else(|| panic!("{name} is not among the shipped creatures"));
+            let agent = Agent::from_creature_kind(kind.clone(), Position::new(1028, 128, 7));
+
+            assert_eq!(
+                agent.calculate_walk_ticks(150, false) * 50,
+                expected_ms,
+                "{name} walks a normal tile in {expected_ms}ms in the reference"
+            );
+        }
+    }
+
     #[test]
     fn every_shipped_loot_and_corpse_id_resolves_to_an_item() {
         let creatures = load_creatures(&CONFIG.creatures_dir_path).unwrap();

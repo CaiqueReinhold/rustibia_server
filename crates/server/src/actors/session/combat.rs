@@ -20,7 +20,7 @@ impl SessionActor {
         let target = agent_id.and_then(|id| self.agents.get_global(id).copied());
         self.world
             .send(WorldCommand::SetTarget {
-                agent: self.player_key,
+                agent_key: self.player_key,
                 target,
                 seq,
             })
@@ -41,9 +41,7 @@ impl SessionActor {
         damage: CombatDamage,
     ) -> Result<()> {
         let map = self.shared_map.load();
-        if agent_key == self.player_key {
-            todo!();
-        } else if let Some(agent_id) = self.agents.get_local(&agent_key) {
+        if let Some(agent_id) = self.agents.get_local(&agent_key) {
             let Some(position) = map.agent_position(agent_key) else {
                 return Ok(());
             };
@@ -68,11 +66,18 @@ impl SessionActor {
                     })
                     .await?;
             }
+
+            let (current, max) = if agent_key == self.player_key {
+                (agent.life().current, agent.life().maximum)
+            } else {
+                (agent.life().to_wire(), 100)
+            };
+
             self.connection
                 .send_message(ServerMessage::AgentLifeChanged {
                     agent_id,
-                    current: agent.life().to_wire(),
-                    max: 100,
+                    current,
+                    max,
                 })
                 .await?;
         }

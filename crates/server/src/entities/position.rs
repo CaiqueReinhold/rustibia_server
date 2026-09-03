@@ -55,53 +55,23 @@ impl Position {
             ItemPlacement::Inventory(..) => true,
         }
     }
+
+    pub fn checked_offset(&self, dx: i32, dy: i32) -> Option<Position> {
+        let x = u16::try_from(self.x as i32 + dx).ok()?;
+        let y = u16::try_from(self.y as i32 + dy).ok()?;
+        Some(Position::new(x, y, self.z))
+    }
 }
 
 impl Add<Direction> for Position {
     type Output = Position;
 
     fn add(self, rhs: Direction) -> Self::Output {
-        match rhs {
-            Direction::North => Self {
-                x: self.x,
-                y: self.y - 1,
-                z: self.z,
-            },
-            Direction::South => Self {
-                x: self.x,
-                y: self.y + 1,
-                z: self.z,
-            },
-            Direction::East => Self {
-                x: self.x + 1,
-                y: self.y,
-                z: self.z,
-            },
-            Direction::West => Self {
-                x: self.x - 1,
-                y: self.y,
-                z: self.z,
-            },
-            Direction::NorthEast => Self {
-                x: self.x + 1,
-                y: self.y - 1,
-                z: self.z,
-            },
-            Direction::NorthWest => Self {
-                x: self.x - 1,
-                y: self.y - 1,
-                z: self.z,
-            },
-            Direction::SouthEast => Self {
-                x: self.x + 1,
-                y: self.y + 1,
-                z: self.z,
-            },
-            Direction::SouthWest => Self {
-                x: self.x - 1,
-                y: self.y + 1,
-                z: self.z,
-            },
+        let (dx, dy) = rhs.delta();
+        Self {
+            x: self.x.saturating_add_signed(dx as i16),
+            y: self.y.saturating_add_signed(dy as i16),
+            z: self.z,
         }
     }
 }
@@ -110,47 +80,11 @@ impl Sub<Direction> for Position {
     type Output = Position;
 
     fn sub(self, rhs: Direction) -> Self::Output {
-        match rhs {
-            Direction::North => Self {
-                x: self.x,
-                y: self.y + 1,
-                z: self.z,
-            },
-            Direction::South => Self {
-                x: self.x,
-                y: self.y - 1,
-                z: self.z,
-            },
-            Direction::East => Self {
-                x: self.x - 1,
-                y: self.y,
-                z: self.z,
-            },
-            Direction::West => Self {
-                x: self.x + 1,
-                y: self.y,
-                z: self.z,
-            },
-            Direction::NorthEast => Self {
-                x: self.x - 1,
-                y: self.y + 1,
-                z: self.z,
-            },
-            Direction::NorthWest => Self {
-                x: self.x + 1,
-                y: self.y + 1,
-                z: self.z,
-            },
-            Direction::SouthEast => Self {
-                x: self.x - 1,
-                y: self.y - 1,
-                z: self.z,
-            },
-            Direction::SouthWest => Self {
-                x: self.x + 1,
-                y: self.y - 1,
-                z: self.z,
-            },
+        let (dx, dy) = rhs.delta();
+        Self {
+            x: self.x.saturating_sub_signed(dx as i16),
+            y: self.y.saturating_sub_signed(dy as i16),
+            z: self.z,
         }
     }
 }
@@ -161,7 +95,7 @@ impl Display for Position {
     }
 }
 
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Debug, Copy, PartialEq, Eq)]
 pub enum Direction {
     North,
     East,
@@ -183,7 +117,37 @@ impl Direction {
                 | Direction::SouthWest
         )
     }
+
+    pub fn delta(&self) -> (i32, i32) {
+        match self {
+            Direction::North => (0, -1),
+            Direction::NorthEast => (1, -1),
+            Direction::East => (1, 0),
+            Direction::SouthEast => (1, 1),
+            Direction::South => (0, 1),
+            Direction::SouthWest => (-1, 1),
+            Direction::West => (-1, 0),
+            Direction::NorthWest => (-1, -1),
+        }
+    }
+
+    pub fn from_step(dx: i32, dy: i32) -> Option<Direction> {
+        ALL_DIRECTIONS
+            .into_iter()
+            .find(|direction| direction.delta() == (dx, dy))
+    }
 }
+
+pub const ALL_DIRECTIONS: [Direction; 8] = [
+    Direction::North,
+    Direction::NorthEast,
+    Direction::East,
+    Direction::SouthEast,
+    Direction::South,
+    Direction::SouthWest,
+    Direction::West,
+    Direction::NorthWest,
+];
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum ItemPlacement {

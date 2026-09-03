@@ -43,4 +43,5 @@ pub struct CreatureKind {
     pub experience: u32,
     pub corpse: ItemId,
     pub loot_table: Vec<LootEntry>,
+    pub flee_threshold: Option<u32>,
 }

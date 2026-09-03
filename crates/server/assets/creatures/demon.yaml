@@ -1,6 +1,6 @@
 name: Demon
 life: 8200
-speed: 230
+speed: 128
 blood_type: blood
 armor: 44
 defense: 44

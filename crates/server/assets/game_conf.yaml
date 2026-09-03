@@ -9,7 +9,8 @@ action:
   use_item_cooldown_ticks: 20
 
 movement:
-  wander_ticks: 400
+  wander_ticks: 20
+  wander_distance: 10
 
 chat:
   server_channels:

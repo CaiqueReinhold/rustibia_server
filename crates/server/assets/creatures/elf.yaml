@@ -1,6 +1,6 @@
 name: Elf
 life: 100
-speed: 190
+speed: 95
 blood_type: blood
 armor: 6
 defense: 6

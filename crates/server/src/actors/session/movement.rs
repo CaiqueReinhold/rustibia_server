@@ -37,7 +37,7 @@ impl SessionActor {
         self.world
             .send(WorldCommand::Walk {
                 direction,
-                actor: self.player_key,
+                agent_key: self.player_key,
             })
             .await;
         Ok(())

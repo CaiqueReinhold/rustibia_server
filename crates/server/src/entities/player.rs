@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use crate::entities::position::Position;
 use crate::entities::vocation::Vocation;
 use crate::entities::{
     agent::Pool,
@@ -9,8 +10,6 @@ use crate::entities::{
     items::{Item, ItemFlag},
     skills::{SkillType, SkillValue},
 };
-
-use super::position::Position;
 
 pub type PlayerId = u32;
 
@@ -70,9 +69,8 @@ pub struct Player {
     pub name: String,
     pub account_id: i32,
     pub admin: bool,
-    pub vocation: Vocation,
     pub position: Position,
-    pub origin: Position,
+    pub vocation: Vocation,
     pub mana: Pool,
     pub capacity: u32,
     pub inventory: Arc<Inventory>,

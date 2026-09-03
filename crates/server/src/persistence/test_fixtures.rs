@@ -191,7 +191,7 @@ pub fn a_player_with_a_full_backpack(id: u32, account_id: i32) -> PlayerSnapshot
 /// about something else green for the wrong reason; anything testing mitigation asks for
 /// it by name. Worth no experience, for the same reason.
 pub fn a_test_creature(name: &str, life: u32, damage: (u32, u32)) -> Agent {
-    a_creature(name, life, damage, 0, 0, 0)
+    a_creature(name, life, damage, 0, 0, 0, None)
 }
 
 pub fn a_test_creature_with_defences(
@@ -201,11 +201,45 @@ pub fn a_test_creature_with_defences(
     armor: u16,
     defense: u16,
 ) -> Agent {
-    a_creature(name, life, damage, armor, defense, 0)
+    a_creature(name, life, damage, armor, defense, 0, None)
 }
 
 pub fn a_test_creature_worth(name: &str, life: u32, damage: (u32, u32), experience: u32) -> Agent {
-    a_creature(name, life, damage, 0, 0, experience)
+    a_creature(name, life, damage, 0, 0, experience, None)
+}
+
+/// A creature that runs at or below `flee_threshold`. The default fixtures carry no
+/// threshold at all, which is how "never flees" is spelled.
+pub fn a_test_creature_that_flees(
+    name: &str,
+    life: u32,
+    damage: (u32, u32),
+    flee_threshold: u32,
+) -> Agent {
+    a_creature(name, life, damage, 0, 0, 0, Some(flee_threshold))
+}
+
+/// The one `CreatureKind` every test builds on, so a new field on the struct is filled in
+/// here and nowhere else. Callers override what their test is about with struct update
+/// syntax: `CreatureKind { armor: 30, ..a_creature_kind("Dragon") }`.
+pub fn a_creature_kind(name: &str) -> CreatureKind {
+    CreatureKind {
+        name: name.to_string(),
+        life: Pool {
+            current: 1,
+            maximum: 1,
+        },
+        outfit: (21, (0, 0, 0, 0)),
+        speed: 100,
+        auto_attack_damage: (1, 2),
+        blood_type: BloodType::Blood,
+        armor: 0,
+        defense: 0,
+        experience: 0,
+        corpse: 1,
+        loot_table: vec![],
+        flee_threshold: None,
+    }
 }
 
 fn a_creature(
@@ -215,21 +249,21 @@ fn a_creature(
     armor: u16,
     defense: u16,
     experience: u32,
+    flee_threshold: Option<u32>,
 ) -> Agent {
-    Agent::from_creature_kind(Arc::new(CreatureKind {
-        name: name.to_string(),
-        life: Pool {
-            current: life,
-            maximum: life,
-        },
-        outfit: (21, (0, 0, 0, 0)),
-        speed: 100,
-        auto_attack_damage: damage,
-        blood_type: BloodType::Blood,
-        armor,
-        defense,
-        experience,
-        corpse: 1,
-        loot_table: vec![],
-    }))
+    Agent::from_creature_kind(
+        Arc::new(CreatureKind {
+            life: Pool {
+                current: life,
+                maximum: life,
+            },
+            auto_attack_damage: damage,
+            armor,
+            defense,
+            experience,
+            flee_threshold,
+            ..a_creature_kind(name)
+        }),
+        Position::new(1028, 128, 7),
+    )
 }
