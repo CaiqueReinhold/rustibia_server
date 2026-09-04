@@ -22,64 +22,6 @@ use crate::{
     },
 };
 
-struct WeaponSkill {
-    value: u16,
-    trains: Option<SkillType>,
-}
-
-fn weapon_skill(player: &Player) -> WeaponSkill {
-    let (trains, value) = match player.weapon_type() {
-        WeaponType::None => (None, GAME_CONFIG.combat.unarmed_skill),
-        WeaponType::Axe => (Some(SkillType::Axe), player.skill_axe()),
-        WeaponType::Club => (Some(SkillType::Club), player.skill_club()),
-        WeaponType::Sword => (Some(SkillType::Sword), player.skill_sword()),
-        WeaponType::Bow | WeaponType::Crossbow | WeaponType::Distance => {
-            (Some(SkillType::Distance), player.skill_distance())
-        }
-        WeaponType::Wand | WeaponType::Rod => (None, player.skill_magic()),
-    };
-    WeaponSkill { value, trains }
-}
-
-fn get_max_damage(attack_value: u16, level: u16, skill_value: u16) -> u32 {
-    (((level as f32) / 5.5) + (((skill_value as f32) / 3.5) * ((attack_value as f32) / 3.0)))
-        .round() as u32
-}
-
-fn get_min_damage(attack_value: u16, level: u16, skill_value: u16) -> u32 {
-    (((level as f32) / 5.0) + (((skill_value as f32) / 10.0) * ((attack_value as f32) / 10.0)))
-        .round() as u32
-}
-
-fn get_player_base_damage(
-    player: &Player,
-    roll: &mut Rolls,
-) -> (Option<SkillType>, CombatElement, u32) {
-    let level = player.level();
-    let skill = weapon_skill(player);
-    let min = get_min_damage(player.weapon_attack(), level, skill.value);
-    let max = get_max_damage(player.weapon_attack(), level, skill.value);
-    (
-        skill.trains,
-        player.weapon_element(),
-        roll.damage_roll(min, max),
-    )
-}
-
-fn get_creature_base_damage(creature: &CreatureKind, roll: &mut Rolls) -> (CombatElement, u32) {
-    (
-        CombatElement::Physical,
-        roll.damage_roll(creature.auto_attack_damage.0, creature.auto_attack_damage.1),
-    )
-}
-
-fn is_in_range(attacker: &Agent, attacker_pos: &Position, attacked_pos: &Position) -> bool {
-    let r = attacker.attack_range();
-    let dx = attacked_pos.x.abs_diff(attacker_pos.x);
-    let dy = attacked_pos.y.abs_diff(attacker_pos.y);
-    (r as u16) >= dx && (r as u16) >= dy && attacker_pos.z == attacked_pos.z
-}
-
 #[derive(Debug, PartialEq)]
 pub enum AttackCost {
     None,
@@ -99,18 +41,10 @@ pub struct AttackPlan {
     pub missile: Option<u16>,
 }
 
-fn apply_shield(base_attack_value: u32, target: &Agent, roll: &mut Rolls) -> u32 {
-    let defense_value = target.defense();
-    let defended = roll.uniform(defense_value / 2, defense_value);
-    base_attack_value.saturating_sub(defended)
-}
-
-fn apply_armor(base_attack_value: u32, target: &Agent, roll: &mut Rolls) -> u32 {
-    let armor = target.armor() as u32;
-    if armor == 0 {
-        return base_attack_value;
-    }
-    base_attack_value.saturating_sub(roll.uniform(armor / 2, armor))
+#[derive(Debug)]
+struct WeaponSkill {
+    value: u16,
+    trains: Option<SkillType>,
 }
 
 pub fn plan_auto_attack(
@@ -253,37 +187,6 @@ pub fn execute_attack(
     );
 }
 
-fn consume_ammo(
-    player: &mut Player,
-    agent_key: AgentKey,
-    ammo_guid: ItemGuid,
-    msgs: &mut Vec<BroadcastMessage>,
-) {
-    if let Some((_, Some((parent, _)))) =
-        player
-            .inventory_mut()
-            .remove(InventorySlot::RightHand, &ammo_guid, 1)
-    {
-        msgs.push(BroadcastMessage::ContainerUpdated {
-            item: ItemRef {
-                guid: parent,
-                placement: ItemPlacement::Inventory(InventorySlot::RightHand, agent_key),
-            },
-        });
-    }
-}
-
-fn consume_mana(
-    agent_key: AgentKey,
-    player: &mut Player,
-    mana_cost: u32,
-    msgs: &mut Vec<BroadcastMessage>,
-) {
-    player.mana_mut().remove(mana_cost);
-    msgs.push(BroadcastMessage::PlayerManaUpdated { agent_key });
-    tick_skill(player, agent_key, SkillType::Magic, mana_cost as u64, msgs);
-}
-
 pub fn get_damage_visuals(damage: &CombatDamage, blood_type: Option<&BloodType>) -> (u16, Color) {
     if damage.blocked_shield {
         return (
@@ -320,6 +223,106 @@ pub fn get_damage_visuals(damage: &CombatDamage, blood_type: Option<&BloodType>)
         CombatElement::Fire => GAME_CONFIG.text_colors.orange,
     };
     (effect, color)
+}
+
+// private
+
+fn weapon_skill(player: &Player) -> WeaponSkill {
+    let (trains, value) = match player.weapon_type() {
+        WeaponType::None => (None, GAME_CONFIG.combat.unarmed_skill),
+        WeaponType::Axe => (Some(SkillType::Axe), player.skill_axe()),
+        WeaponType::Club => (Some(SkillType::Club), player.skill_club()),
+        WeaponType::Sword => (Some(SkillType::Sword), player.skill_sword()),
+        WeaponType::Bow | WeaponType::Crossbow | WeaponType::Distance => {
+            (Some(SkillType::Distance), player.skill_distance())
+        }
+        WeaponType::Wand | WeaponType::Rod => (None, player.skill_magic()),
+    };
+    WeaponSkill { value, trains }
+}
+
+fn get_max_damage(attack_value: u16, level: u16, skill_value: u16) -> u32 {
+    (((level as f32) / 5.5) + (((skill_value as f32) / 3.5) * ((attack_value as f32) / 3.0)))
+        .round() as u32
+}
+
+fn get_min_damage(attack_value: u16, level: u16, skill_value: u16) -> u32 {
+    (((level as f32) / 5.0) + (((skill_value as f32) / 10.0) * ((attack_value as f32) / 10.0)))
+        .round() as u32
+}
+
+fn get_player_base_damage(
+    player: &Player,
+    roll: &mut Rolls,
+) -> (Option<SkillType>, CombatElement, u32) {
+    let level = player.level();
+    let skill = weapon_skill(player);
+    let min = get_min_damage(player.weapon_attack(), level, skill.value);
+    let max = get_max_damage(player.weapon_attack(), level, skill.value);
+    (
+        skill.trains,
+        player.weapon_element(),
+        roll.damage_roll(min, max),
+    )
+}
+
+fn get_creature_base_damage(creature: &CreatureKind, roll: &mut Rolls) -> (CombatElement, u32) {
+    (
+        CombatElement::Physical,
+        roll.damage_roll(creature.auto_attack_damage.0, creature.auto_attack_damage.1),
+    )
+}
+
+fn is_in_range(attacker: &Agent, attacker_pos: &Position, attacked_pos: &Position) -> bool {
+    let r = attacker.attack_range();
+    let dx = attacked_pos.x.abs_diff(attacker_pos.x);
+    let dy = attacked_pos.y.abs_diff(attacker_pos.y);
+    (r as u16) >= dx && (r as u16) >= dy && attacker_pos.z == attacked_pos.z
+}
+
+fn apply_shield(base_attack_value: u32, target: &Agent, roll: &mut Rolls) -> u32 {
+    let defense_value = target.defense();
+    let defended = roll.uniform(defense_value / 2, defense_value);
+    base_attack_value.saturating_sub(defended)
+}
+
+fn apply_armor(base_attack_value: u32, target: &Agent, roll: &mut Rolls) -> u32 {
+    let armor = target.armor() as u32;
+    if armor == 0 {
+        return base_attack_value;
+    }
+    base_attack_value.saturating_sub(roll.uniform(armor / 2, armor))
+}
+
+fn consume_ammo(
+    player: &mut Player,
+    agent_key: AgentKey,
+    ammo_guid: ItemGuid,
+    msgs: &mut Vec<BroadcastMessage>,
+) {
+    if let Some((_, Some((parent, _)))) =
+        player
+            .inventory_mut()
+            .remove(InventorySlot::RightHand, &ammo_guid, 1)
+    {
+        msgs.push(BroadcastMessage::ContainerUpdated {
+            item: ItemRef {
+                guid: parent,
+                placement: ItemPlacement::Inventory(InventorySlot::RightHand, agent_key),
+            },
+        });
+    }
+}
+
+fn consume_mana(
+    agent_key: AgentKey,
+    player: &mut Player,
+    mana_cost: u32,
+    msgs: &mut Vec<BroadcastMessage>,
+) {
+    player.mana_mut().remove(mana_cost);
+    msgs.push(BroadcastMessage::PlayerManaUpdated { agent_key });
+    tick_skill(player, agent_key, SkillType::Magic, mana_cost as u64, msgs);
 }
 
 #[cfg(test)]
