@@ -68,6 +68,7 @@ pub struct Agent {
     base_speed: u16,
     facing: Facing,
     origin: Position,
+    respawn_ticks: Option<Tick>,
 
     // both
     pub next_walk_tick: Tick,
@@ -137,6 +138,7 @@ impl Agent {
             target_seq: 0,
             participation: Participation::default(),
             origin: player.origin.clone(),
+            respawn_ticks: None,
         }
     }
 
@@ -157,6 +159,25 @@ impl Agent {
             target_seq: 0,
             participation: Participation::default(),
             origin,
+            respawn_ticks: None,
+        }
+    }
+
+    pub fn respawning(kind: Arc<CreatureKind>, origin: Position, respawn_ticks: Tick) -> Self {
+        Self {
+            respawn_ticks: Some(respawn_ticks),
+            ..Self::from_creature_kind(kind, origin)
+        }
+    }
+
+    pub fn respawn_ticks(&self) -> Option<Tick> {
+        self.respawn_ticks
+    }
+
+    pub fn creature_kind(&self) -> Option<&Arc<CreatureKind>> {
+        match &self.inner {
+            AgentInner::Creature(c) => Some(c),
+            AgentInner::Player(..) => None,
         }
     }
 

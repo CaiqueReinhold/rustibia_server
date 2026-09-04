@@ -1,7 +1,8 @@
 use tracing::{error, info};
 
+use crate::actors::world::{ScheduledCommand, WorldCommand};
 use crate::constants::MAX_STACK_AMOUNT;
-use crate::entities::agent::AgentKey;
+use crate::entities::agent::{Agent, AgentKey};
 use crate::entities::creature::CreatureKind;
 use crate::entities::items::{Item, ItemFlag, ItemId};
 use crate::entities::position::ItemPlacement;
@@ -49,6 +50,7 @@ pub fn reap(ctx: &mut TickCtx, agent_key: AgentKey, source: Option<AgentKey>) {
         position: position.clone(),
         snapshot: None,
     });
+    schedule_respawn(ctx, &agent);
 
     let agent_corpse = agent.get_corpse();
     let Some(config) = ITEM_CONFIGS.get(&agent_corpse) else {
@@ -71,6 +73,23 @@ pub fn reap(ctx: &mut TickCtx, agent_key: AgentKey, source: Option<AgentKey>) {
             position, e
         );
     }
+}
+
+fn schedule_respawn(ctx: &mut TickCtx, dead: &Agent) {
+    let Some(respawn_ticks) = dead.respawn_ticks() else {
+        return;
+    };
+    let Some(kind) = dead.creature_kind().cloned() else {
+        return;
+    };
+    ctx.scheduled.push(ScheduledCommand {
+        at_tick: ctx.tick + respawn_ticks,
+        command: WorldCommand::SpawnCreature {
+            kind,
+            position: dead.get_origin().clone(),
+            respawn_ticks: Some(respawn_ticks),
+        },
+    });
 }
 
 fn roll_creature_loot(corpse: &mut Item, creature: &CreatureKind, rolls: &mut Rolls) {
@@ -142,9 +161,67 @@ mod tests {
     use crate::entities::map::{GameMap, MapTile};
     use crate::entities::position::Position;
     use crate::game::TestHarness;
+    use crate::game::Tick;
     use crate::persistence::test_fixtures::{
-        a_test_creature, a_test_creature_worth, a_test_snapshot,
+        a_creature_kind, a_test_creature, a_test_creature_worth, a_test_snapshot,
     };
+    use std::sync::Arc;
+
+    /// A creature the spawn table put there, so it books a replacement when it dies.
+    fn a_spawned_creature(origin: Position, respawn_ticks: Tick) -> Agent {
+        Agent::respawning(Arc::new(a_creature_kind("Rat")), origin, respawn_ticks)
+    }
+
+    #[test]
+    fn a_reaped_spawn_creature_books_its_replacement_at_the_point_it_came_from() {
+        let origin = Position::new(10, 10, 7);
+        let died_at = Position::new(14, 10, 7);
+        let mut map = GameMap::new();
+        map.insert_tile(origin.clone(), MapTile::new());
+        map.insert_tile(died_at.clone(), MapTile::new());
+        let rat = map
+            .insert_agent(a_spawned_creature(origin.clone(), 600), &died_at)
+            .unwrap();
+        map.get_agent_mut(rat).unwrap().take_hit(1);
+        let mut h = TestHarness::seeded(1);
+        h.tick = 50;
+
+        reap(&mut h.ctx(&mut map), rat, None);
+
+        assert!(
+            matches!(
+                h.scheduled.as_slice(),
+                [ScheduledCommand {
+                    at_tick: 650,
+                    command: WorldCommand::SpawnCreature {
+                        position,
+                        respawn_ticks: Some(600),
+                        ..
+                    },
+                }] if *position == origin
+            ),
+            "{:?}",
+            h.scheduled
+        );
+    }
+
+    /// A creature no spawn point owns — a future summon, or one a test placed — must not
+    /// book anything, or killing it would populate the map forever.
+    #[test]
+    fn a_creature_from_no_spawn_point_books_nothing() {
+        let pos = Position::new(10, 10, 7);
+        let mut map = GameMap::new();
+        map.insert_tile(pos.clone(), MapTile::new());
+        let rat = map
+            .insert_agent(a_test_creature("Rat", 0, (1, 2)), &pos)
+            .unwrap();
+        let mut h = TestHarness::seeded(1);
+
+        reap(&mut h.ctx(&mut map), rat, None);
+
+        assert!(map.get_agent(rat).is_none(), "it should still be reaped");
+        assert!(h.scheduled.is_empty());
+    }
 
     #[test]
     fn removes_the_creature_and_announces_it() {

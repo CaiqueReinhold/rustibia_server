@@ -3,15 +3,22 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+use once_cell::sync::Lazy;
 use serde::Deserialize;
 use thiserror::Error;
 
+use crate::config::CONFIG;
 use crate::entities::agent::{OutfitColors, OutfitId, Pool};
 use crate::entities::creature::{
     BloodType, CreatureKind, CreatureKindId, CreatureVoices, LootEntry,
 };
 use crate::entities::items::ItemId;
 use crate::game::Tick;
+
+pub static CREATURE_KINDS: Lazy<Arc<HashMap<CreatureKindId, Arc<CreatureKind>>>> =
+    Lazy::new(|| {
+        Arc::new(load_creatures(&CONFIG.creatures_dir_path).expect("failed to load creatures"))
+    });
 
 #[derive(Error, Debug)]
 pub enum CreaturesLoadError {
@@ -174,7 +181,6 @@ pub fn load_creatures(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::CONFIG;
     use crate::entities::agent::Agent;
     use crate::entities::position::Position;
     use crate::persistence::items::ITEM_CONFIGS;

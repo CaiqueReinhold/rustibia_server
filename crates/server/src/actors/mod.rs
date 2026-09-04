@@ -18,7 +18,6 @@ pub mod message_router;
 pub mod persistence;
 mod player_query;
 pub mod session;
-pub mod spawning;
 pub mod world;
 
 #[derive(Clone)]

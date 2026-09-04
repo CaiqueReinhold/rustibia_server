@@ -12,7 +12,6 @@ use tracing::{debug, error, info, warn};
 
 use crate::actors::message_router::{MessageRouterActorHandle, MessageRouterGuard};
 use crate::actors::session::SessionActorHandle;
-use crate::actors::spawning::SpawningActorHandle;
 use crate::config::CONFIG;
 use crate::entities::agent::{Agent, AgentKey, Facing};
 use crate::entities::creature::CreatureKind;
@@ -27,6 +26,8 @@ use crate::game::{
     Tick, TickCtx, chat, combat, events, item_action, item_movement, item_multi_action, movement,
     targeting,
 };
+use crate::persistence::creatures::CREATURE_KINDS;
+use crate::persistence::spawns::SpawnPoint;
 
 #[derive(Debug, Display)]
 pub enum WorldCommand {
@@ -65,8 +66,7 @@ pub enum WorldCommand {
     SpawnCreature {
         kind: Arc<CreatureKind>,
         position: Position,
-        spawning: SpawningActorHandle,
-        slot_idx: usize,
+        respawn_ticks: Option<Tick>,
     },
     RequestLogout {
         agent_key: AgentKey,
@@ -196,11 +196,12 @@ impl WorldActor {
         shared_map: Arc<ArcSwap<GameMap>>,
         message_router: MessageRouterActorHandle,
         seed: u64,
+        spawns: &[SpawnPoint],
     ) -> (WorldActorHandle, watch::Receiver<Tick>) {
         let (tx, rx) = mpsc::channel(CONFIG.max_buffered_messages);
         let (tick_tx, tick_rx) = watch::channel(0);
 
-        let actor = Self {
+        let mut actor = Self {
             rx,
             message_router,
             command_queue: BinaryHeap::with_capacity(CONFIG.max_queue_size),
@@ -211,10 +212,32 @@ impl WorldActor {
             tick_tx,
             roll: Rolls::new(seed),
         };
+        actor.seed_spawn_points(spawns);
 
         tokio::spawn(actor.run());
 
         (WorldActorHandle { tx }, tick_rx)
+    }
+
+    fn seed_spawn_points(&mut self, spawns: &[SpawnPoint]) {
+        for spawn in spawns {
+            let Some(kind) = CREATURE_KINDS.get(&spawn.kind).cloned() else {
+                error!(
+                    "Unknown creature kind '{}' for the spawn at {:?}",
+                    spawn.kind, spawn.position
+                );
+                continue;
+            };
+            self.command_queue.push(ScheduledCommand {
+                at_tick: 1,
+                command: WorldCommand::SpawnCreature {
+                    kind,
+                    position: spawn.position.clone(),
+                    respawn_ticks: Some(spawn.respawn_ticks),
+                },
+            });
+        }
+        info!("Seeded {} spawn points", self.command_queue.len());
     }
 
     pub async fn run(mut self) {
@@ -289,8 +312,7 @@ impl WorldActor {
     }
 
     /// Lends the tick's five writable things to `game/` functions as one `TickCtx`, then queues
-    /// whatever they scheduled. The queue cannot be touched while the context is alive — it
-    /// borrows `self` — so the scheduled commands land in a local first.
+    /// whatever they scheduled.
     fn with_ctx<T>(
         &mut self,
         broadcast_messages: &mut Vec<BroadcastMessage>,
@@ -411,19 +433,18 @@ impl WorldActor {
             WorldCommand::SpawnCreature {
                 kind,
                 position,
-                spawning,
-                slot_idx,
+                respawn_ticks,
             } => {
-                let agent = Agent::from_creature_kind(kind.clone(), position.clone());
+                let agent = match respawn_ticks {
+                    Some(ticks) => Agent::respawning(kind, position.clone(), ticks),
+                    None => Agent::from_creature_kind(kind, position.clone()),
+                };
                 match self.map.insert_agent(agent, &position) {
                     Ok(agent_key) => {
                         broadcast_messages.push(BroadcastMessage::PlayerSpawned {
                             agent_key,
                             position: position.clone(),
                         });
-                        if let Err(e) = spawning.creature_spawned(slot_idx, agent_key) {
-                            error!("Failed to notify SpawningActor of spawn: {e}");
-                        }
                         Ok(())
                     }
                     Err(e) => Err(anyhow!(
@@ -530,7 +551,7 @@ mod tests {
     use crate::entities::inventory::InventorySlot;
     use crate::entities::map::MapTile;
     use crate::persistence::test_fixtures::{
-        a_player_with_a_full_backpack, a_test_creature, a_test_snapshot,
+        a_creature_kind, a_player_with_a_full_backpack, a_test_creature, a_test_snapshot,
     };
 
     /// Builds a `WorldActor` from bare fields, the same way `SessionActorHandle::for_test`
@@ -552,6 +573,61 @@ mod tests {
             tick_tx,
             roll: Rolls::new(1),
         }
+    }
+
+    fn a_spawn_point(kind: &str, position: Position, respawn_ticks: Tick) -> SpawnPoint {
+        SpawnPoint {
+            position,
+            kind: kind.to_string(),
+            respawn_ticks,
+        }
+    }
+
+    /// Nothing tracks spawn slots any more, so the table has exactly one effect: it seeds the
+    /// first population. A kind the catalogue does not carry is dropped rather than retried.
+    #[test]
+    fn the_spawn_table_is_queued_for_the_first_tick_and_unknown_kinds_are_dropped() {
+        let mut actor = a_test_world_actor(GameMap::new());
+        actor.command_queue.clear();
+
+        actor.seed_spawn_points(&[
+            a_spawn_point("elf", Position::new(10, 10, 7), 600),
+            a_spawn_point("nosuchcreature", Position::new(11, 10, 7), 600),
+        ]);
+
+        assert_eq!(actor.command_queue.len(), 1);
+        let queued = actor.command_queue.pop().unwrap();
+        assert_eq!(queued.at_tick, 1);
+        assert!(matches!(
+            queued.command,
+            WorldCommand::SpawnCreature {
+                respawn_ticks: Some(600),
+                ..
+            }
+        ));
+    }
+
+    /// The delay has to survive the dispatch onto the agent, because that is the only copy of
+    /// it left once the spawn table has been read: `death::reap` reads it back off the corpse.
+    #[tokio::test]
+    async fn a_spawned_creature_carries_the_delay_that_will_replace_it() {
+        let pos = Position::new(10, 10, 7);
+        let mut map = GameMap::new();
+        map.insert_tile(pos.clone(), MapTile::new());
+        let mut actor = a_test_world_actor(map);
+
+        actor.handle_command(
+            WorldCommand::SpawnCreature {
+                kind: Arc::new(a_creature_kind("rat")),
+                position: pos.clone(),
+                respawn_ticks: Some(600),
+            },
+            &mut Vec::new(),
+        );
+
+        let (_, agent) = actor.map.iter_agents().next().expect("nothing spawned");
+        assert_eq!(agent.respawn_ticks(), Some(600));
+        assert_eq!(*agent.get_origin(), pos);
     }
 
     /// Pins the call site rather than the collapsing itself — `dedupe_refreshes` has its

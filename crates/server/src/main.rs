@@ -26,8 +26,7 @@ use arc_swap::ArcSwap;
 use crate::{
     actors::{
         SharedContext, chat::ChatActor, creature_behavior::CreatureBehaviorActor,
-        message_router::MessageRouterActor, persistence::PersistenceActor, spawning::SpawningActor,
-        world::WorldActor,
+        message_router::MessageRouterActor, persistence::PersistenceActor, world::WorldActor,
     },
     game::config::GAME_CONFIG,
     online_registry::OnlineRegistry,
@@ -54,23 +53,20 @@ async fn main() -> Result<()> {
     let seed = RandomState::new().build_hasher().finish();
 
     let map = persistence::map::load_map(&CONFIG.map_file_path, &ITEM_CONFIGS).unwrap();
-    let creatures =
-        Arc::new(persistence::creatures::load_creatures(&CONFIG.creatures_dir_path).unwrap());
     let spawns = persistence::spawns::load_spawns(&CONFIG.spawns_file_path).unwrap();
 
     let shared_map = Arc::new(ArcSwap::from_pointee(map.clone()));
 
     let message_router = MessageRouterActor::start(shared_map.clone());
-    let (world, tick_rx) = WorldActor::start(map, shared_map.clone(), message_router.clone(), seed);
+    let (world, tick_rx) = WorldActor::start(
+        map,
+        shared_map.clone(),
+        message_router.clone(),
+        seed,
+        &spawns,
+    );
     let chat = ChatActor::start(message_router);
 
-    SpawningActor::start(
-        spawns,
-        Arc::clone(&creatures),
-        world.clone(),
-        shared_map.clone(),
-        tick_rx.clone(),
-    );
     CreatureBehaviorActor::start(world.clone(), shared_map.clone(), tick_rx.clone(), seed);
 
     let internal_client = HttpLoginRepository::build_client(
