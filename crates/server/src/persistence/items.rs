@@ -189,12 +189,6 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
 }
 
 fn convert(id: u16, raw: RawItemConfig) -> ItemConfig {
-    let flags = raw
-        .flags
-        .iter()
-        .filter_map(|s| parse_flag(s))
-        .collect::<HashSet<_>>();
-
     let attributes = raw
         .attributes
         .iter()
@@ -206,7 +200,7 @@ fn convert(id: u16, raw: RawItemConfig) -> ItemConfig {
         raw.name,
         raw.description,
         raw.article,
-        flags,
+        raw.flags.iter().filter_map(|s| parse_flag(s)),
         attributes,
     )
 }

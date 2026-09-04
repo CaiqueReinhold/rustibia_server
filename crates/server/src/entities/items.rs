@@ -1,5 +1,6 @@
 use std::{collections::HashSet, fmt::Display, sync::Arc};
 
+use strum::{EnumCount, EnumIter};
 use uuid::Uuid;
 
 use crate::{
@@ -28,7 +29,8 @@ impl Display for ItemGuid {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, EnumCount, EnumIter)]
+#[repr(u8)]
 pub enum ItemFlag {
     Ground,
     Unmove,
@@ -43,6 +45,35 @@ pub enum ItemFlag {
     Avoid,
     AmmoContainer,
     LiquidPool,
+}
+
+impl ItemFlag {
+    pub const fn bit(self) -> u32 {
+        1 << self as u32
+    }
+}
+
+#[derive(Debug, Default, PartialEq, Eq, Hash, Clone, Copy)]
+pub struct ItemFlags(u32);
+
+impl ItemFlags {
+    pub const fn new() -> Self {
+        ItemFlags(0)
+    }
+
+    pub const fn with(self, flag: ItemFlag) -> Self {
+        ItemFlags(self.0 | flag.bit())
+    }
+
+    pub const fn contains(self, flag: ItemFlag) -> bool {
+        self.0 & flag.bit() != 0
+    }
+}
+
+impl FromIterator<ItemFlag> for ItemFlags {
+    fn from_iter<I: IntoIterator<Item = ItemFlag>>(iter: I) -> Self {
+        iter.into_iter().fold(ItemFlags::new(), ItemFlags::with)
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
@@ -109,7 +140,7 @@ pub struct ItemConfig {
     pub name: String,
     pub description: Option<String>,
     pub article: Option<String>,
-    flags: HashSet<ItemFlag>,
+    flags: ItemFlags,
     attributes: HashSet<ItemAttribute>,
 }
 
@@ -119,7 +150,7 @@ impl ItemConfig {
         name: String,
         description: Option<String>,
         article: Option<String>,
-        flags: HashSet<ItemFlag>,
+        flags: impl IntoIterator<Item = ItemFlag>,
         attributes: HashSet<ItemAttribute>,
     ) -> Self {
         ItemConfig {
@@ -127,13 +158,13 @@ impl ItemConfig {
             name,
             description,
             article,
-            flags,
+            flags: flags.into_iter().collect(),
             attributes,
         }
     }
 
     pub fn has_flag(&self, flag: ItemFlag) -> bool {
-        self.flags.contains(&flag)
+        self.flags.contains(flag)
     }
 
     fn get_attributes(&self) -> impl Iterator<Item = &ItemAttribute> {
@@ -409,6 +440,7 @@ pub enum ItemMultiAction {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use strum::IntoEnumIterator;
 
     /// The client repeats this enum with the same discriminants, and nothing
     /// links the two -- they are separate repositories. This literal is the pin:
@@ -421,6 +453,42 @@ mod tests {
     #[test]
     fn blood_is_five_on_the_wire() {
         assert_eq!(FluidType::Blood as u8, 5);
+    }
+
+    /// Two variants sharing a bit is the one failure a bitfield has that a `HashSet`
+    /// does not, and it would not look like a bug: an item would simply answer `true`
+    /// to a flag nobody gave it. Set each flag alone and check every other one.
+    #[test]
+    fn every_flag_owns_a_bit_of_its_own() {
+        for set in ItemFlag::iter() {
+            let flags = ItemFlags::new().with(set);
+            for other in ItemFlag::iter() {
+                assert_eq!(
+                    flags.contains(other),
+                    other == set,
+                    "{set:?} answers for {other:?}"
+                );
+            }
+        }
+    }
+
+    /// `ItemConfig::new` folds whatever it is handed, so the same flag twice must not
+    /// mean anything different from the flag once -- and the catalogue hands it a
+    /// `Vec<String>` straight out of YAML, which can repeat.
+    #[test]
+    fn a_repeated_flag_is_the_same_as_one() {
+        let config = ItemConfig::new(
+            1,
+            "thing".to_string(),
+            None,
+            None,
+            [ItemFlag::Take, ItemFlag::Container, ItemFlag::Take],
+            HashSet::new(),
+        );
+
+        assert!(config.has_flag(ItemFlag::Take));
+        assert!(config.has_flag(ItemFlag::Container));
+        assert!(!config.has_flag(ItemFlag::Ground));
     }
 
     /// The wire byte is overloaded the way OT overloads it, but the struct is
