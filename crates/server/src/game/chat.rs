@@ -1,28 +1,28 @@
 use crate::entities::agent::AgentKey;
-use crate::entities::map::GameMap;
+use crate::game::TickCtx;
 use crate::game::admin::parse_command;
 use crate::game::events::BroadcastMessage;
 
-pub fn say(map: &mut GameMap, agent_key: AgentKey, message: String) -> Vec<BroadcastMessage> {
-    if map.get_agent(agent_key).is_none() {
-        return Vec::new();
-    }
-    let mut msgs = Vec::new();
-
-    if parse_command(&message, map, agent_key, &mut msgs) {
-        return msgs;
+pub fn say(ctx: &mut TickCtx, agent_key: AgentKey, message: String) {
+    if ctx.map.get_agent(agent_key).is_none() {
+        return;
     }
 
-    msgs.push(BroadcastMessage::AgentSaid { agent_key, message });
-    msgs
+    if parse_command(ctx, &message, agent_key) {
+        return;
+    }
+
+    ctx.events
+        .push(BroadcastMessage::AgentSaid { agent_key, message });
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::entities::agent::Agent;
-    use crate::entities::map::MapTile;
+    use crate::entities::map::{GameMap, MapTile};
     use crate::entities::position::Position;
+    use crate::game::TestHarness;
     use crate::persistence::test_fixtures::a_test_snapshot;
 
     #[test]
@@ -34,8 +34,10 @@ mod tests {
             .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &pos)
             .unwrap();
 
-        let events = say(&mut map, key, "hello".to_owned());
+        let mut h = TestHarness::new();
+        say(&mut h.ctx(&mut map), key, "hello".to_owned());
 
+        let events = h.events;
         assert_eq!(events.len(), 1);
         match &events[0] {
             BroadcastMessage::AgentSaid { agent_key, message } => {
@@ -49,7 +51,12 @@ mod tests {
     /// A player can log out between sending and the tick that processes it.
     #[test]
     fn an_agent_no_longer_on_the_map_produces_nothing() {
-        let events = say(&mut GameMap::new(), AgentKey::default(), "hello".to_owned());
-        assert!(events.is_empty());
+        let mut h = TestHarness::new();
+        say(
+            &mut h.ctx(&mut GameMap::new()),
+            AgentKey::default(),
+            "hello".to_owned(),
+        );
+        assert!(h.events.is_empty());
     }
 }

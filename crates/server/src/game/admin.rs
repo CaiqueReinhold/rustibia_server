@@ -4,20 +4,15 @@ use crate::{
     entities::{
         agent::{AgentKey, Facing},
         items::{Item, ItemId},
-        map::GameMap,
         position::Position,
     },
-    game::events::BroadcastMessage,
+    game::{TickCtx, events::BroadcastMessage},
     persistence::items::ITEM_CONFIGS,
 };
 
-pub fn parse_command(
-    command: &str,
-    map: &mut GameMap,
-    agent_key: AgentKey,
-    msgs: &mut Vec<BroadcastMessage>,
-) -> bool {
-    if !map
+pub fn parse_command(ctx: &mut TickCtx, command: &str, agent_key: AgentKey) -> bool {
+    if !ctx
+        .map
         .get_player(agent_key)
         .map(|p| p.admin())
         .unwrap_or(false)
@@ -32,7 +27,7 @@ pub fn parse_command(
                 return true;
             };
             let amount: u8 = parts.get(2).and_then(|p| p.parse().ok()).unwrap_or(1);
-            create_item(item_id, amount, agent_key, map, msgs);
+            create_item(ctx, item_id, amount, agent_key);
             true
         }
         Some(cmd) => {
@@ -43,21 +38,15 @@ pub fn parse_command(
     }
 }
 
-pub fn create_item(
-    id: ItemId,
-    amount: u8,
-    agent_key: AgentKey,
-    map: &mut GameMap,
-    msgs: &mut Vec<BroadcastMessage>,
-) {
+pub fn create_item(ctx: &mut TickCtx, id: ItemId, amount: u8, agent_key: AgentKey) {
     let Some(config) = ITEM_CONFIGS.get(&id) else {
         return;
     };
     let item = Item::new(config.clone(), amount);
-    let Some(facing) = map.get_agent(agent_key).map(|a| a.facing()) else {
+    let Some(facing) = ctx.map.get_agent(agent_key).map(|a| a.facing()) else {
         return;
     };
-    let Some(pos) = map.agent_position(agent_key).cloned() else {
+    let Some(pos) = ctx.map.agent_position(agent_key).cloned() else {
         return;
     };
     let at_pos = match facing {
@@ -66,6 +55,7 @@ pub fn create_item(
         Facing::South => Position::new(pos.x, pos.y.saturating_add(1), pos.z),
         Facing::West => Position::new(pos.x.saturating_sub(1), pos.y, pos.z),
     };
-    let _ = map.place_item(&at_pos, None, None, item);
-    msgs.push(BroadcastMessage::TileChanged { position: at_pos });
+    let _ = ctx.map.place_item(&at_pos, None, None, item);
+    ctx.events
+        .push(BroadcastMessage::TileChanged { position: at_pos });
 }

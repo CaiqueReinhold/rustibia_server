@@ -4,22 +4,16 @@ use crate::constants::MAX_STACK_AMOUNT;
 use crate::entities::agent::AgentKey;
 use crate::entities::creature::CreatureKind;
 use crate::entities::items::{Item, ItemFlag, ItemId};
-use crate::entities::map::GameMap;
 use crate::entities::position::ItemPlacement;
+use crate::game::TickCtx;
 use crate::game::events::BroadcastMessage;
 use crate::game::item_movement::insert_item_at;
 use crate::game::random::Rolls;
 use crate::game::{experience, targeting};
 use crate::persistence::items::ITEM_CONFIGS;
 
-pub fn reap(
-    map: &mut GameMap,
-    agent_key: AgentKey,
-    source: Option<AgentKey>,
-    msgs: &mut Vec<BroadcastMessage>,
-    rolls: &mut Rolls,
-) {
-    let Some(dead) = map.get_agent(agent_key) else {
+pub fn reap(ctx: &mut TickCtx, agent_key: AgentKey, source: Option<AgentKey>) {
+    let Some(dead) = ctx.map.get_agent(agent_key) else {
         return;
     };
     if !dead.is_creature() || dead.life().current > 0 {
@@ -27,26 +21,30 @@ pub fn reap(
     }
 
     let victim = dead.name();
-    match source.and_then(|key| map.get_agent(key)).map(|a| a.name()) {
+    match source
+        .and_then(|key| ctx.map.get_agent(key))
+        .map(|a| a.name())
+    {
         Some(killer) => info!("{killer} killed {victim}"),
         None => info!("{victim} died"),
     }
 
-    experience::award(map, agent_key, msgs);
+    experience::award(ctx, agent_key);
 
-    let still_targeting: Vec<AgentKey> = map
+    let still_targeting: Vec<AgentKey> = ctx
+        .map
         .iter_agents()
         .filter(|(_, other)| other.target() == Some(agent_key))
         .map(|(key, _)| key)
         .collect();
     for key in still_targeting {
-        msgs.extend(targeting::lose_target(map, key));
+        targeting::lose_target(ctx, key);
     }
 
-    let Some((agent, position)) = map.remove_agent(agent_key) else {
+    let Some((agent, position)) = ctx.map.remove_agent(agent_key) else {
         return;
     };
-    msgs.push(BroadcastMessage::AgentDespawned {
+    ctx.events.push(BroadcastMessage::AgentDespawned {
         agent_key,
         position: position.clone(),
         snapshot: None,
@@ -59,11 +57,10 @@ pub fn reap(
     };
     let mut corpse = Item::new(config.clone(), 1);
     if let Some(creature) = agent.get_creature_kind() {
-        roll_creature_loot(&mut corpse, creature, rolls);
+        roll_creature_loot(&mut corpse, creature, ctx.roll);
     }
     if let Err(e) = insert_item_at(
-        msgs,
-        map,
+        ctx,
         corpse,
         None,
         &ItemPlacement::Map(position.clone()),
@@ -142,8 +139,9 @@ fn add_to_corpse(corpse: &mut Item, item_id: ItemId, amount: u32) -> bool {
 mod tests {
     use super::*;
     use crate::entities::agent::Agent;
-    use crate::entities::map::MapTile;
+    use crate::entities::map::{GameMap, MapTile};
     use crate::entities::position::Position;
+    use crate::game::TestHarness;
     use crate::persistence::test_fixtures::{
         a_test_creature, a_test_creature_worth, a_test_snapshot,
     };
@@ -156,14 +154,13 @@ mod tests {
         let rat = map
             .insert_agent(a_test_creature("Rat", 0, (1, 2)), &pos)
             .unwrap();
-        let mut msgs = Vec::new();
-        let mut rolls = Rolls::new(1);
+        let mut h = TestHarness::seeded(1);
 
-        reap(&mut map, rat, None, &mut msgs, &mut rolls);
+        reap(&mut h.ctx(&mut map), rat, None);
 
         assert!(map.get_agent(rat).is_none());
         assert!(matches!(
-            msgs.as_slice(),
+            h.events.as_slice(),
             [
                 BroadcastMessage::AgentDespawned { agent_key, .. },
                 BroadcastMessage::TileChanged { position },
@@ -179,13 +176,12 @@ mod tests {
         let rat = map
             .insert_agent(a_test_creature("Rat", 5, (1, 2)), &pos)
             .unwrap();
-        let mut msgs = Vec::new();
-        let mut rolls = Rolls::new(1);
+        let mut h = TestHarness::seeded(1);
 
-        reap(&mut map, rat, None, &mut msgs, &mut rolls);
+        reap(&mut h.ctx(&mut map), rat, None);
 
         assert!(map.get_agent(rat).is_some());
-        assert!(msgs.is_empty());
+        assert!(h.events.is_empty());
     }
 
     #[test]
@@ -202,13 +198,12 @@ mod tests {
             .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &hunter_pos)
             .unwrap();
         map.get_agent_mut(hunter).unwrap().set_target(Some(rat), 0);
-        let mut msgs = Vec::new();
-        let mut rolls = Rolls::new(1);
+        let mut h = TestHarness::seeded(1);
 
-        reap(&mut map, rat, Some(hunter), &mut msgs, &mut rolls);
+        reap(&mut h.ctx(&mut map), rat, Some(hunter));
 
         assert_eq!(map.get_agent(hunter).unwrap().target(), None);
-        assert!(msgs.iter().any(|m| matches!(
+        assert!(h.events.iter().any(|m| matches!(
             m,
             BroadcastMessage::AgentLostTarget { agent_key, .. } if *agent_key == hunter
         )));
@@ -241,14 +236,13 @@ mod tests {
         map.get_agent_mut(bystander)
             .unwrap()
             .set_target(Some(third), 0);
-        let mut msgs = Vec::new();
-        let mut rolls = Rolls::new(1);
+        let mut h = TestHarness::seeded(1);
 
-        reap(&mut map, rat, Some(hunter), &mut msgs, &mut rolls);
+        reap(&mut h.ctx(&mut map), rat, Some(hunter));
 
         assert_eq!(map.get_agent(hunter).unwrap().target(), None);
         assert_eq!(map.get_agent(bystander).unwrap().target(), Some(third));
-        assert!(!msgs.iter().any(|m| matches!(
+        assert!(!h.events.iter().any(|m| matches!(
             m,
             BroadcastMessage::AgentLostTarget { agent_key, .. } if *agent_key == bystander
         )));
@@ -262,13 +256,12 @@ mod tests {
         let player = map
             .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &pos)
             .unwrap();
-        let mut msgs = Vec::new();
-        let mut rolls = Rolls::new(1);
+        let mut h = TestHarness::seeded(1);
 
-        reap(&mut map, player, None, &mut msgs, &mut rolls);
+        reap(&mut h.ctx(&mut map), player, None);
 
         assert!(map.get_agent(player).is_some());
-        assert!(msgs.is_empty());
+        assert!(h.events.is_empty());
     }
 
     #[test]
@@ -285,10 +278,9 @@ mod tests {
             .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &hunter_pos)
             .unwrap();
         map.get_agent_mut(rat).unwrap().record_damage(hunter, 100);
-        let mut msgs = Vec::new();
-        let mut rolls = Rolls::new(1);
+        let mut h = TestHarness::seeded(1);
 
-        reap(&mut map, rat, Some(hunter), &mut msgs, &mut rolls);
+        reap(&mut h.ctx(&mut map), rat, Some(hunter));
 
         assert!(map.get_agent(rat).is_none());
         assert_eq!(
@@ -315,10 +307,9 @@ mod tests {
         let hunter = map
             .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &hunter_pos)
             .unwrap();
-        let mut msgs = Vec::new();
-        let mut rolls = Rolls::new(1);
+        let mut h = TestHarness::seeded(1);
 
-        reap(&mut map, rat, Some(hunter), &mut msgs, &mut rolls);
+        reap(&mut h.ctx(&mut map), rat, Some(hunter));
 
         assert_eq!(
             map.get_player(hunter)

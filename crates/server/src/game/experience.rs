@@ -1,13 +1,12 @@
 use crate::entities::agent::AgentKey;
-use crate::entities::map::GameMap;
 use crate::entities::skills::SkillType;
-use crate::game::events::BroadcastMessage;
+use crate::game::TickCtx;
 use crate::game::skills::tick_skill;
 
 /// Splits the victim's experience across everyone who damaged it, in proportion to the
 /// damage each dealt.
-pub fn award(map: &mut GameMap, victim: AgentKey, msgs: &mut Vec<BroadcastMessage>) {
-    let Some(agent) = map.get_agent(victim) else {
+pub fn award(ctx: &mut TickCtx, victim: AgentKey) {
+    let Some(agent) = ctx.map.get_agent(victim) else {
         return;
     };
     let Some(kind) = agent.get_creature_kind() else {
@@ -16,8 +15,8 @@ pub fn award(map: &mut GameMap, victim: AgentKey, msgs: &mut Vec<BroadcastMessag
     let shares = agent.participation().shares(kind.experience);
 
     for (key, share) in shares {
-        if let Some(player) = map.get_player_mut(key) {
-            tick_skill(player, key, SkillType::Level, share, msgs);
+        if let Some(player) = ctx.map.get_player_mut(key) {
+            tick_skill(player, key, SkillType::Level, share, ctx.events);
         }
     }
 }
@@ -26,8 +25,10 @@ pub fn award(map: &mut GameMap, victim: AgentKey, msgs: &mut Vec<BroadcastMessag
 mod tests {
     use super::*;
     use crate::entities::agent::Agent;
-    use crate::entities::map::MapTile;
+    use crate::entities::map::{GameMap, MapTile};
     use crate::entities::position::Position;
+    use crate::game::TestHarness;
+    use crate::game::events::BroadcastMessage;
     use crate::persistence::test_fixtures::{
         a_test_creature, a_test_creature_worth, a_test_snapshot,
     };
@@ -112,12 +113,12 @@ mod tests {
         let (mut map, rat) = a_victim(100);
         let hunter = add_player(&mut map, 1, Position::new(11, 10, 7));
         hit(&mut map, rat, hunter, 100);
-        let mut msgs = Vec::new();
+        let mut h = TestHarness::new();
 
-        award(&mut map, rat, &mut msgs);
+        award(&mut h.ctx(&mut map), rat);
 
-        assert!(upgraded(&msgs, hunter));
-        assert_eq!(awarded(&msgs, hunter), Some(100));
+        assert!(upgraded(&h.events, hunter));
+        assert_eq!(awarded(&h.events, hunter), Some(100));
     }
 
     /// `a_test_snapshot` starts at level 1 with no progress, and the step into level 2
@@ -127,12 +128,12 @@ mod tests {
         let (mut map, rat) = a_victim(100);
         let hunter = add_player(&mut map, 1, Position::new(11, 10, 7));
         hit(&mut map, rat, hunter, 100);
-        let mut msgs = Vec::new();
+        let mut h = TestHarness::new();
 
-        award(&mut map, rat, &mut msgs);
+        award(&mut h.ctx(&mut map), rat);
 
         assert_eq!(level(&map, hunter), (2, 0));
-        assert!(upgraded(&msgs, hunter));
+        assert!(upgraded(&h.events, hunter));
     }
 
     #[test]
@@ -140,13 +141,13 @@ mod tests {
         let (mut map, rat) = a_victim(50);
         let hunter = add_player(&mut map, 1, Position::new(11, 10, 7));
         hit(&mut map, rat, hunter, 100);
-        let mut msgs = Vec::new();
+        let mut h = TestHarness::new();
 
-        award(&mut map, rat, &mut msgs);
+        award(&mut h.ctx(&mut map), rat);
 
         assert_eq!(level(&map, hunter), (1, 50));
-        assert!(progressed(&msgs, hunter));
-        assert!(!upgraded(&msgs, hunter));
+        assert!(progressed(&h.events, hunter));
+        assert!(!upgraded(&h.events, hunter));
     }
 
     #[test]
@@ -156,9 +157,9 @@ mod tests {
         let second = add_player(&mut map, 2, Position::new(12, 10, 7));
         hit(&mut map, rat, first, 40);
         hit(&mut map, rat, second, 60);
-        let mut msgs = Vec::new();
+        let mut h = TestHarness::new();
 
-        award(&mut map, rat, &mut msgs);
+        award(&mut h.ctx(&mut map), rat);
 
         assert_eq!(level(&map, first), (1, 40));
         assert_eq!(level(&map, second), (1, 60));
@@ -173,9 +174,9 @@ mod tests {
         let wolf = add_creature(&mut map, "Wolf", Position::new(12, 10, 7));
         hit(&mut map, rat, hunter, 50);
         hit(&mut map, rat, wolf, 50);
-        let mut msgs = Vec::new();
+        let mut h = TestHarness::new();
 
-        award(&mut map, rat, &mut msgs);
+        award(&mut h.ctx(&mut map), rat);
 
         assert_eq!(level(&map, hunter), (1, 50));
     }
@@ -188,12 +189,12 @@ mod tests {
         hit(&mut map, rat, hunter, 50);
         hit(&mut map, rat, quitter, 50);
         map.remove_agent(quitter);
-        let mut msgs = Vec::new();
+        let mut h = TestHarness::new();
 
-        award(&mut map, rat, &mut msgs);
+        award(&mut h.ctx(&mut map), rat);
 
         assert_eq!(level(&map, hunter), (1, 50));
-        assert_eq!(msgs.len(), 1);
+        assert_eq!(h.events.len(), 1);
     }
 
     #[test]
@@ -201,21 +202,21 @@ mod tests {
         let (mut map, rat) = a_victim(0);
         let hunter = add_player(&mut map, 1, Position::new(11, 10, 7));
         hit(&mut map, rat, hunter, 100);
-        let mut msgs = Vec::new();
+        let mut h = TestHarness::new();
 
-        award(&mut map, rat, &mut msgs);
+        award(&mut h.ctx(&mut map), rat);
 
         assert_eq!(level(&map, hunter), (1, 0));
-        assert!(msgs.is_empty());
+        assert!(h.events.is_empty());
     }
 
     #[test]
     fn an_untouched_creature_emits_nothing() {
         let (mut map, rat) = a_victim(100);
-        let mut msgs = Vec::new();
+        let mut h = TestHarness::new();
 
-        award(&mut map, rat, &mut msgs);
+        award(&mut h.ctx(&mut map), rat);
 
-        assert!(msgs.is_empty());
+        assert!(h.events.is_empty());
     }
 }

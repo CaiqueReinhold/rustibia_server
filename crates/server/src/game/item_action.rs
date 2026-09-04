@@ -6,11 +6,10 @@ use crate::{
     entities::{
         agent::AgentKey,
         items::{Item, ItemAction, ItemFlag, ItemId, ItemRef},
-        map::GameMap,
         position::ItemPlacement,
     },
     game::{
-        Tick,
+        Mark, Tick, TickCtx,
         config::GAME_CONFIG,
         item_movement::{ItemMovementError, insert_item_at, remove_item_at},
     },
@@ -29,23 +28,19 @@ pub enum ItemActionError {
     NoTarget,
 }
 
-pub fn decay_item(
-    map: &mut GameMap,
-    item_ref: ItemRef,
-    current_tick: Tick,
-) -> (Vec<BroadcastMessage>, Vec<ScheduledCommand>) {
-    let (mut broadcasts, mut commands) = (vec![], vec![]);
-    let Some(item) = find_item_in_placement(map, &item_ref) else {
-        return (broadcasts, commands);
+pub fn decay_item(ctx: &mut TickCtx, item_ref: ItemRef) {
+    let mark = ctx.mark();
+    let Some(item) = find_item_in_placement(ctx.map, &item_ref) else {
+        return;
     };
     let Some((_, decay_to)) = item.config.attr_decay() else {
-        return (broadcasts, commands);
+        return;
     };
     let Some(config) = ITEM_CONFIGS.get(&decay_to) else {
         if decay_to != 0 {
             error!("Config not found for item id {decay_to}");
         }
-        return (broadcasts, commands);
+        return;
     };
 
     let new_item = if let Some(fluid) = item.fluid {
@@ -54,19 +49,17 @@ pub fn decay_item(
         Item::new(config.clone(), 1)
     };
     check_decay(
-        &mut commands,
+        ctx.scheduled,
         &new_item,
         item_ref.placement.clone(),
-        current_tick,
+        ctx.tick,
     );
-    let Ok((old_item, source_index, source_cointainer)) =
-        remove_item_at(&mut broadcasts, map, &item_ref, 1)
-    else {
-        return (vec![], vec![]);
+    let Ok((old_item, source_index, source_cointainer)) = remove_item_at(ctx, &item_ref, 1) else {
+        ctx.rollback_to(mark);
+        return;
     };
     if insert_item_at(
-        &mut broadcasts,
-        map,
+        ctx,
         new_item,
         source_cointainer.as_ref(),
         &item_ref.placement,
@@ -75,8 +68,7 @@ pub fn decay_item(
     .is_err()
     {
         if let Err(e) = insert_item_at(
-            &mut broadcasts,
-            map,
+            ctx,
             old_item.clone(),
             source_cointainer.as_ref(),
             &item_ref.placement,
@@ -87,12 +79,12 @@ pub fn decay_item(
                 old_item, item_ref.placement, e
             );
         }
-        return (vec![], vec![]);
-    };
-
-    (broadcasts, commands)
+        ctx.rollback_to(mark);
+    }
 }
 
+/// Takes the raw command accumulator rather than a [`TickCtx`]: `damage::draw_blood` calls it
+/// with an `&Item` still borrowed out of the map, so the whole context cannot be lent here.
 pub fn check_decay(
     commands: &mut Vec<ScheduledCommand>,
     item: &Item,
@@ -112,59 +104,49 @@ pub fn check_decay(
     }
 }
 
-pub fn use_item(
-    map: &mut GameMap,
-    agent_key: AgentKey,
-    item_ref: ItemRef,
-    current_tick: Tick,
-) -> (Vec<BroadcastMessage>, Vec<ScheduledCommand>) {
-    let use_item_failed = |message| {
-        (
-            vec![BroadcastMessage::UseItemDenied { agent_key, message }],
-            vec![],
-        )
-    };
-    if map
+pub fn use_item(ctx: &mut TickCtx, agent_key: AgentKey, item_ref: ItemRef) {
+    let mark = ctx.mark();
+    if ctx
+        .map
         .get_agent(agent_key)
-        .map(|agent| agent.next_use_tick > current_tick)
+        .map(|agent| agent.next_use_tick > ctx.tick)
         .unwrap_or(false)
     {
-        return use_item_failed("Can't use that fast".to_owned());
+        return use_item_failed(ctx, mark, agent_key, "Can't use that fast");
     }
 
-    if map
+    if ctx
+        .map
         .agent_position(agent_key)
         .filter(|player_pos| player_pos.placement_is_adjacent(&item_ref.placement))
         .is_none()
     {
-        return use_item_failed("Item is too far".to_owned());
+        return use_item_failed(ctx, mark, agent_key, "Item is too far");
     }
 
-    let Some(item) = find_item_in_placement(map, &item_ref) else {
-        return use_item_failed("Item was not found".to_owned());
+    let Some(item) = find_item_in_placement(ctx.map, &item_ref) else {
+        return use_item_failed(ctx, mark, agent_key, "Item was not found");
     };
 
     if !item.config.has_flag(ItemFlag::Usable) {
-        return use_item_failed("Can't use that".to_owned());
+        return use_item_failed(ctx, mark, agent_key, "Can't use that");
     }
 
     let is_container = item.config.has_flag(ItemFlag::Container);
     let action = item.config.attr_action();
 
     if is_container {
-        return (
-            vec![BroadcastMessage::OpenContainer {
-                agent_key,
-                item: item_ref,
-            }],
-            vec![],
-        );
+        ctx.events.push(BroadcastMessage::OpenContainer {
+            agent_key,
+            item: item_ref,
+        });
+        return;
     } else if let Some(action) = action {
-        match route_action(&action, map, agent_key, &item_ref, current_tick) {
-            Ok((action_broadcasts, scheduled_commands)) => {
-                map.get_agent_mut(agent_key).unwrap().next_use_tick =
-                    current_tick + GAME_CONFIG.action.use_item_cooldown_ticks;
-                return (action_broadcasts, scheduled_commands);
+        match route_action(ctx, &action, agent_key, &item_ref) {
+            Ok(()) => {
+                ctx.map.get_agent_mut(agent_key).unwrap().next_use_tick =
+                    ctx.tick + GAME_CONFIG.action.use_item_cooldown_ticks;
+                return;
             }
             Err(e) => {
                 if let ItemActionError::InvalidState = e {
@@ -173,38 +155,33 @@ pub fn use_item(
             }
         }
     }
-    use_item_failed("Can't use that".to_owned())
+    use_item_failed(ctx, mark, agent_key, "Can't use that")
+}
+
+/// Discards whatever a half-finished use reported and announces the refusal in its place.
+fn use_item_failed(ctx: &mut TickCtx, mark: Mark, agent_key: AgentKey, message: &str) {
+    ctx.rollback_to(mark);
+    ctx.events.push(BroadcastMessage::UseItemDenied {
+        agent_key,
+        message: message.to_owned(),
+    });
 }
 
 pub fn route_action(
+    ctx: &mut TickCtx,
     action: &ItemAction,
-    map: &mut GameMap,
     _agent_key: AgentKey,
     item: &ItemRef,
-    current_tick: Tick,
-) -> Result<(Vec<BroadcastMessage>, Vec<ScheduledCommand>), ItemActionError> {
-    let mut broadcasts = Vec::new();
-    let mut commands = Vec::new();
+) -> Result<(), ItemActionError> {
     match action {
-        ItemAction::Transform { into } => transform(
-            &mut broadcasts,
-            &mut commands,
-            map,
-            item,
-            *into,
-            current_tick,
-        )?,
-    };
-    Ok((broadcasts, commands))
+        ItemAction::Transform { into } => transform(ctx, item, *into),
+    }
 }
 
 pub(super) fn transform(
-    broadcasts: &mut Vec<BroadcastMessage>,
-    commands: &mut Vec<ScheduledCommand>,
-    map: &mut GameMap,
+    ctx: &mut TickCtx,
     item: &ItemRef,
     into: ItemId,
-    current_tick: Tick,
 ) -> Result<(), ItemActionError> {
     let Some(config) = ITEM_CONFIGS.get(&into) else {
         error!(
@@ -214,17 +191,15 @@ pub(super) fn transform(
         return Err(ItemActionError::ActionFailed);
     };
 
-    let Ok((old_item, source_index, source_container)) = remove_item_at(broadcasts, map, item, 1)
-    else {
+    let Ok((old_item, source_index, source_container)) = remove_item_at(ctx, item, 1) else {
         return Err(ItemActionError::ActionFailed);
     };
 
     let new_item = Item::new(config.clone(), 1);
-    check_decay(commands, &new_item, item.placement.clone(), current_tick);
+    check_decay(ctx.scheduled, &new_item, item.placement.clone(), ctx.tick);
 
     if let Err(e) = insert_item_at(
-        broadcasts,
-        map,
+        ctx,
         new_item.clone(),
         source_container.as_ref(),
         &item.placement,
@@ -234,15 +209,8 @@ pub(super) fn transform(
             ItemMovementError::NotEnoughCap
                 if let ItemPlacement::Inventory(_, agent_key) = &item.placement =>
             {
-                if let Some(pos) = map.agent_position(*agent_key).cloned() {
-                    insert_item_at(
-                        broadcasts,
-                        map,
-                        new_item,
-                        None,
-                        &ItemPlacement::Map(pos),
-                        None,
-                    )
+                if let Some(pos) = ctx.map.agent_position(*agent_key).cloned() {
+                    insert_item_at(ctx, new_item, None, &ItemPlacement::Map(pos), None)
                 } else {
                     Err(ItemMovementError::PlayerDespawned)
                 }
@@ -252,8 +220,7 @@ pub(super) fn transform(
 
         if result.is_err() {
             if let Err(e) = insert_item_at(
-                broadcasts,
-                map,
+                ctx,
                 old_item.clone(),
                 source_container.as_ref(),
                 &item.placement,
@@ -275,8 +242,9 @@ pub(super) fn transform(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::entities::map::MapTile;
+    use crate::entities::map::{GameMap, MapTile};
     use crate::entities::position::Position;
+    use crate::game::TestHarness;
 
     /// `into` comes from data -- a `transform(N)` attribute or a diggable's `id + 1` -- so
     /// an id the catalogue does not carry is reachable by editing an asset file.
@@ -296,17 +264,14 @@ mod tests {
         let mut map = GameMap::new();
         map.insert_tile(pos.clone(), tile);
 
-        let (mut broadcasts, mut commands) = (Vec::new(), Vec::new());
+        let mut h = TestHarness::new();
         let result = transform(
-            &mut broadcasts,
-            &mut commands,
-            &mut map,
+            &mut h.ctx(&mut map),
             &ItemRef {
                 guid: guid.clone(),
                 placement: ItemPlacement::Map(pos.clone()),
             },
             missing,
-            0,
         );
 
         assert!(result.is_err());
@@ -315,9 +280,10 @@ mod tests {
             "the original item was destroyed"
         );
         assert!(
-            broadcasts.is_empty(),
-            "a refused transform must not report a change: {broadcasts:?}"
+            h.events.is_empty(),
+            "a refused transform must not report a change: {:?}",
+            h.events
         );
-        assert!(commands.is_empty());
+        assert!(h.scheduled.is_empty());
     }
 }

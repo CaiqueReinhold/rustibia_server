@@ -14,6 +14,7 @@ use crate::{
     game::map_query::find_item_in_placement,
 };
 
+use super::TickCtx;
 use super::events::BroadcastMessage;
 
 #[derive(Error, Debug)]
@@ -32,10 +33,8 @@ pub enum ItemMovementError {
     CannotEquip,
 }
 
-#[allow(clippy::too_many_arguments)]
 fn displace_inventory_items(
-    broadcasts: &mut Vec<BroadcastMessage>,
-    map: &mut GameMap,
+    ctx: &mut TickCtx,
     agent: AgentKey,
     slot: InventorySlot,
     source_item: &Item,
@@ -43,7 +42,8 @@ fn displace_inventory_items(
     source_slot: Option<InventorySlot>,
     source_container: Option<&(ItemGuid, usize)>,
 ) -> Result<(), ItemMovementError> {
-    let current_item = map
+    let current_item = ctx
+        .map
         .get_player_mut(agent)
         .and_then(|player| player.inventory_mut().take_slot(&slot));
 
@@ -51,8 +51,7 @@ fn displace_inventory_items(
     // (inventory-to-inventory swaps are rejected upstream, so source is always Map)
     if let Some(current_item) = current_item
         && insert_item_at(
-            broadcasts,
-            map,
+            ctx,
             current_item.clone(),
             source_container,
             source_placement,
@@ -60,11 +59,10 @@ fn displace_inventory_items(
         )
         .is_err()
     {
-        let fallback = map.agent_position(agent).cloned();
+        let fallback = ctx.map.agent_position(agent).cloned();
         if let Some(fallback) = fallback
             && let Err(e) = insert_item_at(
-                broadcasts,
-                map,
+                ctx,
                 current_item.clone(),
                 None,
                 &ItemPlacement::Map(fallback),
@@ -86,7 +84,8 @@ fn displace_inventory_items(
             .is_some()
             || it.config.has_flag(ItemFlag::AmmoContainer)
     };
-    let left_is_bow_or_quiver = map
+    let left_is_bow_or_quiver = ctx
+        .map
         .get_player(agent)
         .unwrap()
         .inventory()
@@ -99,24 +98,25 @@ fn displace_inventory_items(
     }
 
     if source_slot.unwrap() == InventorySlot::BothHands {
-        let player = map.get_player_mut(agent).unwrap();
+        let player = ctx.map.get_player_mut(agent).unwrap();
         if let Some(rh_item) = player.inventory_mut().take_slot(&InventorySlot::RightHand) {
             let rh_copy = rh_item.clone();
-            if let Err(e) = stow_item(broadcasts, map, agent, rh_item) {
-                let player = map.get_player_mut(agent).unwrap();
+            if let Err(e) = stow_item(ctx, agent, rh_item) {
+                let player = ctx.map.get_player_mut(agent).unwrap();
                 let _ = player
                     .inventory_mut()
                     .insert(InventorySlot::RightHand, None, rh_copy);
                 return Err(e);
             }
-            broadcasts.push(BroadcastMessage::UpdateInventorySlot {
+            ctx.events.push(BroadcastMessage::UpdateInventorySlot {
                 agent_key: agent,
                 slot: InventorySlot::RightHand,
             });
         }
     }
 
-    let left_is_two_handed = map
+    let left_is_two_handed = ctx
+        .map
         .get_player(agent)
         .unwrap()
         .inventory()
@@ -124,20 +124,20 @@ fn displace_inventory_items(
         .map(|it| it.get_slot().unwrap() == InventorySlot::BothHands)
         .unwrap_or(false);
     if slot == InventorySlot::RightHand && left_is_two_handed {
-        let player = map.get_player_mut(agent).unwrap();
+        let player = ctx.map.get_player_mut(agent).unwrap();
         let lh_item = player
             .inventory_mut()
             .take_slot(&InventorySlot::LeftHand)
             .unwrap();
         let lh_copy = lh_item.clone();
-        if let Err(e) = stow_item(broadcasts, map, agent, lh_item) {
-            let player = map.get_player_mut(agent).unwrap();
+        if let Err(e) = stow_item(ctx, agent, lh_item) {
+            let player = ctx.map.get_player_mut(agent).unwrap();
             let _ = player
                 .inventory_mut()
                 .insert(InventorySlot::LeftHand, None, lh_copy);
             return Err(e);
         }
-        broadcasts.push(BroadcastMessage::UpdateInventorySlot {
+        ctx.events.push(BroadcastMessage::UpdateInventorySlot {
             agent_key: agent,
             slot: InventorySlot::LeftHand,
         });
@@ -146,38 +146,37 @@ fn displace_inventory_items(
 }
 
 pub fn move_item(
-    map: &mut GameMap,
+    ctx: &mut TickCtx,
     agent: AgentKey,
     source: ItemRef,
     amount: u8,
     to: ItemPlacement,
     target_container: Option<ItemGuid>,
-) -> Vec<BroadcastMessage> {
-    let mut broadcasts = Vec::new();
-
-    if map.get_player(agent).is_none() {
-        return broadcasts;
+) {
+    if ctx.map.get_player(agent).is_none() {
+        return;
     }
 
-    let Some(player_pos) = map.agent_position(agent) else {
-        return broadcasts;
+    let Some(player_pos) = ctx.map.agent_position(agent) else {
+        return;
     };
 
     if let ItemPlacement::Map(pos) = &source.placement
         && !player_pos.is_adjacent(pos)
     {
-        broadcasts.push(BroadcastMessage::MoveItemDenied {
+        ctx.events.push(BroadcastMessage::MoveItemDenied {
             agent_key: agent,
             message: "Item is too far".to_string(),
         });
-        return broadcasts;
+        return;
     }
 
     // Validate source item: Unmove flag and stack amount.
     {
         let item = match &source.placement {
-            ItemPlacement::Map(pos) => map.get_item_by_id(pos, &source.guid),
-            ItemPlacement::Inventory(slot, _) => map
+            ItemPlacement::Map(pos) => ctx.map.get_item_by_id(pos, &source.guid),
+            ItemPlacement::Inventory(slot, _) => ctx
+                .map
                 .get_player(agent)
                 .and_then(|p| p.inventory().get(slot))
                 .and_then(|it| it.find_by_guid(&source.guid)),
@@ -185,29 +184,30 @@ pub fn move_item(
         if let Some(item) = item
             && (item.config.has_flag(ItemFlag::Unmove) || item.amount < amount)
         {
-            broadcasts.push(BroadcastMessage::MoveItemDenied {
+            ctx.events.push(BroadcastMessage::MoveItemDenied {
                 agent_key: agent,
                 message: "Can't move this".to_string(),
             });
-            return broadcasts;
+            return;
         }
     }
 
     // Validate target placement.
     match (&to, target_container.as_ref()) {
         (ItemPlacement::Map(pos), None) => {
-            if !map.can_drop_item(pos) || !player_pos.in_viewport(pos) {
-                broadcasts.push(BroadcastMessage::MoveItemDenied {
+            if !ctx.map.can_drop_item(pos) || !player_pos.in_viewport(pos) {
+                ctx.events.push(BroadcastMessage::MoveItemDenied {
                     agent_key: agent,
                     message: "Can't drop here".to_string(),
                 });
-                return broadcasts;
+                return;
             }
         }
         (ItemPlacement::Inventory(target_slot, _), None) => {
             let item = match &source.placement {
-                ItemPlacement::Map(pos) => map.get_item_by_id(pos, &source.guid),
-                ItemPlacement::Inventory(slot, _) => map
+                ItemPlacement::Map(pos) => ctx.map.get_item_by_id(pos, &source.guid),
+                ItemPlacement::Inventory(slot, _) => ctx
+                    .map
                     .get_player(agent)
                     .and_then(|p| p.inventory().get(slot))
                     .and_then(|it| it.find_by_guid(&source.guid)),
@@ -221,17 +221,18 @@ pub fn move_item(
                 })
                 .unwrap_or(false);
             if !compatible {
-                broadcasts.push(BroadcastMessage::MoveItemDenied {
+                ctx.events.push(BroadcastMessage::MoveItemDenied {
                     agent_key: agent,
                     message: "Can't equip this here".to_string(),
                 });
-                return broadcasts;
+                return;
             }
         }
         (placement, Some(container_guid)) => {
             let item = match &source.placement {
-                ItemPlacement::Map(pos) => map.get_item_by_id(pos, &source.guid),
-                ItemPlacement::Inventory(slot, _) => map
+                ItemPlacement::Map(pos) => ctx.map.get_item_by_id(pos, &source.guid),
+                ItemPlacement::Inventory(slot, _) => ctx
+                    .map
                     .get_player(agent)
                     .and_then(|p| p.inventory().get(slot))
                     .and_then(|it| it.find_by_guid(&source.guid)),
@@ -240,7 +241,7 @@ pub fn move_item(
                 .map(|it| it.config.has_flag(ItemFlag::Take))
                 .unwrap_or(false);
             let target_is_ammo_container = find_item_in_placement(
-                map,
+                ctx.map,
                 &ItemRef {
                     guid: container_guid.clone(),
                     placement: placement.clone(),
@@ -254,24 +255,23 @@ pub fn move_item(
                 .map(|it| it.config.attr_ammo_type().is_some())
                 .unwrap_or(true);
             if !take_ok && can_drop_to_container {
-                broadcasts.push(BroadcastMessage::MoveItemDenied {
+                ctx.events.push(BroadcastMessage::MoveItemDenied {
                     agent_key: agent,
                     message: "Can't move this".to_string(),
                 });
-                return broadcasts;
+                return;
             }
         }
     }
 
     // --- Remove from source ---
-    let Ok((source_item, source_index, source_container)) =
-        remove_item_at(&mut broadcasts, map, &source, amount)
+    let Ok((source_item, source_index, source_container)) = remove_item_at(ctx, &source, amount)
     else {
-        broadcasts.push(BroadcastMessage::MoveItemDenied {
+        ctx.events.push(BroadcastMessage::MoveItemDenied {
             agent_key: agent,
             message: "Can't move this".to_string(),
         });
-        return broadcasts;
+        return;
     };
 
     // --- Add to target ---
@@ -279,8 +279,7 @@ pub fn move_item(
         && target_container.is_none()
     {
         displace_inventory_items(
-            &mut broadcasts,
-            map,
+            ctx,
             *agent,
             *slot,
             &source_item,
@@ -293,22 +292,13 @@ pub fn move_item(
     };
 
     let container = target_container.as_ref().map(|guid| (guid.clone(), 0));
-    let result = result.and_then(|_| {
-        insert_item_at(
-            &mut broadcasts,
-            map,
-            source_item.clone(),
-            container.as_ref(),
-            &to,
-            None,
-        )
-    });
+    let result = result
+        .and_then(|_| insert_item_at(ctx, source_item.clone(), container.as_ref(), &to, None));
 
     if let Err(error) = result {
         // Restore item to its exact source position on failure
         if let Err(e) = insert_item_at(
-            &mut broadcasts,
-            map,
+            ctx,
             source_item.clone(),
             source_container.as_ref(),
             &source.placement,
@@ -320,7 +310,7 @@ pub fn move_item(
             );
         }
 
-        broadcasts.push(BroadcastMessage::MoveItemDenied {
+        ctx.events.push(BroadcastMessage::MoveItemDenied {
             agent_key: agent,
             message: match error {
                 ItemMovementError::ItemNotInPosition | ItemMovementError::TileDoesNotExist => {
@@ -329,32 +319,26 @@ pub fn move_item(
                 e => e.to_string(),
             },
         });
-        return broadcasts;
     }
-
-    broadcasts
 }
 
 /// Into the first backpack container with room; `Err` when there is none.
-pub fn stow_item(
-    broadcasts: &mut Vec<BroadcastMessage>,
-    map: &mut GameMap,
-    agent: AgentKey,
-    item: Item,
-) -> Result<(), ItemMovementError> {
-    let container = map
+pub fn stow_item(ctx: &mut TickCtx, agent: AgentKey, item: Item) -> Result<(), ItemMovementError> {
+    let container = ctx
+        .map
         .get_player(agent)
         .and_then(|player| player.inventory().first_available_container().cloned())
         .ok_or(ItemMovementError::CannotEquip)?;
 
-    let player = map
+    let player = ctx
+        .map
         .get_player_mut(agent)
         .ok_or(ItemMovementError::PlayerDespawned)?;
     player
         .inventory_mut()
         .insert(InventorySlot::Backpack, Some((&container, 0)), item)?;
 
-    broadcasts.push(BroadcastMessage::ContainerUpdated {
+    ctx.events.push(BroadcastMessage::ContainerUpdated {
         item: ItemRef {
             guid: container,
             placement: ItemPlacement::Inventory(InventorySlot::Backpack, agent),
@@ -365,20 +349,23 @@ pub fn stow_item(
 
 /// Puts `item` where it came from: onto a like stack in that same placement when
 /// one has room, otherwise as a new entry there, otherwise at the agent's feet.
-#[allow(clippy::too_many_arguments)]
 pub fn return_item(
-    broadcasts: &mut Vec<BroadcastMessage>,
-    map: &mut GameMap,
+    ctx: &mut TickCtx,
     agent: AgentKey,
     placement: &ItemPlacement,
     container: Option<&(ItemGuid, usize)>,
     index: Option<usize>,
     mut item: Item,
 ) -> Result<(), ItemMovementError> {
-    if merge_into_like_stack(map, placement, container.map(|(guid, _)| guid), &mut item) {
+    if merge_into_like_stack(
+        ctx.map,
+        placement,
+        container.map(|(guid, _)| guid),
+        &mut item,
+    ) {
         // `insert_item_at` emits its own refresh, but a merge never reaches it: a
         // flask that stacks silently stays invisible until the container is reopened.
-        broadcasts.push(match (placement, container) {
+        ctx.events.push(match (placement, container) {
             (_, Some((guid, _))) => BroadcastMessage::ContainerUpdated {
                 item: ItemRef {
                     guid: guid.clone(),
@@ -401,24 +388,24 @@ pub fn return_item(
     }
 
     let slot_taken = match (placement, container) {
-        (ItemPlacement::Inventory(slot, agent_key), None) => map
+        (ItemPlacement::Inventory(slot, agent_key), None) => ctx
+            .map
             .get_player(*agent_key)
             .map(|player| player.inventory().get(slot).is_some())
             .unwrap_or(true),
         _ => false,
     };
 
-    if !slot_taken
-        && insert_item_at(broadcasts, map, item.clone(), container, placement, index).is_ok()
-    {
+    if !slot_taken && insert_item_at(ctx, item.clone(), container, placement, index).is_ok() {
         return Ok(());
     }
 
-    let pos = map
+    let pos = ctx
+        .map
         .agent_position(agent)
         .cloned()
         .ok_or(ItemMovementError::PlayerDespawned)?;
-    insert_item_at(broadcasts, map, item, None, &ItemPlacement::Map(pos), None)
+    insert_item_at(ctx, item, None, &ItemPlacement::Map(pos), None)
 }
 
 /// Moves as much of `item` as the cap allows onto a like stack already sitting in
@@ -495,8 +482,7 @@ fn top_up(stack: &mut Item, item: &mut Item) -> u8 {
 }
 
 pub fn insert_item_at(
-    broadcasts: &mut Vec<BroadcastMessage>,
-    map: &mut GameMap,
+    ctx: &mut TickCtx,
     item: Item,
     container: Option<&(ItemGuid, usize)>,
     placement: &ItemPlacement,
@@ -504,17 +490,20 @@ pub fn insert_item_at(
 ) -> Result<(), ItemMovementError> {
     match placement {
         ItemPlacement::Map(pos) => {
-            match map.place_item(pos, index, container.map(|(g, i)| (g, *i)), item) {
+            match ctx
+                .map
+                .place_item(pos, index, container.map(|(g, i)| (g, *i)), item)
+            {
                 Ok(..) => {
                     if let Some((guid, _)) = container {
-                        broadcasts.push(BroadcastMessage::ContainerUpdated {
+                        ctx.events.push(BroadcastMessage::ContainerUpdated {
                             item: ItemRef {
                                 guid: guid.clone(),
                                 placement: placement.clone(),
                             },
                         });
                     } else {
-                        broadcasts.push(BroadcastMessage::TileChanged {
+                        ctx.events.push(BroadcastMessage::TileChanged {
                             position: pos.clone(),
                         });
                     }
@@ -529,7 +518,8 @@ pub fn insert_item_at(
             }
         }
         ItemPlacement::Inventory(slot, agent) => {
-            let can_carry = map
+            let can_carry = ctx
+                .map
                 .get_player(*agent)
                 .map(|player| player.can_carry(item.total_weight()))
                 .unwrap_or(false);
@@ -539,7 +529,7 @@ pub fn insert_item_at(
             }
 
             if let Some((c_guid, c_index)) = container.as_ref() {
-                let result = map.get_player_mut(*agent).map(|player| {
+                let result = ctx.map.get_player_mut(*agent).map(|player| {
                     player
                         .inventory_mut()
                         .insert(*slot, Some((c_guid, *c_index)), item)
@@ -549,7 +539,7 @@ pub fn insert_item_at(
                 };
                 match result {
                     Ok(..) => {
-                        broadcasts.push(BroadcastMessage::ContainerUpdated {
+                        ctx.events.push(BroadcastMessage::ContainerUpdated {
                             item: ItemRef {
                                 guid: c_guid.clone(),
                                 placement: placement.clone(),
@@ -559,14 +549,15 @@ pub fn insert_item_at(
                     Err(e) => return Err(e),
                 }
             } else {
-                match map
+                match ctx
+                    .map
                     .get_player_mut(*agent)
                     .unwrap()
                     .inventory_mut()
                     .insert(*slot, None, item)
                 {
                     Ok(..) => {
-                        broadcasts.push(BroadcastMessage::UpdateInventorySlot {
+                        ctx.events.push(BroadcastMessage::UpdateInventorySlot {
                             agent_key: *agent,
                             slot: *slot,
                         });
@@ -580,22 +571,21 @@ pub fn insert_item_at(
 }
 
 pub fn remove_item_at(
-    broadcasts: &mut Vec<BroadcastMessage>,
-    map: &mut GameMap,
+    ctx: &mut TickCtx,
     item: &ItemRef,
     amount: u8,
 ) -> Result<RemovedItem, ItemMovementError> {
     let removed = match &item.placement {
         ItemPlacement::Map(pos) => {
-            let removed = map.remove_item_from_tile(pos, &item.guid, amount);
+            let removed = ctx.map.remove_item_from_tile(pos, &item.guid, amount);
             match &removed {
                 Some((_, Some(_), None)) => {
-                    broadcasts.push(BroadcastMessage::TileChanged {
+                    ctx.events.push(BroadcastMessage::TileChanged {
                         position: pos.clone(),
                     });
                 }
                 Some((_, None, Some((guid, _)))) => {
-                    broadcasts.push(BroadcastMessage::ContainerUpdated {
+                    ctx.events.push(BroadcastMessage::ContainerUpdated {
                         item: ItemRef {
                             guid: guid.clone(),
                             placement: item.placement.clone(),
@@ -607,12 +597,13 @@ pub fn remove_item_at(
             removed
         }
         ItemPlacement::Inventory(slot, agent_key) => {
-            let removed = map
+            let removed = ctx
+                .map
                 .get_player_mut(*agent_key)
                 .and_then(|player| player.inventory_mut().remove(*slot, &item.guid, amount));
             match &removed {
                 Some((_, Some((guid, _)))) => {
-                    broadcasts.push(BroadcastMessage::ContainerUpdated {
+                    ctx.events.push(BroadcastMessage::ContainerUpdated {
                         item: ItemRef {
                             guid: guid.clone(),
                             placement: item.placement.clone(),
@@ -620,7 +611,7 @@ pub fn remove_item_at(
                     });
                 }
                 Some((_, None)) => {
-                    broadcasts.push(BroadcastMessage::UpdateInventorySlot {
+                    ctx.events.push(BroadcastMessage::UpdateInventorySlot {
                         agent_key: *agent_key,
                         slot: *slot,
                     });
@@ -640,6 +631,7 @@ mod tests {
     use crate::entities::items::{ItemAttribute, ItemConfig};
     use crate::entities::map::MapTile;
     use crate::entities::position::Position;
+    use crate::game::TestHarness;
     use crate::persistence::items::ITEM_CONFIGS;
     use crate::persistence::test_fixtures::{a_player_with_a_full_backpack, a_test_snapshot};
     use std::collections::{HashMap, HashSet};
@@ -703,11 +695,12 @@ mod tests {
 
     #[test]
     fn a_move_between_tiles_does_not_copy_the_player() {
+        let mut h = TestHarness::new();
         let (mut map, agent, source, target, guid) = a_player_beside(a_movable_item(100));
         let before = map.clone();
 
         move_item(
-            &mut map,
+            &mut h.ctx(&mut map),
             agent,
             ItemRef {
                 guid: guid.clone(),
@@ -727,12 +720,13 @@ mod tests {
 
     #[test]
     fn a_move_into_the_inventory_copies_the_player_and_refreshes_capacity() {
+        let mut h = TestHarness::new();
         let (mut map, agent, source, _, guid) = a_player_beside(a_movable_item(100));
         let before = map.clone();
         let available_before = before.get_player(agent).unwrap().capacity_available();
 
         move_item(
-            &mut map,
+            &mut h.ctx(&mut map),
             agent,
             ItemRef {
                 guid,
@@ -776,11 +770,12 @@ mod tests {
     /// lying on the floor.
     #[test]
     fn equipping_and_unequipping_track_the_armour_total() {
+        let mut h = TestHarness::new();
         let (mut map, agent, source, target, guid) = a_player_beside(an_armoured_helmet());
         assert_eq!(map.get_player(agent).unwrap().armor(), 0);
 
         move_item(
-            &mut map,
+            &mut h.ctx(&mut map),
             agent,
             ItemRef {
                 guid: guid.clone(),
@@ -798,7 +793,7 @@ mod tests {
         );
 
         move_item(
-            &mut map,
+            &mut h.ctx(&mut map),
             agent,
             ItemRef {
                 guid,
@@ -828,11 +823,11 @@ mod tests {
             )
             .unwrap();
 
-        let mut broadcasts = Vec::new();
+        let mut h = TestHarness::new();
         let item = Item::new(ITEM_CONFIGS.get(&283).unwrap().clone(), 1);
         let guid = item.guid.clone();
 
-        stow_item(&mut broadcasts, &mut map, agent, item).unwrap();
+        stow_item(&mut h.ctx(&mut map), agent, item).unwrap();
 
         assert!(
             map.get_player(agent)
@@ -857,15 +852,15 @@ mod tests {
             .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &pos)
             .unwrap();
 
-        let mut broadcasts = Vec::new();
+        let mut h = TestHarness::new();
         let item = Item::new(ITEM_CONFIGS.get(&283).unwrap().clone(), 1);
 
         assert!(matches!(
-            stow_item(&mut broadcasts, &mut map, agent, item),
+            stow_item(&mut h.ctx(&mut map), agent, item),
             Err(ItemMovementError::CannotEquip)
         ));
         assert!(map.get_top_item(&pos).is_none(), "it was dropped instead");
-        assert!(broadcasts.is_empty());
+        assert!(h.events.is_empty());
     }
 
     fn a_backpack_with(capacity: u8, items: Vec<Item>) -> Item {
@@ -912,6 +907,7 @@ mod tests {
     /// dropping the shield on the floor, where anyone can take it, loses the item.
     #[test]
     fn a_two_handed_equip_with_no_room_to_stow_the_off_hand_is_refused() {
+        let mut h = TestHarness::new();
         let (here, source) = (Position::new(10, 10, 7), Position::new(11, 10, 7));
         let mut map = GameMap::new();
         map.insert_tile(here.clone(), a_ground_tile());
@@ -932,8 +928,8 @@ mod tests {
             .insert_agent(Agent::from_player(snapshot), &here)
             .unwrap();
 
-        let broadcasts = move_item(
-            &mut map,
+        move_item(
+            &mut h.ctx(&mut map),
             agent,
             ItemRef {
                 guid: weapon_guid.clone(),
@@ -945,10 +941,11 @@ mod tests {
         );
 
         assert!(
-            broadcasts
+            h.events
                 .iter()
                 .any(|b| matches!(b, BroadcastMessage::MoveItemDenied { .. })),
-            "the equip was not refused: {broadcasts:?}"
+            "the equip was not refused: {:?}",
+            h.events
         );
         let player = map.get_player(agent).unwrap();
         assert_eq!(
@@ -985,13 +982,12 @@ mod tests {
             .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &pos)
             .unwrap();
 
-        let mut broadcasts = Vec::new();
+        let mut h = TestHarness::new();
         let item = a_flask(1);
         let guid = item.guid.clone();
 
         return_item(
-            &mut broadcasts,
-            &mut map,
+            &mut h.ctx(&mut map),
             agent,
             &ItemPlacement::Map(gone),
             None,
@@ -1019,10 +1015,9 @@ mod tests {
             .unwrap();
         let before = map.get_player(agent).unwrap().inventory().carried_weight();
 
-        let mut broadcasts = Vec::new();
+        let mut h = TestHarness::new();
         return_item(
-            &mut broadcasts,
-            &mut map,
+            &mut h.ctx(&mut map),
             agent,
             &ItemPlacement::Inventory(InventorySlot::Backpack, agent),
             Some(&(container_guid, 0)),
@@ -1069,13 +1064,12 @@ mod tests {
             .insert_agent(Agent::from_player(snapshot), &pos)
             .unwrap();
 
-        let mut broadcasts = Vec::new();
+        let mut h = TestHarness::new();
         let item = a_flask(1);
         let guid = item.guid.clone();
 
         return_item(
-            &mut broadcasts,
-            &mut map,
+            &mut h.ctx(&mut map),
             agent,
             &ItemPlacement::Inventory(InventorySlot::Head, agent),
             None,

@@ -1,7 +1,6 @@
 use tracing::{error, warn};
 
 use crate::{
-    actors::world::ScheduledCommand,
     entities::{
         agent::AgentKey,
         items::{Bounds, Item, ItemFlag, ItemId, ItemMultiAction, ItemRef},
@@ -9,13 +8,12 @@ use crate::{
         position::{ItemPlacement, Position},
     },
     game::{
-        Tick,
+        Mark, TickCtx,
         config::GAME_CONFIG,
         events::BroadcastMessage,
         item_action::{ItemActionError, transform},
         item_movement::{insert_item_at, remove_item_at, return_item},
         map_query::find_item_in_placement,
-        random::Rolls,
     },
     persistence::items::ITEM_CONFIGS,
 };
@@ -26,120 +24,101 @@ pub struct UseTarget {
     pub agent: Option<AgentKey>,
 }
 
-pub fn use_item_with(
-    map: &mut GameMap,
-    agent_key: AgentKey,
-    source: ItemRef,
-    target: UseTarget,
-    current_tick: Tick,
-    roll: &mut Rolls,
-) -> (Vec<BroadcastMessage>, Vec<ScheduledCommand>) {
-    let use_item_failed = |message| {
-        (
-            vec![BroadcastMessage::UseItemDenied { agent_key, message }],
-            vec![],
-        )
-    };
+pub fn use_item_with(ctx: &mut TickCtx, agent_key: AgentKey, source: ItemRef, target: UseTarget) {
+    let mark = ctx.mark();
 
-    if map
+    if ctx
+        .map
         .get_agent(agent_key)
-        .map(|agent| agent.next_use_tick > current_tick)
+        .map(|agent| agent.next_use_tick > ctx.tick)
         .unwrap_or(false)
     {
-        return use_item_failed("Can't use that fast".to_owned());
+        return use_item_failed(ctx, mark, agent_key, "Can't use that fast");
     }
 
-    let source_item = find_item_in_placement(map, &source);
-    let Some(source_item) = source_item else {
-        return use_item_failed("Item was not found".to_owned());
+    let Some(source_item) = find_item_in_placement(ctx.map, &source) else {
+        return use_item_failed(ctx, mark, agent_key, "Item was not found");
     };
-
-    if map
-        .agent_position(agent_key)
-        .filter(|player_pos| player_pos.placement_is_adjacent(&source.placement))
-        .is_none()
-    {
-        return use_item_failed("Item is too far".to_owned());
-    }
-
-    if !source_item.config.has_flag(ItemFlag::Usable) {
-        return use_item_failed("Can't use that".to_owned());
-    }
-
+    let source_item_id = source_item.item_id;
+    let source_is_usable = source_item.config.has_flag(ItemFlag::Usable);
     // Two sources, and they answer different questions. What a shovel does is a
     // property of the world, so it stays in `game_conf.yaml`'s id lists; what a
     // potion restores is a property of the item, so it rides in the catalogue.
     let action = GAME_CONFIG
         .multi_action
-        .tool_action(source_item.item_id)
+        .tool_action(source_item_id)
         .or_else(|| source_item.config.attr_multi_action());
-    if let Some(action) = action {
-        match route_multi_action(
-            &action,
-            map,
-            agent_key,
-            &source,
-            &target,
-            current_tick,
-            roll,
-        ) {
-            Ok((action_broadcasts, scheduled_commands)) => {
-                map.get_agent_mut(agent_key).unwrap().next_use_tick =
-                    current_tick + GAME_CONFIG.action.use_item_cooldown_ticks;
 
-                (action_broadcasts, scheduled_commands)
-            }
-            Err(e) => {
-                let message = "Can't use that";
-                if let ItemActionError::InvalidState = e {
-                    warn!("{e}");
-                }
-                use_item_failed(message.to_owned())
-            }
+    if ctx
+        .map
+        .agent_position(agent_key)
+        .filter(|player_pos| player_pos.placement_is_adjacent(&source.placement))
+        .is_none()
+    {
+        return use_item_failed(ctx, mark, agent_key, "Item is too far");
+    }
+
+    if !source_is_usable {
+        return use_item_failed(ctx, mark, agent_key, "Can't use that");
+    }
+
+    let Some(action) = action else {
+        return use_item_failed(ctx, mark, agent_key, "Can't use that");
+    };
+
+    match route_multi_action(ctx, &action, agent_key, &source, &target) {
+        Ok(()) => {
+            ctx.map.get_agent_mut(agent_key).unwrap().next_use_tick =
+                ctx.tick + GAME_CONFIG.action.use_item_cooldown_ticks;
         }
-    } else {
-        use_item_failed("Can't use that".to_owned())
+        Err(e) => {
+            if let ItemActionError::InvalidState = e {
+                warn!("{e}");
+            }
+            use_item_failed(ctx, mark, agent_key, "Can't use that");
+        }
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+/// Discards whatever a half-finished use reported and announces the refusal in its place.
+fn use_item_failed(ctx: &mut TickCtx, mark: Mark, agent_key: AgentKey, message: &str) {
+    ctx.rollback_to(mark);
+    ctx.events.push(BroadcastMessage::UseItemDenied {
+        agent_key,
+        message: message.to_owned(),
+    });
+}
+
 fn route_multi_action(
+    ctx: &mut TickCtx,
     action: &ItemMultiAction,
-    map: &mut GameMap,
     agent_key: AgentKey,
     source: &ItemRef,
     target: &UseTarget,
-    current_tick: Tick,
-    roll: &mut Rolls,
-) -> Result<(Vec<BroadcastMessage>, Vec<ScheduledCommand>), ItemActionError> {
-    let mut broadcasts = Vec::new();
-    let mut commands = Vec::new();
+) -> Result<(), ItemActionError> {
     match action {
-        ItemMultiAction::Shovel => shovel(
-            &mut broadcasts,
-            &mut commands,
-            map,
-            tool_target(map, target)?,
-            current_tick,
-        )?,
-        ItemMultiAction::Rope => rope(&mut broadcasts, map, agent_key, tool_target(map, target)?)?,
+        ItemMultiAction::Shovel => {
+            let tool_target = tool_target(ctx.map, target)?;
+            shovel(ctx, tool_target)
+        }
+        ItemMultiAction::Rope => {
+            let tool_target = tool_target(ctx.map, target)?;
+            rope(ctx, agent_key, tool_target)
+        }
         ItemMultiAction::Potion {
             health,
             mana,
             flask,
         } => potion(
-            &mut broadcasts,
-            map,
+            ctx,
             agent_key,
             target.agent.ok_or(ItemActionError::NoTarget)?,
             source,
             *health,
             *mana,
             *flask,
-            roll,
-        )?,
-    };
-    Ok((broadcasts, commands))
+        ),
+    }
 }
 
 fn tool_target<'a>(map: &GameMap, target: &'a UseTarget) -> Result<&'a ItemRef, ItemActionError> {
@@ -150,29 +129,16 @@ fn tool_target<'a>(map: &GameMap, target: &'a UseTarget) -> Result<&'a ItemRef, 
     Ok(item)
 }
 
-fn shovel(
-    broadcasts: &mut Vec<BroadcastMessage>,
-    commands: &mut Vec<ScheduledCommand>,
-    map: &mut GameMap,
-    target: &ItemRef,
-    current_tick: Tick,
-) -> Result<(), ItemActionError> {
-    let target_item = find_item_in_placement(map, target).unwrap();
+fn shovel(ctx: &mut TickCtx, target: &ItemRef) -> Result<(), ItemActionError> {
+    let target_item_id = find_item_in_placement(ctx.map, target).unwrap().item_id;
     if !GAME_CONFIG
         .multi_action
         .diggable_ids
-        .contains(&target_item.item_id)
+        .contains(&target_item_id)
     {
         return Err(ItemActionError::ActionFailed);
     }
-    transform(
-        broadcasts,
-        commands,
-        map,
-        target,
-        target_item.item_id + 1,
-        current_tick,
-    )
+    transform(ctx, target, target_item_id + 1)
 }
 
 fn first_available_position_up(
@@ -191,29 +157,25 @@ fn first_available_position_up(
     .cloned()
 }
 
-fn rope(
-    broadcasts: &mut Vec<BroadcastMessage>,
-    map: &mut GameMap,
-    agent_key: AgentKey,
-    target: &ItemRef,
-) -> Result<(), ItemActionError> {
-    let target_item = find_item_in_placement(map, target).unwrap();
+fn rope(ctx: &mut TickCtx, agent_key: AgentKey, target: &ItemRef) -> Result<(), ItemActionError> {
+    let target_item_id = find_item_in_placement(ctx.map, target).unwrap().item_id;
     let pos = match &target.placement {
         ItemPlacement::Map(pos) => pos,
         ItemPlacement::Inventory(..) => return Err(ItemActionError::ActionFailed),
     };
-    let Some(target_pos) = first_available_position_up(map, pos, agent_key) else {
+    let Some(target_pos) = first_available_position_up(ctx.map, pos, agent_key) else {
         return Err(ItemActionError::InvalidState);
     };
 
     if GAME_CONFIG
         .multi_action
         .rope_spot_ids
-        .contains(&target_item.item_id)
+        .contains(&target_item_id)
     {
-        map.move_agent(agent_key, &target_pos)
+        ctx.map
+            .move_agent(agent_key, &target_pos)
             .map_err(|_| ItemActionError::ActionFailed)?;
-        broadcasts.push(BroadcastMessage::AgentTeleported {
+        ctx.events.push(BroadcastMessage::AgentTeleported {
             agent_key,
             from_position: pos.clone(),
             to_position: target_pos,
@@ -222,50 +184,49 @@ fn rope(
     } else if GAME_CONFIG
         .multi_action
         .opened_hole_ids
-        .contains(&target_item.item_id)
+        .contains(&target_item_id)
     {
         let down = Position::new(pos.x, pos.y, pos.z + 1);
-        if let Ok(last_agent) = map
+        let last_agent = ctx
+            .map
             .iter_agents_at(&down)
-            .map(|mut agents_iter| agents_iter.next().cloned())
-            && let Some(last_agent) = last_agent
-        {
-            if map
-                .move_agent(last_agent, &target_pos)
-                .map(|()| {
-                    broadcasts.push(BroadcastMessage::AgentTeleported {
-                        agent_key: last_agent,
-                        from_position: pos.clone(),
-                        to_position: target_pos,
-                    });
-                })
-                .is_err()
-            {
+            .ok()
+            .and_then(|mut agents_iter| agents_iter.next().cloned());
+        if let Some(last_agent) = last_agent {
+            if ctx.map.move_agent(last_agent, &target_pos).is_err() {
                 return Err(ItemActionError::ActionFailed);
             }
+            ctx.events.push(BroadcastMessage::AgentTeleported {
+                agent_key: last_agent,
+                from_position: pos.clone(),
+                to_position: target_pos,
+            });
             return Ok(());
-        } else if let Some(top_item) = map.get_top_item(&down) {
-            if remove_item_at(
-                broadcasts,
-                map,
+        }
+
+        let top_item = ctx
+            .map
+            .get_top_item(&down)
+            .map(|item| (item.guid.clone(), item.amount));
+        if let Some((guid, amount)) = top_item {
+            let hauled = remove_item_at(
+                ctx,
                 &ItemRef {
-                    guid: top_item.guid.clone(),
+                    guid,
                     placement: ItemPlacement::Map(down),
                 },
-                top_item.amount,
+                amount,
             )
             .and_then(|(removed_item, index, container)| {
                 insert_item_at(
-                    broadcasts,
-                    map,
+                    ctx,
                     removed_item,
                     container.as_ref(),
                     &ItemPlacement::Map(target_pos),
                     index,
                 )
-            })
-            .is_err()
-            {
+            });
+            if hauled.is_err() {
                 return Err(ItemActionError::ActionFailed);
             }
             return Ok(());
@@ -275,46 +236,46 @@ fn rope(
     Err(ItemActionError::ActionFailed)
 }
 
-#[allow(clippy::too_many_arguments)]
 fn potion(
-    broadcasts: &mut Vec<BroadcastMessage>,
-    map: &mut GameMap,
+    ctx: &mut TickCtx,
     agent_key: AgentKey,
     target: AgentKey,
     potion: &ItemRef,
     health: Option<Bounds>,
     mana: Option<Bounds>,
     flask: Option<ItemId>,
-    roll: &mut Rolls,
 ) -> Result<(), ItemActionError> {
-    let health_roll = health.map(|b| roll.uniform(b.min, b.max));
-    let mana_roll = mana.map(|b| roll.uniform(b.min, b.max));
+    let health_roll = health.map(|b| ctx.roll.uniform(b.min, b.max));
+    let mana_roll = mana.map(|b| ctx.roll.uniform(b.min, b.max));
 
-    let Ok((_, _, source_container)) = remove_item_at(broadcasts, map, potion, 1) else {
+    let Ok((_, _, source_container)) = remove_item_at(ctx, potion, 1) else {
         return Err(ItemActionError::ActionFailed);
     };
 
     if let Some(amount) = health_roll {
-        match map.get_agent_mut(target) {
+        match ctx.map.get_agent_mut(target) {
             Some(agent) => {
                 agent.restore_life(amount);
-                broadcasts.push(BroadcastMessage::AgentLifeUpdated { agent_key: target });
+                ctx.events
+                    .push(BroadcastMessage::AgentLifeUpdated { agent_key: target });
             }
             None => error!("agent {target:?} vanished mid-drink; life not restored"),
         }
     }
     if let Some(amount) = mana_roll {
-        match map.get_player_mut(target) {
+        match ctx.map.get_player_mut(target) {
             Some(player) => {
                 player.mana_mut().add(amount);
-                broadcasts.push(BroadcastMessage::PlayerManaUpdated { agent_key: target });
+                ctx.events
+                    .push(BroadcastMessage::PlayerManaUpdated { agent_key: target });
             }
             None => error!("agent {target:?} vanished mid-drink; mana not restored"),
         }
     }
 
-    if let Some(position) = map.agent_position(target).cloned() {
-        broadcasts.push(BroadcastMessage::PotionDrunk { target, position });
+    if let Some(position) = ctx.map.agent_position(target).cloned() {
+        ctx.events
+            .push(BroadcastMessage::PotionDrunk { target, position });
     }
 
     if let Some(flask) = flask {
@@ -322,8 +283,7 @@ fn potion(
             Some(config) => {
                 let flask = Item::new(config.clone(), 1);
                 if let Err(e) = return_item(
-                    broadcasts,
-                    map,
+                    ctx,
                     agent_key,
                     &potion.placement,
                     source_container.as_ref(),
@@ -350,6 +310,7 @@ mod tests {
         items::{Item, ItemAttribute, ItemConfig, ItemGuid, ItemId},
         map::MapTile,
     };
+    use crate::game::TestHarness;
     use crate::persistence::items::ITEM_CONFIGS;
     use crate::persistence::test_fixtures::{a_test_creature, a_test_snapshot};
     use std::collections::{HashMap, HashSet};
@@ -436,6 +397,7 @@ mod tests {
 
     /// Reports whether the action was denied, and what is left on the target tile.
     fn use_tool_on(tool_id: ItemId, target_id: ItemId) -> (bool, Option<Item>) {
+        let mut h = TestHarness::seeded(1);
         let (here, there) = (Position::new(10, 10, 7), Position::new(10, 11, 7));
         let mut map = GameMap::new();
 
@@ -447,8 +409,8 @@ mod tests {
             .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &here)
             .unwrap();
 
-        let (broadcasts, _) = use_item_with(
-            &mut map,
+        use_item_with(
+            &mut h.ctx(&mut map),
             agent,
             ItemRef {
                 guid: tool_guid,
@@ -461,11 +423,10 @@ mod tests {
                 }),
                 agent: None,
             },
-            0,
-            &mut Rolls::new(1),
         );
 
-        let denied = broadcasts
+        let denied = h
+            .events
             .iter()
             .any(|b| matches!(b, BroadcastMessage::UseItemDenied { .. }));
         (denied, map.get_top_item(&there).cloned())
@@ -495,6 +456,7 @@ mod tests {
 
     #[test]
     fn every_rope_hauls_the_player_up_a_rope_spot() {
+        let mut h = TestHarness::seeded(1);
         let config = &GAME_CONFIG.multi_action;
         let rope_spot = config.rope_spot_ids[0];
 
@@ -513,8 +475,8 @@ mod tests {
                 .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &here)
                 .unwrap();
 
-            let (broadcasts, _) = use_item_with(
-                &mut map,
+            use_item_with(
+                &mut h.ctx(&mut map),
                 agent,
                 ItemRef {
                     guid: rope_guid,
@@ -527,16 +489,15 @@ mod tests {
                     }),
                     agent: None,
                 },
-                0,
-                &mut Rolls::new(1),
             );
 
             let name = &ITEM_CONFIGS[rope_id].name;
             assert!(
-                !broadcasts
+                !h.events
                     .iter()
                     .any(|b| matches!(b, BroadcastMessage::UseItemDenied { .. })),
-                "{name} ({rope_id}) was refused: {broadcasts:?}"
+                "{name} ({rope_id}) was refused: {:?}",
+                h.events
             );
             assert_eq!(
                 map.agent_position(agent),
@@ -548,6 +509,7 @@ mod tests {
 
     #[test]
     fn a_non_tool_cannot_be_used_on_a_diggable() {
+        let mut h = TestHarness::seeded(1);
         let (here, sand_pos) = (Position::new(10, 10, 7), Position::new(10, 11, 7));
         let not_a_tool = 3459; // wooden hammer: usable and multiuse, but digs nothing.
         assert_eq!(GAME_CONFIG.multi_action.tool_action(not_a_tool), None);
@@ -562,8 +524,8 @@ mod tests {
             .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &here)
             .unwrap();
 
-        let (broadcasts, _) = use_item_with(
-            &mut map,
+        use_item_with(
+            &mut h.ctx(&mut map),
             agent,
             ItemRef {
                 guid: hammer_guid,
@@ -576,12 +538,10 @@ mod tests {
                 }),
                 agent: None,
             },
-            0,
-            &mut Rolls::new(1),
         );
 
         assert!(
-            broadcasts
+            h.events
                 .iter()
                 .any(|b| matches!(b, BroadcastMessage::UseItemDenied { .. })),
         );
@@ -712,11 +672,10 @@ mod tests {
             Target::Nobody => None,
         };
 
-        let mut roll = Rolls::new(1);
-        let mut broadcasts = Vec::new();
+        let mut h = TestHarness::seeded(1);
         for _ in 0..times {
-            let (msgs, _) = use_item_with(
-                &mut map,
+            use_item_with(
+                &mut h.ctx(&mut map),
                 user,
                 ItemRef {
                     guid: potion_guid.clone(),
@@ -729,10 +688,7 @@ mod tests {
                     }),
                     agent: target,
                 },
-                0,
-                &mut roll,
             );
-            broadcasts.extend(msgs);
         }
 
         let target_life = target
@@ -742,7 +698,8 @@ mod tests {
 
         Drunk {
             user,
-            denied: broadcasts
+            denied: h
+                .events
                 .iter()
                 .any(|b| matches!(b, BroadcastMessage::UseItemDenied { .. })),
             life: map.get_agent(user).unwrap().life().clone(),
@@ -761,7 +718,7 @@ mod tests {
                 .iter_items(&here)
                 .map(|items| items.map(|i| (i.item_id, i.amount)).collect())
                 .unwrap_or_default(),
-            broadcasts,
+            broadcasts: h.events,
         }
     }
 
@@ -1077,6 +1034,7 @@ mod tests {
     /// a flask handed back to "the first available container" lands in the wrong pouch
     /// and the test sees it. Reports what each pouch holds afterwards.
     fn drink_from_a_pouch(potion: Item, pouches: usize, beside_it: Vec<Item>) -> Pouches {
+        let mut h = TestHarness::seeded(1);
         let here = Position::new(10, 10, 7);
         let mut map = GameMap::new();
         map.insert_tile(here.clone(), MapTile::new());
@@ -1101,8 +1059,8 @@ mod tests {
             .insert_agent(Agent::from_player(snapshot), &here)
             .unwrap();
 
-        let (broadcasts, _) = use_item_with(
-            &mut map,
+        use_item_with(
+            &mut h.ctx(&mut map),
             user,
             ItemRef {
                 guid: potion_guid,
@@ -1112,8 +1070,6 @@ mod tests {
                 item: None,
                 agent: Some(user),
             },
-            0,
-            &mut Rolls::new(1),
         );
 
         let backpack = map
@@ -1138,12 +1094,13 @@ mod tests {
             .collect();
 
         Pouches {
-            denied: broadcasts
+            denied: h
+                .events
                 .iter()
                 .any(|b| matches!(b, BroadcastMessage::UseItemDenied { .. })),
             guids,
             contents,
-            broadcasts,
+            broadcasts: h.events,
         }
     }
 

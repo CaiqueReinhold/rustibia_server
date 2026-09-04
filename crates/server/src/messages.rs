@@ -321,13 +321,6 @@ impl Decoder for GameMessageCodec {
             return Ok(None);
         }
 
-        // A payload always carries at least its message-type byte, so a declared length
-        // of zero is malformed rather than merely incomplete. Rejecting it here is what
-        // keeps the two lines below total: `get_u8` would panic on the empty buffer a
-        // two-byte frame leaves behind, and any arm computing `payload_len - 1` would
-        // underflow — panicking in debug, or wrapping to `usize::MAX` in release and
-        // panicking inside `split_to`'s bounds check instead. Both are reachable from a
-        // hand-crafted frame, so this is a guard against hostile input, not a tidy-up.
         if payload_len == 0 {
             return Err(MessageDecodeError::WrongSequence);
         }

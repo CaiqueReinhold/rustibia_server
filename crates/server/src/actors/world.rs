@@ -24,7 +24,8 @@ use crate::game::events::BroadcastMessage;
 use crate::game::item_multi_action::UseTarget;
 use crate::game::random::Rolls;
 use crate::game::{
-    Tick, chat, combat, events, item_action, item_movement, item_multi_action, movement, targeting,
+    Tick, TickCtx, chat, combat, events, item_action, item_movement, item_multi_action, movement,
+    targeting,
 };
 
 #[derive(Debug, Display)]
@@ -287,10 +288,26 @@ impl WorldActor {
         self.message_router.broadcast(broadcast_messages).await;
     }
 
-    fn apply_commands(&mut self, cmds: Vec<ScheduledCommand>) {
-        for cmd in cmds {
+    /// Lends the tick's five writable things to `game/` functions as one `TickCtx`, then queues
+    /// whatever they scheduled. The queue cannot be touched while the context is alive — it
+    /// borrows `self` — so the scheduled commands land in a local first.
+    fn with_ctx<T>(
+        &mut self,
+        broadcast_messages: &mut Vec<BroadcastMessage>,
+        f: impl FnOnce(&mut TickCtx) -> T,
+    ) -> T {
+        let mut scheduled = Vec::new();
+        let result = f(&mut TickCtx {
+            map: &mut self.map,
+            events: broadcast_messages,
+            scheduled: &mut scheduled,
+            roll: &mut self.roll,
+            tick: self.tick,
+        });
+        for cmd in scheduled {
             self.command_queue.push(cmd);
         }
+        result
     }
 
     fn drive_combat(&mut self, broadcast_messages: &mut Vec<BroadcastMessage>) {
@@ -301,28 +318,18 @@ impl WorldActor {
             .map(|(key, _)| key)
             .collect();
 
-        let mut scheduled = Vec::new();
-        for agent_key in with_targets {
-            let lost = targeting::drop_unreachable_target(&mut self.map, agent_key);
-            if !lost.is_empty() {
-                broadcast_messages.extend(lost);
-                continue;
+        self.with_ctx(broadcast_messages, |ctx| {
+            for agent_key in with_targets {
+                if targeting::drop_unreachable_target(ctx, agent_key) {
+                    continue;
+                }
+                let Some(plan) = combat::plan_auto_attack(ctx.map, agent_key, ctx.roll, ctx.tick)
+                else {
+                    continue;
+                };
+                combat::execute_attack(ctx, plan);
             }
-            let Some(plan) =
-                combat::plan_auto_attack(&self.map, agent_key, &mut self.roll, self.tick)
-            else {
-                continue;
-            };
-            combat::execute_attack(
-                &mut self.map,
-                plan,
-                self.tick,
-                broadcast_messages,
-                &mut scheduled,
-                &mut self.roll,
-            );
-        }
-        self.apply_commands(scheduled);
+        });
     }
 
     fn handle_command(
@@ -340,8 +347,12 @@ impl WorldActor {
             WorldCommand::Walk {
                 direction,
                 agent_key,
-            } => movement::walk(&mut self.map, self.tick, direction, agent_key)
-                .map(|msgs| broadcast_messages.extend(msgs)),
+            } => {
+                self.with_ctx(broadcast_messages, |ctx| {
+                    movement::walk(ctx, direction, agent_key)
+                });
+                Ok(())
+            }
             WorldCommand::MoveItem {
                 agent,
                 source,
@@ -349,21 +360,15 @@ impl WorldActor {
                 to,
                 target_container,
             } => {
-                let msgs = item_movement::move_item(
-                    &mut self.map,
-                    agent,
-                    source,
-                    amount,
-                    to,
-                    target_container,
-                );
-                broadcast_messages.extend(msgs);
+                self.with_ctx(broadcast_messages, |ctx| {
+                    item_movement::move_item(ctx, agent, source, amount, to, target_container)
+                });
                 Ok(())
             }
             WorldCommand::UseItem { agent, item } => {
-                let (msgs, cmds) = item_action::use_item(&mut self.map, agent, item, self.tick);
-                broadcast_messages.extend(msgs);
-                self.apply_commands(cmds);
+                self.with_ctx(broadcast_messages, |ctx| {
+                    item_action::use_item(ctx, agent, item)
+                });
                 Ok(())
             }
             WorldCommand::UseItemWith {
@@ -371,21 +376,15 @@ impl WorldActor {
                 source,
                 target,
             } => {
-                let (msgs, cmds) = item_multi_action::use_item_with(
-                    &mut self.map,
-                    agent,
-                    source,
-                    target,
-                    self.tick,
-                    &mut self.roll,
-                );
-                broadcast_messages.extend(msgs);
-                self.apply_commands(cmds);
+                self.with_ctx(broadcast_messages, |ctx| {
+                    item_multi_action::use_item_with(ctx, agent, source, target)
+                });
                 Ok(())
             }
             WorldCommand::ChangeDirection { agent, facing } => {
-                let msgs = movement::change_direction(&mut self.map, agent, facing);
-                broadcast_messages.extend(msgs);
+                self.with_ctx(broadcast_messages, |ctx| {
+                    movement::change_direction(ctx, agent, facing)
+                });
                 Ok(())
             }
             WorldCommand::SetTarget {
@@ -393,8 +392,9 @@ impl WorldActor {
                 target,
                 seq,
             } => {
-                let msgs = targeting::set_target(&mut self.map, agent_key, target, seq);
-                broadcast_messages.extend(msgs);
+                self.with_ctx(broadcast_messages, |ctx| {
+                    targeting::set_target(ctx, agent_key, target, seq)
+                });
                 Ok(())
             }
             WorldCommand::DespawnPlayer { agent_key, .. } => {
@@ -437,14 +437,11 @@ impl WorldActor {
                 self.handle_request_logout(agent_key, broadcast_messages)
             }
             WorldCommand::DecayItem { item } => {
-                let (msgs, commands) = item_action::decay_item(&mut self.map, item, self.tick);
-                broadcast_messages.extend(msgs);
-                self.apply_commands(commands);
+                self.with_ctx(broadcast_messages, |ctx| item_action::decay_item(ctx, item));
                 Ok(())
             }
             WorldCommand::Say { agent_key, message } => {
-                let msgs = chat::say(&mut self.map, agent_key, message);
-                broadcast_messages.extend(msgs);
+                self.with_ctx(broadcast_messages, |ctx| chat::say(ctx, agent_key, message));
                 Ok(())
             }
         };

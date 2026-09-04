@@ -1,33 +1,26 @@
-use crate::actors::world::ScheduledCommand;
 use crate::entities::agent::AgentKey;
 use crate::entities::combat::{CombatDamage, CombatElement};
 use crate::entities::items::{Item, ItemFlag};
-use crate::entities::map::GameMap;
 use crate::entities::position::{ItemPlacement, Position};
+use crate::game::TickCtx;
 use crate::game::config::GAME_CONFIG;
+use crate::game::death;
 use crate::game::events::BroadcastMessage;
 use crate::game::item_action::check_decay;
-use crate::game::random::Rolls;
-use crate::game::{Tick, death};
 use crate::persistence::items::ITEM_CONFIGS;
 
 /// The target may no longer be in the map when this returns: a lethal hit reaps it. Anything
 /// a caller still needs to do to the target must happen before the call.
-#[allow(clippy::too_many_arguments)]
 pub fn apply_damage(
-    map: &mut GameMap,
+    ctx: &mut TickCtx,
     target: AgentKey,
     mut damage: CombatDamage,
     source: Option<AgentKey>,
-    current_tick: Tick,
-    msgs: &mut Vec<BroadcastMessage>,
-    cmds: &mut Vec<ScheduledCommand>,
-    rolls: &mut Rolls,
 ) {
-    let Some(agent) = map.get_agent(target) else {
+    let Some(agent) = ctx.map.get_agent(target) else {
         return;
     };
-    let Some(target_pos) = map.agent_position(target).cloned() else {
+    let Some(target_pos) = ctx.map.agent_position(target).cloned() else {
         return;
     };
 
@@ -44,7 +37,7 @@ pub fn apply_damage(
     damage.value = damage.value.min(survivable);
     if damage.value == 0 {
         if damage.blocked_shield || damage.blocked_armor {
-            msgs.push(BroadcastMessage::DamageTaken {
+            ctx.events.push(BroadcastMessage::DamageTaken {
                 agent_key: target,
                 position: target_pos,
                 blood_type,
@@ -57,14 +50,14 @@ pub fn apply_damage(
     let element = damage.element;
     let applied = damage.value;
 
-    if let Some(agent) = map.get_agent_mut(target) {
+    if let Some(agent) = ctx.map.get_agent_mut(target) {
         agent.take_hit(applied);
         if records_participation && let Some(source) = source {
             agent.record_damage(source, applied);
         }
     }
 
-    msgs.push(BroadcastMessage::DamageTaken {
+    ctx.events.push(BroadcastMessage::DamageTaken {
         agent_key: target,
         position: target_pos.clone(),
         blood_type,
@@ -72,34 +65,29 @@ pub fn apply_damage(
     });
 
     if matches!(element, CombatElement::Physical) {
-        draw_blood(map, msgs, cmds, &target_pos, target, current_tick);
+        draw_blood(ctx, &target_pos, target);
     }
 
-    if map
+    if ctx
+        .map
         .get_agent(target)
         .is_some_and(|agent| agent.life().current == 0)
     {
-        death::reap(map, target, source, msgs, rolls);
+        death::reap(ctx, target, source);
     }
 }
 
-fn draw_blood(
-    map: &mut GameMap,
-    msgs: &mut Vec<BroadcastMessage>,
-    cmds: &mut Vec<ScheduledCommand>,
-    attacked_pos: &Position,
-    attacked_key: AgentKey,
-    current_tick: Tick,
-) {
+fn draw_blood(ctx: &mut TickCtx, attacked_pos: &Position, attacked_key: AgentKey) {
     let Some(config) = ITEM_CONFIGS.get(&GAME_CONFIG.combat.pool_item_id) else {
         return;
     };
-    let Some(attacked) = map.get_agent(attacked_key) else {
+    let Some(attacked) = ctx.map.get_agent(attacked_key) else {
         return;
     };
     let fluid = attacked.blood_type().get_fluid();
 
-    let (ground_depth, existing) = map
+    let (ground_depth, existing) = ctx
+        .map
         .iter_items(attacked_pos)
         .map(|items| {
             let items: Vec<_> = items.collect();
@@ -116,19 +104,23 @@ fn draw_blood(
         .unwrap_or((0, None));
 
     let pool = Item::new_fluid(config.clone(), fluid);
-    let Ok(item) = map.place_item(attacked_pos, Some(ground_depth), None, pool) else {
+    let tick = ctx.tick;
+    let Ok(item) = ctx
+        .map
+        .place_item(attacked_pos, Some(ground_depth), None, pool)
+    else {
         return;
     };
     check_decay(
-        cmds,
+        ctx.scheduled,
         item,
         ItemPlacement::Map(attacked_pos.clone()),
-        current_tick,
+        tick,
     );
     if let Some(guid) = existing {
-        map.remove_item_from_tile(attacked_pos, &guid, 1);
+        ctx.map.remove_item_from_tile(attacked_pos, &guid, 1);
     }
-    msgs.push(BroadcastMessage::TileChanged {
+    ctx.events.push(BroadcastMessage::TileChanged {
         position: attacked_pos.clone(),
     })
 }
@@ -136,7 +128,8 @@ fn draw_blood(
 mod tests {
     use super::*;
     use crate::entities::agent::Agent;
-    use crate::entities::map::MapTile;
+    use crate::entities::map::{GameMap, MapTile};
+    use crate::game::TestHarness;
     use crate::persistence::test_fixtures::{a_test_creature, a_test_snapshot};
 
     fn physical(value: u32) -> CombatDamage {
@@ -226,39 +219,19 @@ mod tests {
     #[test]
     fn overkill_reports_only_the_damage_that_landed() {
         let (mut map, rat, _) = map_with_creature(3);
-        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
-        let mut rolls = Rolls::new(1);
+        let mut h = TestHarness::seeded(1);
 
-        apply_damage(
-            &mut map,
-            rat,
-            physical(50),
-            None,
-            0,
-            &mut msgs,
-            &mut cmds,
-            &mut rolls,
-        );
+        apply_damage(&mut h.ctx(&mut map), rat, physical(50), None);
 
-        assert_eq!(reported_damage(&msgs), Some(3));
+        assert_eq!(reported_damage(&h.events), Some(3));
     }
 
     #[test]
     fn a_lethal_hit_removes_the_creature() {
         let (mut map, rat, _) = map_with_creature(3);
-        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
-        let mut rolls = Rolls::new(1);
+        let mut h = TestHarness::seeded(1);
 
-        apply_damage(
-            &mut map,
-            rat,
-            physical(50),
-            None,
-            0,
-            &mut msgs,
-            &mut cmds,
-            &mut rolls,
-        );
+        apply_damage(&mut h.ctx(&mut map), rat, physical(50), None);
 
         assert!(map.get_agent(rat).is_none());
     }
@@ -266,114 +239,55 @@ mod tests {
     #[test]
     fn a_survivable_hit_leaves_the_creature_in_the_map() {
         let (mut map, rat, _) = map_with_creature(10);
-        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
-        let mut rolls = Rolls::new(1);
+        let mut h = TestHarness::seeded(1);
 
-        apply_damage(
-            &mut map,
-            rat,
-            physical(3),
-            None,
-            0,
-            &mut msgs,
-            &mut cmds,
-            &mut rolls,
-        );
+        apply_damage(&mut h.ctx(&mut map), rat, physical(3), None);
 
         assert_eq!(map.get_agent(rat).unwrap().life().current, 7);
-        assert_eq!(reported_damage(&msgs), Some(3));
+        assert_eq!(reported_damage(&h.events), Some(3));
     }
 
     #[test]
     fn a_lethal_hit_on_a_player_leaves_one_life() {
         let (mut map, player) = map_with_player();
-        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
-        let mut rolls = Rolls::new(1);
+        let mut h = TestHarness::seeded(1);
 
-        apply_damage(
-            &mut map,
-            player,
-            physical(500),
-            None,
-            0,
-            &mut msgs,
-            &mut cmds,
-            &mut rolls,
-        );
+        apply_damage(&mut h.ctx(&mut map), player, physical(500), None);
 
         assert_eq!(map.get_agent(player).unwrap().life().current, 1);
-        assert_eq!(reported_damage(&msgs), Some(99));
+        assert_eq!(reported_damage(&h.events), Some(99));
     }
 
     #[test]
     fn a_player_at_one_life_takes_no_further_damage() {
         let (mut map, player) = map_with_player();
-        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
-        let mut rolls = Rolls::new(1);
-        apply_damage(
-            &mut map,
-            player,
-            physical(500),
-            None,
-            0,
-            &mut msgs,
-            &mut cmds,
-            &mut rolls,
-        );
-        msgs.clear();
+        let mut h = TestHarness::seeded(1);
+        apply_damage(&mut h.ctx(&mut map), player, physical(500), None);
+        h.events.clear();
 
-        apply_damage(
-            &mut map,
-            player,
-            physical(500),
-            None,
-            0,
-            &mut msgs,
-            &mut cmds,
-            &mut rolls,
-        );
+        apply_damage(&mut h.ctx(&mut map), player, physical(500), None);
 
         assert_eq!(map.get_agent(player).unwrap().life().current, 1);
-        assert!(msgs.is_empty());
+        assert!(h.events.is_empty());
     }
 
     #[test]
     fn a_missing_target_emits_nothing() {
         let (mut map, rat, _) = map_with_creature(10);
         map.remove_agent(rat);
-        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
-        let mut rolls = Rolls::new(1);
+        let mut h = TestHarness::seeded(1);
 
-        apply_damage(
-            &mut map,
-            rat,
-            physical(3),
-            None,
-            0,
-            &mut msgs,
-            &mut cmds,
-            &mut rolls,
-        );
+        apply_damage(&mut h.ctx(&mut map), rat, physical(3), None);
 
-        assert!(msgs.is_empty());
+        assert!(h.events.is_empty());
     }
 
     #[test]
     fn physical_damage_splashes_blood() {
         let (mut map, rat, pos) = map_with_creature(10);
-        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
-        let mut rolls = Rolls::new(1);
+        let mut h = TestHarness::seeded(1);
 
-        apply_damage(
-            &mut map,
-            rat,
-            physical(3),
-            None,
-            0,
-            &mut msgs,
-            &mut cmds,
-            &mut rolls,
-        );
+        apply_damage(&mut h.ctx(&mut map), rat, physical(3), None);
 
         let pooled = map
             .iter_items(&pos)
@@ -385,19 +299,9 @@ mod tests {
     #[test]
     fn a_non_physical_element_does_not_splash() {
         let (mut map, rat, pos) = map_with_creature(10);
-        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
-        let mut rolls = Rolls::new(1);
+        let mut h = TestHarness::seeded(1);
 
-        apply_damage(
-            &mut map,
-            rat,
-            fire(3),
-            None,
-            0,
-            &mut msgs,
-            &mut cmds,
-            &mut rolls,
-        );
+        apply_damage(&mut h.ctx(&mut map), rat, fire(3), None);
 
         let pooled = map
             .iter_items(&pos)
@@ -409,19 +313,9 @@ mod tests {
     #[test]
     fn a_hit_records_the_attackers_participation() {
         let (mut map, rat, hunter) = an_attacked_creature(100);
-        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
-        let mut rolls = Rolls::new(1);
+        let mut h = TestHarness::seeded(1);
 
-        apply_damage(
-            &mut map,
-            rat,
-            physical(30),
-            Some(hunter),
-            0,
-            &mut msgs,
-            &mut cmds,
-            &mut rolls,
-        );
+        apply_damage(&mut h.ctx(&mut map), rat, physical(30), Some(hunter));
 
         let table = map.get_agent(rat).unwrap().participation();
         assert_eq!(table.total(), 30);
@@ -431,20 +325,10 @@ mod tests {
     #[test]
     fn repeated_hits_from_one_attacker_accumulate() {
         let (mut map, rat, hunter) = an_attacked_creature(100);
-        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
-        let mut rolls = Rolls::new(1);
+        let mut h = TestHarness::seeded(1);
 
         for _ in 0..3 {
-            apply_damage(
-                &mut map,
-                rat,
-                physical(10),
-                Some(hunter),
-                0,
-                &mut msgs,
-                &mut cmds,
-                &mut rolls,
-            );
+            apply_damage(&mut h.ctx(&mut map), rat, physical(10), Some(hunter));
         }
 
         assert_eq!(map.get_agent(rat).unwrap().participation().total(), 30);
@@ -453,19 +337,9 @@ mod tests {
     #[test]
     fn a_hit_with_no_source_records_nothing() {
         let (mut map, rat, _) = an_attacked_creature(100);
-        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
-        let mut rolls = Rolls::new(1);
+        let mut h = TestHarness::seeded(1);
 
-        apply_damage(
-            &mut map,
-            rat,
-            physical(30),
-            None,
-            0,
-            &mut msgs,
-            &mut cmds,
-            &mut rolls,
-        );
+        apply_damage(&mut h.ctx(&mut map), rat, physical(30), None);
 
         assert_eq!(map.get_agent(rat).unwrap().life().current, 70);
         assert_eq!(map.get_agent(rat).unwrap().participation().total(), 0);
@@ -474,21 +348,11 @@ mod tests {
     #[test]
     fn a_fully_blocked_hit_records_nothing() {
         let (mut map, rat, hunter) = an_attacked_creature(100);
-        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
-        let mut rolls = Rolls::new(1);
+        let mut h = TestHarness::seeded(1);
 
-        apply_damage(
-            &mut map,
-            rat,
-            blocked(),
-            Some(hunter),
-            0,
-            &mut msgs,
-            &mut cmds,
-            &mut rolls,
-        );
+        apply_damage(&mut h.ctx(&mut map), rat, blocked(), Some(hunter));
 
-        assert_eq!(reported_damage(&msgs), Some(0));
+        assert_eq!(reported_damage(&h.events), Some(0));
         assert_eq!(map.get_agent(rat).unwrap().participation().total(), 0);
     }
 
@@ -497,19 +361,9 @@ mod tests {
     #[test]
     fn a_players_participation_table_is_never_written() {
         let (mut map, player, rat) = an_attacked_player();
-        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
-        let mut rolls = Rolls::new(1);
+        let mut h = TestHarness::seeded(1);
 
-        apply_damage(
-            &mut map,
-            player,
-            physical(30),
-            Some(rat),
-            0,
-            &mut msgs,
-            &mut cmds,
-            &mut rolls,
-        );
+        apply_damage(&mut h.ctx(&mut map), player, physical(30), Some(rat));
 
         assert_eq!(map.get_agent(player).unwrap().life().current, 70);
         assert_eq!(map.get_agent(player).unwrap().participation().total(), 0);
@@ -539,30 +393,11 @@ mod tests {
         let second = map
             .insert_agent(Agent::from_player(a_test_snapshot(2, 2)), &second_pos)
             .unwrap();
-        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
-        let mut rolls = Rolls::new(1);
+        let mut h = TestHarness::seeded(1);
 
-        apply_damage(
-            &mut map,
-            rat,
-            physical(40),
-            Some(first),
-            0,
-            &mut msgs,
-            &mut cmds,
-            &mut rolls,
-        );
+        apply_damage(&mut h.ctx(&mut map), rat, physical(40), Some(first));
 
-        apply_damage(
-            &mut map,
-            rat,
-            physical(500),
-            Some(second),
-            0,
-            &mut msgs,
-            &mut cmds,
-            &mut rolls,
-        );
+        apply_damage(&mut h.ctx(&mut map), rat, physical(500), Some(second));
 
         assert!(map.get_agent(rat).is_none());
         let ticks = |key| {

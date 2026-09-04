@@ -1,5 +1,4 @@
 use crate::{
-    actors::world::ScheduledCommand,
     entities::{
         agent::{Agent, AgentKey},
         combat::{CombatDamage, CombatElement, WeaponType},
@@ -12,7 +11,7 @@ use crate::{
         skills::SkillType,
     },
     game::{
-        Tick,
+        Tick, TickCtx,
         config::{Color, GAME_CONFIG},
         damage,
         events::BroadcastMessage,
@@ -134,20 +133,13 @@ pub fn plan_auto_attack(
     })
 }
 
-pub fn execute_attack(
-    map: &mut GameMap,
-    plan: AttackPlan,
-    current_tick: Tick,
-    msgs: &mut Vec<BroadcastMessage>,
-    cmds: &mut Vec<ScheduledCommand>,
-    roll: &mut Rolls,
-) {
-    if let Some(attacker) = map.get_agent_mut(plan.attacker) {
-        attacker.next_attack_tick = GAME_CONFIG.combat.auto_attack_ticks + current_tick;
+pub fn execute_attack(ctx: &mut TickCtx, plan: AttackPlan) {
+    if let Some(attacker) = ctx.map.get_agent_mut(plan.attacker) {
+        attacker.next_attack_tick = GAME_CONFIG.combat.auto_attack_ticks + ctx.tick;
     }
 
     if let Some(sprite_id) = plan.missile {
-        msgs.push(BroadcastMessage::MissileLaunched {
+        ctx.events.push(BroadcastMessage::MissileLaunched {
             from: plan.from,
             to: plan.to,
             sprite_id,
@@ -155,36 +147,29 @@ pub fn execute_attack(
     }
 
     if plan.damage.blocked_shield
-        && let Some(player) = map.get_player_mut(plan.target)
+        && let Some(player) = ctx.map.get_player_mut(plan.target)
     {
-        tick_skill(player, plan.target, SkillType::Shielding, 1, msgs);
+        tick_skill(player, plan.target, SkillType::Shielding, 1, ctx.events);
     }
 
     let writes_to_player =
         !matches!(plan.cost, AttackCost::None) || plan.trains.is_some() && plan.damage.value > 0;
-    if writes_to_player && let Some(player) = map.get_player_mut(plan.attacker) {
+    if writes_to_player && let Some(player) = ctx.map.get_player_mut(plan.attacker) {
         match plan.cost {
-            AttackCost::Ammo(guid) => consume_ammo(player, plan.attacker, guid, msgs),
-            AttackCost::Mana(mana_cost) => consume_mana(plan.attacker, player, mana_cost, msgs),
+            AttackCost::Ammo(guid) => consume_ammo(player, plan.attacker, guid, ctx.events),
+            AttackCost::Mana(mana_cost) => {
+                consume_mana(plan.attacker, player, mana_cost, ctx.events)
+            }
             AttackCost::None => {}
         }
         if let Some(skill_type) = plan.trains
             && plan.damage.value > 0
         {
-            tick_skill(player, plan.attacker, skill_type, 1, msgs);
+            tick_skill(player, plan.attacker, skill_type, 1, ctx.events);
         }
     }
 
-    damage::apply_damage(
-        map,
-        plan.target,
-        plan.damage,
-        Some(plan.attacker),
-        current_tick,
-        msgs,
-        cmds,
-        roll,
-    );
+    damage::apply_damage(ctx, plan.target, plan.damage, Some(plan.attacker));
 }
 
 pub fn get_damage_visuals(damage: &CombatDamage, blood_type: Option<&BloodType>) -> (u16, Color) {
@@ -333,6 +318,7 @@ mod tests {
     use crate::entities::items::{Item, ItemAttribute, ItemConfig, ItemFlag, ItemId};
     use crate::entities::map::MapTile;
     use crate::entities::skills::SkillValue;
+    use crate::game::TestHarness;
     use crate::persistence::player::PlayerSnapshot;
     use crate::persistence::test_fixtures::{
         a_test_creature, a_test_creature_that_flees, a_test_creature_with_defences, a_test_snapshot,
@@ -722,11 +708,11 @@ mod tests {
             Agent::from_player(snapshot),
             a_test_creature("Rat", 100, (1, 2)),
         );
-        let mut roll = Rolls::new(1);
-        let plan = plan_auto_attack(&map, attacker, &mut roll, 7).unwrap();
-        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
+        let mut h = TestHarness::seeded(1);
+        h.tick = 7;
+        let plan = plan_auto_attack(&map, attacker, &mut h.roll, 7).unwrap();
 
-        execute_attack(&mut map, plan, 7, &mut msgs, &mut cmds, &mut roll);
+        execute_attack(&mut h.ctx(&mut map), plan);
 
         let agent = map.get_agent(attacker).unwrap();
         assert_eq!(
@@ -734,7 +720,10 @@ mod tests {
             GAME_CONFIG.combat.auto_attack_ticks + 7
         );
         assert_eq!(agent.get_player().unwrap().mana().current, 80);
-        assert_eq!(broadcast_kinds(&msgs), ["mana", "skill", "damage", "blood"]);
+        assert_eq!(
+            broadcast_kinds(&h.events),
+            ["mana", "skill", "damage", "blood"]
+        );
     }
 
     /// `Distance` is its own weapon type but costs nothing to swing — it fell through the
@@ -769,11 +758,11 @@ mod tests {
             Agent::from_player(armed(Some(a_bow(None)), Some(a_quiver_of_arrows()))),
             a_test_creature("Rat", 100, (1, 2)),
         );
-        let mut roll = Rolls::new(1);
-        let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
-        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
+        let mut h = TestHarness::seeded(1);
+        h.tick = 0;
+        let plan = plan_auto_attack(&map, attacker, &mut h.roll, 0).unwrap();
 
-        execute_attack(&mut map, plan, 0, &mut msgs, &mut cmds, &mut roll);
+        execute_attack(&mut h.ctx(&mut map), plan);
 
         let arrows = map
             .get_agent(attacker)
@@ -803,13 +792,14 @@ mod tests {
             Agent::from_player(armed(Some(a_bow(None)), Some(quiver))),
             a_test_creature("Rat", 100, (1, 2)),
         );
-        let mut roll = Rolls::new(1);
-        let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
-        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
+        let mut h = TestHarness::seeded(1);
+        h.tick = 0;
+        let plan = plan_auto_attack(&map, attacker, &mut h.roll, 0).unwrap();
 
-        execute_attack(&mut map, plan, 0, &mut msgs, &mut cmds, &mut roll);
+        execute_attack(&mut h.ctx(&mut map), plan);
 
-        let updated = msgs
+        let updated = h
+            .events
             .iter()
             .find_map(|m| match m {
                 BroadcastMessage::ContainerUpdated { item } => Some(item),
@@ -886,14 +876,14 @@ mod tests {
             Agent::from_player(a_test_snapshot(1, 1)),
             a_test_creature("Rat", 100, (1, 2)),
         );
-        let mut roll = Rolls::new(1);
-        let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
+        let mut h = TestHarness::seeded(1);
+        h.tick = 0;
+        let plan = plan_auto_attack(&map, attacker, &mut h.roll, 0).unwrap();
         assert!(matches!(plan.cost, AttackCost::None) && plan.trains.is_none());
 
         let snapshot = map.clone();
-        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
 
-        execute_attack(&mut map, plan, 0, &mut msgs, &mut cmds, &mut roll);
+        execute_attack(&mut h.ctx(&mut map), plan);
 
         assert!(std::ptr::eq(
             map.get_player(attacker).unwrap(),
@@ -907,13 +897,13 @@ mod tests {
             Agent::from_player(armed(Some(a_wand(5)), None)),
             a_test_creature("Rat", 100, (1, 2)),
         );
-        let mut roll = Rolls::new(1);
-        let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
+        let mut h = TestHarness::seeded(1);
+        h.tick = 0;
+        let plan = plan_auto_attack(&map, attacker, &mut h.roll, 0).unwrap();
 
         let snapshot = map.clone();
-        let (mut msgs, mut cmds) = (Vec::new(), Vec::new());
 
-        execute_attack(&mut map, plan, 0, &mut msgs, &mut cmds, &mut roll);
+        execute_attack(&mut h.ctx(&mut map), plan);
 
         assert!(!std::ptr::eq(
             map.get_player(attacker).unwrap(),

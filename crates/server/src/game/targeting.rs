@@ -1,84 +1,80 @@
 use crate::entities::agent::AgentKey;
-use crate::entities::map::GameMap;
+use crate::game::TickCtx;
 use crate::game::events::BroadcastMessage;
 use crate::game::map_query::can_target;
 
-pub fn set_target(
-    map: &mut GameMap,
-    agent: AgentKey,
-    target: Option<AgentKey>,
-    seq: u32,
-) -> Vec<BroadcastMessage> {
-    if map.get_agent(agent).is_none() {
-        return Vec::new();
+pub fn set_target(ctx: &mut TickCtx, agent: AgentKey, target: Option<AgentKey>, seq: u32) {
+    if ctx.map.get_agent(agent).is_none() {
+        return;
     }
 
     let requested_a_target = target.is_some();
     let accepted = match target {
-        Some(t) if t != agent && map.get_agent(t).is_some() => Some(t),
+        Some(t) if t != agent && ctx.map.get_agent(t).is_some() => Some(t),
         _ => None,
     };
 
-    map.get_agent_mut(agent)
+    ctx.map
+        .get_agent_mut(agent)
         .expect("agent was just found by get_agent above")
         .set_target(accepted, if accepted.is_some() { seq } else { 0 });
 
     if requested_a_target && accepted.is_none() {
-        vec![BroadcastMessage::AgentLostTarget {
+        ctx.events.push(BroadcastMessage::AgentLostTarget {
             agent_key: agent,
             seq,
-        }]
-    } else {
-        Vec::new()
+        });
     }
 }
 
 /// Clears `agent`'s target and announces the loss, stamped with the seq that set
 /// it.
-pub fn lose_target(map: &mut GameMap, agent: AgentKey) -> Vec<BroadcastMessage> {
-    let Some(actor) = map.get_agent(agent) else {
-        return Vec::new();
+pub fn lose_target(ctx: &mut TickCtx, agent: AgentKey) {
+    let Some(actor) = ctx.map.get_agent(agent) else {
+        return;
     };
     if actor.target().is_none() {
-        return Vec::new();
+        return;
     }
     let seq = actor.target_seq();
 
-    map.get_agent_mut(agent)
+    ctx.map
+        .get_agent_mut(agent)
         .expect("agent was just found by get_agent above")
         .set_target(None, 0);
 
-    vec![BroadcastMessage::AgentLostTarget {
+    ctx.events.push(BroadcastMessage::AgentLostTarget {
         agent_key: agent,
         seq,
-    }]
+    });
 }
 
-/// Drops `agent`'s target if it is gone or no longer targetable. Returns the
-/// events to broadcast — empty when nothing changed.
+/// Drops `agent`'s target if it is gone or no longer targetable. Returns whether the target was
+/// dropped, so the caller can skip an attack it no longer has a target for.
 ///
-/// An absent attacker returns empty rather than clearing: it died earlier in the
+/// An absent attacker drops nothing rather than clearing: it died earlier in the
 /// same pass, and a dead agent's loss has no session to reach.
-pub fn drop_unreachable_target(map: &mut GameMap, agent: AgentKey) -> Vec<BroadcastMessage> {
-    let Some(actor) = map.get_agent(agent) else {
-        return Vec::new();
+pub fn drop_unreachable_target(ctx: &mut TickCtx, agent: AgentKey) -> bool {
+    let Some(actor) = ctx.map.get_agent(agent) else {
+        return false;
     };
     let Some(target) = actor.target() else {
-        return Vec::new();
+        return false;
     };
-    let Some(from) = map.agent_position(agent) else {
-        return Vec::new();
+    let Some(from) = ctx.map.agent_position(agent) else {
+        return false;
     };
 
-    let reachable = match (map.get_agent(target), map.agent_position(target)) {
+    let reachable = match (ctx.map.get_agent(target), ctx.map.agent_position(target)) {
         (Some(_), Some(to)) => can_target(from, to),
         _ => false,
     };
     if reachable {
-        return Vec::new();
+        return false;
     }
 
-    lose_target(map, agent)
+    lose_target(ctx, agent);
+    true
 }
 
 #[cfg(test)]
@@ -87,6 +83,7 @@ mod tests {
     use crate::entities::agent::Agent;
     use crate::entities::map::{GameMap, MapTile};
     use crate::entities::position::Position;
+    use crate::game::TestHarness;
     use crate::persistence::test_fixtures::a_test_snapshot;
 
     fn seat(map: &mut GameMap, at: &Position, id: u32) -> AgentKey {
@@ -116,9 +113,11 @@ mod tests {
 
     #[test]
     fn sets_a_valid_target_and_says_nothing() {
+        let mut h = TestHarness::new();
         let (mut map, attacker, victim) = map_with_two_players();
 
-        let msgs = set_target(&mut map, attacker, Some(victim), 5);
+        set_target(&mut h.ctx(&mut map), attacker, Some(victim), 5);
+        let msgs = &h.events;
 
         assert_eq!(target_of(&map, attacker), Some(victim));
         assert_eq!(map.get_agent(attacker).unwrap().target_seq(), 5);
@@ -130,10 +129,12 @@ mod tests {
 
     #[test]
     fn clears_on_none_and_says_nothing() {
+        let mut h = TestHarness::new();
         let (mut map, attacker, victim) = map_with_two_players();
-        set_target(&mut map, attacker, Some(victim), 5);
+        set_target(&mut h.ctx(&mut map), attacker, Some(victim), 5);
 
-        let msgs = set_target(&mut map, attacker, None, 6);
+        set_target(&mut h.ctx(&mut map), attacker, None, 6);
+        let msgs = &h.events;
 
         assert_eq!(target_of(&map, attacker), None);
         assert!(msgs.is_empty());
@@ -144,11 +145,13 @@ mod tests {
     /// one the client applied.
     #[test]
     fn rejecting_a_missing_agent_announces_the_loss_with_the_new_seq() {
+        let mut h = TestHarness::new();
         let (mut map, attacker, victim) = map_with_two_players();
-        set_target(&mut map, attacker, Some(victim), 5);
+        set_target(&mut h.ctx(&mut map), attacker, Some(victim), 5);
         map.remove_agent(victim);
 
-        let msgs = set_target(&mut map, attacker, Some(victim), 6);
+        set_target(&mut h.ctx(&mut map), attacker, Some(victim), 6);
+        let msgs = &h.events;
 
         assert_eq!(target_of(&map, attacker), None);
         assert!(matches!(
@@ -160,9 +163,11 @@ mod tests {
 
     #[test]
     fn rejects_self_targeting() {
+        let mut h = TestHarness::new();
         let (mut map, attacker, _) = map_with_two_players();
 
-        let msgs = set_target(&mut map, attacker, Some(attacker), 7);
+        set_target(&mut h.ctx(&mut map), attacker, Some(attacker), 7);
+        let msgs = &h.events;
 
         assert_eq!(target_of(&map, attacker), None);
         assert!(matches!(
@@ -173,18 +178,22 @@ mod tests {
 
     #[test]
     fn an_absent_actor_changes_nothing() {
+        let mut h = TestHarness::new();
         let (mut map, attacker, victim) = map_with_two_players();
         map.remove_agent(attacker);
 
-        assert!(set_target(&mut map, attacker, Some(victim), 1).is_empty());
+        set_target(&mut h.ctx(&mut map), attacker, Some(victim), 1);
+        assert!(h.events.is_empty());
     }
 
     #[test]
     fn a_reachable_target_is_kept() {
+        let mut h = TestHarness::new();
         let (mut map, attacker, victim) = map_with_two_players();
-        set_target(&mut map, attacker, Some(victim), 5);
+        set_target(&mut h.ctx(&mut map), attacker, Some(victim), 5);
 
-        let msgs = drop_unreachable_target(&mut map, attacker);
+        drop_unreachable_target(&mut h.ctx(&mut map), attacker);
+        let msgs = &h.events;
 
         assert_eq!(target_of(&map, attacker), Some(victim));
         assert!(msgs.is_empty());
@@ -193,12 +202,14 @@ mod tests {
     /// Out of weapon range is not out of reach: the attacker walks closer.
     #[test]
     fn a_target_out_of_weapon_range_but_in_view_is_kept() {
+        let mut h = TestHarness::new();
         let mut map = GameMap::new();
         let attacker = seat(&mut map, &Position::new(100, 100, 7), 1);
         let victim = seat(&mut map, &Position::new(105, 105, 7), 2);
-        set_target(&mut map, attacker, Some(victim), 5);
+        set_target(&mut h.ctx(&mut map), attacker, Some(victim), 5);
 
-        let msgs = drop_unreachable_target(&mut map, attacker);
+        drop_unreachable_target(&mut h.ctx(&mut map), attacker);
+        let msgs = &h.events;
 
         assert_eq!(target_of(&map, attacker), Some(victim));
         assert!(msgs.is_empty());
@@ -206,12 +217,14 @@ mod tests {
 
     #[test]
     fn a_target_outside_the_viewport_is_dropped_with_its_seq() {
+        let mut h = TestHarness::new();
         let mut map = GameMap::new();
         let attacker = seat(&mut map, &Position::new(100, 100, 7), 1);
         let victim = seat(&mut map, &Position::new(110, 100, 7), 2);
-        set_target(&mut map, attacker, Some(victim), 9);
+        set_target(&mut h.ctx(&mut map), attacker, Some(victim), 9);
 
-        let msgs = drop_unreachable_target(&mut map, attacker);
+        drop_unreachable_target(&mut h.ctx(&mut map), attacker);
+        let msgs = &h.events;
 
         assert_eq!(target_of(&map, attacker), None);
         assert!(matches!(
@@ -223,23 +236,26 @@ mod tests {
 
     #[test]
     fn a_target_just_inside_the_viewport_is_kept() {
+        let mut h = TestHarness::new();
         let mut map = GameMap::new();
         let attacker = seat(&mut map, &Position::new(100, 100, 7), 1);
         let victim = seat(&mut map, &Position::new(109, 107, 7), 2);
-        set_target(&mut map, attacker, Some(victim), 5);
+        set_target(&mut h.ctx(&mut map), attacker, Some(victim), 5);
 
-        assert!(drop_unreachable_target(&mut map, attacker).is_empty());
+        assert!(!drop_unreachable_target(&mut h.ctx(&mut map), attacker));
         assert_eq!(target_of(&map, attacker), Some(victim));
     }
 
     #[test]
     fn a_target_one_floor_up_is_dropped() {
+        let mut h = TestHarness::new();
         let mut map = GameMap::new();
         let attacker = seat(&mut map, &Position::new(100, 100, 7), 1);
         let victim = seat(&mut map, &Position::new(101, 100, 6), 2);
-        set_target(&mut map, attacker, Some(victim), 5);
+        set_target(&mut h.ctx(&mut map), attacker, Some(victim), 5);
 
-        let msgs = drop_unreachable_target(&mut map, attacker);
+        drop_unreachable_target(&mut h.ctx(&mut map), attacker);
+        let msgs = &h.events;
 
         assert_eq!(target_of(&map, attacker), None);
         assert_eq!(msgs.len(), 1);
@@ -249,11 +265,13 @@ mod tests {
     /// session has to notice for it to be cleared.
     #[test]
     fn a_target_that_left_the_map_is_dropped() {
+        let mut h = TestHarness::new();
         let (mut map, attacker, victim) = map_with_two_players();
-        set_target(&mut map, attacker, Some(victim), 5);
+        set_target(&mut h.ctx(&mut map), attacker, Some(victim), 5);
         map.remove_agent(victim);
 
-        let msgs = drop_unreachable_target(&mut map, attacker);
+        drop_unreachable_target(&mut h.ctx(&mut map), attacker);
+        let msgs = &h.events;
 
         assert_eq!(target_of(&map, attacker), None);
         assert_eq!(msgs.len(), 1);
@@ -261,26 +279,30 @@ mod tests {
 
     #[test]
     fn an_agent_with_no_target_produces_nothing() {
+        let mut h = TestHarness::new();
         let (mut map, attacker, _) = map_with_two_players();
 
-        assert!(drop_unreachable_target(&mut map, attacker).is_empty());
+        assert!(!drop_unreachable_target(&mut h.ctx(&mut map), attacker));
     }
 
     /// It died earlier in the same pass. Clearing a dead agent's target must not
     /// emit an event for a session to translate.
     #[test]
     fn an_absent_attacker_produces_nothing() {
+        let mut h = TestHarness::new();
         let (mut map, attacker, victim) = map_with_two_players();
-        set_target(&mut map, attacker, Some(victim), 5);
+        set_target(&mut h.ctx(&mut map), attacker, Some(victim), 5);
         map.remove_agent(attacker);
 
-        assert!(drop_unreachable_target(&mut map, attacker).is_empty());
+        assert!(!drop_unreachable_target(&mut h.ctx(&mut map), attacker));
     }
 
     #[test]
     fn lose_target_on_an_agent_with_no_target_says_nothing() {
+        let mut h = TestHarness::new();
         let (mut map, attacker, _) = map_with_two_players();
 
-        assert!(lose_target(&mut map, attacker).is_empty());
+        lose_target(&mut h.ctx(&mut map), attacker);
+        assert!(h.events.is_empty());
     }
 }
