@@ -5,7 +5,7 @@ use crate::entities::{
     agent::{AgentKey, Facing},
     combat::CombatDamage,
     creature::BloodType,
-    effects::MissileId,
+    effects::Missile,
     inventory::InventorySlot,
     items::{ItemGuid, ItemRef},
     position::{Direction, Position},
@@ -83,9 +83,7 @@ pub enum BroadcastMessage {
         damage: CombatDamage,
     },
     MissileLaunched {
-        from: Position,
-        to: Position,
-        sprite_id: MissileId,
+        missile: Missile,
     },
     AttackMissed {
         position: Position,

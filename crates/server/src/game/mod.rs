@@ -16,6 +16,7 @@ pub mod movement;
 pub mod pathfinding;
 pub mod random;
 pub mod skills;
+pub mod systems;
 pub mod targeting;
 
 use serde::Deserialize;
@@ -26,11 +27,6 @@ use crate::game::events::BroadcastMessage;
 use crate::game::random::Rolls;
 
 /// A point on the 50 ms game clock: *when* something happens.
-///
-/// Deliberately not the same type as [`TickDelta`], which is *how long* something takes.
-/// A point plus a span is a point and a point minus a point is a span, but a point plus
-/// a point is meaningless — and while both were one type, nothing said so. Adding a
-/// cooldown to a deadline and adding two deadlines together looked identical.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 #[repr(transparent)]
 pub struct Tick(pub u64);
@@ -42,8 +38,6 @@ pub struct Tick(pub u64);
 pub struct TickDelta(pub u64);
 
 impl Tick {
-    /// How far `other` is behind this point, clamped at zero rather than wrapping —
-    /// a deadline already passed is zero away, never a span of eighteen quintillion.
     pub fn saturating_sub(self, other: Tick) -> TickDelta {
         TickDelta(self.0.saturating_sub(other.0))
     }

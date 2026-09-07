@@ -117,7 +117,7 @@ pub struct Agent {
 
     // both
     pub next_walk_tick: Tick,
-    pub next_attack_tick: Tick,
+    pub next_auto_attack_tick: Tick,
 
     // player
     pub next_use_tick: Tick,
@@ -178,7 +178,7 @@ impl Agent {
             base_speed: player.speed,
             next_walk_tick: Tick(0),
             next_use_tick: Tick(0),
-            next_attack_tick: Tick(0),
+            next_auto_attack_tick: Tick(0),
             target: None,
             target_seq: 0,
             participation: Participation::default(),
@@ -199,7 +199,7 @@ impl Agent {
             facing: Facing::South,
             next_walk_tick: Tick(0),
             next_use_tick: Tick(0),
-            next_attack_tick: Tick(0),
+            next_auto_attack_tick: Tick(0),
             target: None,
             target_seq: 0,
             participation: Participation::default(),

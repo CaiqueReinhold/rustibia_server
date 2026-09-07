@@ -449,7 +449,7 @@ impl Item {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ItemRef {
     pub guid: ItemGuid,
     pub placement: ItemPlacement,

@@ -1,12 +1,15 @@
+use smallvec::SmallVec;
+use tracing::error;
+
 use crate::{
     constants::combat::{AMMO_HIT_CEILING, THROWN_HIT_CEILING},
     entities::{
         agent::{Agent, AgentKey},
-        combat::{CombatDamage, CombatElement, WeaponType},
+        combat::{AttackCost, AttackPlan, CombatDamage, CombatElement, WeaponType},
         creature::{BloodType, CreatureKind},
-        effects::{EffectId, MissileId},
+        effects::{EffectId, Missile},
         inventory::InventorySlot,
-        items::{ItemFlag, ItemGuid, ItemRef},
+        items::{ItemFlag, ItemRef},
         map::GameMap,
         player::Player,
         position::{ItemPlacement, Position},
@@ -15,33 +18,15 @@ use crate::{
     game::{
         Tick, TickCtx,
         config::{Color, GAME_CONFIG},
-        damage,
+        damage::apply_damage,
         events::BroadcastMessage,
+        item_movement::remove_item_at,
         map_query::can_throw,
         pathfinding::chebyshev,
         random::Rolls,
         skills::tick_skill,
     },
 };
-
-#[derive(Debug, PartialEq)]
-pub enum AttackCost {
-    None,
-    Ammo(ItemGuid),
-    Mana(u32),
-}
-
-#[derive(Debug)]
-pub struct AttackPlan {
-    pub attacker: AgentKey,
-    pub target: AgentKey,
-    pub from: Position,
-    pub to: Position,
-    pub damage: Option<CombatDamage>,
-    pub cost: AttackCost,
-    pub trains: Option<SkillType>,
-    pub missile: Option<MissileId>,
-}
 
 #[derive(Debug)]
 struct WeaponSkill {
@@ -61,7 +46,7 @@ pub fn plan_auto_attack(
     let to = map.agent_position(target)?.clone();
     let target_agent = map.get_agent(agent.target()?)?;
 
-    if agent.next_attack_tick > current_tick {
+    if agent.next_auto_attack_tick > current_tick {
         return None;
     }
 
@@ -77,29 +62,22 @@ pub fn plan_auto_attack(
         return None;
     }
 
-    let (cost, missile) = match agent.get_player() {
-        Some(player) => {
-            let ammo = player.weapon_ammo();
-            let cost = match player.weapon_type() {
-                WeaponType::Bow | WeaponType::Crossbow => AttackCost::Ammo(ammo?.guid.clone()),
-                WeaponType::Wand | WeaponType::Rod => {
-                    let mana_cost = player.weapon_mana_cost();
-                    if !player.has_enough_mana(mana_cost) {
-                        return None;
-                    }
-                    AttackCost::Mana(mana_cost)
+    let cost = match agent.get_player() {
+        Some(player) => match player.weapon_type() {
+            WeaponType::Bow | WeaponType::Crossbow => AttackCost::Item(ItemRef {
+                guid: player.weapon_ammo()?.guid.clone(),
+                placement: ItemPlacement::Inventory(InventorySlot::RightHand, attacker),
+            }),
+            WeaponType::Wand | WeaponType::Rod => {
+                let mana_cost = player.weapon_mana_cost();
+                if !player.has_enough_mana(mana_cost) {
+                    return None;
                 }
-                _ => AttackCost::None,
-            };
-            let missile = player.weapon().and_then(|weapon| {
-                weapon
-                    .config
-                    .attr_missile_id()
-                    .or_else(|| ammo.and_then(|it| it.config.attr_missile_id()))
-            });
-            (cost, missile)
-        }
-        None => (AttackCost::None, None),
+                AttackCost::Mana(mana_cost)
+            }
+            _ => AttackCost::None,
+        },
+        None => AttackCost::None,
     };
 
     let trains = agent
@@ -113,9 +91,9 @@ pub fn plan_auto_attack(
         _ => false,
     };
 
-    let (to, damage) = if missed {
-        (miss_position(map, &from, &to, roll), None)
-    } else {
+    let mut damage = SmallVec::new();
+
+    if !missed {
         let (element, mut value) = if agent.is_creature() {
             get_creature_base_damage(agent.get_creature_kind()?, roll)
         } else {
@@ -132,71 +110,103 @@ pub fn plan_auto_attack(
         }
         let blocked_armor = is_blockable && !blocked_shield && value == 0;
 
-        (
-            to,
-            Some(CombatDamage {
+        damage.push((
+            target,
+            CombatDamage {
                 element,
                 value,
                 blocked_shield,
                 blocked_armor,
-            }),
-        )
+            },
+        ));
+    }
+
+    let missile = if let Some(player) = agent.get_player()
+        && let Some(missile) = player.weapon().and_then(|weapon| {
+            weapon.config.attr_missile_id().or_else(|| {
+                player
+                    .weapon_ammo()
+                    .and_then(|it| it.config.attr_missile_id())
+            })
+        }) {
+        let to_position = if missed {
+            miss_position(map, &from, &to, roll)
+        } else {
+            to
+        };
+
+        Some(Missile {
+            missile_id: missile,
+            from,
+            to: to_position,
+        })
+    } else {
+        None
     };
 
     Some(AttackPlan {
         attacker,
-        target,
-        from,
-        to,
         damage,
         cost,
         trains,
         missile,
+        area_effect: None,
     })
 }
 
 pub fn execute_attack(ctx: &mut TickCtx, plan: AttackPlan) {
-    if let Some(attacker) = ctx.map.get_agent_mut(plan.attacker) {
-        attacker.next_attack_tick = ctx.tick + GAME_CONFIG.combat.auto_attack_ticks;
+    let missed_at = plan
+        .missile
+        .as_ref()
+        .filter(|_| plan.damage.is_empty())
+        .map(|missile| missile.to.clone());
+
+    if let Some(missile) = plan.missile {
+        ctx.events
+            .push(BroadcastMessage::MissileLaunched { missile });
     }
 
-    if let Some(sprite_id) = plan.missile {
-        ctx.events.push(BroadcastMessage::MissileLaunched {
-            from: plan.from,
-            to: plan.to.clone(),
-            sprite_id,
-        });
-    }
-
-    if plan.damage.as_ref().is_some_and(|d| d.blocked_shield)
-        && let Some(player) = ctx.map.get_player_mut(plan.target)
-    {
-        tick_skill(player, plan.target, SkillType::Shielding, 1, ctx.events);
-    }
-
-    let landed = plan.damage.as_ref().is_some_and(|damage| damage.value > 0);
-    let writes_to_player =
-        !matches!(plan.cost, AttackCost::None) || plan.trains.is_some() && landed;
-    if writes_to_player && let Some(player) = ctx.map.get_player_mut(plan.attacker) {
-        match plan.cost {
-            AttackCost::Ammo(guid) => consume_ammo(player, plan.attacker, guid, ctx.events),
-            AttackCost::Mana(mana_cost) => {
-                consume_mana(plan.attacker, player, mana_cost, ctx.events)
-            }
-            AttackCost::None => {}
-        }
-        if let Some(skill_type) = plan.trains
-            && landed
+    for (target, dmg) in &plan.damage {
+        if dmg.blocked_shield
+            && let Some(player) = ctx.map.get_player_mut(*target)
         {
-            tick_skill(player, plan.attacker, skill_type, 1, ctx.events);
+            tick_skill(player, *target, SkillType::Shielding, 1, ctx.events);
         }
     }
 
-    match plan.damage {
-        Some(damage) => damage::apply_damage(ctx, plan.target, damage, Some(plan.attacker)),
-        None => ctx
-            .events
-            .push(BroadcastMessage::AttackMissed { position: plan.to }),
+    let landed = plan
+        .damage
+        .as_ref()
+        .iter()
+        .any(|(_, damage)| damage.value > 0);
+
+    match plan.cost {
+        AttackCost::Item(item) => {
+            if let Err(e) = remove_item_at(ctx, &item, 1) {
+                error!("Failed to consume item({:?}) on attack: {}", item, e);
+            };
+        }
+        AttackCost::Mana(mana_cost) => {
+            if let Some(player) = ctx.map.get_player_mut(plan.attacker) {
+                consume_mana(plan.attacker, player, mana_cost, ctx.events);
+            }
+        }
+        AttackCost::None => {}
+    }
+    if let Some(skill_type) = plan.trains
+        && landed
+        && let Some(player) = ctx.map.get_player_mut(plan.attacker)
+    {
+        tick_skill(player, plan.attacker, skill_type, 1, ctx.events);
+    }
+
+    if let Some(position) = missed_at {
+        ctx.events.push(BroadcastMessage::AttackMissed { position });
+        return;
+    }
+
+    for (target, dmg) in plan.damage.into_iter() {
+        apply_damage(ctx, target, dmg, Some(plan.attacker));
     }
 }
 
@@ -421,26 +431,6 @@ fn apply_armor(base_attack_value: u32, target: &Agent, roll: &mut Rolls) -> u32 
     base_attack_value.saturating_sub(roll.uniform(armor / 2, armor))
 }
 
-fn consume_ammo(
-    player: &mut Player,
-    agent_key: AgentKey,
-    ammo_guid: ItemGuid,
-    msgs: &mut Vec<BroadcastMessage>,
-) {
-    if let Some((_, Some((parent, _)))) =
-        player
-            .inventory_mut()
-            .remove(InventorySlot::RightHand, &ammo_guid, 1)
-    {
-        msgs.push(BroadcastMessage::ContainerUpdated {
-            item: ItemRef {
-                guid: parent,
-                placement: ItemPlacement::Inventory(InventorySlot::RightHand, agent_key),
-            },
-        });
-    }
-}
-
 fn consume_mana(
     agent_key: AgentKey,
     player: &mut Player,
@@ -457,6 +447,7 @@ mod tests {
     use super::*;
     use crate::entities::agent::Agent;
     use crate::entities::combat::AmmoType;
+    use crate::entities::effects::MissileId;
     use crate::entities::items::{Item, ItemAttribute, ItemConfig, ItemFlag, ItemId};
     use crate::entities::map::MapTile;
     use crate::entities::skills::SkillValue;
@@ -578,6 +569,8 @@ mod tests {
         )
     }
 
+    /// Carries a missile id as well: the tile a shot reaches is only observable through
+    /// the plan's `Missile`, so an arrow with no missile has no flight to assert on.
     fn an_arrow_with_hit_chance(chance: i16) -> Item {
         Item::new(
             a_config(
@@ -587,6 +580,7 @@ mod tests {
                     ItemAttribute::AmmoType(AmmoType::Arrow),
                     ItemAttribute::WeaponAttack(25),
                     ItemAttribute::HitChance(chance),
+                    ItemAttribute::MissileId(MissileId(1)),
                 ]),
             ),
             10,
@@ -687,6 +681,21 @@ mod tests {
         (map, attacker, target)
     }
 
+    /// An auto attack plans at most one damage entry, against its own target; an empty
+    /// list is a miss.
+    fn planned_damage(plan: &AttackPlan) -> Option<&CombatDamage> {
+        plan.damage.first().map(|(_, damage)| damage)
+    }
+
+    /// The tile a planned shot reaches -- where it hit, or where a miss scattered to.
+    fn missile_landing(plan: &AttackPlan) -> Position {
+        plan.missile
+            .as_ref()
+            .expect("a shot in flight carries a missile")
+            .to
+            .clone()
+    }
+
     #[test]
     fn an_unarmed_player_plans_a_free_attack() {
         let (map, attacker, target) = duel(
@@ -698,7 +707,11 @@ mod tests {
         let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
         assert!(matches!(plan.cost, AttackCost::None));
-        assert_eq!(plan.target, target);
+        assert_eq!(
+            plan.damage.first().map(|(hit, _)| *hit),
+            Some(target),
+            "the plan names the agent it damages"
+        );
     }
 
     #[test]
@@ -726,7 +739,13 @@ mod tests {
 
         let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
-        assert_eq!(plan.cost, AttackCost::Ammo(arrow_guid));
+        assert_eq!(
+            plan.cost,
+            AttackCost::Item(ItemRef {
+                guid: arrow_guid,
+                placement: ItemPlacement::Inventory(InventorySlot::RightHand, attacker),
+            })
+        );
     }
 
     #[test]
@@ -801,7 +820,7 @@ mod tests {
             Agent::from_player(a_test_snapshot(1, 1)),
             a_test_creature("Rat", 10, (1, 2)),
         );
-        map.get_agent_mut(attacker).unwrap().next_attack_tick = Tick(40);
+        map.get_agent_mut(attacker).unwrap().next_auto_attack_tick = Tick(40);
         let mut roll = Rolls::new(1);
 
         assert!(plan_auto_attack(&map, attacker, &mut roll, Tick(10)).is_none());
@@ -917,7 +936,7 @@ mod tests {
 
         let agent = map.get_agent(attacker).unwrap();
         assert_eq!(
-            agent.next_attack_tick,
+            agent.next_auto_attack_tick,
             Tick(7) + GAME_CONFIG.combat.auto_attack_ticks
         );
         assert_eq!(agent.get_player().unwrap().mana().current, 80);
@@ -1040,7 +1059,7 @@ mod tests {
 
         let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
-        assert_eq!(plan.missile, Some(MissileId(37)));
+        assert_eq!(plan.missile.map(|it| it.missile_id), Some(MissileId(37)));
     }
 
     #[test]
@@ -1056,7 +1075,7 @@ mod tests {
 
         let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
-        assert_eq!(plan.missile, Some(MissileId(42)));
+        assert_eq!(plan.missile.map(|it| it.missile_id), Some(MissileId(42)));
     }
 
     #[test]
@@ -1069,7 +1088,7 @@ mod tests {
 
         let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
-        assert_eq!(plan.missile, None);
+        assert!(plan.missile.is_none());
     }
 
     #[test]
@@ -1126,7 +1145,7 @@ mod tests {
 
         let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
-        let damage = plan.damage.expect("a melee swing always lands");
+        let damage = planned_damage(&plan).expect("a melee swing always lands");
         assert!(matches!(damage.element, CombatElement::Physical));
         assert_eq!(damage.value, 0, "a zero-attack weapon deals nothing");
         assert!(!damage.blocked_shield);
@@ -1198,7 +1217,7 @@ mod tests {
 
         let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
-        let damage = plan.damage.expect("the shot landed");
+        let damage = planned_damage(&plan).expect("the shot landed");
         assert_eq!(damage.element, CombatElement::Fire);
         assert!(damage.value > 0);
         assert!(!damage.blocked_shield);
@@ -1250,7 +1269,7 @@ mod tests {
 
         let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
-        assert!(plan.damage.is_none(), "{plan:?}");
+        assert!(plan.damage.is_empty(), "{plan:?}");
     }
 
     /// A miss is not a zero: neither block flag is set, and nothing downstream can mistake it
@@ -1268,7 +1287,7 @@ mod tests {
 
         let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
-        let damage = plan.damage.expect("a certain shot lands");
+        let damage = planned_damage(&plan).expect("a certain shot lands");
         assert!(damage.value > 0);
         assert!(!damage.blocked_shield && !damage.blocked_armor);
     }
@@ -1316,7 +1335,7 @@ mod tests {
     }
 
     /// The missile has to fly to where it landed, not to where it was aimed -- the client
-    /// draws the flight from the plan's `to`, and the puff is addressed by that same tile.
+    /// draws the flight from the missile's `to`, and the puff is addressed by that same tile.
     #[test]
     fn a_missed_shot_scatters_onto_a_tile_beside_its_target() {
         let (map, attacker, _, target_pos) = ranged_duel(4);
@@ -1324,9 +1343,7 @@ mod tests {
         let landings: Vec<Position> = (0..40)
             .map(|seed| {
                 let mut roll = Rolls::new(seed);
-                plan_auto_attack(&map, attacker, &mut roll, Tick(0))
-                    .unwrap()
-                    .to
+                missile_landing(&plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap())
             })
             .collect();
 
@@ -1348,9 +1365,10 @@ mod tests {
         for seed in 0..40 {
             let mut roll = Rolls::new(seed);
             let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
-            assert!(plan.damage.is_none());
+            assert!(plan.damage.is_empty());
             assert_eq!(
-                plan.to, target_pos,
+                missile_landing(&plan),
+                target_pos,
                 "seed {seed} scattered a point-blank miss"
             );
         }
@@ -1425,7 +1443,7 @@ mod tests {
 
         let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
-        assert_eq!(plan.to, b);
+        assert_eq!(missile_landing(&plan), b);
     }
 
     #[test]
@@ -1438,7 +1456,7 @@ mod tests {
         for seed in 0..100 {
             let mut roll = Rolls::new(seed);
             let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
-            assert!(plan.damage.is_some(), "seed {seed} missed with a sword");
+            assert!(!plan.damage.is_empty(), "seed {seed} missed with a sword");
         }
     }
 
@@ -1541,7 +1559,7 @@ mod tests {
         let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
         assert!(
-            plan.damage.is_some_and(|damage| damage.value > 0),
+            planned_damage(&plan).is_some_and(|damage| damage.value > 0),
             "unarmed swings must still hurt"
         );
         assert_eq!(get_min_damage(5, 1, GAME_CONFIG.combat.unarmed_skill), 5);

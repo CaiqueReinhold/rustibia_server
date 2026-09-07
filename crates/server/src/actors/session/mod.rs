@@ -418,11 +418,10 @@ impl SessionActor {
                 self.agent_took_damage(agent_key, position, blood_type, damage)
                     .await
             }
-            BroadcastMessage::MissileLaunched {
-                from,
-                to,
-                sprite_id,
-            } => self.missile_launched(from, to, sprite_id).await,
+            BroadcastMessage::MissileLaunched { missile } => {
+                self.missile_launched(missile.from, missile.to, missile.missile_id)
+                    .await
+            }
             BroadcastMessage::AttackMissed { position } => self.attack_missed(position).await,
             BroadcastMessage::SkillProgressUpdated {
                 skill_type, amount, ..

@@ -18,13 +18,14 @@ use crate::entities::creature::CreatureKind;
 use crate::entities::items::{ItemGuid, ItemRef};
 use crate::entities::map::GameMap;
 use crate::entities::position::{Direction, ItemPlacement, Position};
+use crate::game::config::GAME_CONFIG;
 use crate::game::creature_behavior::CreatureAction;
 use crate::game::events::BroadcastMessage;
 use crate::game::item_multi_action::UseTarget;
 use crate::game::random::Rolls;
 use crate::game::{
     Tick, TickCtx, TickDelta, chat, combat, events, item_action, item_movement, item_multi_action,
-    movement, targeting,
+    movement, systems, targeting,
 };
 use crate::persistence::creatures::CREATURE_KINDS;
 use crate::persistence::spawns::SpawnPoint;
@@ -286,7 +287,7 @@ impl WorldActor {
                 }
             }
 
-            self.drive_combat(&mut broadcast_messages);
+            self.run_systems(&mut broadcast_messages);
 
             self.end_tick(broadcast_messages).await;
 
@@ -332,25 +333,9 @@ impl WorldActor {
         result
     }
 
-    fn drive_combat(&mut self, broadcast_messages: &mut Vec<BroadcastMessage>) {
-        let with_targets: Vec<AgentKey> = self
-            .map
-            .iter_agents()
-            .filter(|(_, agent)| agent.target().is_some())
-            .map(|(key, _)| key)
-            .collect();
-
+    fn run_systems(&mut self, broadcast_messages: &mut Vec<BroadcastMessage>) {
         self.with_ctx(broadcast_messages, |ctx| {
-            for agent_key in with_targets {
-                if targeting::drop_unreachable_target(ctx, agent_key) {
-                    continue;
-                }
-                let Some(plan) = combat::plan_auto_attack(ctx.map, agent_key, ctx.roll, ctx.tick)
-                else {
-                    continue;
-                };
-                combat::execute_attack(ctx, plan);
-            }
+            systems::combat_system(ctx);
         });
     }
 
@@ -729,7 +714,7 @@ mod tests {
         let mut actor = a_test_world_actor(map);
         let mut broadcasts = Vec::new();
 
-        actor.drive_combat(&mut broadcasts);
+        actor.run_systems(&mut broadcasts);
 
         assert_eq!(actor.map.get_agent(attacker).unwrap().target(), None);
         assert!(matches!(
@@ -759,7 +744,7 @@ mod tests {
         let mut actor = a_test_world_actor(map);
         let mut broadcasts = Vec::new();
 
-        actor.drive_combat(&mut broadcasts);
+        actor.run_systems(&mut broadcasts);
 
         assert_eq!(
             actor.map.get_agent(attacker).unwrap().target(),
@@ -798,7 +783,7 @@ mod tests {
         let mut actor = a_test_world_actor(map);
         let mut broadcasts = Vec::new();
 
-        actor.drive_combat(&mut broadcasts);
+        actor.run_systems(&mut broadcasts);
 
         assert!(actor.map.get_agent(victim).is_none());
         assert_eq!(actor.map.get_agent(killer).unwrap().life().current, 100);

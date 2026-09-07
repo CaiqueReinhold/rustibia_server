@@ -1,6 +1,11 @@
 use smallvec::SmallVec;
 
-use crate::entities::agent::AgentKey;
+use crate::entities::{
+    agent::AgentKey,
+    effects::{AreaEffect, Missile},
+    items::ItemRef,
+    skills::SkillType,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum CombatElement {
@@ -36,6 +41,23 @@ pub struct CombatDamage {
     pub value: u32,
     pub blocked_shield: bool,
     pub blocked_armor: bool,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum AttackCost {
+    None,
+    Item(ItemRef),
+    Mana(u32),
+}
+
+#[derive(Debug)]
+pub struct AttackPlan {
+    pub attacker: AgentKey,
+    pub damage: SmallVec<[(AgentKey, CombatDamage); 1]>,
+    pub cost: AttackCost,
+    pub trains: Option<SkillType>,
+    pub missile: Option<Missile>,
+    pub area_effect: Option<AreaEffect>,
 }
 
 #[derive(Debug, Clone, Default)]

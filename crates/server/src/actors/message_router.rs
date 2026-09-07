@@ -371,13 +371,13 @@ impl MessageRouterActor {
                     None,
                 );
             }
-            BroadcastMessage::MissileLaunched { from, to, .. } => {
+            BroadcastMessage::MissileLaunched { missile } => {
                 self.send_to_rects(
                     message,
                     map,
                     &[
-                        (Rect::player_viewport(from), from.z),
-                        (Rect::player_viewport(to), to.z),
+                        (Rect::player_viewport(&missile.from), missile.from.z),
+                        (Rect::player_viewport(&missile.to), missile.to.z),
                     ],
                 );
             }
