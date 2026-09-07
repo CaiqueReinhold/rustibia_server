@@ -1,10 +1,12 @@
 use crate::{
+    constants::combat::{AMMO_HIT_CEILING, THROWN_HIT_CEILING},
     entities::{
         agent::{Agent, AgentKey},
         combat::{CombatDamage, CombatElement, WeaponType},
         creature::{BloodType, CreatureKind},
+        effects::{EffectId, MissileId},
         inventory::InventorySlot,
-        items::{ItemGuid, ItemRef},
+        items::{ItemFlag, ItemGuid, ItemRef},
         map::GameMap,
         player::Player,
         position::{ItemPlacement, Position},
@@ -16,6 +18,7 @@ use crate::{
         damage,
         events::BroadcastMessage,
         map_query::can_throw,
+        pathfinding::chebyshev,
         random::Rolls,
         skills::tick_skill,
     },
@@ -34,10 +37,10 @@ pub struct AttackPlan {
     pub target: AgentKey,
     pub from: Position,
     pub to: Position,
-    pub damage: CombatDamage,
+    pub damage: Option<CombatDamage>,
     pub cost: AttackCost,
     pub trains: Option<SkillType>,
-    pub missile: Option<u16>,
+    pub missile: Option<MissileId>,
 }
 
 #[derive(Debug)]
@@ -99,34 +102,53 @@ pub fn plan_auto_attack(
         None => (AttackCost::None, None),
     };
 
-    let (trains, element, mut value) = if agent.is_creature() {
-        let (element, value) = get_creature_base_damage(agent.get_creature_kind()?, roll);
-        (None, element, value)
-    } else {
-        get_player_base_damage(agent.get_player()?, roll)
+    let trains = agent
+        .get_player()
+        .and_then(|player| weapon_skill(player).trains);
+
+    let missed = match agent.get_player() {
+        Some(player) if is_distance_weapon(player.weapon_type()) => {
+            distance_hit_chance(player, chebyshev(&from, &to)) < roll.uniform(1, 100) as i32
+        }
+        _ => false,
     };
 
-    let is_blockable = matches!(element, CombatElement::Physical) && value > 0;
-    if is_blockable {
-        value = apply_shield(value, target_agent, roll);
-    }
-    let blocked_shield = is_blockable && value == 0;
-    if is_blockable && !blocked_shield {
-        value = apply_armor(value, target_agent, roll);
-    }
-    let blocked_armor = is_blockable && !blocked_shield && value == 0;
+    let (to, damage) = if missed {
+        (miss_position(map, &from, &to, roll), None)
+    } else {
+        let (element, mut value) = if agent.is_creature() {
+            get_creature_base_damage(agent.get_creature_kind()?, roll)
+        } else {
+            get_player_base_damage(agent.get_player()?, roll)
+        };
+
+        let is_blockable = matches!(element, CombatElement::Physical) && value > 0;
+        if is_blockable {
+            value = apply_shield(value, target_agent, roll);
+        }
+        let blocked_shield = is_blockable && value == 0;
+        if is_blockable && !blocked_shield {
+            value = apply_armor(value, target_agent, roll);
+        }
+        let blocked_armor = is_blockable && !blocked_shield && value == 0;
+
+        (
+            to,
+            Some(CombatDamage {
+                element,
+                value,
+                blocked_shield,
+                blocked_armor,
+            }),
+        )
+    };
 
     Some(AttackPlan {
         attacker,
         target,
         from,
         to,
-        damage: CombatDamage {
-            element,
-            value,
-            blocked_shield,
-            blocked_armor,
-        },
+        damage,
         cost,
         trains,
         missile,
@@ -135,25 +157,26 @@ pub fn plan_auto_attack(
 
 pub fn execute_attack(ctx: &mut TickCtx, plan: AttackPlan) {
     if let Some(attacker) = ctx.map.get_agent_mut(plan.attacker) {
-        attacker.next_attack_tick = GAME_CONFIG.combat.auto_attack_ticks + ctx.tick;
+        attacker.next_attack_tick = ctx.tick + GAME_CONFIG.combat.auto_attack_ticks;
     }
 
     if let Some(sprite_id) = plan.missile {
         ctx.events.push(BroadcastMessage::MissileLaunched {
             from: plan.from,
-            to: plan.to,
+            to: plan.to.clone(),
             sprite_id,
         });
     }
 
-    if plan.damage.blocked_shield
+    if plan.damage.as_ref().is_some_and(|d| d.blocked_shield)
         && let Some(player) = ctx.map.get_player_mut(plan.target)
     {
         tick_skill(player, plan.target, SkillType::Shielding, 1, ctx.events);
     }
 
+    let landed = plan.damage.as_ref().is_some_and(|damage| damage.value > 0);
     let writes_to_player =
-        !matches!(plan.cost, AttackCost::None) || plan.trains.is_some() && plan.damage.value > 0;
+        !matches!(plan.cost, AttackCost::None) || plan.trains.is_some() && landed;
     if writes_to_player && let Some(player) = ctx.map.get_player_mut(plan.attacker) {
         match plan.cost {
             AttackCost::Ammo(guid) => consume_ammo(player, plan.attacker, guid, ctx.events),
@@ -163,16 +186,24 @@ pub fn execute_attack(ctx: &mut TickCtx, plan: AttackPlan) {
             AttackCost::None => {}
         }
         if let Some(skill_type) = plan.trains
-            && plan.damage.value > 0
+            && landed
         {
             tick_skill(player, plan.attacker, skill_type, 1, ctx.events);
         }
     }
 
-    damage::apply_damage(ctx, plan.target, plan.damage, Some(plan.attacker));
+    match plan.damage {
+        Some(damage) => damage::apply_damage(ctx, plan.target, damage, Some(plan.attacker)),
+        None => ctx
+            .events
+            .push(BroadcastMessage::AttackMissed { position: plan.to }),
+    }
 }
 
-pub fn get_damage_visuals(damage: &CombatDamage, blood_type: Option<&BloodType>) -> (u16, Color) {
+pub fn get_damage_visuals(
+    damage: &CombatDamage,
+    blood_type: Option<&BloodType>,
+) -> (EffectId, Color) {
     if damage.blocked_shield {
         return (
             GAME_CONFIG.effect_ids.shield_hit,
@@ -236,19 +267,12 @@ fn get_min_damage(attack_value: u16, level: u16, skill_value: u16) -> u32 {
         .round() as u32
 }
 
-fn get_player_base_damage(
-    player: &Player,
-    roll: &mut Rolls,
-) -> (Option<SkillType>, CombatElement, u32) {
+fn get_player_base_damage(player: &Player, roll: &mut Rolls) -> (CombatElement, u32) {
     let level = player.level();
     let skill = weapon_skill(player);
     let min = get_min_damage(player.weapon_attack(), level, skill.value);
     let max = get_max_damage(player.weapon_attack(), level, skill.value);
-    (
-        skill.trains,
-        player.weapon_element(),
-        roll.damage_roll(min, max),
-    )
+    (player.weapon_element(), roll.damage_roll(min, max))
 }
 
 fn get_creature_base_damage(creature: &CreatureKind, roll: &mut Rolls) -> (CombatElement, u32) {
@@ -263,6 +287,124 @@ fn is_in_range(attacker: &Agent, attacker_pos: &Position, attacked_pos: &Positio
     let dx = attacked_pos.x.abs_diff(attacker_pos.x);
     let dy = attacked_pos.y.abs_diff(attacker_pos.y);
     (r as u16) >= dx && (r as u16) >= dy && attacker_pos.z == attacked_pos.z
+}
+
+/// The nine tiles a missed shot can land on, the target's own included.
+const MISS_OFFSETS: [(i32, i32); 9] = [
+    (-1, -1),
+    (0, -1),
+    (1, -1),
+    (-1, 0),
+    (0, 0),
+    (1, 0),
+    (-1, 1),
+    (0, 1),
+    (1, 1),
+];
+
+fn is_distance_weapon(weapon: WeaponType) -> bool {
+    matches!(
+        weapon,
+        WeaponType::Bow | WeaponType::Crossbow | WeaponType::Distance
+    )
+}
+
+/// A shot's hit chance in percent, resolved off the **projectile** -- the ammunition a bow
+/// fires, or the thrown weapon itself, which is its own ammunition. A bow or crossbow can
+/// only have additive modifiers.
+///
+/// Can exceed 100 or fall below 0 (`devileye` carries -20), and both are meaningful against a
+/// 1..=100 roll: an always-hit and an always-miss.
+fn distance_hit_chance(player: &Player, distance: u16) -> i32 {
+    let ammo = player.weapon_ammo();
+    let projectile = ammo.or_else(|| player.weapon());
+
+    // A projectile that names a flat `hit_chance` -- the viper and leaf stars, and nothing
+    // else -- ignores both the skill and the range.
+    let flat = projectile
+        .and_then(|it| it.config.attr_hit_chance())
+        .unwrap_or(0);
+    let mut chance = if flat != 0 {
+        flat as i32
+    } else {
+        let ceiling = projectile
+            .and_then(|it| it.config.attr_max_hit_chance())
+            .unwrap_or_else(
+                || match projectile.and_then(|it| it.config.attr_ammo_type()) {
+                    Some(_) => AMMO_HIT_CEILING,
+                    None => THROWN_HIT_CEILING,
+                },
+            );
+        tabled_hit_chance(ceiling, player.skill_distance(), distance)
+    };
+
+    if ammo.is_some()
+        && let Some(bonus) = player.weapon().and_then(|it| it.config.attr_hit_chance())
+    {
+        chance += bonus as i32;
+    }
+    chance
+}
+
+/// The reference tabulates a chance per (ceiling, range) pair, each entry a distance skill
+/// capped at the value the entry stops rewarding and then scaled. **Only three ceilings have
+/// a table**; every other value -- which is most of the catalogue, 76 through 96 -- is itself
+/// the chance, flat, and neither skill nor range moves it.
+fn tabled_hit_chance(max_hit_chance: u8, skill: u16, distance: u16) -> i32 {
+    let capped = |cap: u16| skill.min(cap) as f32;
+    match (max_hit_chance, distance) {
+        (THROWN_HIT_CEILING, 1 | 5) => skill.min(74) as i32 + 1,
+        (THROWN_HIT_CEILING, 2) => (capped(28) * 2.40) as i32 + 8,
+        (THROWN_HIT_CEILING, 3) => (capped(45) * 1.55) as i32 + 6,
+        (THROWN_HIT_CEILING, 4) => (capped(58) * 1.25) as i32 + 3,
+        (THROWN_HIT_CEILING, 6) => (capped(90) * 0.80) as i32 + 3,
+        (THROWN_HIT_CEILING, 7) => (capped(104) * 0.70) as i32 + 2,
+        (AMMO_HIT_CEILING, 1 | 5) => (capped(74) * 1.20) as i32 + 1,
+        (AMMO_HIT_CEILING, 2) => (capped(28) * 3.20) as i32,
+        (AMMO_HIT_CEILING, 3) => skill.min(45) as i32 * 2,
+        (AMMO_HIT_CEILING, 4) => (capped(58) * 1.55) as i32,
+        (AMMO_HIT_CEILING, 6 | 7) => skill.min(90) as i32,
+        (100, 1 | 5) => (capped(73) * 1.35) as i32 + 1,
+        (100, 2) => (capped(30) * 3.20) as i32 + 4,
+        (100, 3) => (capped(48) * 2.05) as i32 + 2,
+        (100, 4) => (capped(65) * 1.50) as i32 + 2,
+        (100, 6) => (capped(87) * 1.20) as i32 - 4,
+        (100, 7) => (capped(90) * 1.10) as i32 + 1,
+        // A range no table covers falls back to the flat `hit_chance`, which is zero here by
+        // construction -- the table is only consulted when it is. Unreachable today: every
+        // weapon range is 1..=7.
+        (THROWN_HIT_CEILING | AMMO_HIT_CEILING | 100, _) => 0,
+        (ceiling, _) => ceiling as i32,
+    }
+}
+
+/// A missed shot scatters onto one of the nine tiles around its target if the
+/// attacker was not standing next to it.
+fn miss_position(map: &GameMap, from: &Position, to: &Position, roll: &mut Rolls) -> Position {
+    if from.is_adjacent(to) {
+        return to.clone();
+    }
+    let landable: Vec<Position> = MISS_OFFSETS
+        .iter()
+        .filter_map(|(dx, dy)| to.checked_offset(*dx, *dy))
+        .filter(|pos| can_land_missile(map, pos))
+        .collect();
+    roll.category_roll(&landable)
+        .cloned()
+        .unwrap_or_else(|| to.clone())
+}
+
+fn can_land_missile(map: &GameMap, pos: &Position) -> bool {
+    let Ok(items) = map.iter_items(pos) else {
+        return false;
+    };
+    let mut has_ground = false;
+    let mut blocked = false;
+    for item in items {
+        has_ground |= item.config.has_flag(ItemFlag::Ground);
+        blocked |= item.config.has_flag(ItemFlag::Unpass) && item.config.has_flag(ItemFlag::Unmove);
+    }
+    has_ground && !blocked
 }
 
 fn apply_shield(base_attack_value: u32, target: &Agent, roll: &mut Rolls) -> u32 {
@@ -344,7 +486,7 @@ mod tests {
     fn a_wand(mana_cost: u32) -> Item {
         Item::new(
             a_config(
-                1,
+                ItemId(1),
                 HashSet::new(),
                 HashSet::from([
                     ItemAttribute::WeaponType(WeaponType::Wand),
@@ -359,7 +501,7 @@ mod tests {
     fn a_weapon_with_attack(attack: u16) -> Item {
         Item::new(
             a_config(
-                8,
+                ItemId(8),
                 HashSet::new(),
                 HashSet::from([
                     ItemAttribute::WeaponType(WeaponType::Sword),
@@ -378,13 +520,13 @@ mod tests {
         if let Some(range) = range {
             attrs.insert(ItemAttribute::WeaponRange(range));
         }
-        Item::new(a_config(2, HashSet::new(), attrs), 1)
+        Item::new(a_config(ItemId(2), HashSet::new(), attrs), 1)
     }
 
-    fn a_bow_with_missile(missile: u16) -> Item {
+    fn a_bow_with_missile(missile: MissileId) -> Item {
         Item::new(
             a_config(
-                7,
+                ItemId(7),
                 HashSet::new(),
                 HashSet::from([
                     ItemAttribute::WeaponType(WeaponType::Bow),
@@ -396,18 +538,18 @@ mod tests {
         )
     }
 
-    fn an_arrow(missile: Option<u16>) -> Item {
+    fn an_arrow(missile: Option<MissileId>) -> Item {
         let mut attrs = HashSet::from([ItemAttribute::AmmoType(AmmoType::Arrow)]);
         if let Some(missile) = missile {
             attrs.insert(ItemAttribute::MissileId(missile));
         }
-        Item::new(a_config(3, HashSet::new(), attrs), 10)
+        Item::new(a_config(ItemId(3), HashSet::new(), attrs), 10)
     }
 
     fn an_arrow_with_attack(attack: u16) -> Item {
         Item::new(
             a_config(
-                9,
+                ItemId(9),
                 HashSet::new(),
                 HashSet::from([
                     ItemAttribute::AmmoType(AmmoType::Arrow),
@@ -418,25 +560,80 @@ mod tests {
         )
     }
 
+    /// The flat `hit_chance` is what keeps this arrow out of the hit roll: the tests that
+    /// use it are about the damage it deals, not about whether it arrives.
     fn an_arrow_of(element: CombatElement) -> Item {
         Item::new(
             a_config(
-                10,
+                ItemId(10),
                 HashSet::new(),
                 HashSet::from([
                     ItemAttribute::AmmoType(AmmoType::Arrow),
                     ItemAttribute::WeaponAttack(25),
                     ItemAttribute::WeaponElement(element),
+                    ItemAttribute::HitChance(100),
                 ]),
             ),
             10,
         )
     }
 
+    fn an_arrow_with_hit_chance(chance: i16) -> Item {
+        Item::new(
+            a_config(
+                ItemId(12),
+                HashSet::new(),
+                HashSet::from([
+                    ItemAttribute::AmmoType(AmmoType::Arrow),
+                    ItemAttribute::WeaponAttack(25),
+                    ItemAttribute::HitChance(chance),
+                ]),
+            ),
+            10,
+        )
+    }
+
+    fn a_bow_with_hit_chance(bonus: i16) -> Item {
+        Item::new(
+            a_config(
+                ItemId(13),
+                HashSet::new(),
+                HashSet::from([
+                    ItemAttribute::WeaponType(WeaponType::Bow),
+                    ItemAttribute::WeaponRange(5),
+                    ItemAttribute::HitChance(bonus),
+                ]),
+            ),
+            1,
+        )
+    }
+
+    fn a_ground_item() -> Item {
+        Item::new(
+            a_config(
+                ItemId(14),
+                HashSet::from([ItemFlag::Ground]),
+                HashSet::new(),
+            ),
+            1,
+        )
+    }
+
+    fn a_wall_item() -> Item {
+        Item::new(
+            a_config(
+                ItemId(15),
+                HashSet::from([ItemFlag::Ground, ItemFlag::Unpass, ItemFlag::Unmove]),
+                HashSet::new(),
+            ),
+            1,
+        )
+    }
+
     fn a_bow_of(element: CombatElement) -> Item {
         Item::new(
             a_config(
-                11,
+                ItemId(11),
                 HashSet::new(),
                 HashSet::from([
                     ItemAttribute::WeaponType(WeaponType::Bow),
@@ -450,7 +647,11 @@ mod tests {
 
     fn a_quiver_holding(arrow: Item) -> Item {
         let mut quiver = Item::new(
-            a_config(4, HashSet::from([ItemFlag::AmmoContainer]), HashSet::new()),
+            a_config(
+                ItemId(4),
+                HashSet::from([ItemFlag::AmmoContainer]),
+                HashSet::new(),
+            ),
             1,
         );
         quiver.content = Some(vec![arrow]);
@@ -494,7 +695,7 @@ mod tests {
         );
         let mut roll = Rolls::new(1);
 
-        let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
+        let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
         assert!(matches!(plan.cost, AttackCost::None));
         assert_eq!(plan.target, target);
@@ -508,7 +709,7 @@ mod tests {
         );
         let mut roll = Rolls::new(1);
 
-        let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
+        let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
         assert!(matches!(plan.cost, AttackCost::Mana(20)));
     }
@@ -523,7 +724,7 @@ mod tests {
         );
         let mut roll = Rolls::new(1);
 
-        let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
+        let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
         assert_eq!(plan.cost, AttackCost::Ammo(arrow_guid));
     }
@@ -536,7 +737,7 @@ mod tests {
         );
         let mut roll = Rolls::new(1);
 
-        assert!(plan_auto_attack(&map, attacker, &mut roll, 0).is_none());
+        assert!(plan_auto_attack(&map, attacker, &mut roll, Tick(0)).is_none());
     }
 
     #[test]
@@ -549,7 +750,7 @@ mod tests {
         );
         let mut roll = Rolls::new(1);
 
-        assert!(plan_auto_attack(&map, attacker, &mut roll, 0).is_none());
+        assert!(plan_auto_attack(&map, attacker, &mut roll, Tick(0)).is_none());
     }
 
     /// TFS refuses only the *melee* spell blocks while a monster flees, so a fleeing
@@ -563,13 +764,13 @@ mod tests {
         );
         let mut roll = Rolls::new(1);
         assert!(
-            plan_auto_attack(&map, attacker, &mut roll, 0).is_some(),
+            plan_auto_attack(&map, attacker, &mut roll, Tick(0)).is_some(),
             "above its threshold the same creature swings"
         );
 
         map.get_agent_mut(attacker).unwrap().take_hit(6);
 
-        assert!(plan_auto_attack(&map, attacker, &mut roll, 0).is_none());
+        assert!(plan_auto_attack(&map, attacker, &mut roll, Tick(0)).is_none());
     }
 
     /// The threshold is inclusive, as `runonhealth` is in the reference.
@@ -582,14 +783,14 @@ mod tests {
         let mut roll = Rolls::new(1);
         map.get_agent_mut(attacker).unwrap().take_hit(4);
         assert!(
-            plan_auto_attack(&map, attacker, &mut roll, 0).is_some(),
+            plan_auto_attack(&map, attacker, &mut roll, Tick(0)).is_some(),
             "6 of 10"
         );
 
         map.get_agent_mut(attacker).unwrap().take_hit(1);
 
         assert!(
-            plan_auto_attack(&map, attacker, &mut roll, 0).is_none(),
+            plan_auto_attack(&map, attacker, &mut roll, Tick(0)).is_none(),
             "5 of 10"
         );
     }
@@ -600,10 +801,10 @@ mod tests {
             Agent::from_player(a_test_snapshot(1, 1)),
             a_test_creature("Rat", 10, (1, 2)),
         );
-        map.get_agent_mut(attacker).unwrap().next_attack_tick = 40;
+        map.get_agent_mut(attacker).unwrap().next_attack_tick = Tick(40);
         let mut roll = Rolls::new(1);
 
-        assert!(plan_auto_attack(&map, attacker, &mut roll, 10).is_none());
+        assert!(plan_auto_attack(&map, attacker, &mut roll, Tick(10)).is_none());
     }
 
     #[test]
@@ -624,7 +825,7 @@ mod tests {
             .set_target(Some(target), 0);
         let mut roll = Rolls::new(1);
 
-        assert!(plan_auto_attack(&map, attacker, &mut roll, 0).is_none());
+        assert!(plan_auto_attack(&map, attacker, &mut roll, Tick(0)).is_none());
     }
 
     /// A ranged attacker three tiles away with an `Unpass` item on the line. A *missing*
@@ -644,7 +845,7 @@ mod tests {
             None,
             None,
             Item::new(
-                a_config(6, HashSet::from([ItemFlag::Unpass]), HashSet::new()),
+                a_config(ItemId(6), HashSet::from([ItemFlag::Unpass]), HashSet::new()),
                 1,
             ),
         )
@@ -663,7 +864,7 @@ mod tests {
             .set_target(Some(target), 0);
         let mut roll = Rolls::new(1);
 
-        assert!(plan_auto_attack(&map, attacker, &mut roll, 0).is_none());
+        assert!(plan_auto_attack(&map, attacker, &mut roll, Tick(0)).is_none());
     }
 
     #[test]
@@ -676,7 +877,7 @@ mod tests {
         map.get_agent_mut(attacker).unwrap().set_target(None, 0);
         let mut roll = Rolls::new(1);
 
-        assert!(plan_auto_attack(&map, attacker, &mut roll, 0).is_none());
+        assert!(plan_auto_attack(&map, attacker, &mut roll, Tick(0)).is_none());
     }
 
     #[test]
@@ -688,7 +889,7 @@ mod tests {
         map.remove_agent(target);
         let mut roll = Rolls::new(1);
 
-        assert!(plan_auto_attack(&map, attacker, &mut roll, 0).is_none());
+        assert!(plan_auto_attack(&map, attacker, &mut roll, Tick(0)).is_none());
     }
 
     /// Pins the broadcast order the spec calls load-bearing: cost, then skill, then damage.
@@ -709,15 +910,15 @@ mod tests {
             a_test_creature("Rat", 100, (1, 2)),
         );
         let mut h = TestHarness::seeded(1);
-        h.tick = 7;
-        let plan = plan_auto_attack(&map, attacker, &mut h.roll, 7).unwrap();
+        h.tick = Tick(7);
+        let plan = plan_auto_attack(&map, attacker, &mut h.roll, Tick(7)).unwrap();
 
         execute_attack(&mut h.ctx(&mut map), plan);
 
         let agent = map.get_agent(attacker).unwrap();
         assert_eq!(
             agent.next_attack_tick,
-            GAME_CONFIG.combat.auto_attack_ticks + 7
+            Tick(7) + GAME_CONFIG.combat.auto_attack_ticks
         );
         assert_eq!(agent.get_player().unwrap().mana().current, 80);
         assert_eq!(
@@ -732,7 +933,7 @@ mod tests {
     fn a_distance_weapon_plans_no_cost() {
         let spear = Item::new(
             a_config(
-                5,
+                ItemId(5),
                 HashSet::new(),
                 HashSet::from([
                     ItemAttribute::WeaponType(WeaponType::Distance),
@@ -747,7 +948,7 @@ mod tests {
         );
         let mut roll = Rolls::new(1);
 
-        let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
+        let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
         assert!(matches!(plan.cost, AttackCost::None));
     }
@@ -759,8 +960,8 @@ mod tests {
             a_test_creature("Rat", 100, (1, 2)),
         );
         let mut h = TestHarness::seeded(1);
-        h.tick = 0;
-        let plan = plan_auto_attack(&map, attacker, &mut h.roll, 0).unwrap();
+        h.tick = Tick(0);
+        let plan = plan_auto_attack(&map, attacker, &mut h.roll, Tick(0)).unwrap();
 
         execute_attack(&mut h.ctx(&mut map), plan);
 
@@ -793,8 +994,8 @@ mod tests {
             a_test_creature("Rat", 100, (1, 2)),
         );
         let mut h = TestHarness::seeded(1);
-        h.tick = 0;
-        let plan = plan_auto_attack(&map, attacker, &mut h.roll, 0).unwrap();
+        h.tick = Tick(0);
+        let plan = plan_auto_attack(&map, attacker, &mut h.roll, Tick(0)).unwrap();
 
         execute_attack(&mut h.ctx(&mut map), plan);
 
@@ -814,6 +1015,7 @@ mod tests {
         msgs.iter()
             .map(|m| match m {
                 BroadcastMessage::MissileLaunched { .. } => "missile",
+                BroadcastMessage::AttackMissed { .. } => "miss",
                 BroadcastMessage::PlayerManaUpdated { .. } => "mana",
                 BroadcastMessage::SkillProgressUpdated { .. }
                 | BroadcastMessage::SkillUpgraded { .. } => "skill",
@@ -829,16 +1031,16 @@ mod tests {
     fn a_weapon_carrying_a_missile_id_plans_that_missile() {
         let (map, attacker, _) = duel(
             Agent::from_player(armed(
-                Some(a_bow_with_missile(37)),
+                Some(a_bow_with_missile(MissileId(37))),
                 Some(a_quiver_of_arrows()),
             )),
             a_test_creature("Rat", 10, (1, 2)),
         );
         let mut roll = Rolls::new(1);
 
-        let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
+        let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
-        assert_eq!(plan.missile, Some(37));
+        assert_eq!(plan.missile, Some(MissileId(37)));
     }
 
     #[test]
@@ -846,15 +1048,15 @@ mod tests {
         let (map, attacker, _) = duel(
             Agent::from_player(armed(
                 Some(a_bow(None)),
-                Some(a_quiver_holding(an_arrow(Some(42)))),
+                Some(a_quiver_holding(an_arrow(Some(MissileId(42))))),
             )),
             a_test_creature("Rat", 10, (1, 2)),
         );
         let mut roll = Rolls::new(1);
 
-        let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
+        let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
-        assert_eq!(plan.missile, Some(42));
+        assert_eq!(plan.missile, Some(MissileId(42)));
     }
 
     #[test]
@@ -865,7 +1067,7 @@ mod tests {
         );
         let mut roll = Rolls::new(1);
 
-        let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
+        let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
         assert_eq!(plan.missile, None);
     }
@@ -877,8 +1079,8 @@ mod tests {
             a_test_creature("Rat", 100, (1, 2)),
         );
         let mut h = TestHarness::seeded(1);
-        h.tick = 0;
-        let plan = plan_auto_attack(&map, attacker, &mut h.roll, 0).unwrap();
+        h.tick = Tick(0);
+        let plan = plan_auto_attack(&map, attacker, &mut h.roll, Tick(0)).unwrap();
         assert!(matches!(plan.cost, AttackCost::None) && plan.trains.is_none());
 
         let snapshot = map.clone();
@@ -898,8 +1100,8 @@ mod tests {
             a_test_creature("Rat", 100, (1, 2)),
         );
         let mut h = TestHarness::seeded(1);
-        h.tick = 0;
-        let plan = plan_auto_attack(&map, attacker, &mut h.roll, 0).unwrap();
+        h.tick = Tick(0);
+        let plan = plan_auto_attack(&map, attacker, &mut h.roll, Tick(0)).unwrap();
 
         let snapshot = map.clone();
 
@@ -922,12 +1124,13 @@ mod tests {
         );
         let mut roll = Rolls::new(1);
 
-        let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
+        let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
-        assert!(matches!(plan.damage.element, CombatElement::Physical));
-        assert_eq!(plan.damage.value, 0, "a zero-attack weapon deals nothing");
-        assert!(!plan.damage.blocked_shield);
-        assert!(!plan.damage.blocked_armor);
+        let damage = plan.damage.expect("a melee swing always lands");
+        assert!(matches!(damage.element, CombatElement::Physical));
+        assert_eq!(damage.value, 0, "a zero-attack weapon deals nothing");
+        assert!(!damage.blocked_shield);
+        assert!(!damage.blocked_armor);
     }
 
     /// The bow in `items.yaml` carries no `attack` at all — the arrow does (25). Reading
@@ -993,12 +1196,337 @@ mod tests {
         );
         let mut roll = Rolls::new(1);
 
-        let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
+        let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
-        assert_eq!(plan.damage.element, CombatElement::Fire);
-        assert!(plan.damage.value > 0);
-        assert!(!plan.damage.blocked_shield);
-        assert!(!plan.damage.blocked_armor);
+        let damage = plan.damage.expect("the shot landed");
+        assert_eq!(damage.element, CombatElement::Fire);
+        assert!(damage.value > 0);
+        assert!(!damage.blocked_shield);
+        assert!(!damage.blocked_armor);
+    }
+
+    /// A ranged duel across open ground, with every tile around the target landable so a
+    /// scattered shot has somewhere to go.
+    fn ranged_duel(gap: u16) -> (GameMap, AgentKey, AgentKey, Position) {
+        let a = Position::new(10, 10, 7);
+        let b = Position::new(10 + gap, 10, 7);
+        let mut map = GameMap::new();
+        map.insert_tile(a.clone(), MapTile::new());
+        for dx in -1..=1 {
+            for dy in -1..=1 {
+                let pos = b.checked_offset(dx, dy).unwrap();
+                map.insert_tile(pos.clone(), MapTile::new());
+                map.place_item(&pos, None, None, a_ground_item()).unwrap();
+            }
+        }
+        let attacker = map
+            .insert_agent(
+                Agent::from_player(armed(
+                    Some(a_bow(Some(7))),
+                    Some(a_quiver_holding(an_arrow_with_hit_chance(-1))),
+                )),
+                &a,
+            )
+            .unwrap();
+        let target = map
+            .insert_agent(a_test_creature("Rat", 100, (1, 2)), &b)
+            .unwrap();
+        map.get_agent_mut(attacker)
+            .unwrap()
+            .set_target(Some(target), 0);
+        (map, attacker, target, b)
+    }
+
+    #[test]
+    fn a_shot_that_cannot_hit_plans_no_damage() {
+        let (map, attacker, _) = duel(
+            Agent::from_player(armed(
+                Some(a_bow(None)),
+                Some(a_quiver_holding(an_arrow_with_hit_chance(-1))),
+            )),
+            a_test_creature("Rat", 100, (1, 2)),
+        );
+        let mut roll = Rolls::new(1);
+
+        let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
+
+        assert!(plan.damage.is_none(), "{plan:?}");
+    }
+
+    /// A miss is not a zero: neither block flag is set, and nothing downstream can mistake it
+    /// for a hit the shield swallowed.
+    #[test]
+    fn a_shot_that_cannot_miss_plans_damage() {
+        let (map, attacker, _) = duel(
+            Agent::from_player(armed(
+                Some(a_bow(None)),
+                Some(a_quiver_holding(an_arrow_with_hit_chance(100))),
+            )),
+            a_test_creature("Rat", 100, (1, 2)),
+        );
+        let mut roll = Rolls::new(1);
+
+        let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
+
+        let damage = plan.damage.expect("a certain shot lands");
+        assert!(damage.value > 0);
+        assert!(!damage.blocked_shield && !damage.blocked_armor);
+    }
+
+    /// The reference spends the ammunition in `onUsedWeapon`, which runs on both branches of
+    /// the hit roll -- and trains nothing on the miss, the same rule that already denies a
+    /// fully blocked hit its tick.
+    #[test]
+    fn a_missed_shot_spends_its_arrow_and_trains_nothing() {
+        let mut snapshot = armed(
+            Some(a_bow_with_missile(MissileId(3))),
+            Some(a_quiver_holding(an_arrow_with_hit_chance(-1))),
+        );
+        snapshot.skills.insert(
+            SkillType::Distance,
+            SkillValue {
+                value: 20,
+                current_ticks: 0,
+            },
+        );
+        let (mut map, attacker, _) = duel(
+            Agent::from_player(snapshot),
+            a_test_creature("Rat", 100, (1, 2)),
+        );
+        let mut h = TestHarness::seeded(1);
+        h.tick = Tick(0);
+        let plan = plan_auto_attack(&map, attacker, &mut h.roll, Tick(0)).unwrap();
+
+        execute_attack(&mut h.ctx(&mut map), plan);
+
+        assert_eq!(broadcast_kinds(&h.events), ["missile", "ammo", "miss"]);
+        let arrows = map
+            .get_agent(attacker)
+            .unwrap()
+            .get_player()
+            .unwrap()
+            .inventory()
+            .get(&InventorySlot::RightHand)
+            .unwrap()
+            .content
+            .as_ref()
+            .unwrap()[0]
+            .amount;
+        assert_eq!(arrows, 9, "a miss still costs an arrow");
+    }
+
+    /// The missile has to fly to where it landed, not to where it was aimed -- the client
+    /// draws the flight from the plan's `to`, and the puff is addressed by that same tile.
+    #[test]
+    fn a_missed_shot_scatters_onto_a_tile_beside_its_target() {
+        let (map, attacker, _, target_pos) = ranged_duel(4);
+
+        let landings: Vec<Position> = (0..40)
+            .map(|seed| {
+                let mut roll = Rolls::new(seed);
+                plan_auto_attack(&map, attacker, &mut roll, Tick(0))
+                    .unwrap()
+                    .to
+            })
+            .collect();
+
+        assert!(
+            landings.iter().all(|pos| pos.is_adjacent(&target_pos)),
+            "a shot landed outside the nine tiles: {landings:?}"
+        );
+        assert!(
+            landings.iter().any(|pos| *pos != target_pos),
+            "nothing ever scattered off the target's own tile"
+        );
+    }
+
+    /// The reference does not scatter a point-blank miss, so the puff stays on the target.
+    #[test]
+    fn a_point_blank_miss_puffs_on_the_targets_own_tile() {
+        let (map, attacker, _, target_pos) = ranged_duel(1);
+
+        for seed in 0..40 {
+            let mut roll = Rolls::new(seed);
+            let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
+            assert!(plan.damage.is_none());
+            assert_eq!(
+                plan.to, target_pos,
+                "seed {seed} scattered a point-blank miss"
+            );
+        }
+    }
+
+    /// The reference's `TILESTATE_IMMOVABLEBLOCKSOLID`: a wall turns the tile away, but a
+    /// crate someone could push aside does not. Untestable through the planner, because a
+    /// wall beside the target also blocks the line of sight the shot needed to be planned.
+    #[test]
+    fn only_a_wall_and_a_hole_turn_a_missile_away() {
+        let mut map = GameMap::new();
+        let nothing = Position::new(1, 1, 7);
+        let bare = Position::new(2, 1, 7);
+        let open = Position::new(3, 1, 7);
+        let crate_ = Position::new(4, 1, 7);
+        let wall = Position::new(5, 1, 7);
+        for pos in [&bare, &open, &crate_, &wall] {
+            map.insert_tile(pos.clone(), MapTile::new());
+        }
+        map.place_item(&open, None, None, a_ground_item()).unwrap();
+        map.place_item(&crate_, None, None, a_ground_item())
+            .unwrap();
+        map.place_item(
+            &crate_,
+            None,
+            None,
+            Item::new(
+                a_config(
+                    ItemId(17),
+                    HashSet::from([ItemFlag::Unpass]),
+                    HashSet::new(),
+                ),
+                1,
+            ),
+        )
+        .unwrap();
+        map.place_item(&wall, None, None, a_wall_item()).unwrap();
+
+        assert!(!can_land_missile(&map, &nothing), "no tile at all");
+        assert!(!can_land_missile(&map, &bare), "a tile with no ground");
+        assert!(can_land_missile(&map, &open));
+        assert!(can_land_missile(&map, &crate_), "movable, so not solid");
+        assert!(!can_land_missile(&map, &wall));
+    }
+
+    /// The other fallback: nothing around the target is landable at all, because none of
+    /// those tiles has ground. `category_roll` over an empty slice is `None`, and the shot
+    /// has to end up somewhere.
+    #[test]
+    fn a_miss_over_groundless_tiles_falls_back_to_the_target() {
+        let a = Position::new(10, 10, 7);
+        let b = Position::new(14, 10, 7);
+        let mut map = GameMap::new();
+        map.insert_tile(a.clone(), MapTile::new());
+        map.insert_tile(b.clone(), MapTile::new());
+        let attacker = map
+            .insert_agent(
+                Agent::from_player(armed(
+                    Some(a_bow(Some(7))),
+                    Some(a_quiver_holding(an_arrow_with_hit_chance(-1))),
+                )),
+                &a,
+            )
+            .unwrap();
+        let target = map
+            .insert_agent(a_test_creature("Rat", 100, (1, 2)), &b)
+            .unwrap();
+        map.get_agent_mut(attacker)
+            .unwrap()
+            .set_target(Some(target), 0);
+        let mut roll = Rolls::new(1);
+
+        let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
+
+        assert_eq!(plan.to, b);
+    }
+
+    #[test]
+    fn a_melee_swing_never_misses() {
+        let (map, attacker, _) = duel(
+            Agent::from_player(armed(Some(a_weapon_with_attack(20)), None)),
+            a_test_creature("Rat", 100, (1, 2)),
+        );
+
+        for seed in 0..100 {
+            let mut roll = Rolls::new(seed);
+            let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
+            assert!(plan.damage.is_some(), "seed {seed} missed with a sword");
+        }
+    }
+
+    /// A bow's `hit_chance` is a bonus on top of what the arrow rolled, not a chance of its
+    /// own: the catalogue's bows carry 1..7 and its arrows carry 87..100.
+    #[test]
+    fn a_bows_hit_chance_is_a_bonus_on_its_ammos() {
+        let plain = Agent::from_player(armed(
+            Some(a_bow(Some(5))),
+            Some(a_quiver_holding(an_arrow(None))),
+        ));
+        let enchanted = Agent::from_player(armed(
+            Some(a_bow_with_hit_chance(5)),
+            Some(a_quiver_holding(an_arrow(None))),
+        ));
+
+        let plain = distance_hit_chance(plain.get_player().unwrap(), 1);
+        let enchanted = distance_hit_chance(enchanted.get_player().unwrap(), 1);
+
+        assert_eq!(enchanted, plain + 5);
+    }
+
+    /// `devileye` carries -20, and a chance below 1 can never meet a 1..=100 roll.
+    #[test]
+    fn a_negative_hit_chance_can_never_land() {
+        let shooter = Agent::from_player(armed(
+            Some(a_bow(Some(5))),
+            Some(a_quiver_holding(an_arrow_with_hit_chance(-20))),
+        ));
+
+        assert!(distance_hit_chance(shooter.get_player().unwrap(), 1) < 1);
+    }
+
+    /// A thrown weapon is its own ammunition, so the chance comes off the weapon itself.
+    #[test]
+    fn a_thrown_weapon_reads_its_own_ceiling() {
+        let spear = Item::new(
+            a_config(
+                ItemId(16),
+                HashSet::new(),
+                HashSet::from([
+                    ItemAttribute::WeaponType(WeaponType::Distance),
+                    ItemAttribute::WeaponAttack(25),
+                    ItemAttribute::WeaponRange(3),
+                    ItemAttribute::MaxHitChance(76),
+                ]),
+            ),
+            1,
+        );
+        let thrower = Agent::from_player(armed(Some(spear), None));
+
+        assert_eq!(distance_hit_chance(thrower.get_player().unwrap(), 3), 76);
+    }
+
+    /// Only 75, 90 and 100 have a table. Every other ceiling -- 76, 80, 87, 91, 94, 96, which
+    /// is most of the catalogue -- **is** the chance, and neither skill nor range moves it.
+    #[test]
+    fn an_untabled_ceiling_is_itself_the_chance() {
+        for skill in [10, 50, 120] {
+            for distance in 1..=7 {
+                assert_eq!(tabled_hit_chance(91, skill, distance), 91);
+                assert_eq!(tabled_hit_chance(76, skill, distance), 76);
+            }
+        }
+    }
+
+    /// Transcribed from `WeaponDistance::useWeapon`. Each entry caps the skill before scaling
+    /// it, which is what stops a tabled ceiling being exceeded by skill alone.
+    #[test]
+    fn the_tabled_ceilings_match_the_reference() {
+        assert_eq!(tabled_hit_chance(75, 10, 1), 11);
+        assert_eq!(tabled_hit_chance(75, 28, 2), 75, "min(28, 28) * 2.40 + 8");
+        assert_eq!(tabled_hit_chance(75, 200, 2), 75, "the cap, not the skill");
+        assert_eq!(tabled_hit_chance(90, 10, 1), 13);
+        assert_eq!(tabled_hit_chance(90, 45, 3), 90, "min(45, 45) * 2");
+        assert_eq!(tabled_hit_chance(90, 200, 3), 90);
+        assert_eq!(tabled_hit_chance(100, 30, 2), 100, "min(30, 30) * 3.20 + 4");
+        assert_eq!(tabled_hit_chance(100, 87, 6), 100, "min(87, 87) * 1.20 - 4");
+    }
+
+    /// Skill is what a tabled ceiling buys, and the reference's caps are what stop it there.
+    #[test]
+    fn a_tabled_chance_climbs_with_the_distance_skill() {
+        let low = tabled_hit_chance(90, 10, 1);
+        let high = tabled_hit_chance(90, 74, 1);
+
+        assert!(high > low, "{high} !> {low}");
+        assert_eq!(high, tabled_hit_chance(90, 300, 1), "capped at 74");
     }
 
     /// Pins the `weapon_attack()` fallback the test above depends on.
@@ -1010,9 +1538,12 @@ mod tests {
         );
         let mut roll = Rolls::new(1);
 
-        let plan = plan_auto_attack(&map, attacker, &mut roll, 0).unwrap();
+        let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
 
-        assert!(plan.damage.value > 0, "unarmed swings must still hurt");
+        assert!(
+            plan.damage.is_some_and(|damage| damage.value > 0),
+            "unarmed swings must still hurt"
+        );
         assert_eq!(get_min_damage(5, 1, GAME_CONFIG.combat.unarmed_skill), 5);
         assert_eq!(get_max_damage(5, 1, GAME_CONFIG.combat.unarmed_skill), 48);
     }

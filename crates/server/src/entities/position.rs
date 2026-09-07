@@ -5,7 +5,8 @@ use std::{
 
 use crate::{
     constants::{
-        CONTAINER_COORD_FLAG, INVENTORY_COORD_FLAG, PLAYER_VIEWPORT_HEIGHT, PLAYER_VIEWPORT_WIDTH,
+        items::{CONTAINER_COORD_FLAG, INVENTORY_COORD_FLAG},
+        view::{PLAYER_VIEWPORT_HEIGHT, PLAYER_VIEWPORT_WIDTH},
     },
     entities::{agent::AgentKey, inventory::InventorySlot},
 };

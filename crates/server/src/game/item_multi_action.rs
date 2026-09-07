@@ -303,7 +303,7 @@ fn potion(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::constants::MAX_STACK_AMOUNT;
+    use crate::constants::items::MAX_STACK_AMOUNT;
     use crate::entities::{
         agent::{Agent, Pool},
         inventory::InventorySlot,

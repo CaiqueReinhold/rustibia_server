@@ -1,5 +1,5 @@
 use crate::{
-    constants::{
+    constants::view::{
         BASE_FLOOR, MAX_FLOOR, MAX_VISIBLE_ITEMS, MIN_FLOOR, PLAYER_VIEWPORT_HEIGHT,
         PLAYER_VIEWPORT_WIDTH, UNDERGROUND_REACH, VIEWPORT_SIZE,
     },

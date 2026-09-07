@@ -2,7 +2,7 @@ use once_cell::sync::Lazy;
 use rand::{RngExt, SeedableRng, rngs::Xoshiro256PlusPlus, seq::IndexedRandom};
 use rand_distr::{Distribution, Normal};
 
-use crate::constants::MAX_DROP_CHANCE;
+use crate::constants::items::MAX_DROP_CHANCE;
 
 static DAMAGE_CURVE: Lazy<Normal<f32>> = Lazy::new(|| Normal::new(0.5, 0.25).unwrap());
 

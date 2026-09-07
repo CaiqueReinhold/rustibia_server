@@ -5,7 +5,7 @@ use tokio_util::{
 };
 
 use crate::{
-    constants::{MAX_VISIBLE_ITEMS, VIEWPORT_SIZE},
+    constants::view::{MAX_VISIBLE_ITEMS, VIEWPORT_SIZE},
     entities::{
         agent::{AgentId, Facing, OutfitColors, OutfitId, Pool},
         chat::{ChannelId, ChatMessageType, SayTarget},

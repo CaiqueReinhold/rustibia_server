@@ -8,7 +8,7 @@ use tracing::error;
 
 use crate::actors::player_query::{get_agent_desc, get_player_desc, get_player_skills};
 use crate::actors::session::{SessionActor, SessionError};
-use crate::constants::AGENT_DESPAWN_RADIUS;
+use crate::constants::view::AGENT_DESPAWN_RADIUS;
 use crate::entities::agent::AgentKey;
 use crate::entities::map::GameMap;
 use crate::entities::position::{Position, Rect};

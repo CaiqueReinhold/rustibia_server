@@ -1,7 +1,7 @@
 use tracing::{error, info};
 
 use crate::actors::world::{ScheduledCommand, WorldCommand};
-use crate::constants::MAX_STACK_AMOUNT;
+use crate::constants::items::MAX_STACK_AMOUNT;
 use crate::entities::agent::{Agent, AgentKey};
 use crate::entities::creature::CreatureKind;
 use crate::entities::items::{Item, ItemFlag, ItemId};

@@ -7,7 +7,7 @@ use crate::local_id::LocalId;
 use super::{inventory::Inventory, player::Player};
 use crate::{
     config,
-    constants::{DIAGONAL_STEP_FACTOR, SPEED_PARAM_A, SPEED_PARAM_B, SPEED_PARAM_C},
+    constants::movement::{DIAGONAL_STEP_FACTOR, SPEED_PARAM_A, SPEED_PARAM_B, SPEED_PARAM_C},
     entities::{
         combat::{Participation, WeaponType},
         creature::{BloodType, CreatureKind},

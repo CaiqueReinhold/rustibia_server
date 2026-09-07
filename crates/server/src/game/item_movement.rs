@@ -2,7 +2,7 @@ use thiserror::Error;
 use tracing::error;
 
 use crate::{
-    constants::MAX_STACK_AMOUNT,
+    constants::items::MAX_STACK_AMOUNT,
     entities::{
         agent::AgentKey,
         combat::WeaponType,

@@ -3,7 +3,7 @@ use smallvec::SmallVec;
 use std::{collections::HashMap, sync::Arc};
 use thiserror::Error;
 
-use crate::constants::MAX_VISIBLE_ITEMS;
+use crate::constants::view::MAX_VISIBLE_ITEMS;
 use crate::entities::agent::{Agent, AgentKey};
 use crate::entities::items::{FloorChangeDirection, Item, ItemFlag, ItemGuid};
 use crate::entities::player::Player;
