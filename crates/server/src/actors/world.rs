@@ -23,8 +23,8 @@ use crate::game::events::BroadcastMessage;
 use crate::game::item_multi_action::UseTarget;
 use crate::game::random::Rolls;
 use crate::game::{
-    Tick, TickCtx, chat, combat, events, item_action, item_movement, item_multi_action, movement,
-    targeting,
+    Tick, TickCtx, TickDelta, chat, combat, events, item_action, item_movement, item_multi_action,
+    movement, targeting,
 };
 use crate::persistence::creatures::CREATURE_KINDS;
 use crate::persistence::spawns::SpawnPoint;
@@ -66,7 +66,7 @@ pub enum WorldCommand {
     SpawnCreature {
         kind: Arc<CreatureKind>,
         position: Position,
-        respawn_ticks: Option<Tick>,
+        respawn_ticks: Option<TickDelta>,
     },
     RequestLogout {
         agent_key: AgentKey,
@@ -139,12 +139,12 @@ impl Ord for ScheduledCommand {
 
 #[derive(Clone, Debug)]
 pub struct WorldActorHandle {
-    tx: mpsc::Sender<(WorldCommand, Option<Tick>)>,
+    tx: mpsc::Sender<(WorldCommand, Option<TickDelta>)>,
 }
 
 impl WorldActorHandle {
     #[cfg(test)]
-    pub fn for_test() -> (Self, mpsc::Receiver<(WorldCommand, Option<Tick>)>) {
+    pub fn for_test() -> (Self, mpsc::Receiver<(WorldCommand, Option<TickDelta>)>) {
         let (tx, rx) = mpsc::channel(64);
         (Self { tx }, rx)
     }
@@ -153,7 +153,7 @@ impl WorldActorHandle {
         let _ = self.tx.send((command, None)).await;
     }
 
-    pub async fn send_delayed(&self, command: WorldCommand, after: Tick) {
+    pub async fn send_delayed(&self, command: WorldCommand, after: TickDelta) {
         let _ = self.tx.send((command, Some(after))).await;
     }
 
@@ -179,7 +179,7 @@ impl WorldActorHandle {
 }
 
 pub struct WorldActor {
-    rx: mpsc::Receiver<(WorldCommand, Option<Tick>)>,
+    rx: mpsc::Receiver<(WorldCommand, Option<TickDelta>)>,
     message_router: MessageRouterActorHandle,
     command_queue: BinaryHeap<ScheduledCommand>,
     map: GameMap,
@@ -199,7 +199,7 @@ impl WorldActor {
         spawns: &[SpawnPoint],
     ) -> (WorldActorHandle, watch::Receiver<Tick>) {
         let (tx, rx) = mpsc::channel(CONFIG.max_buffered_messages);
-        let (tick_tx, tick_rx) = watch::channel(0);
+        let (tick_tx, tick_rx) = watch::channel(Tick(0));
 
         let mut actor = Self {
             rx,
@@ -207,7 +207,7 @@ impl WorldActor {
             command_queue: BinaryHeap::with_capacity(CONFIG.max_queue_size),
             map,
             shared_map,
-            tick: 0,
+            tick: Tick(0),
             tick_duration: CONFIG.tick_duration,
             tick_tx,
             roll: Rolls::new(seed),
@@ -229,7 +229,7 @@ impl WorldActor {
                 continue;
             };
             self.command_queue.push(ScheduledCommand {
-                at_tick: 1,
+                at_tick: Tick(1),
                 command: WorldCommand::SpawnCreature {
                     kind,
                     position: spawn.position.clone(),
@@ -256,7 +256,7 @@ impl WorldActor {
                         if let Some(after) = after {
                             self.command_queue.push(ScheduledCommand { at_tick: self.tick + after, command });
                         } else {
-                            self.command_queue.push(ScheduledCommand { at_tick: self.tick + 1, command });
+                            self.command_queue.push(ScheduledCommand { at_tick: self.tick + TickDelta(1), command });
                         }
 
                     }
@@ -264,7 +264,7 @@ impl WorldActor {
             }
 
             let tick_start = time::Instant::now();
-            self.tick += 1;
+            self.tick += TickDelta(1);
             debug!("World: starting tick {}", self.tick);
 
             let mut broadcast_messages: Vec<BroadcastMessage> = Vec::new();
@@ -561,21 +561,21 @@ mod tests {
     fn a_test_world_actor(map: GameMap) -> WorldActor {
         let (_tx, rx) = mpsc::channel(1);
         let (message_router, _router_rx) = MessageRouterActorHandle::for_test();
-        let (tick_tx, _tick_rx) = watch::channel(0);
+        let (tick_tx, _tick_rx) = watch::channel(Tick(0));
         WorldActor {
             rx,
             message_router,
             command_queue: BinaryHeap::new(),
             map,
             shared_map: Arc::new(ArcSwap::from_pointee(GameMap::new())),
-            tick: 0,
+            tick: Tick(0),
             tick_duration: Duration::from_millis(50),
             tick_tx,
             roll: Rolls::new(1),
         }
     }
 
-    fn a_spawn_point(kind: &str, position: Position, respawn_ticks: Tick) -> SpawnPoint {
+    fn a_spawn_point(kind: &str, position: Position, respawn_ticks: TickDelta) -> SpawnPoint {
         SpawnPoint {
             position,
             kind: kind.to_string(),
@@ -591,17 +591,17 @@ mod tests {
         actor.command_queue.clear();
 
         actor.seed_spawn_points(&[
-            a_spawn_point("elf", Position::new(10, 10, 7), 600),
-            a_spawn_point("nosuchcreature", Position::new(11, 10, 7), 600),
+            a_spawn_point("elf", Position::new(10, 10, 7), TickDelta(600)),
+            a_spawn_point("nosuchcreature", Position::new(11, 10, 7), TickDelta(600)),
         ]);
 
         assert_eq!(actor.command_queue.len(), 1);
         let queued = actor.command_queue.pop().unwrap();
-        assert_eq!(queued.at_tick, 1);
+        assert_eq!(queued.at_tick, Tick(1));
         assert!(matches!(
             queued.command,
             WorldCommand::SpawnCreature {
-                respawn_ticks: Some(600),
+                respawn_ticks: Some(TickDelta(600)),
                 ..
             }
         ));
@@ -620,13 +620,13 @@ mod tests {
             WorldCommand::SpawnCreature {
                 kind: Arc::new(a_creature_kind("rat")),
                 position: pos.clone(),
-                respawn_ticks: Some(600),
+                respawn_ticks: Some(TickDelta(600)),
             },
             &mut Vec::new(),
         );
 
         let (_, agent) = actor.map.iter_agents().next().expect("nothing spawned");
-        assert_eq!(agent.respawn_ticks(), Some(600));
+        assert_eq!(agent.respawn_ticks(), Some(TickDelta(600)));
         assert_eq!(*agent.get_origin(), pos);
     }
 

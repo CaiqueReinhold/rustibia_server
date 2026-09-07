@@ -9,12 +9,13 @@ use thiserror::Error;
 
 use crate::config::CONFIG;
 use crate::entities::combat::{AmmoType, CombatElement, WeaponType};
+use crate::entities::effects::MissileId;
 use crate::entities::inventory::InventorySlot;
 use crate::entities::items::{
     Bounds, FloorChangeDirection, ItemAction, ItemAttribute, ItemConfig, ItemFlag, ItemId,
     ItemMultiAction,
 };
-use crate::game::Tick;
+use crate::game::TickDelta;
 
 /// The item catalogue, loaded once from `assets/items.yaml`. Immutable after load and
 /// read by every subsystem, so it is a global for the same reason `GAME_CONFIG` is.
@@ -111,7 +112,7 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
             let params = iter.next()?.trim_end_matches(')');
             let action = match action_name {
                 "transform" => {
-                    let item_id = params.parse::<u16>().ok()?;
+                    let item_id = params.parse::<u16>().map(ItemId).ok()?;
                     ItemAction::Transform { into: item_id }
                 }
                 _ => return None,
@@ -128,7 +129,7 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
                 None => None,
             };
             let flask = match value.get("flask") {
-                Some(flask) => Some(u16::try_from(flask.as_u64()?).ok()?),
+                Some(flask) => Some(ItemId(u16::try_from(flask.as_u64()?).ok()?)),
                 None => None,
             };
             if health.is_none() && mana.is_none() {
@@ -141,8 +142,8 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
             }))
         }
         "decay" => {
-            let duration = value.get("duration")?.as_u64()? as Tick;
-            let decay_to = value.get("decay_to")?.as_u64()? as ItemId;
+            let duration = TickDelta(value.get("duration")?.as_u64()?);
+            let decay_to = ItemId(value.get("decay_to")?.as_u64()? as u16);
             Some(ItemAttribute::Decay { duration, decay_to })
         }
         "attack" => Some(ItemAttribute::WeaponAttack(value.as_i64()? as u16)),
@@ -172,8 +173,10 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
         },
         "extra_defense" => Some(ItemAttribute::ExtraDef(value.as_i64()? as i16)),
         "range" => Some(ItemAttribute::WeaponRange(value.as_i64()? as u8)),
+        "hit_chance" => Some(ItemAttribute::HitChance(value.as_i64()? as i16)),
+        "max_hit_chance" => Some(ItemAttribute::MaxHitChance(value.as_i64()? as u8)),
         "mana_cost" => Some(ItemAttribute::ManaCost(value.as_i64()? as u32)),
-        "missile_id" => Some(ItemAttribute::MissileId(value.as_i64()? as u16)),
+        "missile_id" => Some(ItemAttribute::MissileId(MissileId(value.as_i64()? as u16))),
         _ => {
             let n = value.as_u64()? as u32;
             match key {
@@ -188,7 +191,7 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
     }
 }
 
-fn convert(id: u16, raw: RawItemConfig) -> ItemConfig {
+fn convert(id: ItemId, raw: RawItemConfig) -> ItemConfig {
     let attributes = raw
         .attributes
         .iter()
@@ -228,6 +231,7 @@ fn load_items_from_str(contents: &str) -> Result<HashMap<ItemId, Arc<ItemConfig>
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::entities::items::ItemId;
 
     fn parse(key: &str, value: &str) -> Option<ItemAttribute> {
         parse_attribute(key, &serde_yaml::from_str(value).unwrap())
@@ -272,6 +276,45 @@ mod tests {
         assert!(armoured > 300, "only {armoured} items carry armour");
         assert!(defended > 500, "only {defended} items carry defence");
         assert!(extra > 0, "no item kept a negative extra defence");
+    }
+
+    /// `devileye` carries `hit_chance: -20`, so this key has the same reason to sit above
+    /// the unsigned fallback that `extra_defense` does.
+    #[test]
+    fn a_negative_hit_chance_is_not_dropped() {
+        assert_eq!(
+            parse("hit_chance", "-20"),
+            Some(ItemAttribute::HitChance(-20))
+        );
+        assert_eq!(parse("hit_chance", "7"), Some(ItemAttribute::HitChance(7)));
+        assert_eq!(
+            parse("max_hit_chance", "91"),
+            Some(ItemAttribute::MaxHitChance(91))
+        );
+    }
+
+    /// Both keys were generated into `items.yaml` from the start and read by nothing until
+    /// the distance hit roll existed — exactly the shape `the-asset-generators-drop-fields-
+    /// silently` warns about, in the other direction.
+    #[test]
+    fn the_shipped_catalogue_carries_both_hit_chances() {
+        let items = load_items(&CONFIG.items_file_path).unwrap();
+        let bonuses = items
+            .values()
+            .filter(|c| c.attr_hit_chance().is_some())
+            .count();
+        let ceilings = items
+            .values()
+            .filter(|c| c.attr_max_hit_chance().is_some())
+            .count();
+        let penalties = items
+            .values()
+            .filter(|c| c.attr_hit_chance().is_some_and(|h| h < 0))
+            .count();
+
+        assert!(bonuses > 40, "only {bonuses} items carry a hit chance");
+        assert!(ceilings > 30, "only {ceilings} items carry a ceiling");
+        assert!(penalties > 0, "no item kept a negative hit chance");
     }
 
     fn bounds(min: u32, max: u32) -> Option<Bounds> {
@@ -385,25 +428,25 @@ items:
         .unwrap();
 
         assert_eq!(
-            items[&1].attr_multi_action(),
+            items[&ItemId(1)].attr_multi_action(),
             Some(ItemMultiAction::Potion {
                 health: Some(Bounds { min: 125, max: 175 }),
                 mana: None,
-                flask: Some(284),
+                flask: Some(ItemId(284)),
             })
         );
         assert_eq!(
-            items[&2].attr_multi_action(),
+            items[&ItemId(2)].attr_multi_action(),
             Some(ItemMultiAction::Potion {
                 health: Some(Bounds { min: 250, max: 350 }),
                 mana: Some(Bounds { min: 100, max: 200 }),
-                flask: Some(284),
+                flask: Some(ItemId(284)),
             })
         );
         // Dropped, and the item still loads -- which is exactly why the emitter has
         // a gate of its own: nothing here can tell you the potion went missing.
-        assert_eq!(items[&3].attr_multi_action(), None);
-        assert_eq!(items[&3].name, "a broken potion");
+        assert_eq!(items[&ItemId(3)].attr_multi_action(), None);
+        assert_eq!(items[&ItemId(3)].name, "a broken potion");
     }
 
     #[test]
@@ -413,7 +456,7 @@ items:
             Some(ItemAttribute::MultiAction(ItemMultiAction::Potion {
                 health: bounds(125, 175),
                 mana: None,
-                flask: Some(284),
+                flask: Some(ItemId(284)),
             }))
         );
     }

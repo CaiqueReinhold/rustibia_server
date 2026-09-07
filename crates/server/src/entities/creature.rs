@@ -5,7 +5,7 @@ use crate::{
         agent::{OutfitColors, OutfitId, Pool},
         items::{FluidType, ItemId},
     },
-    game::Tick,
+    game::TickDelta,
 };
 
 pub type CreatureKindId = String;
@@ -35,7 +35,7 @@ pub struct LootEntry {
 
 #[derive(Clone, Debug)]
 pub struct CreatureVoices {
-    pub cooldown: Tick,
+    pub cooldown: TickDelta,
     pub chance: u32,
     pub sentences: Vec<String>,
 }

@@ -1,5 +1,7 @@
 use sqlx::PgPool;
 
+use crate::entities::player::PlayerId;
+
 /// Writes the `online_players` table that the website reads for its player count and
 /// Who Is Online list. Owned by the game server because only it knows who is actually
 /// connected; the schema itself is owned by `game_site`.
@@ -12,20 +14,20 @@ impl OnlineRepository {
         Self { pool }
     }
 
-    pub async fn mark_online(&self, character_id: u32) -> Result<(), sqlx::Error> {
+    pub async fn mark_online(&self, character_id: PlayerId) -> Result<(), sqlx::Error> {
         sqlx::query(
             "INSERT INTO online_players (character_id) VALUES ($1) \
              ON CONFLICT (character_id) DO NOTHING",
         )
-        .bind(character_id as i32)
+        .bind(character_id.0 as i32)
         .execute(&self.pool)
         .await?;
         Ok(())
     }
 
-    pub async fn mark_offline(&self, character_id: u32) -> Result<(), sqlx::Error> {
+    pub async fn mark_offline(&self, character_id: PlayerId) -> Result<(), sqlx::Error> {
         sqlx::query("DELETE FROM online_players WHERE character_id = $1")
-            .bind(character_id as i32)
+            .bind(character_id.0 as i32)
             .execute(&self.pool)
             .await?;
         Ok(())
@@ -86,10 +88,10 @@ mod tests {
         let id = a_character(&pool).await;
         let repo = OnlineRepository::new(pool.clone());
 
-        repo.mark_online(id as u32).await.unwrap();
+        repo.mark_online(PlayerId(id as u32)).await.unwrap();
         assert_eq!(online_count(&pool).await, 1);
 
-        repo.mark_offline(id as u32).await.unwrap();
+        repo.mark_offline(PlayerId(id as u32)).await.unwrap();
         assert_eq!(online_count(&pool).await, 0);
     }
 
@@ -98,8 +100,8 @@ mod tests {
         let id = a_character(&pool).await;
         let repo = OnlineRepository::new(pool.clone());
 
-        repo.mark_online(id as u32).await.unwrap();
-        repo.mark_online(id as u32).await.unwrap();
+        repo.mark_online(PlayerId(id as u32)).await.unwrap();
+        repo.mark_online(PlayerId(id as u32)).await.unwrap();
 
         assert_eq!(
             online_count(&pool).await,
@@ -113,7 +115,7 @@ mod tests {
         let repo = OnlineRepository::new(pool.clone());
         for _ in 0..3 {
             let id = a_character(&pool).await;
-            repo.mark_online(id as u32).await.unwrap();
+            repo.mark_online(PlayerId(id as u32)).await.unwrap();
         }
 
         repo.clear_all().await.unwrap();

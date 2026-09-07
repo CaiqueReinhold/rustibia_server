@@ -1,39 +1,31 @@
-//! Chat: local speech, private messages, channels, and the session-local
-//! chat ids that name their authors over the wire.
+//! Chat: local speech, private messages, and channels. An author is named over the
+//! wire by their character name — the one identifier both sides already agree on.
 
 use anyhow::Result;
 
 use crate::actors::session::SessionActor;
 use crate::actors::world::WorldCommand;
-use crate::entities::agent::AgentId;
 use crate::entities::agent::AgentKey;
 use crate::entities::chat::ChannelId;
 use crate::entities::chat::ChatMessageType;
+use crate::entities::chat::SayTarget;
 use crate::game::config::GAME_CONFIG;
 use crate::messages::FloatingTextType;
 use crate::messages::ServerMessage;
 use crate::messages::TextMessageType;
 
 impl SessionActor {
-    pub(super) async fn introduce(&mut self, agent_key: AgentKey) -> Result<Option<AgentId>> {
-        if let Some(local_id) = self.player_pms.get_local(&agent_key) {
-            return Ok(Some(local_id));
-        }
+    fn agent_name(&self, agent_key: AgentKey) -> Option<String> {
+        let map = self.shared_map.load();
+        map.get_agent(agent_key)
+            .map(|agent| agent.name().to_owned())
+    }
 
-        // Scoped so the snapshot guard is released before the await below.
-        let name = {
-            let map = self.shared_map.load();
-            match map.get_agent(agent_key) {
-                Some(agent) => agent.name().to_owned(),
-                None => return Ok(None),
-            }
-        };
-
-        let local_id = self.player_pms.get_or_insert(agent_key);
-        self.connection
-            .send_message(ServerMessage::IntroducePlayer { local_id, name })
-            .await?;
-        Ok(Some(local_id))
+    fn online_player_by_name(&self, name: &str) -> Option<AgentKey> {
+        let map = self.shared_map.load();
+        map.iter_agents()
+            .find(|(_, agent)| !agent.is_creature() && agent.name().eq_ignore_ascii_case(name))
+            .map(|(key, _)| key)
     }
 
     pub(super) async fn deny(&self, text: &str) -> Result<()> {
@@ -75,13 +67,13 @@ impl SessionActor {
             return Ok(());
         }
 
-        let Some(agent_id) = self.introduce(author).await? else {
+        let Some(author) = self.agent_name(author) else {
             return Ok(());
         };
 
         self.connection
             .send_message(ServerMessage::ChatMessage {
-                author: agent_id,
+                author,
                 message_type,
                 channel,
                 position: matches!(message_type, ChatMessageType::Local)
@@ -99,7 +91,7 @@ impl SessionActor {
         author: AgentKey,
         message: String,
     ) -> Result<()> {
-        self.send_chat(author, ChatMessageType::Private, 0, message)
+        self.send_chat(author, ChatMessageType::Private, ChannelId(0), message)
             .await
     }
 
@@ -113,12 +105,7 @@ impl SessionActor {
             .await
     }
 
-    pub(super) async fn handle_say(
-        &mut self,
-        message: String,
-        message_type: ChatMessageType,
-        target: u16,
-    ) -> Result<()> {
+    pub(super) async fn handle_say(&mut self, message: String, target: SayTarget) -> Result<()> {
         if message.chars().count() > GAME_CONFIG.chat.max_message_length {
             return self.deny("Your message is too long.").await;
         }
@@ -129,8 +116,8 @@ impl SessionActor {
         }
         self.next_chat_tick = now + GAME_CONFIG.chat.message_cooldown_ticks;
 
-        match message_type {
-            ChatMessageType::Local => {
+        match target {
+            SayTarget::Local => {
                 self.world
                     .send(WorldCommand::Say {
                         agent_key: self.player_key,
@@ -138,16 +125,17 @@ impl SessionActor {
                     })
                     .await;
             }
-            ChatMessageType::Private => {
-                if let Some(recipient) = self.player_pms.get_global(target).copied() {
-                    self.chat
-                        .message_player(self.player_key, recipient, message)
-                        .await;
-                }
-            }
-            ChatMessageType::Channel => {
+            SayTarget::Player(name) => {
+                let Some(recipient) = self.online_player_by_name(&name) else {
+                    return self.deny("A player with this name is not online.").await;
+                };
                 self.chat
-                    .message_channel(self.player_key, target, message)
+                    .message_player(self.player_key, recipient, message)
+                    .await;
+            }
+            SayTarget::Channel(channel) => {
+                self.chat
+                    .message_channel(self.player_key, channel, message)
                     .await;
             }
         }
@@ -155,18 +143,16 @@ impl SessionActor {
     }
 
     pub(super) async fn handle_open_pm_chat(&mut self, name: String) -> Result<()> {
-        let target = {
-            let map = self.shared_map.load();
-            map.iter_agents()
-                .find(|(_, agent)| !agent.is_creature() && agent.name().eq_ignore_ascii_case(&name))
-                .map(|(key, _)| key)
+        let Some(target) = self.online_player_by_name(&name) else {
+            return self.deny("A player with this name is not online.").await;
         };
-
-        let Some(target) = target else {
+        let Some(name) = self.agent_name(target) else {
             return self.deny("A player with this name is not online.").await;
         };
 
-        self.introduce(target).await?;
+        self.connection
+            .send_message(ServerMessage::PrivateChatOpened { name })
+            .await?;
         Ok(())
     }
 
@@ -193,7 +179,7 @@ impl SessionActor {
     }
 
     pub(super) async fn agent_said(&mut self, agent_key: AgentKey, message: String) -> Result<()> {
-        self.send_chat(agent_key, ChatMessageType::Local, 0, message)
+        self.send_chat(agent_key, ChatMessageType::Local, ChannelId(0), message)
             .await
     }
 }
@@ -205,59 +191,44 @@ mod tests {
     use crate::actors::session::test_support::seat_player;
     use crate::entities::map::GameMap;
     use crate::entities::position::Position;
+    use crate::game::Tick;
 
+    /// The wire names an author by the character name both sides already know, so
+    /// nothing has to be introduced first and no id can go stale.
     #[tokio::test]
-    pub(super) async fn an_author_is_introduced_exactly_once() {
+    pub(super) async fn a_chat_message_names_its_author() {
         let mut map = GameMap::new();
-        let author_a = seat_player(&mut map, &Position::new(100, 100, 7), 1);
-        let author_b = seat_player(&mut map, &Position::new(101, 100, 7), 2);
+        let author = seat_player(&mut map, &Position::new(100, 100, 7), 1);
         let (mut session, mut connection_rx, _world_rx, _tick_tx) =
-            SessionActor::for_test(author_a, map);
+            SessionActor::for_test(author, map);
 
-        // Hearing from B in between is what makes the third call meaningful: a session
-        // that forgot A would hand out a different id for A the second time round.
-        let first_a = session.introduce(author_a).await.unwrap();
-        let b = session.introduce(author_b).await.unwrap();
-        let second_a = session.introduce(author_a).await.unwrap();
+        session
+            .receive_private_message(author, "hi".to_owned())
+            .await
+            .unwrap();
 
-        assert_ne!(
-            first_a, b,
-            "two authors heard from in the same session must hold distinct local ids"
-        );
-        assert_eq!(
-            first_a, second_a,
-            "hearing from another author in between must not renumber the first"
-        );
-        assert!(
-            matches!(
-                connection_rx.try_recv(),
-                Ok(ConnectionCommand::SendPlayerMessage(
-                    ServerMessage::IntroducePlayer { .. }
-                ))
-            ),
-            "the first author is named over the wire"
-        );
-        assert!(
-            matches!(
-                connection_rx.try_recv(),
-                Ok(ConnectionCommand::SendPlayerMessage(
-                    ServerMessage::IntroducePlayer { .. }
-                ))
-            ),
-            "the second author is named over the wire"
-        );
-        assert!(
-            connection_rx.try_recv().is_err(),
-            "re-introducing a known author must not go back over the wire"
-        );
+        match connection_rx.try_recv() {
+            Ok(ConnectionCommand::SendPlayerMessage(ServerMessage::ChatMessage {
+                author, ..
+            })) => assert_eq!(author, "Rizael"),
+            other => panic!("expected a chat message, got {other:?}"),
+        }
     }
 
     #[tokio::test]
-    pub(super) async fn an_author_no_longer_on_the_map_is_not_introduced() {
-        let (mut session, _connection_rx, _world_rx, _tick_tx) =
+    pub(super) async fn an_author_no_longer_on_the_map_says_nothing() {
+        let (mut session, mut connection_rx, _world_rx, _tick_tx) =
             SessionActor::for_test(AgentKey::default(), GameMap::new());
 
-        assert_eq!(session.introduce(AgentKey::default()).await.unwrap(), None);
+        session
+            .receive_private_message(AgentKey::default(), "hi".to_owned())
+            .await
+            .unwrap();
+
+        assert!(
+            connection_rx.try_recv().is_err(),
+            "an author the map cannot name must not reach the client unattributed"
+        );
     }
 
     #[tokio::test]
@@ -269,7 +240,7 @@ mod tests {
 
         let too_long = "x".repeat(GAME_CONFIG.chat.max_message_length + 1);
         session
-            .handle_say(too_long, ChatMessageType::Local, 0)
+            .handle_say(too_long, SayTarget::Local)
             .await
             .unwrap();
 
@@ -305,7 +276,7 @@ mod tests {
         );
 
         session
-            .handle_say(at_limit, ChatMessageType::Local, 0)
+            .handle_say(at_limit, SayTarget::Local)
             .await
             .unwrap();
 
@@ -332,7 +303,7 @@ mod tests {
             SessionActor::for_test(key, map);
 
         session
-            .handle_say("one".to_owned(), ChatMessageType::Local, 0)
+            .handle_say("one".to_owned(), SayTarget::Local)
             .await
             .unwrap();
         assert!(
@@ -341,7 +312,7 @@ mod tests {
         );
 
         session
-            .handle_say("two".to_owned(), ChatMessageType::Local, 0)
+            .handle_say("two".to_owned(), SayTarget::Local)
             .await
             .unwrap();
         assert!(
@@ -362,17 +333,17 @@ mod tests {
             "the player must be told why the message did not go through"
         );
         assert!(
-            session.next_chat_tick > 0,
+            session.next_chat_tick > Tick(0),
             "the cooldown must have been armed"
         );
 
         // Once the cooldown elapses the same message does get through, so what is being
         // pinned is a delay and not a permanent mute.
         tick_tx
-            .send(GAME_CONFIG.chat.message_cooldown_ticks)
+            .send(Tick(GAME_CONFIG.chat.message_cooldown_ticks.0))
             .unwrap();
         session
-            .handle_say("three".to_owned(), ChatMessageType::Local, 0)
+            .handle_say("three".to_owned(), SayTarget::Local)
             .await
             .unwrap();
         assert!(
@@ -402,7 +373,7 @@ mod tests {
     }
 
     #[tokio::test]
-    pub(super) async fn opening_a_pm_chat_introduces_the_target() {
+    pub(super) async fn opening_a_pm_chat_confirms_the_target() {
         let mut map = GameMap::new();
         let key = seat_player(&mut map, &Position::new(100, 100, 7), 1);
         let (mut session, mut connection_rx, _world_rx, _tick_tx) =
@@ -414,11 +385,40 @@ mod tests {
             .await
             .unwrap();
 
-        assert!(matches!(
-            connection_rx.try_recv(),
-            Ok(ConnectionCommand::SendPlayerMessage(
-                ServerMessage::IntroducePlayer { .. }
-            ))
-        ));
+        match connection_rx.try_recv() {
+            Ok(ConnectionCommand::SendPlayerMessage(ServerMessage::PrivateChatOpened { name })) => {
+                assert_eq!(
+                    name, "Rizael",
+                    "the confirmation carries the name as the server spells it, not as it was typed"
+                )
+            }
+            other => panic!("expected a private-chat confirmation, got {other:?}"),
+        }
+    }
+
+    #[tokio::test]
+    pub(super) async fn a_private_message_to_an_offline_name_is_denied() {
+        let mut map = GameMap::new();
+        let key = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let (mut session, mut connection_rx, _world_rx, _tick_tx) =
+            SessionActor::for_test(key, map);
+
+        session
+            .handle_say("hi".to_owned(), SayTarget::Player("Nobody".to_owned()))
+            .await
+            .unwrap();
+
+        assert!(
+            matches!(
+                connection_rx.try_recv(),
+                Ok(ConnectionCommand::SendPlayerMessage(
+                    ServerMessage::TextMessage {
+                        message_type: TextMessageType::ActionDenied,
+                        ..
+                    }
+                ))
+            ),
+            "a name that is not online must be refused rather than silently dropped"
+        );
     }
 }

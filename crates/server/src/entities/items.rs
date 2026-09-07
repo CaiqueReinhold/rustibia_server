@@ -6,16 +6,45 @@ use uuid::Uuid;
 use crate::{
     entities::{
         combat::{AmmoType, CombatElement, WeaponType},
+        effects::MissileId,
         inventory::InventorySlot,
         position::{ItemPlacement, Position},
     },
-    game::Tick,
+    game::TickDelta,
+    local_id::LocalId,
 };
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub struct ItemGuid(pub String);
-pub type ItemId = u16;
-pub type ContainerId = u16;
+/// An item's identity in the catalogue loaded from `items.yaml`. Global and stable,
+/// unlike the session-local ids a `LocalIdMap` mints.
+#[derive(
+    Copy, Clone, Eq, PartialEq, Hash, Debug, PartialOrd, Ord, serde::Serialize, serde::Deserialize,
+)]
+#[serde(transparent)]
+#[repr(transparent)]
+pub struct ItemId(pub u16);
+
+impl Display for ItemId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+/// An open container as one player's session names it on the wire. Session-local and
+/// reused — see `LocalIdMap`, which is the only thing that may mint one.
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+#[repr(transparent)]
+pub struct ContainerId(pub u16);
+
+impl LocalId for ContainerId {
+    fn from_raw(raw: u16) -> Self {
+        Self(raw)
+    }
+
+    fn raw(self) -> u16 {
+        self.0
+    }
+}
 
 impl ItemGuid {
     pub fn new() -> Self {
@@ -120,14 +149,19 @@ pub enum ItemAttribute {
     TileFriction(u16),
     Action(ItemAction),
     MultiAction(ItemMultiAction),
-    Decay { duration: Tick, decay_to: ItemId },
+    Decay {
+        duration: TickDelta,
+        decay_to: ItemId,
+    },
     WeaponType(WeaponType),
     WeaponAttack(u16),
     WeaponElement(CombatElement),
     AmmoType(AmmoType),
     WeaponRange(u8),
+    HitChance(i16),
+    MaxHitChance(u8),
     ManaCost(u32),
-    MissileId(u16),
+    MissileId(MissileId),
     Defense(u16),
     ExtraDef(i16),
     Armor(u16),
@@ -213,7 +247,7 @@ impl ItemConfig {
         })
     }
 
-    pub fn attr_decay(&self) -> Option<(Tick, ItemId)> {
+    pub fn attr_decay(&self) -> Option<(TickDelta, ItemId)> {
         self.get_attributes().find_map(|attr| match attr {
             ItemAttribute::Decay { decay_to, duration } => Some((*duration, *decay_to)),
             _ => None,
@@ -276,6 +310,20 @@ impl ItemConfig {
         })
     }
 
+    pub fn attr_hit_chance(&self) -> Option<i16> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::HitChance(a) => Some(*a),
+            _ => None,
+        })
+    }
+
+    pub fn attr_max_hit_chance(&self) -> Option<u8> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::MaxHitChance(a) => Some(*a),
+            _ => None,
+        })
+    }
+
     pub fn attr_mana_cost(&self) -> Option<u32> {
         self.get_attributes().find_map(|attr| match attr {
             ItemAttribute::ManaCost(a) => Some(*a),
@@ -283,7 +331,7 @@ impl ItemConfig {
         })
     }
 
-    pub fn attr_missile_id(&self) -> Option<u16> {
+    pub fn attr_missile_id(&self) -> Option<MissileId> {
         self.get_attributes().find_map(|attr| match attr {
             ItemAttribute::MissileId(a) => Some(*a),
             _ => None,
@@ -478,7 +526,7 @@ mod tests {
     #[test]
     fn a_repeated_flag_is_the_same_as_one() {
         let config = ItemConfig::new(
-            1,
+            ItemId(1),
             "thing".to_string(),
             None,
             None,
@@ -497,7 +545,7 @@ mod tests {
     #[test]
     fn a_fluid_item_sends_its_fluid_where_a_stack_sends_its_count() {
         let config = Arc::new(ItemConfig::new(
-            2886,
+            ItemId(2886),
             "pool".to_string(),
             None,
             None,

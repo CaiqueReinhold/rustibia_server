@@ -11,7 +11,9 @@ use std::sync::Arc;
 
 use sqlx::PgPool;
 
+use crate::entities::agent::{OutfitColors, OutfitId};
 use crate::entities::creature::CreatureVoices;
+use crate::entities::player::PlayerId;
 use crate::entities::vocation::Vocation;
 use crate::entities::{
     agent::{Agent, Facing, Pool},
@@ -21,6 +23,7 @@ use crate::entities::{
     position::Position,
     skills::{SkillType, SkillValue},
 };
+use crate::game::TickDelta;
 use crate::persistence::player::PlayerSnapshot;
 
 /// An empty item catalogue. Restoring an inventory needs one, and every test here starts
@@ -95,7 +98,7 @@ pub async fn token_count(pool: &PgPool) -> i64 {
 /// both come from identity sequences rather than literals.
 pub fn a_test_snapshot(id: u32, account_id: i32) -> PlayerSnapshot {
     PlayerSnapshot {
-        id,
+        id: PlayerId(id),
         account_id,
         admin: false,
         name: "Rizael".to_string(),
@@ -121,7 +124,7 @@ pub fn a_test_snapshot(id: u32, account_id: i32) -> PlayerSnapshot {
         },
         capacity: 40000,
         speed: 120,
-        outfit: (133, (1, 2, 3, 4)),
+        outfit: (OutfitId(133), OutfitColors::new(1, 2, 3, 4)),
         skills: HashMap::from([(
             SkillType::Level,
             SkillValue {
@@ -163,15 +166,15 @@ fn a_container(id: ItemId, capacity: u8) -> Item {
 /// `Item.content`. Must stay nested: a flat inventory does not exercise the recursive clone.
 pub fn a_full_backpack() -> HashMap<InventorySlot, Item> {
     let coin = an_item_config(
-        2148,
+        ItemId(2148),
         HashSet::from([ItemFlag::Take, ItemFlag::Cumulative]),
         HashSet::from([ItemAttribute::Weight(1)]),
     );
 
-    let mut backpack = a_container(1988, 20);
+    let mut backpack = a_container(ItemId(1988), 20);
     let outer = backpack.content.as_mut().unwrap();
     for pouch_id in 0..4u16 {
-        let mut pouch = a_container(1990 + pouch_id, 8);
+        let mut pouch = a_container(ItemId(1990 + pouch_id), 8);
         let inner = pouch.content.as_mut().unwrap();
         for n in 0..8u8 {
             inner.push(Item::new(Arc::clone(&coin), n + 1));
@@ -230,18 +233,18 @@ pub fn a_creature_kind(name: &str) -> CreatureKind {
             current: 1,
             maximum: 1,
         },
-        outfit: (21, (0, 0, 0, 0)),
+        outfit: (OutfitId(21), OutfitColors::new(0, 0, 0, 0)),
         speed: 100,
         auto_attack_damage: (1, 2),
         blood_type: BloodType::Blood,
         armor: 0,
         defense: 0,
         experience: 0,
-        corpse: 1,
+        corpse: ItemId(1),
         loot_table: vec![],
         flee_threshold: None,
         say: CreatureVoices {
-            cooldown: 100,
+            cooldown: TickDelta(100),
             chance: 10000,
             sentences: vec!["sentence".to_owned()],
         },

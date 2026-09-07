@@ -8,9 +8,10 @@ use crate::{
     config::CONFIG,
     entities::{
         chat::ChannelId,
+        effects::EffectId,
         items::{ItemId, ItemMultiAction},
     },
-    game::Tick,
+    game::TickDelta,
 };
 
 pub static GAME_CONFIG: Lazy<GameConfig> = Lazy::new(read_from_file);
@@ -29,13 +30,13 @@ pub struct GameConfig {
 
 #[derive(Deserialize)]
 pub struct MovementConfig {
-    pub wander_ticks: Tick,
+    pub wander_ticks: TickDelta,
     pub wander_distance: u16,
 }
 
 #[derive(Deserialize)]
 pub struct ItemActionConfig {
-    pub use_item_cooldown_ticks: Tick,
+    pub use_item_cooldown_ticks: TickDelta,
 }
 
 #[derive(Deserialize)]
@@ -74,20 +75,21 @@ pub struct ChannelConfig {
 pub struct ChatConfig {
     pub server_channels: Vec<ChannelConfig>,
     pub max_message_length: usize,
-    pub message_cooldown_ticks: Tick,
+    pub message_cooldown_ticks: TickDelta,
 }
 
 #[derive(Deserialize)]
 pub struct EffectsConfig {
-    pub life_hit: u16,
-    pub shield_hit: u16,
-    pub armor_hit: u16,
-    pub poison_hit: u16,
-    pub ice_hit: u16,
-    pub earth_hit: u16,
-    pub fire_hit: u16,
-    pub energy_hit: u16,
-    pub potion_use: u16,
+    pub life_hit: EffectId,
+    pub shield_hit: EffectId,
+    pub armor_hit: EffectId,
+    pub poison_hit: EffectId,
+    pub ice_hit: EffectId,
+    pub earth_hit: EffectId,
+    pub fire_hit: EffectId,
+    pub energy_hit: EffectId,
+    pub potion_use: EffectId,
+    pub miss: EffectId,
 }
 
 #[derive(Deserialize, Debug, Clone, Copy)]
@@ -106,9 +108,9 @@ pub struct TextColors {
 
 #[derive(Deserialize)]
 pub struct CombatConfig {
-    pub auto_attack_ticks: Tick,
-    pub pool_item_id: u16,
-    pub human_corpse_item_id: u16,
+    pub auto_attack_ticks: TickDelta,
+    pub pool_item_id: ItemId,
+    pub human_corpse_item_id: ItemId,
     pub unarmed_skill: u16,
 }
 

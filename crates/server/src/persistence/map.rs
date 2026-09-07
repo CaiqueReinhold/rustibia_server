@@ -312,7 +312,7 @@ fn parse_tile(
                 p.read_u32()?;
             }
             Some(ATTR_ITEM) => {
-                let item_id = p.read_u16()?;
+                let item_id = ItemId(p.read_u16()?);
                 tile.push_item(make_item(item_id, 1, Vec::new(), items));
             }
             Some(b) => return Err(p.invalid_format(b, "parse_tile")),
@@ -350,7 +350,7 @@ fn make_item(item_id: ItemId, amount: u8, content: Vec<Item>, items: &Items) -> 
 }
 
 fn parse_item(p: &mut Parser, items: &Items) -> Result<Item, MapRepositoryError> {
-    let item_id = p.read_u16()?;
+    let item_id = ItemId(p.read_u16()?);
     let mut amount: u8 = 1;
 
     // Item attributes

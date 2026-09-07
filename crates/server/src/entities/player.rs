@@ -11,7 +11,16 @@ use crate::entities::{
     vocation::Vocation,
 };
 
-pub type PlayerId = u32;
+/// A character's database identity.
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+#[repr(transparent)]
+pub struct PlayerId(pub u32);
+
+impl std::fmt::Display for PlayerId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct Player {

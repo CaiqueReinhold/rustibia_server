@@ -28,13 +28,15 @@ use crate::actors::world::WorldActorHandle;
 use crate::actors::world::WorldCommand;
 use crate::config::CONFIG;
 use crate::entities::agent::Agent;
+use crate::entities::agent::AgentId;
 use crate::entities::agent::AgentKey;
 use crate::entities::chat::ChannelId;
+use crate::entities::items::ContainerId;
 use crate::entities::items::ItemGuid;
 use crate::entities::map::GameMap;
 use crate::entities::position::Direction;
-use crate::game::Tick;
 use crate::game::events::BroadcastMessage;
+use crate::game::{Tick, TickDelta};
 use crate::local_id::LocalIdMap;
 use crate::messages::TextMessageType;
 use crate::messages::{ClientMessage, ServerMessage};
@@ -145,9 +147,8 @@ pub struct SessionActor {
     world: WorldActorHandle,
     player_key: AgentKey,
     shared_map: Arc<ArcSwap<GameMap>>,
-    containers: LocalIdMap<ItemGuid>,
-    agents: LocalIdMap<AgentKey>,
-    player_pms: LocalIdMap<AgentKey>,
+    containers: LocalIdMap<ItemGuid, ContainerId>,
+    agents: LocalIdMap<AgentKey, AgentId>,
     persistence: PersistenceActorHandle,
     chat: ChatActorHandle,
     tick_rx: watch::Receiver<Tick>,
@@ -161,7 +162,7 @@ pub struct SessionActor {
 type TestSession = (
     SessionActor,
     mpsc::Receiver<crate::actors::connection::ConnectionCommand>,
-    mpsc::Receiver<(WorldCommand, Option<Tick>)>,
+    mpsc::Receiver<(WorldCommand, Option<TickDelta>)>,
     watch::Sender<Tick>,
 );
 
@@ -201,10 +202,9 @@ impl SessionActor {
                         shared_map: context.shared_map.clone(),
                         containers: LocalIdMap::new(),
                         agents: LocalIdMap::new(),
-                        player_pms: LocalIdMap::new(),
                         persistence: context.persistence.clone(),
                         tick_rx: context.tick_rx.clone(),
-                        next_chat_tick: 0,
+                        next_chat_tick: Tick(0),
                         queued_walk: None,
                         logout_pending: false,
                         prev_capacity: 0,
@@ -295,7 +295,7 @@ impl SessionActor {
                 WorldCommand::DespawnPlayer {
                     agent_key: self.player_key,
                 },
-                delay_ticks,
+                TickDelta(delay_ticks),
             )
             .await;
     }
@@ -353,11 +353,7 @@ impl SessionActor {
                     .await
             }
             ClientMessage::Look { position } => self.handle_look(position).await,
-            ClientMessage::Say {
-                message,
-                message_type,
-                target,
-            } => self.handle_say(message, message_type, target).await,
+            ClientMessage::Say { message, target } => self.handle_say(message, target).await,
             ClientMessage::RequestChannels => self.handle_request_channels().await,
             ClientMessage::OpenChannel { channel } => self.handle_open_channel(channel).await,
             ClientMessage::CloseChannel { channel } => self.handle_close_channel(channel).await,
@@ -427,6 +423,7 @@ impl SessionActor {
                 to,
                 sprite_id,
             } => self.missile_launched(from, to, sprite_id).await,
+            BroadcastMessage::AttackMissed { position } => self.attack_missed(position).await,
             BroadcastMessage::SkillProgressUpdated {
                 skill_type, amount, ..
             } => self.skill_progress(skill_type, amount).await,
@@ -488,7 +485,7 @@ impl SessionActor {
         let (world, world_rx) = WorldActorHandle::for_test();
         let (chat, _chat_rx) = ChatActorHandle::for_test();
         let (persistence, _persistence_rx) = PersistenceActorHandle::for_test(16);
-        let (tick_tx, tick_rx) = watch::channel(0);
+        let (tick_tx, tick_rx) = watch::channel(Tick(0));
 
         (
             Self {
@@ -502,10 +499,9 @@ impl SessionActor {
                 shared_map: Arc::new(ArcSwap::from_pointee(map)),
                 containers: LocalIdMap::new(),
                 agents: LocalIdMap::new(),
-                player_pms: LocalIdMap::new(),
                 persistence,
                 tick_rx,
-                next_chat_tick: 0,
+                next_chat_tick: Tick(0),
                 queued_walk: None,
                 logout_pending: false,
                 prev_capacity: 0,

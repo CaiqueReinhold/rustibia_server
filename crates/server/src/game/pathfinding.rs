@@ -5,7 +5,7 @@ use pathfinding::prelude::{astar, dijkstra_all};
 use crate::entities::agent::AgentKey;
 use crate::entities::map::GameMap;
 use crate::entities::position::{ALL_DIRECTIONS, Direction, Position, Rect};
-use crate::game::Tick;
+use crate::game::TickDelta;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Goal {
@@ -70,12 +70,12 @@ pub fn reachable_from(map: &GameMap, walker: AgentKey, bounds: &Rect) -> Reachab
         };
     };
 
-    let mut costs: HashMap<Position, Tick> =
+    let mut costs: HashMap<Position, TickDelta> =
         dijkstra_all(&origin, |pos| successors(map, walker, pos, bounds))
             .into_iter()
             .map(|(pos, (_parent, cost))| (pos, cost))
             .collect();
-    costs.insert(origin, 0);
+    costs.insert(origin, TickDelta(0));
 
     Reachable { costs }
 }
@@ -83,11 +83,11 @@ pub fn reachable_from(map: &GameMap, walker: AgentKey, bounds: &Rect) -> Reachab
 /// Every tile shares the origin's floor, which is why `cost_to` carries no `z` clause.
 #[derive(Debug)]
 pub struct Reachable {
-    costs: HashMap<Position, Tick>,
+    costs: HashMap<Position, TickDelta>,
 }
 
 impl Reachable {
-    pub fn cost_to(&self, goal: &Goal) -> Option<Tick> {
+    pub fn cost_to(&self, goal: &Goal) -> Option<TickDelta> {
         match goal {
             Goal::Tile(tile) => self.costs.get(tile).copied(),
             Goal::Within { of, range } => {
@@ -114,7 +114,7 @@ fn successors(
     walker: AgentKey,
     from: &Position,
     bounds: &Rect,
-) -> Vec<(Position, Tick)> {
+) -> Vec<(Position, TickDelta)> {
     // Equal-cost routes break ties on `ALL_DIRECTIONS`' order, which is what keeps a
     // chase reproducible from its seed.
     ALL_DIRECTIONS
@@ -133,22 +133,36 @@ fn successors(
 /// `None` where `movement::walk` would refuse the step, which is not only `can_move`:
 /// `walk` needs friction too, and a route over a tile it would deny leaves the creature
 /// re-proposing a denied step for ever.
-fn step_cost(map: &GameMap, walker: AgentKey, to: &Position, diagonal: bool) -> Option<Tick> {
+fn step_cost(map: &GameMap, walker: AgentKey, to: &Position, diagonal: bool) -> Option<TickDelta> {
     if !map.can_move(to, walker) {
         return None;
     }
     let friction = map.tile_friction(to)?;
     let agent = map.get_agent(walker)?;
-    Some(agent.calculate_walk_ticks(friction, diagonal).max(1))
+    Some(
+        agent
+            .calculate_walk_ticks(friction, diagonal)
+            .max(TickDelta(1)),
+    )
 }
 
 /// Admissible because [`step_cost`] floors at one tick, so `n` tiles cost at least `n`.
-fn heuristic(goal: &Goal, from: &Position) -> Tick {
+impl pathfinding::num_traits::Zero for TickDelta {
+    fn zero() -> Self {
+        TickDelta(0)
+    }
+
+    fn is_zero(&self) -> bool {
+        self.0 == 0
+    }
+}
+
+fn heuristic(goal: &Goal, from: &Position) -> TickDelta {
     let tiles = match goal {
         Goal::Tile(tile) => chebyshev(from, tile),
         Goal::Within { of, range } => chebyshev(from, of).saturating_sub(*range),
     };
-    tiles as Tick
+    TickDelta(tiles as u64)
 }
 
 fn goal_is_met(goal: &Goal, pos: &Position) -> bool {
@@ -169,6 +183,7 @@ fn goal_floor(goal: &Goal) -> u8 {
 mod tests {
     use super::*;
     use crate::entities::agent::Agent;
+    use crate::entities::items::ItemId;
     use crate::entities::items::{Item, ItemAttribute, ItemConfig, ItemFlag};
     use crate::entities::map::MapTile;
     use crate::persistence::test_fixtures::{a_test_creature, a_test_snapshot};
@@ -182,7 +197,7 @@ mod tests {
     fn an_item(id: u16, flags: HashSet<ItemFlag>, attributes: HashSet<ItemAttribute>) -> Item {
         Item::new(
             Arc::new(ItemConfig::new(
-                id,
+                ItemId(id),
                 "thing".to_string(),
                 None,
                 None,
@@ -261,7 +276,7 @@ mod tests {
         Rect::new(0, 0, u16::MAX, u16::MAX)
     }
 
-    fn walk_ticks(map: &GameMap, walker: AgentKey, friction: u16, diagonal: bool) -> Tick {
+    fn walk_ticks(map: &GameMap, walker: AgentKey, friction: u16, diagonal: bool) -> TickDelta {
         map.get_agent(walker)
             .unwrap()
             .calculate_walk_ticks(friction, diagonal)
@@ -462,7 +477,10 @@ mod tests {
 
         let reachable = reachable_from(&map, rat, &everywhere());
 
-        assert_eq!(reachable.cost_to(&Goal::Tile(at(15, 10))), Some(0));
+        assert_eq!(
+            reachable.cost_to(&Goal::Tile(at(15, 10))),
+            Some(TickDelta(0))
+        );
     }
 
     #[test]
@@ -520,7 +538,10 @@ mod tests {
 
         let reachable = reachable_from(&map, rat, &everywhere());
 
-        assert_eq!(reachable.cost_to(&Goal::adjacent(at(16, 10))), Some(0));
+        assert_eq!(
+            reachable.cost_to(&Goal::adjacent(at(16, 10))),
+            Some(TickDelta(0))
+        );
     }
 
     #[test]

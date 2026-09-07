@@ -48,7 +48,7 @@ impl ChatActorHandle {
         (
             Self {
                 tx,
-                available_channels: Box::new([(1, "World Chat".to_owned())]),
+                available_channels: Box::new([(ChannelId(1), "World Chat".to_owned())]),
             },
             rx,
         )
@@ -250,9 +250,9 @@ mod tests {
         let (router, router_rx) = MessageRouterActorHandle::for_test();
         let mut channels = HashMap::new();
         channels.insert(
-            1,
+            ChannelId(1),
             Channel {
-                id: 1,
+                id: ChannelId(1),
                 name: "World Chat".to_owned(),
                 members: Vec::new(),
             },
@@ -272,16 +272,16 @@ mod tests {
         let (mut actor, _rx) = a_chat_actor();
         let player = AgentKey::default();
 
-        actor.add_player_to_channel(player, 1);
-        actor.add_player_to_channel(player, 1);
+        actor.add_player_to_channel(player, ChannelId(1));
+        actor.add_player_to_channel(player, ChannelId(1));
 
-        assert_eq!(actor.channels[&1].members.len(), 1);
+        assert_eq!(actor.channels[&ChannelId(1)].members.len(), 1);
     }
 
     #[test]
     fn joining_an_unknown_channel_is_ignored() {
         let (mut actor, _rx) = a_chat_actor();
-        actor.add_player_to_channel(AgentKey::default(), 999);
+        actor.add_player_to_channel(AgentKey::default(), ChannelId(999));
         assert_eq!(actor.channels.len(), 1);
     }
 
@@ -290,7 +290,7 @@ mod tests {
         let (mut actor, mut router_rx) = a_chat_actor();
 
         actor
-            .send_channel_message(AgentKey::default(), 1, "hello".to_owned())
+            .send_channel_message(AgentKey::default(), ChannelId(1), "hello".to_owned())
             .await;
 
         assert!(
@@ -306,13 +306,13 @@ mod tests {
     async fn a_stranger_cannot_post_to_a_channel_that_has_members() {
         let (mut actor, mut router_rx) = a_chat_actor();
         let (member, stranger) = two_distinct_keys();
-        actor.add_player_to_channel(member, 1);
+        actor.add_player_to_channel(member, ChannelId(1));
 
         // A rejected send returns immediately; a wrongly-accepted one blocks forever on a
         // oneshot nobody answers. The timeout turns that deadlock into a clean assertion.
         let _ = tokio::time::timeout(
             Duration::from_millis(200),
-            actor.send_channel_message(stranger, 1, "hello".to_owned()),
+            actor.send_channel_message(stranger, ChannelId(1), "hello".to_owned()),
         )
         .await;
 
@@ -326,7 +326,7 @@ mod tests {
     async fn undeliverable_members_are_pruned() {
         let (mut actor, mut router_rx) = a_chat_actor();
         let player = AgentKey::default();
-        actor.add_player_to_channel(player, 1);
+        actor.add_player_to_channel(player, ChannelId(1));
 
         // Stand in for the router: answer the oneshot claiming every recipient is dead.
         let router_task = tokio::spawn(async move {
@@ -339,12 +339,12 @@ mod tests {
         });
 
         actor
-            .send_channel_message(player, 1, "hello".to_owned())
+            .send_channel_message(player, ChannelId(1), "hello".to_owned())
             .await;
         router_task.await.unwrap();
 
         assert!(
-            actor.channels[&1].members.is_empty(),
+            actor.channels[&ChannelId(1)].members.is_empty(),
             "a member the router could not reach must be dropped"
         );
     }
@@ -358,8 +358,8 @@ mod tests {
     async fn pruning_removes_only_the_unreachable_members() {
         let (mut actor, mut router_rx) = a_chat_actor();
         let (live, dead) = two_distinct_keys();
-        actor.add_player_to_channel(live, 1);
-        actor.add_player_to_channel(dead, 1);
+        actor.add_player_to_channel(live, ChannelId(1));
+        actor.add_player_to_channel(dead, ChannelId(1));
 
         // Stand in for the router: report exactly one recipient as unreachable.
         let router_task = tokio::spawn(async move {
@@ -372,12 +372,12 @@ mod tests {
         });
 
         actor
-            .send_channel_message(live, 1, "hello".to_owned())
+            .send_channel_message(live, ChannelId(1), "hello".to_owned())
             .await;
         router_task.await.unwrap();
 
         assert_eq!(
-            actor.channels[&1].members,
+            actor.channels[&ChannelId(1)].members,
             vec![live],
             "the prune must drop the unreachable member and keep the reachable one"
         );

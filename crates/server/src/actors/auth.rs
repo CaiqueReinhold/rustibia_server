@@ -146,6 +146,8 @@ mod tests {
     use crate::actors::persistence::PersistenceActorHandle;
     use crate::actors::world::WorldActorHandle;
     use crate::entities::map::GameMap;
+    use crate::entities::player::PlayerId;
+    use crate::game::{Tick, TickDelta};
     use crate::online_registry::OnlineRegistry;
     use crate::persistence::player::PlayerSnapshot;
     use crate::persistence::test_fixtures::a_test_snapshot;
@@ -187,16 +189,13 @@ mod tests {
     #[allow(clippy::type_complexity)]
     fn a_context() -> (
         SharedContext,
-        Receiver<(
-            crate::actors::world::WorldCommand,
-            Option<crate::game::Tick>,
-        )>,
+        Receiver<(crate::actors::world::WorldCommand, Option<TickDelta>)>,
         Receiver<crate::actors::persistence::PersistenceCommand>,
     ) {
         let (world, world_rx) = WorldActorHandle::for_test();
         let (persistence, persistence_rx) = PersistenceActorHandle::for_test(16);
         let (chat, _chat_rx) = ChatActorHandle::for_test();
-        let (_tick_tx, tick_rx) = tokio::sync::watch::channel(0);
+        let (_tick_tx, tick_rx) = tokio::sync::watch::channel(Tick(0));
 
         (
             SharedContext {
@@ -340,7 +339,7 @@ mod tests {
         let (ctx, _world_rx, _persistence_rx) = a_context();
         let _guard = ctx
             .online_registry
-            .try_register(7)
+            .try_register(PlayerId(7))
             .expect("the first registration must succeed");
 
         let commands = authenticate_with(FakeLogin::accepting(7), ctx.clone(), a_login()).await;
@@ -370,7 +369,7 @@ mod tests {
         // Occupy the slot the repository's character will want.
         let _held = ctx
             .online_registry
-            .try_register(7)
+            .try_register(PlayerId(7))
             .expect("the slot must start free");
 
         let commands = authenticate_with(FakeLogin::accepting(7), ctx, a_login()).await;

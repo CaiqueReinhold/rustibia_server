@@ -305,6 +305,7 @@ fn remove_from_container(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::entities::items::ItemId;
     use crate::entities::items::{ItemAttribute, ItemConfig, ItemFlag};
     use std::collections::HashSet;
     use std::sync::Arc;
@@ -323,7 +324,7 @@ mod tests {
     fn a_thing(weight: u32, amount: u8) -> Item {
         Item::new(
             Arc::new(ItemConfig::new(
-                1234,
+                ItemId(1234),
                 "thing".to_string(),
                 None,
                 None,
@@ -337,7 +338,7 @@ mod tests {
     fn a_backpack() -> Item {
         Item::new(
             Arc::new(ItemConfig::new(
-                1988,
+                ItemId(1988),
                 "backpack".to_string(),
                 None,
                 None,

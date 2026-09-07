@@ -381,6 +381,16 @@ impl MessageRouterActor {
                     ],
                 );
             }
+            BroadcastMessage::AttackMissed { position } => {
+                self.send_to_rect(
+                    message,
+                    map,
+                    Rect::player_viewport(position),
+                    position.z,
+                    false,
+                    None,
+                );
+            }
             BroadcastMessage::SkillProgressUpdated { agent_key, .. } => {
                 self.send_to(message, agent_key);
             }
@@ -599,7 +609,7 @@ mod tests {
 
         drop(rx); // the session actor is gone
 
-        let dead = router.deliver_channel_message(key, vec![key], 1, "hello".to_owned());
+        let dead = router.deliver_channel_message(key, vec![key], ChannelId(1), "hello".to_owned());
 
         assert_eq!(dead, vec![key], "a closed session must be reported dead");
         assert!(

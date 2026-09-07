@@ -37,7 +37,7 @@ pub fn decay_item(ctx: &mut TickCtx, item_ref: ItemRef) {
         return;
     };
     let Some(config) = ITEM_CONFIGS.get(&decay_to) else {
-        if decay_to != 0 {
+        if decay_to != ItemId(0) {
             error!("Config not found for item id {decay_to}");
         }
         return;
@@ -242,6 +242,7 @@ pub(super) fn transform(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::entities::items::ItemId;
     use crate::entities::map::{GameMap, MapTile};
     use crate::entities::position::Position;
     use crate::game::TestHarness;
@@ -250,14 +251,14 @@ mod tests {
     /// an id the catalogue does not carry is reachable by editing an asset file.
     #[test]
     fn a_transform_into_an_unknown_item_refuses_and_keeps_the_original() {
-        let missing = 65535;
+        let missing = ItemId(65535);
         assert!(
             !ITEM_CONFIGS.contains_key(&missing),
-            "{missing} must stay absent for this test to mean anything"
+            "{missing:?} must stay absent for this test to mean anything"
         );
 
         let pos = Position::new(10, 10, 7);
-        let sand = Item::new(ITEM_CONFIGS.get(&614).unwrap().clone(), 1);
+        let sand = Item::new(ITEM_CONFIGS.get(&ItemId(614)).unwrap().clone(), 1);
         let guid = sand.guid.clone();
         let mut tile = MapTile::new();
         tile.push_item(sand);

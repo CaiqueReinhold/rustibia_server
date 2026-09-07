@@ -6,6 +6,7 @@ use crate::{
         agent::{AgentId, AgentKey},
         combat::CombatDamage,
         creature::BloodType,
+        effects::MissileId,
         position::Position,
     },
     game::{combat::get_damage_visuals, config::GAME_CONFIG},
@@ -111,11 +112,22 @@ impl SessionActor {
         Ok(())
     }
 
+    pub(super) async fn attack_missed(&self, position: Position) -> Result<()> {
+        self.connection
+            .send_message(ServerMessage::ShowEffect {
+                effect_id: GAME_CONFIG.effect_ids.miss,
+                position,
+                delta: Vec::new(),
+            })
+            .await?;
+        Ok(())
+    }
+
     pub(super) async fn missile_launched(
         &self,
         from: Position,
         to: Position,
-        missile_id: u16,
+        missile_id: MissileId,
     ) -> Result<()> {
         self.connection
             .send_message(ServerMessage::LaunchMissile {
@@ -189,6 +201,39 @@ mod tests {
             })
             .unwrap_or_else(|| panic!("the damage number was dropped: {sent:?}"));
         assert_eq!(number, ("30".to_owned(), tile));
+    }
+
+    /// The puff is addressed by the tile the projectile landed on, and carries no number:
+    /// the absence of one is how a miss reads on screen.
+    #[tokio::test]
+    async fn a_miss_puffs_on_the_tile_it_names_and_says_nothing() {
+        let mut map = GameMap::new();
+        let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let (session, mut connection_rx, _world_rx, _tick_tx) = SessionActor::for_test(me, map);
+        let landed = Position::new(103, 101, 7);
+
+        session.attack_missed(landed.clone()).await.unwrap();
+
+        let sent: Vec<_> = std::iter::from_fn(|| connection_rx.try_recv().ok()).collect();
+        let effect = sent
+            .iter()
+            .find_map(|c| match c {
+                ConnectionCommand::SendPlayerMessage(ServerMessage::ShowEffect {
+                    effect_id,
+                    position,
+                    ..
+                }) => Some((*effect_id, position.clone())),
+                _ => None,
+            })
+            .unwrap_or_else(|| panic!("no effect was sent: {sent:?}"));
+        assert_eq!(effect, (GAME_CONFIG.effect_ids.miss, landed));
+        assert!(
+            !sent.iter().any(|c| matches!(
+                c,
+                ConnectionCommand::SendPlayerMessage(ServerMessage::FloatingText { .. })
+            )),
+            "a miss must not draw a number: {sent:?}"
+        );
     }
 
     #[tokio::test]

@@ -9,24 +9,24 @@ use crate::actors::world::WorldCommand;
 use crate::entities::agent::AgentKey;
 use crate::entities::agent::Facing;
 use crate::entities::position::{Direction, Position};
-use crate::game::Tick;
+use crate::game::TickDelta;
 use crate::game::map_query::get_map_expansion;
 use crate::game::map_query::{get_agents_in_expansion, iter_visible_floors};
 use crate::messages::ServerMessage;
 
 impl SessionActor {
-    pub(super) fn walk_cooldown_remaining(&self) -> Tick {
+    pub(super) fn walk_cooldown_remaining(&self) -> TickDelta {
         let map = self.shared_map.load();
         map.get_agent(self.player_key)
             .map(|agent| agent.next_walk_tick.saturating_sub(*self.tick_rx.borrow()))
-            .unwrap_or(0)
+            .unwrap_or(TickDelta(0))
     }
 
     pub(super) async fn check_walk_queue(&mut self) -> Result<()> {
         let Some(direction) = self.queued_walk else {
             return Ok(());
         };
-        if self.walk_cooldown_remaining() > 0 {
+        if self.walk_cooldown_remaining() > TickDelta(0) {
             return Ok(());
         }
         self.queued_walk = None;
@@ -45,7 +45,7 @@ impl SessionActor {
 
     pub(super) async fn handle_move_player(&mut self, direction: Direction) -> Result<()> {
         let remaining = self.walk_cooldown_remaining();
-        if remaining > 0 {
+        if remaining > TickDelta(0) {
             self.queued_walk = Some(direction);
             return Ok(());
         }
@@ -213,11 +213,12 @@ mod tests {
     use crate::actors::world::WorldCommand;
     use crate::entities::map::GameMap;
     use crate::entities::position::Position;
+    use crate::game::Tick;
     use std::sync::Arc;
 
     /// An arbitrary future tick to arm the cooldown to. Nothing depends on the exact
     /// value now that the queue has no window — only that it is ahead of the clock.
-    const COOLDOWN_TICKS: Tick = 4;
+    const COOLDOWN_TICKS: Tick = Tick(4);
 
     /// Puts the seated player on cooldown as though it had just walked.
     pub(super) fn arm_cooldown(session: &SessionActor, until: Tick) {
@@ -335,7 +336,7 @@ mod tests {
         let key = seat_player(&mut map, &Position::new(100, 100, 7), 1);
         let (mut session, _connection_rx, mut world_rx, _tick_tx) =
             SessionActor::for_test(key, map);
-        arm_cooldown(&session, COOLDOWN_TICKS * 25);
+        arm_cooldown(&session, Tick(COOLDOWN_TICKS.0 * 25));
 
         session.handle_move_player(Direction::North).await.unwrap();
 

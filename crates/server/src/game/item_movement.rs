@@ -628,6 +628,7 @@ pub fn remove_item_at(
 mod tests {
     use super::*;
     use crate::entities::agent::Agent;
+    use crate::entities::items::ItemId;
     use crate::entities::items::{ItemAttribute, ItemConfig};
     use crate::entities::map::MapTile;
     use crate::entities::position::Position;
@@ -640,7 +641,7 @@ mod tests {
     fn a_movable_item(weight: u32) -> Item {
         Item::new(
             Arc::new(ItemConfig::new(
-                1234,
+                ItemId(1234),
                 "thing".to_string(),
                 None,
                 None,
@@ -660,7 +661,7 @@ mod tests {
         let mut tile = MapTile::new();
         tile.push_item(Item::new(
             Arc::new(ItemConfig::new(
-                1,
+                ItemId(1),
                 "ground".to_string(),
                 None,
                 None,
@@ -750,7 +751,7 @@ mod tests {
     fn an_armoured_helmet() -> Item {
         Item::new(
             Arc::new(ItemConfig::new(
-                4321,
+                ItemId(4321),
                 "helmet".to_string(),
                 None,
                 None,
@@ -824,7 +825,7 @@ mod tests {
             .unwrap();
 
         let mut h = TestHarness::new();
-        let item = Item::new(ITEM_CONFIGS.get(&283).unwrap().clone(), 1);
+        let item = Item::new(ITEM_CONFIGS.get(&ItemId(283)).unwrap().clone(), 1);
         let guid = item.guid.clone();
 
         stow_item(&mut h.ctx(&mut map), agent, item).unwrap();
@@ -853,7 +854,7 @@ mod tests {
             .unwrap();
 
         let mut h = TestHarness::new();
-        let item = Item::new(ITEM_CONFIGS.get(&283).unwrap().clone(), 1);
+        let item = Item::new(ITEM_CONFIGS.get(&ItemId(283)).unwrap().clone(), 1);
 
         assert!(matches!(
             stow_item(&mut h.ctx(&mut map), agent, item),
@@ -866,7 +867,7 @@ mod tests {
     fn a_backpack_with(capacity: u8, items: Vec<Item>) -> Item {
         let mut backpack = Item::new(
             Arc::new(ItemConfig::new(
-                1988,
+                ItemId(1988),
                 "backpack".to_string(),
                 None,
                 None,
@@ -886,13 +887,13 @@ mod tests {
     }
 
     fn a_flask(amount: u8) -> Item {
-        Item::new(ITEM_CONFIGS.get(&283).unwrap().clone(), amount)
+        Item::new(ITEM_CONFIGS.get(&ItemId(283)).unwrap().clone(), amount)
     }
 
     fn an_item_for(slot: InventorySlot) -> Item {
         Item::new(
             Arc::new(ItemConfig::new(
-                2509,
+                ItemId(2509),
                 "gear".to_string(),
                 None,
                 None,
@@ -1039,7 +1040,7 @@ mod tests {
                 .iter()
                 .map(|it| (it.item_id, it.amount))
                 .collect::<Vec<_>>(),
-            vec![(283, 2)],
+            vec![(ItemId(283), 2)],
             "it opened a second entry instead of merging"
         );
         assert_eq!(

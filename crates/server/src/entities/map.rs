@@ -564,6 +564,7 @@ mod tests {
     use super::*;
     use crate::entities::agent::Agent;
     use crate::entities::inventory::InventorySlot;
+    use crate::entities::items::ItemId;
     use crate::entities::items::{ItemAttribute, ItemConfig};
     use crate::entities::position::Position;
     use crate::persistence::test_fixtures::{a_creature_kind, a_player_with_a_full_backpack};
@@ -585,7 +586,7 @@ mod tests {
     fn a_stack_of(amount: u8) -> Item {
         Item::new(
             Arc::new(ItemConfig::new(
-                2148,
+                ItemId(2148),
                 "gold coin".to_string(),
                 None,
                 None,
@@ -599,7 +600,7 @@ mod tests {
     fn a_bag() -> Item {
         Item::new(
             Arc::new(ItemConfig::new(
-                1987,
+                ItemId(1987),
                 "bag".to_string(),
                 None,
                 None,

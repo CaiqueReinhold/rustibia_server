@@ -138,7 +138,7 @@ fn shovel(ctx: &mut TickCtx, target: &ItemRef) -> Result<(), ItemActionError> {
     {
         return Err(ItemActionError::ActionFailed);
     }
-    transform(ctx, target, target_item_id + 1)
+    transform(ctx, target, ItemId(target_item_id.0 + 1))
 }
 
 fn first_available_position_up(
@@ -387,10 +387,10 @@ mod tests {
     #[test]
     fn every_diggable_digs_into_an_existing_item() {
         for id in &GAME_CONFIG.multi_action.diggable_ids {
-            let into = id + 1;
+            let into = ItemId(id.0 + 1);
             assert!(
                 ITEM_CONFIGS.contains_key(&into),
-                "diggable {id} digs into {into}, which is not in the catalogue"
+                "diggable {id:?} digs into {into:?}, which is not in the catalogue"
             );
         }
     }
@@ -446,8 +446,8 @@ mod tests {
                 });
                 assert_eq!(
                     dug.item_id,
-                    diggable_id + 1,
-                    "{name} ({shovel_id}) dug {diggable_id} into the wrong item"
+                    ItemId(diggable_id.0 + 1),
+                    "{name} ({shovel_id:?}) dug {diggable_id:?} into the wrong item"
                 );
                 assert_eq!(dug.config.name, "hole");
             }
@@ -512,11 +512,14 @@ mod tests {
         let mut h = TestHarness::seeded(1);
         let (here, sand_pos) = (Position::new(10, 10, 7), Position::new(10, 11, 7));
         let not_a_tool = 3459; // wooden hammer: usable and multiuse, but digs nothing.
-        assert_eq!(GAME_CONFIG.multi_action.tool_action(not_a_tool), None);
+        assert_eq!(
+            GAME_CONFIG.multi_action.tool_action(ItemId(not_a_tool)),
+            None
+        );
 
         let mut map = GameMap::new();
-        let hammer = an_item(not_a_tool);
-        let sand = an_item(614);
+        let hammer = an_item(ItemId(not_a_tool));
+        let sand = an_item(ItemId(614));
         let (hammer_guid, sand_guid) = (hammer.guid.clone(), sand.guid.clone());
         map.insert_tile(here.clone(), a_tile_with(hammer));
         map.insert_tile(sand_pos.clone(), a_tile_with(sand));
@@ -562,7 +565,7 @@ mod tests {
     ) -> Item {
         Item::new(
             Arc::new(ItemConfig::new(
-                9999,
+                ItemId(9999),
                 "test potion".to_string(),
                 None,
                 None,
@@ -592,7 +595,7 @@ mod tests {
     fn a_plain_item() -> Item {
         Item::new(
             Arc::new(ItemConfig::new(
-                9998,
+                ItemId(9998),
                 "something to click".to_string(),
                 None,
                 None,
@@ -708,11 +711,11 @@ mod tests {
             charges_left: map
                 .iter_items(&here)
                 .ok()
-                .and_then(|mut items| items.find(|i| i.item_id == 9999))
+                .and_then(|mut items| items.find(|i| i.item_id == ItemId(9999)))
                 .map(|item| item.amount),
             flasks_at_the_users_feet: map
                 .iter_items(&here)
-                .map(|items| items.filter(|i| i.item_id != 9999).count())
+                .map(|items| items.filter(|i| i.item_id != ItemId(9999)).count())
                 .unwrap_or(0),
             at_the_users_feet: map
                 .iter_items(&here)
@@ -968,7 +971,7 @@ mod tests {
     #[test]
     fn drinking_leaves_the_empty_flask_with_the_user_not_the_target() {
         let drunk = drink_potion_on(
-            a_potion(3, bounds(100, 200), None, Some(283)),
+            a_potion(3, bounds(100, 200), None, Some(ItemId(283))),
             pool(10, 1000),
             pool(50, 1000),
             Target::Other,
@@ -996,7 +999,7 @@ mod tests {
     #[test]
     fn a_flask_the_catalogue_does_not_carry_does_not_stop_the_drink() {
         let drunk = drink_potion_on(
-            a_potion(3, bounds(100, 200), None, Some(65535)),
+            a_potion(3, bounds(100, 200), None, Some(ItemId(65535))),
             pool(10, 1000),
             pool(50, 1000),
             Target::Myself,
@@ -1040,10 +1043,10 @@ mod tests {
         map.insert_tile(here.clone(), MapTile::new());
 
         let potion_guid = potion.guid.clone();
-        let mut backpack = a_pouch(1988, 20);
+        let mut backpack = a_pouch(ItemId(1988), 20);
         let mut guids = Vec::new();
         for n in 0..pouches {
-            let mut pouch = a_pouch(1990 + n as ItemId, 8);
+            let mut pouch = a_pouch(ItemId(1990 + n as u16), 8);
             guids.push(pouch.guid.clone());
             if n == pouches - 1 {
                 let content = pouch.content.as_mut().unwrap();
@@ -1109,13 +1112,16 @@ mod tests {
     #[test]
     fn a_returned_flask_stacks_onto_a_like_flask_in_the_same_container() {
         let pouches = drink_from_a_pouch(
-            a_potion(3, bounds(100, 200), None, Some(283)),
+            a_potion(3, bounds(100, 200), None, Some(ItemId(283))),
             1,
-            vec![an_item(283)],
+            vec![an_item(ItemId(283))],
         );
 
         assert!(!pouches.denied);
-        assert_eq!(pouches.contents[0], vec![(283, 2), (9999, 2)]);
+        assert_eq!(
+            pouches.contents[0],
+            vec![(ItemId(283), 2), (ItemId(9999), 2)]
+        );
         assert!(
             pouches.broadcasts.iter().any(|b| matches!(
                 b,
@@ -1129,10 +1135,10 @@ mod tests {
     #[test]
     fn a_returned_flask_does_not_push_a_stack_past_its_maximum() {
         let pouches = drink_from_a_pouch(
-            a_potion(3, bounds(100, 200), None, Some(283)),
+            a_potion(3, bounds(100, 200), None, Some(ItemId(283))),
             1,
             vec![Item::new(
-                ITEM_CONFIGS.get(&283).unwrap().clone(),
+                ITEM_CONFIGS.get(&ItemId(283)).unwrap().clone(),
                 MAX_STACK_AMOUNT,
             )],
         );
@@ -1140,7 +1146,11 @@ mod tests {
         assert!(!pouches.denied);
         assert_eq!(
             pouches.contents[0],
-            vec![(283, MAX_STACK_AMOUNT), (283, 1), (9999, 2)],
+            vec![
+                (ItemId(283), MAX_STACK_AMOUNT),
+                (ItemId(283), 1),
+                (ItemId(9999), 2)
+            ],
             "a capped stack was topped up anyway"
         );
     }
@@ -1149,7 +1159,11 @@ mod tests {
     /// container" would put the flask in the wrong one.
     #[test]
     fn a_returned_flask_lands_in_the_container_the_potion_came_from() {
-        let pouches = drink_from_a_pouch(a_potion(3, bounds(100, 200), None, Some(283)), 2, vec![]);
+        let pouches = drink_from_a_pouch(
+            a_potion(3, bounds(100, 200), None, Some(ItemId(283))),
+            2,
+            vec![],
+        );
 
         assert!(!pouches.denied);
         assert_eq!(
@@ -1157,7 +1171,10 @@ mod tests {
             Vec::new(),
             "the flask went to the first pouch"
         );
-        assert_eq!(pouches.contents[1], vec![(283, 1), (9999, 2)]);
+        assert_eq!(
+            pouches.contents[1],
+            vec![(ItemId(283), 1), (ItemId(9999), 2)]
+        );
     }
 
     /// The order is the assertion, not incidental: a flask returned to a tile is
@@ -1166,7 +1183,7 @@ mod tests {
     #[test]
     fn a_potion_drunk_from_the_ground_leaves_the_flask_on_that_tile() {
         let drunk = drink_potion_on(
-            a_potion(3, bounds(100, 200), None, Some(283)),
+            a_potion(3, bounds(100, 200), None, Some(ItemId(283))),
             pool(10, 1000),
             pool(50, 1000),
             Target::Myself,
@@ -1174,6 +1191,9 @@ mod tests {
         );
 
         assert!(!drunk.denied);
-        assert_eq!(drunk.at_the_users_feet, vec![(9999, 2), (283, 1)]);
+        assert_eq!(
+            drunk.at_the_users_feet,
+            vec![(ItemId(9999), 2), (ItemId(283), 1)]
+        );
     }
 }

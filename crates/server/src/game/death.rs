@@ -161,14 +161,14 @@ mod tests {
     use crate::entities::map::{GameMap, MapTile};
     use crate::entities::position::Position;
     use crate::game::TestHarness;
-    use crate::game::Tick;
+    use crate::game::{Tick, TickDelta};
     use crate::persistence::test_fixtures::{
         a_creature_kind, a_test_creature, a_test_creature_worth, a_test_snapshot,
     };
     use std::sync::Arc;
 
     /// A creature the spawn table put there, so it books a replacement when it dies.
-    fn a_spawned_creature(origin: Position, respawn_ticks: Tick) -> Agent {
+    fn a_spawned_creature(origin: Position, respawn_ticks: TickDelta) -> Agent {
         Agent::respawning(Arc::new(a_creature_kind("Rat")), origin, respawn_ticks)
     }
 
@@ -180,11 +180,11 @@ mod tests {
         map.insert_tile(origin.clone(), MapTile::new());
         map.insert_tile(died_at.clone(), MapTile::new());
         let rat = map
-            .insert_agent(a_spawned_creature(origin.clone(), 600), &died_at)
+            .insert_agent(a_spawned_creature(origin.clone(), TickDelta(600)), &died_at)
             .unwrap();
         map.get_agent_mut(rat).unwrap().take_hit(1);
         let mut h = TestHarness::seeded(1);
-        h.tick = 50;
+        h.tick = Tick(50);
 
         reap(&mut h.ctx(&mut map), rat, None);
 
@@ -192,10 +192,10 @@ mod tests {
             matches!(
                 h.scheduled.as_slice(),
                 [ScheduledCommand {
-                    at_tick: 650,
+                    at_tick: Tick(650),
                     command: WorldCommand::SpawnCreature {
                         position,
-                        respawn_ticks: Some(600),
+                        respawn_ticks: Some(TickDelta(600)),
                         ..
                     },
                 }] if *position == origin

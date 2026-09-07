@@ -39,7 +39,7 @@ impl SessionActor {
 
         // Resolve target: Position → (ItemPlacement, Option<container_guid>).
         let (target_placement, target_container) = if to.is_container_coord() {
-            let container_id = to.y as ContainerId;
+            let container_id = ContainerId(to.y);
             let Some(guid) = self.containers.get_global(container_id) else {
                 return Ok(());
             };

@@ -23,7 +23,7 @@ pub fn parse_command(ctx: &mut TickCtx, command: &str, agent_key: AgentKey) -> b
     let parts: Vec<&str> = command.split(" ").collect();
     match parts.first() {
         Some(&"/create") => {
-            let Some(item_id): Option<u16> = parts.get(1).and_then(|p| p.parse().ok()) else {
+            let Some(item_id) = parts.get(1).and_then(|p| p.parse().ok()).map(ItemId) else {
                 return true;
             };
             let amount: u8 = parts.get(2).and_then(|p| p.parse().ok()).unwrap_or(1);

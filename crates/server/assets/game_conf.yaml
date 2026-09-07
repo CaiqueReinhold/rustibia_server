@@ -33,6 +33,7 @@ effect_ids:
   fire_hit: 1
   energy_hit: 1
   potion_use: 13
+  miss: 3
 
 text_colors:
   blue: [0, 0, 255]

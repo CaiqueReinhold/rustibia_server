@@ -10,7 +10,7 @@ use crate::entities::vocation::Vocation;
 use crate::entities::{
     agent::{Facing, OutfitColors, OutfitId, Pool},
     inventory::InventorySlot,
-    items::Item,
+    items::{Item, ItemId},
     player::PlayerId,
     position::Position,
     skills::{SkillType, SkillValue},
@@ -45,7 +45,7 @@ pub struct PlayerSnapshot {
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 struct StoredItem {
-    item_id: u16,
+    item_id: ItemId,
     amount: u8,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     content: Option<Vec<StoredItem>>,
@@ -63,7 +63,7 @@ impl PlayerRepository {
     pub async fn save(&self, snapshot: &PlayerSnapshot) -> Result<(), PlayerRepositoryError> {
         let inventory = serialize_inventory(&snapshot.inventory);
         let facing = facing_to_i16(snapshot.facing);
-        let (outfit_id, (outfit_head, outfit_body, outfit_legs, outfit_feet)) = snapshot.outfit;
+        let (outfit_id, colors) = snapshot.outfit;
 
         let mut tx = self.pool.begin().await?;
 
@@ -79,7 +79,7 @@ impl PlayerRepository {
              inventory = $20 \
              WHERE id = $1",
         )
-        .bind(snapshot.id as i32)
+        .bind(snapshot.id.0 as i32)
         .bind(snapshot.position.x as i32)
         .bind(snapshot.position.y as i32)
         .bind(snapshot.position.z as i16)
@@ -93,11 +93,11 @@ impl PlayerRepository {
         .bind(snapshot.mana.maximum as i32)
         .bind(snapshot.capacity as i32)
         .bind(snapshot.speed as i32)
-        .bind(outfit_id as i16)
-        .bind(outfit_head as i16)
-        .bind(outfit_body as i16)
-        .bind(outfit_legs as i16)
-        .bind(outfit_feet as i16)
+        .bind(outfit_id.0 as i16)
+        .bind(colors.head as i16)
+        .bind(colors.body as i16)
+        .bind(colors.legs as i16)
+        .bind(colors.feet as i16)
         .bind(sqlx::types::Json(&inventory))
         .execute(&mut *tx)
         .await?;
@@ -107,7 +107,7 @@ impl PlayerRepository {
         }
 
         sqlx::query("DELETE FROM player_skills WHERE player_id = $1")
-            .bind(snapshot.id as i32)
+            .bind(snapshot.id.0 as i32)
             .execute(&mut *tx)
             .await?;
 
@@ -116,7 +116,7 @@ impl PlayerRepository {
                 "INSERT INTO player_skills (player_id, skill_type, value, current_ticks) \
                  VALUES ($1, $2, $3, $4)",
             )
-            .bind(snapshot.id as i32)
+            .bind(snapshot.id.0 as i32)
             .bind(skill_type_to_i16(skill_type))
             .bind(skill_value.value as i16)
             .bind(skill_value.current_ticks as i64)
@@ -188,7 +188,7 @@ mod tests {
     #[test]
     fn stored_item_omits_content_when_none() {
         let item = StoredItem {
-            item_id: 2360,
+            item_id: ItemId(2360),
             amount: 5,
             content: None,
         };
@@ -202,21 +202,21 @@ mod tests {
     #[test]
     fn stored_item_roundtrips_with_nested_content() {
         let item = StoredItem {
-            item_id: 2148,
+            item_id: ItemId(2148),
             amount: 1,
             content: Some(vec![StoredItem {
-                item_id: 2360,
+                item_id: ItemId(2360),
                 amount: 10,
                 content: None,
             }]),
         };
         let json = serde_json::to_string(&item).unwrap();
         let back: StoredItem = serde_json::from_str(&json).unwrap();
-        assert_eq!(back.item_id, 2148);
+        assert_eq!(back.item_id, ItemId(2148));
         assert_eq!(back.amount, 1);
         let children = back.content.unwrap();
         assert_eq!(children.len(), 1);
-        assert_eq!(children[0].item_id, 2360);
+        assert_eq!(children[0].item_id, ItemId(2360));
         assert_eq!(children[0].amount, 10);
     }
 
@@ -226,10 +226,10 @@ mod tests {
     #[test]
     fn what_save_writes_deserializes_as_the_contract_type() {
         let json = serde_json::to_string(&StoredItem {
-            item_id: 2148,
+            item_id: ItemId(2148),
             amount: 1,
             content: Some(vec![StoredItem {
-                item_id: 2360,
+                item_id: ItemId(2360),
                 amount: 10,
                 content: None,
             }]),
@@ -250,7 +250,7 @@ mod tests {
         use std::sync::Arc;
 
         let config = Arc::new(ItemConfig::new(
-            2360,
+            ItemId(2360),
             "sword".to_string(),
             None,
             None,
@@ -267,7 +267,7 @@ mod tests {
             stored.contains_key("5"),
             "expected key '5', got: {stored:?}"
         );
-        assert_eq!(stored["5"].item_id, 2360);
+        assert_eq!(stored["5"].item_id, ItemId(2360));
         assert_eq!(stored["5"].amount, 1);
     }
 

@@ -13,7 +13,7 @@ use crate::entities::creature::{
     BloodType, CreatureKind, CreatureKindId, CreatureVoices, LootEntry,
 };
 use crate::entities::items::ItemId;
-use crate::game::Tick;
+use crate::game::TickDelta;
 
 pub static CREATURE_KINDS: Lazy<Arc<HashMap<CreatureKindId, Arc<CreatureKind>>>> =
     Lazy::new(|| {
@@ -54,7 +54,7 @@ fn default_amount() -> u32 {
 
 #[derive(Deserialize)]
 struct RawLootEntry {
-    item_id: u16,
+    item_id: ItemId,
     chance: u32,
     #[serde(default = "default_amount")]
     amount: u32,
@@ -62,7 +62,7 @@ struct RawLootEntry {
 
 #[derive(Deserialize)]
 struct RawCreatureVoices {
-    cooldown: Tick,
+    cooldown: TickDelta,
     chance: u32,
     #[serde(default)]
     sentences: Vec<String>,
@@ -182,6 +182,7 @@ pub fn load_creatures(
 mod tests {
     use super::*;
     use crate::entities::agent::Agent;
+    use crate::entities::items::ItemId;
     use crate::entities::position::Position;
     use crate::persistence::items::ITEM_CONFIGS;
 
@@ -197,7 +198,7 @@ mod tests {
             let agent = Agent::from_creature_kind(kind.clone(), Position::new(1028, 128, 7));
 
             assert_eq!(
-                agent.calculate_walk_ticks(150, false) * 50,
+                agent.calculate_walk_ticks(150, false).0 * 50,
                 expected_ms,
                 "{name} walks a normal tile in {expected_ms}ms in the reference"
             );

@@ -4,14 +4,15 @@ use tokio::sync::mpsc;
 use tracing::{error, info};
 
 use crate::config::CONFIG;
+use crate::entities::player::PlayerId;
 use crate::persistence::online::OnlineRepository;
 use crate::persistence::player::{PlayerRepository, PlayerSnapshot};
 
 #[derive(Clone, Debug)]
 pub enum PersistenceCommand {
     SavePlayer(PlayerSnapshot),
-    MarkOnline(u32),
-    MarkOffline(u32),
+    MarkOnline(PlayerId),
+    MarkOffline(PlayerId),
 }
 
 #[derive(Clone, Debug)]
@@ -32,27 +33,27 @@ impl PersistenceActorHandle {
     ///
     /// Uses `try_send`, so a full channel drops the update rather than blocking the
     /// game loop. This is presentational data; a log line is the right response.
-    pub fn mark_online(&self, character_id: u32) {
+    pub fn mark_online(&self, character_id: PlayerId) {
         if self
             .tx
             .try_send(PersistenceCommand::MarkOnline(character_id))
             .is_err()
         {
             tracing::warn!(
-                character_id,
+                character_id = %character_id,
                 "dropped online marker: persistence channel full"
             );
         }
     }
 
-    pub fn mark_offline(&self, character_id: u32) {
+    pub fn mark_offline(&self, character_id: PlayerId) {
         if self
             .tx
             .try_send(PersistenceCommand::MarkOffline(character_id))
             .is_err()
         {
             tracing::warn!(
-                character_id,
+                character_id = %character_id,
                 "dropped offline marker: persistence channel full"
             );
         }
@@ -95,17 +96,17 @@ impl PersistenceActor {
                 PersistenceCommand::SavePlayer(snapshot) => {
                     let player_id = snapshot.id;
                     if let Err(e) = self.repo.save(&snapshot).await {
-                        error!(player_id, "Failed to save player: {e}");
+                        error!(player_id = %player_id, "Failed to save player: {e}");
                     }
                 }
                 PersistenceCommand::MarkOnline(character_id) => {
                     if let Err(e) = self.online.mark_online(character_id).await {
-                        error!(character_id, "Failed to mark player online: {e}");
+                        error!(character_id = %character_id, "Failed to mark player online: {e}");
                     }
                 }
                 PersistenceCommand::MarkOffline(character_id) => {
                     if let Err(e) = self.online.mark_offline(character_id).await {
-                        error!(character_id, "Failed to mark player offline: {e}");
+                        error!(character_id = %character_id, "Failed to mark player offline: {e}");
                     }
                 }
             }

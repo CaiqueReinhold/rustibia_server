@@ -18,12 +18,98 @@ pub mod random;
 pub mod skills;
 pub mod targeting;
 
+use serde::Deserialize;
+
 use crate::actors::world::ScheduledCommand;
 use crate::entities::map::GameMap;
 use crate::game::events::BroadcastMessage;
 use crate::game::random::Rolls;
 
-pub type Tick = u64;
+/// A point on the 50 ms game clock: *when* something happens.
+///
+/// Deliberately not the same type as [`TickDelta`], which is *how long* something takes.
+/// A point plus a span is a point and a point minus a point is a span, but a point plus
+/// a point is meaningless — and while both were one type, nothing said so. Adding a
+/// cooldown to a deadline and adding two deadlines together looked identical.
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
+#[repr(transparent)]
+pub struct Tick(pub u64);
+
+/// A span of ticks: a cooldown, a walk duration, a respawn delay, a path cost.
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default, Deserialize)]
+#[serde(transparent)]
+#[repr(transparent)]
+pub struct TickDelta(pub u64);
+
+impl Tick {
+    /// How far `other` is behind this point, clamped at zero rather than wrapping —
+    /// a deadline already passed is zero away, never a span of eighteen quintillion.
+    pub fn saturating_sub(self, other: Tick) -> TickDelta {
+        TickDelta(self.0.saturating_sub(other.0))
+    }
+}
+
+impl TickDelta {
+    pub fn saturating_sub(self, other: TickDelta) -> TickDelta {
+        TickDelta(self.0.saturating_sub(other.0))
+    }
+}
+
+impl std::ops::Add<TickDelta> for Tick {
+    type Output = Tick;
+
+    fn add(self, delta: TickDelta) -> Tick {
+        Tick(self.0 + delta.0)
+    }
+}
+
+impl std::ops::AddAssign<TickDelta> for Tick {
+    fn add_assign(&mut self, delta: TickDelta) {
+        self.0 += delta.0;
+    }
+}
+
+impl std::ops::Sub<Tick> for Tick {
+    type Output = TickDelta;
+
+    fn sub(self, other: Tick) -> TickDelta {
+        TickDelta(self.0 - other.0)
+    }
+}
+
+impl std::ops::Add for TickDelta {
+    type Output = TickDelta;
+
+    fn add(self, other: TickDelta) -> TickDelta {
+        TickDelta(self.0 + other.0)
+    }
+}
+
+impl std::ops::AddAssign for TickDelta {
+    fn add_assign(&mut self, other: TickDelta) {
+        self.0 += other.0;
+    }
+}
+
+impl std::ops::Mul<u64> for TickDelta {
+    type Output = TickDelta;
+
+    fn mul(self, factor: u64) -> TickDelta {
+        TickDelta(self.0 * factor)
+    }
+}
+
+impl std::fmt::Display for Tick {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl std::fmt::Display for TickDelta {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 pub struct TickCtx<'a> {
     pub map: &'a mut GameMap,
@@ -69,7 +155,7 @@ impl TestHarness {
             events: Vec::new(),
             scheduled: Vec::new(),
             roll: Rolls::new(0),
-            tick: 0,
+            tick: Tick(0),
         }
     }
 

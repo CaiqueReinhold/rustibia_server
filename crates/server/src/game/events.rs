@@ -5,6 +5,7 @@ use crate::entities::{
     agent::{AgentKey, Facing},
     combat::CombatDamage,
     creature::BloodType,
+    effects::MissileId,
     inventory::InventorySlot,
     items::{ItemGuid, ItemRef},
     position::{Direction, Position},
@@ -84,7 +85,10 @@ pub enum BroadcastMessage {
     MissileLaunched {
         from: Position,
         to: Position,
-        sprite_id: u16,
+        sprite_id: MissileId,
+    },
+    AttackMissed {
+        position: Position,
     },
     SkillProgressUpdated {
         agent_key: AgentKey,

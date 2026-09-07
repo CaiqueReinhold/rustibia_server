@@ -2,6 +2,8 @@ use std::sync::Arc;
 
 use slotmap::new_key_type;
 
+use crate::local_id::LocalId;
+
 use super::{inventory::Inventory, player::Player};
 use crate::{
     config,
@@ -12,13 +14,56 @@ use crate::{
         items::ItemId,
         position::Position,
     },
-    game::{Tick, config::GAME_CONFIG},
+    game::{Tick, TickDelta, config::GAME_CONFIG},
     persistence::player::PlayerSnapshot,
 };
 
-pub type AgentId = u16;
-pub type OutfitId = u16;
-pub type OutfitColors = (u8, u8, u8, u8);
+/// An agent as one player's session names it on the wire. Session-local and reused —
+/// see `LocalIdMap`, which is the only thing that may mint one.
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+#[repr(transparent)]
+pub struct AgentId(pub u16);
+
+impl LocalId for AgentId {
+    fn from_raw(raw: u16) -> Self {
+        Self(raw)
+    }
+
+    fn raw(self) -> u16 {
+        self.0
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, serde::Deserialize)]
+#[serde(transparent)]
+#[repr(transparent)]
+pub struct OutfitId(pub u16);
+
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default, serde::Deserialize)]
+#[serde(from = "(u8, u8, u8, u8)")]
+pub struct OutfitColors {
+    pub head: u8,
+    pub body: u8,
+    pub legs: u8,
+    pub feet: u8,
+}
+
+impl OutfitColors {
+    pub fn new(head: u8, body: u8, legs: u8, feet: u8) -> Self {
+        Self {
+            head,
+            body,
+            legs,
+            feet,
+        }
+    }
+}
+
+impl From<(u8, u8, u8, u8)> for OutfitColors {
+    fn from((head, body, legs, feet): (u8, u8, u8, u8)) -> Self {
+        Self::new(head, body, legs, feet)
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct Pool {
@@ -68,7 +113,7 @@ pub struct Agent {
     base_speed: u16,
     facing: Facing,
     origin: Position,
-    respawn_ticks: Option<Tick>,
+    respawn_ticks: Option<TickDelta>,
 
     // both
     pub next_walk_tick: Tick,
@@ -131,9 +176,9 @@ impl Agent {
             life: player.life,
             outfit: player.outfit,
             base_speed: player.speed,
-            next_walk_tick: 0,
-            next_use_tick: 0,
-            next_attack_tick: 0,
+            next_walk_tick: Tick(0),
+            next_use_tick: Tick(0),
+            next_attack_tick: Tick(0),
             target: None,
             target_seq: 0,
             participation: Participation::default(),
@@ -152,9 +197,9 @@ impl Agent {
             outfit,
             base_speed: speed,
             facing: Facing::South,
-            next_walk_tick: 0,
-            next_use_tick: 0,
-            next_attack_tick: 0,
+            next_walk_tick: Tick(0),
+            next_use_tick: Tick(0),
+            next_attack_tick: Tick(0),
             target: None,
             target_seq: 0,
             participation: Participation::default(),
@@ -163,14 +208,14 @@ impl Agent {
         }
     }
 
-    pub fn respawning(kind: Arc<CreatureKind>, origin: Position, respawn_ticks: Tick) -> Self {
+    pub fn respawning(kind: Arc<CreatureKind>, origin: Position, respawn_ticks: TickDelta) -> Self {
         Self {
             respawn_ticks: Some(respawn_ticks),
             ..Self::from_creature_kind(kind, origin)
         }
     }
 
-    pub fn respawn_ticks(&self) -> Option<Tick> {
+    pub fn respawn_ticks(&self) -> Option<TickDelta> {
         self.respawn_ticks
     }
 
@@ -248,14 +293,16 @@ impl Agent {
         self.participation.record(attacker, damage);
     }
 
-    pub fn calculate_walk_ticks(&self, tile_friction: u16, diagonal: bool) -> Tick {
+    pub fn calculate_walk_ticks(&self, tile_friction: u16, diagonal: bool) -> TickDelta {
         let move_speed = (SPEED_PARAM_A * ((self.speed() as f32) + SPEED_PARAM_B).ln()
             + SPEED_PARAM_C)
             .round()
             .max(1.0);
 
         let tile_speed = (1000.0 * (tile_friction as f32) / move_speed).floor();
-        let ticks = (tile_speed / (config::CONFIG.tick_duration.as_millis() as f32)).ceil() as Tick;
+        let ticks = TickDelta(
+            (tile_speed / (config::CONFIG.tick_duration.as_millis() as f32)).ceil() as u64,
+        );
 
         if diagonal {
             ticks * DIAGONAL_STEP_FACTOR
@@ -343,6 +390,7 @@ mod tests {
     use super::*;
     use crate::entities::inventory::InventorySlot;
     use crate::entities::map::GameMap;
+    use crate::entities::player::PlayerId;
     use crate::entities::position::Position;
     use crate::entities::skills::{SkillType, SkillValue};
     use crate::entities::vocation::Vocation;
@@ -353,7 +401,7 @@ mod tests {
 
     fn make_snapshot(id: u32) -> PlayerSnapshot {
         PlayerSnapshot {
-            id,
+            id: PlayerId(id),
             account_id: 1,
             admin: false,
             name: "Rizael".to_string(),
@@ -379,7 +427,7 @@ mod tests {
             vocation: Vocation::Knight,
             capacity: 40000,
             speed: 100,
-            outfit: (133, (1, 2, 3, 4)),
+            outfit: (OutfitId(133), OutfitColors::new(1, 2, 3, 4)),
             skills: {
                 let mut m = HashMap::new();
                 m.insert(
@@ -419,14 +467,14 @@ mod tests {
         };
         let snap = agent.to_snapshot(new_pos.clone()).unwrap();
         assert_eq!(snap.position, new_pos);
-        assert_eq!(snap.id, 1);
+        assert_eq!(snap.id, PlayerId(1));
         assert_eq!(snap.name, "Rizael");
         assert_eq!(snap.facing, Facing::North);
         assert_eq!(snap.life.current, 80);
         assert_eq!(snap.life.maximum, 100);
         assert_eq!(snap.mana.current, 50);
         assert_eq!(snap.capacity, 40000);
-        assert_eq!(snap.outfit, (133, (1, 2, 3, 4)));
+        assert_eq!(snap.outfit, (OutfitId(133), OutfitColors::new(1, 2, 3, 4)));
         assert_eq!(snap.skills[&SkillType::Level].value, 120);
     }
 
@@ -434,17 +482,17 @@ mod tests {
     fn can_logout_when_walk_tick_is_current_or_past() {
         let agent = Agent::from_player(make_snapshot(1));
         // next_walk_tick defaults to 0
-        assert!(agent.can_logout(0));
-        assert!(agent.can_logout(1));
+        assert!(agent.can_logout(Tick(0)));
+        assert!(agent.can_logout(Tick(1)));
     }
 
     #[test]
     fn cannot_logout_when_walk_tick_is_in_future() {
         let mut agent = Agent::from_player(make_snapshot(1));
-        agent.next_walk_tick = 10;
-        assert!(!agent.can_logout(9));
-        assert!(agent.can_logout(10));
-        assert!(agent.can_logout(11));
+        agent.next_walk_tick = Tick(10);
+        assert!(!agent.can_logout(Tick(9)));
+        assert!(agent.can_logout(Tick(10)));
+        assert!(agent.can_logout(Tick(11)));
     }
 
     #[test]
@@ -466,14 +514,17 @@ mod tests {
                 current: 8200,
                 maximum: 8200,
             },
-            outfit: (35, (0, 0, 0, 0)),
+            outfit: (OutfitId(35), OutfitColors::new(0, 0, 0, 0)),
             ..a_creature_kind("Demon")
         };
         let agent = Agent::from_creature_kind(Arc::new(kind), Position::new(1028, 128, 7));
         assert!(agent.is_creature());
         assert_eq!(agent.name(), "Demon");
         assert_eq!(agent.life().maximum, 8200);
-        assert_eq!(agent.outfit(), (35, (0, 0, 0, 0)));
+        assert_eq!(
+            agent.outfit(),
+            (OutfitId(35), OutfitColors::new(0, 0, 0, 0))
+        );
     }
 
     /// Paired with `step_duration_matches_the_server` in the client's
@@ -494,14 +545,30 @@ mod tests {
             "the fixture's speed column feeds the formula"
         );
 
-        assert_eq!(agent.calculate_walk_ticks(150, false), 10, "500ms");
-        assert_eq!(agent.calculate_walk_ticks(150, true), 30, "1500ms diagonal");
+        assert_eq!(
+            agent.calculate_walk_ticks(150, false),
+            TickDelta(10),
+            "500ms"
+        );
+        assert_eq!(
+            agent.calculate_walk_ticks(150, true),
+            TickDelta(30),
+            "1500ms diagonal"
+        );
         // 260 is the friction of `ornamented stone floor` (id 21718), one of the
         // ten values the client used to truncate through a `u8`.
-        assert_eq!(agent.calculate_walk_ticks(260, false), 18, "900ms");
+        assert_eq!(
+            agent.calculate_walk_ticks(260, false),
+            TickDelta(18),
+            "900ms"
+        );
         // Rounding before the multiply, not after: 52 here would mean the diagonal
         // had been scaled first and is no whole multiple of the step it replaces.
-        assert_eq!(agent.calculate_walk_ticks(260, true), 54, "2700ms diagonal");
+        assert_eq!(
+            agent.calculate_walk_ticks(260, true),
+            TickDelta(54),
+            "2700ms diagonal"
+        );
     }
 
     #[test]
@@ -640,7 +707,7 @@ mod tests {
         let mut a = a_backpacked_agent();
         let b = a.clone();
 
-        a.next_walk_tick = 42;
+        a.next_walk_tick = Tick(42);
         a.set_facing(Facing::North);
         a.set_target(None, 0);
 

@@ -286,11 +286,12 @@ mod tests {
     use crate::actors::connection::ConnectionCommand;
     use crate::actors::session::test_support::seat_player;
     use crate::actors::world::WorldCommand;
+    use crate::entities::agent::AgentId;
     use crate::entities::agent::AgentKey;
     use crate::entities::map::GameMap;
     use crate::entities::position::Position;
     use crate::entities::skills::SkillValue;
-    use crate::game::Tick;
+    use crate::game::TickDelta;
     use crate::messages::ServerMessage;
     use tokio::sync::mpsc;
 
@@ -352,7 +353,10 @@ mod tests {
         let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
         let (mut session, _connection_rx, mut world_rx, _tick_tx) = SessionActor::for_test(me, map);
 
-        session.handle_set_target(Some(4242), 0).await.unwrap();
+        session
+            .handle_set_target(Some(AgentId(4242)), 0)
+            .await
+            .unwrap();
 
         let (cmd, _) = world_rx.try_recv().unwrap();
         assert!(matches!(cmd, WorldCommand::SetTarget { target: None, .. }));
@@ -367,7 +371,7 @@ mod tests {
         AgentKey,
         AgentKey,
         mpsc::Receiver<ConnectionCommand>,
-        mpsc::Receiver<(WorldCommand, Option<Tick>)>,
+        mpsc::Receiver<(WorldCommand, Option<TickDelta>)>,
     ) {
         let mut map = GameMap::new();
         let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);

@@ -414,6 +414,7 @@ fn escape_ladder(offset_x: i32, offset_y: i32) -> [Rung; 5] {
 mod tests {
     use super::*;
     use crate::entities::agent::Agent;
+    use crate::entities::items::ItemId;
     use crate::entities::items::{Item, ItemAttribute, ItemConfig, ItemFlag};
     use crate::entities::map::MapTile;
     use crate::persistence::test_fixtures::{
@@ -429,7 +430,7 @@ mod tests {
     fn an_item_with(id: u16, flags: HashSet<ItemFlag>, attributes: HashSet<ItemAttribute>) -> Item {
         Item::new(
             Arc::new(ItemConfig::new(
-                id,
+                ItemId(id),
                 "thing".to_string(),
                 None,
                 None,
@@ -755,7 +756,7 @@ mod tests {
             creature: rat,
             map: &map,
             roll: Rolls::new(7),
-            world_tick: 100,
+            world_tick: Tick(100),
             state: &mut state,
         });
 
@@ -789,7 +790,7 @@ mod tests {
             creature: rat,
             map: &map,
             roll: Rolls::new(7),
-            world_tick: 100,
+            world_tick: Tick(100),
             state: &mut state,
         });
 

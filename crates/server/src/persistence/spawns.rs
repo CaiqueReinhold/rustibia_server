@@ -6,7 +6,7 @@ use thiserror::Error;
 
 use crate::entities::creature::CreatureKindId;
 use crate::entities::position::Position;
-use crate::game::Tick;
+use crate::game::TickDelta;
 
 #[derive(Error, Debug)]
 pub enum SpawnsLoadError {
@@ -20,7 +20,7 @@ pub enum SpawnsLoadError {
 pub struct SpawnPoint {
     pub position: Position,
     pub kind: CreatureKindId,
-    pub respawn_ticks: Tick,
+    pub respawn_ticks: TickDelta,
 }
 
 #[derive(Deserialize)]

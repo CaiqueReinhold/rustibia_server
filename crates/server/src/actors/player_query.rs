@@ -87,11 +87,11 @@ pub fn get_agent_desc(agent: &Agent, agent_id: AgentId, position: Position) -> S
 pub fn client_position_to_placement(
     position: Position,
     map: &GameMap,
-    containers: &LocalIdMap<ItemGuid>,
+    containers: &LocalIdMap<ItemGuid, ContainerId>,
     agent_key: AgentKey,
 ) -> Option<(ItemPlacement, Option<ItemGuid>)> {
     if position.is_container_coord() {
-        let container_id = position.y as ContainerId;
+        let container_id = ContainerId(position.y);
         let guid = containers.get_global(container_id)?;
         let (item, placement) = find_item_in_reach(map, guid, agent_key)?;
         let guid = item

@@ -9,6 +9,8 @@ use sqlx::PgPool;
 use thiserror::Error;
 use tracing::warn;
 
+use crate::entities::agent::{OutfitColors, OutfitId};
+use crate::entities::player::PlayerId;
 use crate::entities::vocation::Vocation;
 use crate::entities::{
     agent::Pool,
@@ -46,6 +48,7 @@ pub fn snapshot_from_record(
     items: &HashMap<ItemId, Arc<ItemConfig>>,
 ) -> Result<PlayerSnapshot, LoginError> {
     let id = u32::try_from(record.id)
+        .map(PlayerId)
         .map_err(|_| malformed(format!("character id {} is negative", record.id)))?;
 
     let vocation = Vocation::from_i16(record.vocation)
@@ -55,7 +58,7 @@ pub fn snapshot_from_record(
     for row in record.skills {
         let Some(skill_type) = i16_to_skill_type(row.skill_type) else {
             warn!(
-                character = id,
+                character = %id,
                 skill_type = row.skill_type,
                 "ignoring a skill type this build does not know"
             );
@@ -73,12 +76,12 @@ pub fn snapshot_from_record(
     let mut inventory: HashMap<InventorySlot, Item> = HashMap::new();
     for (slot_str, stored) in record.inventory {
         let Ok(slot_id) = slot_str.parse::<u16>() else {
-            warn!(character = id, slot = %slot_str, "ignoring a non-numeric inventory slot");
+            warn!(character = %id, slot = %slot_str, "ignoring a non-numeric inventory slot");
             continue;
         };
         let Some(slot) = InventorySlot::from_id(slot_id) else {
             warn!(
-                character = id,
+                character = %id,
                 slot = slot_id,
                 "ignoring an unknown inventory slot"
             );
@@ -104,13 +107,15 @@ pub fn snapshot_from_record(
         capacity: u32::try_from(record.capacity).map_err(|_| malformed("capacity out of range"))?,
         speed: u16::try_from(record.speed).map_err(|_| malformed("speed out of range"))?,
         outfit: (
-            u16::try_from(record.outfit.id).map_err(|_| malformed("outfit id out of range"))?,
-            (
-                colour(record.outfit.head, "outfit head")?,
-                colour(record.outfit.body, "outfit body")?,
-                colour(record.outfit.legs, "outfit legs")?,
-                colour(record.outfit.feet, "outfit feet")?,
-            ),
+            u16::try_from(record.outfit.id)
+                .map(OutfitId)
+                .map_err(|_| malformed("outfit id out of range"))?,
+            OutfitColors {
+                head: colour(record.outfit.head, "outfit head")?,
+                body: colour(record.outfit.body, "outfit body")?,
+                legs: colour(record.outfit.legs, "outfit legs")?,
+                feet: colour(record.outfit.feet, "outfit feet")?,
+            },
         ),
         skills,
         inventory,
@@ -176,7 +181,7 @@ fn restore_item(
     items: &HashMap<ItemId, Arc<ItemConfig>>,
     stored: StoredItemRecord,
 ) -> Option<Item> {
-    let config = match items.get(&stored.item_id) {
+    let config = match items.get(&ItemId(stored.item_id)) {
         Some(c) => c.clone(),
         None => {
             warn!(
@@ -524,7 +529,7 @@ mod tests {
     fn a_record_becomes_a_snapshot() {
         let snapshot = snapshot_from_record(a_record(), &no_items()).unwrap();
 
-        assert_eq!(snapshot.id, 7);
+        assert_eq!(snapshot.id, PlayerId(7));
         assert_eq!(snapshot.account_id, 3);
         assert_eq!(snapshot.name, "Rizael");
         assert_eq!(
@@ -551,7 +556,10 @@ mod tests {
         // so a mis-shifted mapping reads a neighbour and still type-checks. Both
         // are pinned here against fixture values that differ from every neighbour.
         assert_eq!(snapshot.speed, 100);
-        assert_eq!(snapshot.outfit, (128, (78, 69, 58, 76)));
+        assert_eq!(
+            snapshot.outfit,
+            (OutfitId(128), OutfitColors::new(78, 69, 58, 76))
+        );
     }
 
     #[test]
@@ -657,7 +665,7 @@ mod tests {
         let repo = SqlLoginRepository::new(pool, no_items());
         let snapshot = repo.redeem(&token).await.unwrap();
 
-        assert_eq!(snapshot.id, character_id as u32);
+        assert_eq!(snapshot.id, PlayerId(character_id as u32));
         assert_eq!(snapshot.account_id, account_id);
         assert_eq!(
             snapshot.position,
@@ -685,8 +693,8 @@ mod tests {
         let repo = SqlLoginRepository::new(pool, no_items());
         let snapshot = repo.redeem(&second_token).await.unwrap();
 
-        assert_eq!(snapshot.id, second_id as u32);
-        assert_ne!(snapshot.id, first_id as u32);
+        assert_eq!(snapshot.id, PlayerId(second_id as u32));
+        assert_ne!(snapshot.id, PlayerId(first_id as u32));
     }
 
     #[sqlx::test(migrations = "../site/migrations")]
@@ -872,7 +880,7 @@ mod http_tests {
 
         let snapshot = repo(&server).redeem("a-token").await.unwrap();
 
-        assert_eq!(snapshot.id, 7);
+        assert_eq!(snapshot.id, PlayerId(7));
         assert_eq!(snapshot.name, "Rizael");
         assert_eq!(snapshot.facing, Facing::South);
         // The scalar shape of these two is the half of the contract this mock

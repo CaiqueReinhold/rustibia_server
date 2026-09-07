@@ -64,7 +64,7 @@ impl CreatureBehaviorActor {
                     let creature_state = states
                         .entry(agent_key)
                         .or_insert_with(CreatureState::default);
-                    let roll = Rolls::stream(global_seed, tick, agent_key.data().as_ffi());
+                    let roll = Rolls::stream(global_seed, tick.0, agent_key.data().as_ffi());
                     decide_action(CreatureBehaviourContext {
                         creature: agent_key,
                         map: &map,

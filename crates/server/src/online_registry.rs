@@ -2,17 +2,18 @@ use std::collections::HashSet;
 use std::sync::{Arc, Mutex};
 
 use crate::actors::persistence::PersistenceActorHandle;
+use crate::entities::player::PlayerId;
 
 #[derive(Clone)]
 pub struct OnlineRegistry {
-    inner: Arc<Mutex<HashSet<u32>>>,
+    inner: Arc<Mutex<HashSet<PlayerId>>>,
     persistence: PersistenceActorHandle,
 }
 
 pub struct RegistryGuard {
-    inner: Arc<Mutex<HashSet<u32>>>,
+    inner: Arc<Mutex<HashSet<PlayerId>>>,
     persistence: PersistenceActorHandle,
-    character_id: u32,
+    character_id: PlayerId,
 }
 
 impl OnlineRegistry {
@@ -26,7 +27,7 @@ impl OnlineRegistry {
     /// Returns Some(guard) if character_id was not already registered.
     /// Returns None if the character is already online.
     /// The returned guard removes the entry — in memory and in the database — on drop.
-    pub fn try_register(&self, character_id: u32) -> Option<RegistryGuard> {
+    pub fn try_register(&self, character_id: PlayerId) -> Option<RegistryGuard> {
         let mut set = self.inner.lock().unwrap_or_else(|p| p.into_inner());
         if set.insert(character_id) {
             drop(set);
@@ -73,11 +74,14 @@ mod tests {
     fn test_first_register_succeeds() {
         let (registry, mut rx) = a_registry();
 
-        let guard = registry.try_register(1);
+        let guard = registry.try_register(PlayerId(1));
 
         assert!(guard.is_some());
         assert!(
-            matches!(rx.try_recv(), Ok(PersistenceCommand::MarkOnline(1))),
+            matches!(
+                rx.try_recv(),
+                Ok(PersistenceCommand::MarkOnline(PlayerId(1)))
+            ),
             "registering must publish MarkOnline so the website's player count updates"
         );
     }
@@ -86,8 +90,10 @@ mod tests {
     fn test_duplicate_register_fails_while_guard_alive() {
         let (registry, mut rx) = a_registry();
 
-        let _first = registry.try_register(1).expect("first register succeeds");
-        let second = registry.try_register(1);
+        let _first = registry
+            .try_register(PlayerId(1))
+            .expect("first register succeeds");
+        let second = registry.try_register(PlayerId(1));
 
         assert!(
             second.is_none(),
@@ -95,7 +101,7 @@ mod tests {
         );
         assert!(matches!(
             rx.try_recv(),
-            Ok(PersistenceCommand::MarkOnline(1))
+            Ok(PersistenceCommand::MarkOnline(PlayerId(1)))
         ));
         assert!(
             rx.try_recv().is_err(),
@@ -107,10 +113,12 @@ mod tests {
     fn test_drop_releases_slot() {
         let (registry, mut rx) = a_registry();
 
-        let guard = registry.try_register(1).expect("first register succeeds");
+        let guard = registry
+            .try_register(PlayerId(1))
+            .expect("first register succeeds");
         drop(guard);
 
-        let second = registry.try_register(1);
+        let second = registry.try_register(PlayerId(1));
         assert!(
             second.is_some(),
             "dropping the guard must free the slot for a reconnect"
@@ -121,9 +129,9 @@ mod tests {
             matches!(
                 sent.as_slice(),
                 [
-                    PersistenceCommand::MarkOnline(1),
-                    PersistenceCommand::MarkOffline(1),
-                    PersistenceCommand::MarkOnline(1)
+                    PersistenceCommand::MarkOnline(PlayerId(1)),
+                    PersistenceCommand::MarkOffline(PlayerId(1)),
+                    PersistenceCommand::MarkOnline(PlayerId(1))
                 ]
             ),
             "the guard's Drop must publish MarkOffline between the two logins, or the \
@@ -135,8 +143,8 @@ mod tests {
     fn test_different_characters_can_register_simultaneously() {
         let (registry, _rx) = a_registry();
 
-        let first = registry.try_register(1);
-        let second = registry.try_register(2);
+        let first = registry.try_register(PlayerId(1));
+        let second = registry.try_register(PlayerId(2));
 
         assert!(first.is_some());
         assert!(

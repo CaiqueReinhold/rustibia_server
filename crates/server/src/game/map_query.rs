@@ -207,11 +207,11 @@ pub fn get_tile(map: &GameMap, position: &Position) -> Box<ItemStack> {
 pub fn retrieve_item<'a>(
     map: &'a GameMap,
     cli_item: &'a ClientItemRef,
-    containers: &'a LocalIdMap<ItemGuid>,
+    containers: &'a LocalIdMap<ItemGuid, ContainerId>,
     agent_key: AgentKey,
 ) -> Option<(&'a Item, ItemPlacement)> {
     if cli_item.position.is_container_coord() {
-        let container_id = cli_item.position.y as ContainerId;
+        let container_id = ContainerId(cli_item.position.y);
         let guid = containers.get_global(container_id)?;
         let (container, placement) = find_item_in_reach(map, guid, agent_key)?;
         let slot = cli_item.position.z as usize;
