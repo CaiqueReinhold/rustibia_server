@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use crate::entities::{
-    agent::{AgentKey, Facing},
+    agent::{Agent, AgentKey, Facing},
     combat::CombatDamage,
     creature::BloodType,
     effects::Missile,
@@ -10,6 +10,7 @@ use crate::entities::{
     items::{ItemGuid, ItemRef},
     position::{Direction, Position},
     skills::SkillType,
+    spells::SpellId,
 };
 use crate::persistence::player::PlayerSnapshot;
 
@@ -108,6 +109,16 @@ pub enum BroadcastMessage {
     PotionDrunk {
         target: AgentKey,
         position: Position,
+    },
+    SpellCast {
+        agent_key: AgentKey,
+        position: Position,
+        spell_id: SpellId,
+    },
+    SpellDenied {
+        agent_key: AgentKey,
+        position: Position,
+        reason: String,
     },
 }
 

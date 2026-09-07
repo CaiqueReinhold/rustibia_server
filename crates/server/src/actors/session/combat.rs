@@ -8,9 +8,10 @@ use crate::{
         creature::BloodType,
         effects::MissileId,
         position::Position,
+        spells::{CastTarget, SpellId, SpellTarget},
     },
     game::{combat::get_damage_visuals, config::GAME_CONFIG},
-    messages::{FloatingTextType, ServerMessage},
+    messages::{FloatingTextType, ServerMessage, TextMessageType},
 };
 
 impl SessionActor {
@@ -27,6 +28,39 @@ impl SessionActor {
                 seq,
             })
             .await;
+        Ok(())
+    }
+
+    pub(super) async fn handle_cast_spell(
+        &self,
+        spell_id: SpellId,
+        target: SpellTarget,
+    ) -> Result<()> {
+        let target = match target {
+            SpellTarget::None => CastTarget::None,
+            SpellTarget::Agent(agent_id) => {
+                let Some(key) = self.agents.get_global(agent_id) else {
+                    self.connection
+                        .send_message(ServerMessage::TextMessage {
+                            text: "Invalid target".to_owned(),
+                            message_type: TextMessageType::ActionDenied,
+                        })
+                        .await?;
+                    return Ok(());
+                };
+                CastTarget::Agent(*key)
+            }
+            SpellTarget::Position(pos) => CastTarget::Position(pos),
+        };
+
+        self.world
+            .send(WorldCommand::CastSpell {
+                agent_key: self.player_key,
+                spell: spell_id,
+                target,
+            })
+            .await;
+
         Ok(())
     }
 

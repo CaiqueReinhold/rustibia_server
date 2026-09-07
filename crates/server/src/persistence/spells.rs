@@ -10,7 +10,9 @@ use thiserror::Error;
 use crate::config::CONFIG;
 use crate::entities::combat::CombatElement;
 use crate::entities::effects::{AreaShape, AreaShapeId, EffectId, MissileId};
-use crate::entities::spells::{AreaOrigin, Spell, SpellEffect, SpellGroup, SpellId, SpellTarget};
+use crate::entities::spells::{
+    AreaOrigin, Spell, SpellAttack, SpellEffect, SpellGroup, SpellId, SpellTargetMode,
+};
 use crate::entities::vocation::Vocation;
 use crate::game::TickDelta;
 use crate::persistence::areas::AREA_SHAPES;
@@ -159,7 +161,7 @@ fn parse_target(
     name: &str,
     value: serde_yaml::Value,
     shapes: &HashMap<AreaShapeId, Arc<AreaShape>>,
-) -> Result<SpellTarget, SpellsLoadError> {
+) -> Result<SpellTargetMode, SpellsLoadError> {
     let unknown = |target: String| SpellsLoadError::UnknownTarget {
         id,
         name: name.to_string(),
@@ -168,8 +170,8 @@ fn parse_target(
 
     if let Some(named) = value.as_str() {
         return match named {
-            "self" => Ok(SpellTarget::Caster),
-            "target" => Ok(SpellTarget::Target),
+            "self" => Ok(SpellTargetMode::Caster),
+            "target" => Ok(SpellTargetMode::Target),
             other => Err(unknown(other.to_string())),
         };
     }
@@ -189,7 +191,7 @@ fn parse_target(
             shape: area.shape.clone(),
         })?;
 
-    Ok(SpellTarget::Area {
+    Ok(SpellTargetMode::Area {
         origin: parse_origin(area.origin),
         rotate: area.rotate,
         shape,
@@ -210,7 +212,7 @@ fn parse_effect(
     match kind.as_str() {
         "attack" => {
             let attack: RawAttack = serde_yaml::from_value(payload)?;
-            Ok(SpellEffect::Attack {
+            let spell_attack = SpellAttack {
                 target: parse_target(id, name, attack.target, shapes)?,
                 element: attack.element,
                 base_power: attack.base_power,
@@ -218,7 +220,8 @@ fn parse_effect(
                 magic_factor: parse_factor(id, name, "magic_factor", attack.magic_factor)?,
                 effect_id: attack.effect_id,
                 missile_id: attack.missile_id,
-            })
+            };
+            Ok(SpellEffect::Attack(spell_attack))
         }
         other => Err(SpellsLoadError::UnknownEffect {
             id,
@@ -332,15 +335,14 @@ spells:
           effect_id: 37
 "#;
 
-    fn attack(spell: &Spell) -> (&SpellTarget, u16, u16, Option<MissileId>) {
+    fn attack(spell: &Spell) -> (&SpellTargetMode, u16, u16, Option<MissileId>) {
         match &spell.effects[0] {
-            SpellEffect::Attack {
-                target,
-                level_factor,
-                magic_factor,
-                missile_id,
-                ..
-            } => (target, *level_factor, *magic_factor, *missile_id),
+            SpellEffect::Attack(attk) => (
+                &attk.target,
+                attk.level_factor,
+                attk.magic_factor,
+                attk.missile_id,
+            ),
         }
     }
 
@@ -350,7 +352,7 @@ spells:
         let spell = &spells[&spells.keys().copied().next().unwrap()];
 
         match attack(spell).0 {
-            SpellTarget::Area {
+            SpellTargetMode::Area {
                 origin: AreaOrigin::Caster,
                 rotate: true,
                 shape,
@@ -469,7 +471,7 @@ spells:
         assert_eq!(attack(&named("Fire Wave")).3, None);
         assert!(matches!(
             attack(&named("Divine Caldera")).0,
-            SpellTarget::Area { rotate: false, .. }
+            SpellTargetMode::Area { rotate: false, .. }
         ));
     }
 

@@ -18,13 +18,14 @@ use crate::entities::creature::CreatureKind;
 use crate::entities::items::{ItemGuid, ItemRef};
 use crate::entities::map::GameMap;
 use crate::entities::position::{Direction, ItemPlacement, Position};
+use crate::entities::spells::{CastTarget, SpellId};
 use crate::game::creature_behavior::CreatureAction;
 use crate::game::events::BroadcastMessage;
 use crate::game::item_multi_action::UseTarget;
 use crate::game::random::Rolls;
 use crate::game::{
     Tick, TickCtx, TickDelta, chat, events, item_action, item_movement, item_multi_action,
-    movement, systems, targeting,
+    movement, spells, systems, targeting,
 };
 use crate::persistence::creatures::CREATURE_KINDS;
 use crate::persistence::spawns::SpawnPoint;
@@ -82,6 +83,11 @@ pub enum WorldCommand {
         agent_key: AgentKey,
         target: Option<AgentKey>,
         seq: u32,
+    },
+    CastSpell {
+        agent_key: AgentKey,
+        spell: SpellId,
+        target: CastTarget,
     },
 }
 
@@ -447,6 +453,16 @@ impl WorldActor {
             }
             WorldCommand::Say { agent_key, message } => {
                 self.with_ctx(broadcast_messages, |ctx| chat::say(ctx, agent_key, message));
+                Ok(())
+            }
+            WorldCommand::CastSpell {
+                agent_key,
+                spell,
+                target,
+            } => {
+                self.with_ctx(broadcast_messages, |ctx| {
+                    spells::cast_spell(ctx, agent_key, spell, target)
+                });
                 Ok(())
             }
         };

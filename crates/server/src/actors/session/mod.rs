@@ -361,6 +361,9 @@ impl SessionActor {
             ClientMessage::SetTarget { agent_id, seq } => {
                 self.handle_set_target(agent_id, seq).await
             }
+            ClientMessage::CastSpell { spell_id, target } => {
+                self.handle_cast_spell(spell_id, target).await
+            }
         }
     }
 
@@ -437,6 +440,16 @@ impl SessionActor {
             BroadcastMessage::PotionDrunk { target, position } => {
                 self.potion_drunk(target, position).await
             }
+            BroadcastMessage::SpellCast {
+                agent_key,
+                position,
+                spell_id,
+            } => Ok(()),
+            BroadcastMessage::SpellDenied {
+                agent_key,
+                position,
+                reason,
+            } => Ok(()),
         }
     }
 

@@ -14,6 +14,7 @@ use crate::{
         items::{ClientItemRef, ContainerId, ItemId},
         position::{Direction, Position},
         skills::SkillType,
+        spells::{SpellId, SpellTarget},
     },
     game::config::Color,
 };
@@ -39,6 +40,7 @@ const CLI_OPEN_CHANNEL: u8 = 14;
 const CLI_CLOSE_CHANNEL: u8 = 15;
 const CLI_OPEN_PM_CHAT: u8 = 16;
 const CLI_SET_TARGET: u8 = 17;
+const CLI_CAST_SPELL: u8 = 18;
 
 #[derive(Clone, Debug)]
 pub enum ClientMessage {
@@ -94,6 +96,10 @@ pub enum ClientMessage {
         agent_id: Option<AgentId>,
         seq: u32,
     },
+    CastSpell {
+        spell_id: SpellId,
+        target: SpellTarget,
+    },
 }
 
 // server
@@ -128,6 +134,7 @@ const SRV_AGENT_MANA_CHANGED: u8 = 27;
 const SRV_PLAYER_SKILLS: u8 = 28;
 const SRV_SKILL_CHANGED: u8 = 29;
 const SRV_EXPERIENCE_CHANGED: u8 = 30;
+const SRV_SPELL_CAST: u8 = 31;
 
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
@@ -293,6 +300,11 @@ pub enum ServerMessage {
     ExperienceChanged {
         experience: u64,
     },
+    SpellCast {
+        spell: SpellId,
+        spell_cooldown_ms: u32,
+        group_cooldown_ms: u32,
+    },
 }
 
 #[derive(Error, Debug)]
@@ -439,6 +451,10 @@ impl Decoder for GameMessageCodec {
                 agent_id: decode_optional_agent(buf.get_u16_le()),
                 seq: buf.get_u32_le(),
             })),
+            CLI_CAST_SPELL => Ok(Some(ClientMessage::CastSpell {
+                spell_id: SpellId(buf.get_u16_le()),
+                target: decode_spell_target(buf)?,
+            })),
             _ => Err(MessageDecodeError::WrongSequence),
         }
     }
@@ -481,6 +497,15 @@ fn decode_chat_message_type(b: u8) -> Result<ChatMessageType, MessageDecodeError
         0x01 => Ok(ChatMessageType::Local),
         0x02 => Ok(ChatMessageType::Private),
         0x03 => Ok(ChatMessageType::Channel),
+        _ => Err(MessageDecodeError::WrongSequence),
+    }
+}
+
+fn decode_spell_target(buf: &mut BytesMut) -> Result<SpellTarget, MessageDecodeError> {
+    match buf.get_u8() {
+        0x00 => Ok(SpellTarget::None),
+        0x01 => Ok(SpellTarget::Agent(AgentId(buf.get_u16_le()))),
+        0x02 => Ok(SpellTarget::Position(decode_position(buf))),
         _ => Err(MessageDecodeError::WrongSequence),
     }
 }
@@ -807,6 +832,16 @@ impl Encoder<ServerMessage> for GameMessageCodec {
             ServerMessage::ExperienceChanged { experience } => {
                 dst.put_u8(SRV_EXPERIENCE_CHANGED);
                 dst.put_u64_le(experience);
+            }
+            ServerMessage::SpellCast {
+                spell,
+                spell_cooldown_ms,
+                group_cooldown_ms,
+            } => {
+                dst.put_u8(SRV_SPELL_CAST);
+                dst.put_u16_le(spell.0);
+                dst.put_u32_le(spell_cooldown_ms);
+                dst.put_u32_le(group_cooldown_ms);
             }
         }
 

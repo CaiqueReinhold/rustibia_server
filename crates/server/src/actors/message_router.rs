@@ -422,6 +422,26 @@ impl MessageRouterActor {
                     None,
                 );
             }
+            BroadcastMessage::SpellCast { position, .. } => {
+                self.send_to_rect(
+                    message,
+                    map,
+                    Rect::player_viewport(position),
+                    position.z,
+                    true,
+                    None,
+                );
+            }
+            BroadcastMessage::SpellDenied { position, .. } => {
+                self.send_to_rect(
+                    message,
+                    map,
+                    Rect::player_viewport(position),
+                    position.z,
+                    true,
+                    None,
+                );
+            }
         }
     }
 

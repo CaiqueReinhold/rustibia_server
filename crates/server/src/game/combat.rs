@@ -14,6 +14,7 @@ use crate::{
         player::Player,
         position::{ItemPlacement, Position},
         skills::SkillType,
+        spells::{CastTarget, SpellAttack},
     },
     game::{
         Tick, TickCtx,
@@ -152,6 +153,17 @@ pub fn plan_auto_attack(
         missile,
         area_effect: None,
     })
+}
+
+pub fn plan_spell_attack(
+    map: &GameMap,
+    attacker: AgentKey,
+    roll: &mut Rolls,
+    current_tick: Tick,
+    spell: &SpellAttack,
+    cast_target: &CastTarget,
+) -> Option<AttackPlan> {
+    None
 }
 
 pub fn execute_attack(ctx: &mut TickCtx, plan: AttackPlan) {

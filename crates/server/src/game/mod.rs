@@ -16,6 +16,7 @@ pub mod movement;
 pub mod pathfinding;
 pub mod random;
 pub mod skills;
+pub mod spells;
 pub mod systems;
 pub mod targeting;
 
