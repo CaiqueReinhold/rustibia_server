@@ -1,0 +1,69 @@
+spells:
+  # TODO: healing has no planner yet, and `SpellEffect` has no `Heal` variant, so the
+  # loader refuses this effect rather than dropping it. Uncomment when healing lands.
+  # - id: 1
+  #   name: Light Healing
+  #   group: healing
+  #   cooldown_ticks: 20
+  #   mana: 20
+  #   level: 8
+  #   vocations: [druid, sorcerer, paladin]
+  #   effects:
+  #     - heal:
+  #         target: self
+  #         base_power: 8
+  #         level_factor: 0.2
+  #         magic_factor: 1.4
+  #         effect_id: 13
+  - id: 2
+    name: Fire Wave
+    group: attack
+    cooldown_ticks: 40
+    mana: 25
+    level: 18
+    vocations: [sorcerer]
+    effects:
+      - attack:
+          target:
+            area:
+              origin: self
+              shape: small_wave
+          element: fire
+          base_power: 40
+          level_factor: 0.2
+          magic_factor: 0.4
+          effect_id: 37
+  - id: 3
+    name: Divine Caldera
+    group: attack
+    cooldown_ticks: 80
+    mana: 160
+    level: 50
+    vocations: [paladin]
+    effects:
+      - attack:
+          target:
+            area:
+              origin: self
+              shape: circle3
+          element: holy
+          base_power: 160
+          level_factor: 0.2
+          magic_factor: 0.4
+          effect_id: 37
+  - id: 4
+    name: Energy Strike
+    group: attack
+    cooldown_ticks: 40
+    mana: 25
+    level: 12
+    vocations: [sorcerer, druid]
+    effects:
+      - attack:
+          target: target
+          element: energy
+          base_power: 45
+          level_factor: 0.2
+          magic_factor: 1.5
+          effect_id: 38
+          missile_id: 36

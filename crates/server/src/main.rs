@@ -33,6 +33,7 @@ use crate::{
     persistence::{
         login::{HttpLoginRepository, LoginRepository},
         player::PlayerRepository,
+        spells::SPELLS,
     },
 };
 
@@ -49,6 +50,7 @@ async fn main() -> Result<()> {
 
     // access lazy config to make sure it loaded correctly
     let _ = &GAME_CONFIG.action;
+    let _ = &SPELLS.is_empty();
 
     let seed = RandomState::new().build_hasher().finish();
 

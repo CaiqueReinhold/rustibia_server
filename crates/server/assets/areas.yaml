@@ -1,0 +1,19 @@
+areas:
+  burst_arrow:
+    - "XXX"
+    - "X@X"
+    - "XXX"
+  small_wave:
+    - "XXXXX"
+    - " XXX "
+    - " XXX "
+    - "  X  "
+    - "  0  "
+  circle3:
+    - "  XXX  "
+    - " XXXXX "
+    - "XXXXXXX"
+    - "XXX@XXX"
+    - "XXXXXXX"
+    - " XXXXX "
+    - "  XXX  "

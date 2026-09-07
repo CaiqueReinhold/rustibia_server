@@ -236,6 +236,8 @@ pub fn get_damage_visuals(
         CombatElement::Earth => GAME_CONFIG.effect_ids.earth_hit,
         CombatElement::Energy => GAME_CONFIG.effect_ids.energy_hit,
         CombatElement::Fire => GAME_CONFIG.effect_ids.fire_hit,
+        CombatElement::Holy => GAME_CONFIG.effect_ids.holy_hit,
+        CombatElement::Death => GAME_CONFIG.effect_ids.death_hit,
     };
     let color = match damage.element {
         CombatElement::Physical => match blood_type {
@@ -247,6 +249,8 @@ pub fn get_damage_visuals(
         CombatElement::Earth => GAME_CONFIG.text_colors.lightgreen,
         CombatElement::Energy => GAME_CONFIG.text_colors.eletric_purple,
         CombatElement::Fire => GAME_CONFIG.text_colors.orange,
+        CombatElement::Holy => GAME_CONFIG.text_colors.red,
+        CombatElement::Death => GAME_CONFIG.text_colors.red,
     };
     (effect, color)
 }

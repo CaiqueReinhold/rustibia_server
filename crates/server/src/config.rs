@@ -16,15 +16,12 @@ pub struct ServerConfig {
     pub creatures_dir_path: String,
     pub game_config_path: String,
     pub spawns_file_path: String,
+    pub areas_file_path: String,
+    pub spells_file_path: String,
     pub player_despawn_delay: Duration,
     pub database_url: String,
     pub save_interval: Duration,
-    /// The site's internal origin. Login is a call to this; there is no SQL fallback, so
-    /// if the site is unreachable nobody can log in until it returns.
     pub site_internal_url: String,
-    /// The client identity and CA for that call. All three must load or the process
-    /// refuses to start — a game server that cannot authenticate to the site can do
-    /// nothing useful, and failing at boot beats failing at each player's first login.
     pub internal_tls_cert: String,
     pub internal_tls_key: String,
     pub internal_tls_ca: String,
@@ -42,6 +39,8 @@ impl Default for ServerConfig {
             creatures_dir_path: "assets/creatures".to_string(),
             game_config_path: "assets/game_conf.yaml".to_string(),
             spawns_file_path: "assets/spawns.yaml".to_string(),
+            areas_file_path: "assets/areas.yaml".to_string(),
+            spells_file_path: "assets/spells.yaml".to_string(),
             player_despawn_delay: Duration::from_secs(2), // TODO: move to game config
             database_url: std::env::var("DATABASE_URL")
                 .unwrap_or_else(|_| "postgres://localhost/rustibia".to_string()),

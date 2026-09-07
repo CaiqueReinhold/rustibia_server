@@ -88,6 +88,8 @@ pub struct EffectsConfig {
     pub earth_hit: EffectId,
     pub fire_hit: EffectId,
     pub energy_hit: EffectId,
+    pub holy_hit: EffectId,
+    pub death_hit: EffectId,
     pub potion_use: EffectId,
     pub miss: EffectId,
 }

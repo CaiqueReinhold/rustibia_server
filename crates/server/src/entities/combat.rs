@@ -7,13 +7,16 @@ use crate::entities::{
     skills::SkillType,
 };
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum CombatElement {
     Physical,
     Energy,
     Fire,
     Earth,
     Ice,
+    Holy,
+    Death,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
