@@ -1616,6 +1616,84 @@ mod tests {
         ));
     }
 
+    /// The server half of a two-sided agreement the compiler cannot hold: `position` is an
+    /// anchor, and a tile draws only if `delta` names it. A single-tile effect must
+    /// therefore put `(0, 0)` on the wire — the two trailing zero bytes below. Drop them
+    /// and every hit splash, puff and potion silently stops rendering, with nothing failing
+    /// to build on either side.
+    ///
+    /// Paired with the client's `core::effects::the_anchor_is_not_drawn_unless_a_delta_names_it`.
+    #[test]
+    fn a_single_tile_effect_names_its_own_tile() {
+        let mut dst = BytesMut::new();
+        GameMessageCodec {}
+            .encode(
+                ServerMessage::ShowEffect {
+                    effect_id: EffectId(13),
+                    position: Position::new(100, 200, 7),
+                    delta: vec![(0, 0)],
+                },
+                &mut dst,
+            )
+            .unwrap();
+
+        assert_eq!(
+            &dst[..],
+            &[
+                10,
+                0, // payload length
+                SRV_SHOW_EFFECT,
+                13,
+                0, // effect 13
+                100,
+                0, // x
+                200,
+                0, // y
+                7, // z
+                0,
+                0, // delta (0, 0) -- the anchor's own tile
+            ]
+        );
+    }
+
+    /// An area whose mask spares its origin (`0` in `areas.yaml`) simply leaves `(0, 0)`
+    /// out. Nothing else about the frame changes, which is exactly why the rule needs a
+    /// test rather than a type.
+    #[test]
+    fn an_area_that_spares_its_origin_omits_the_zero_delta() {
+        let mut dst = BytesMut::new();
+        GameMessageCodec {}
+            .encode(
+                ServerMessage::ShowEffect {
+                    effect_id: EffectId(13),
+                    position: Position::new(100, 200, 7),
+                    delta: vec![(0, -1), (0, -2)],
+                },
+                &mut dst,
+            )
+            .unwrap();
+
+        assert_eq!(
+            &dst[..],
+            &[
+                12,
+                0, // payload length
+                SRV_SHOW_EFFECT,
+                13,
+                0, // effect 13
+                100,
+                0, // x
+                200,
+                0, // y
+                7, // z
+                0,
+                0xFF, // (0, -1)
+                0,
+                0xFE, // (0, -2)
+            ]
+        );
+    }
+
     #[test]
     fn player_skills_encodes_a_known_frame() {
         let mut dst = BytesMut::new();

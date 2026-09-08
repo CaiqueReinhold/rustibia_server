@@ -90,7 +90,6 @@ pub struct EffectsConfig {
     pub energy_hit: EffectId,
     pub holy_hit: EffectId,
     pub death_hit: EffectId,
-    pub potion_use: EffectId,
     pub miss: EffectId,
     pub puff: EffectId,
     pub healing_spell: EffectId,
@@ -102,12 +101,14 @@ pub struct Color(pub u8, pub u8, pub u8);
 #[derive(Deserialize)]
 pub struct TextColors {
     pub white: Color,
+    pub blue: Color,
     pub red: Color,
     pub lightgreen: Color,
     pub lightblue: Color,
     pub skyblue: Color,
     pub orange: Color,
     pub eletric_purple: Color,
+    pub palepink: Color,
 }
 
 #[derive(Deserialize)]

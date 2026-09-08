@@ -148,7 +148,7 @@ pub fn execute_healing(ctx: &mut TickCtx, plan: HealPlan) {
             area_effect: AreaEffect {
                 effect_id: GAME_CONFIG.effect_ids.healing_spell,
                 origin: caster_pos.clone(),
-                delta: Vec::new(),
+                delta: vec![(0, 0)],
             },
         });
     }
@@ -164,12 +164,10 @@ fn restore_agent(ctx: &mut TickCtx, agent_key: AgentKey, restore: &Restore) {
 
     let life = restore
         .life
-        .map(|amount| amount.min(agent.life().available()))
-        .filter(|amount| *amount > 0);
+        .map(|amount| amount.min(agent.life().available()));
     let mana = restore
         .mana
-        .map(|amount| amount.min(agent.mana().available()))
-        .filter(|amount| *amount > 0);
+        .map(|amount| amount.min(agent.mana().available()));
 
     if let Some(life) = life {
         agent.restore_life(life);

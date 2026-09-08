@@ -940,6 +940,9 @@ mod tests {
         );
     }
 
+    /// A creature's mana pool is 0/0, so there is nothing to restore -- but the restore is
+    /// still announced at zero, because that event is what puts the effect over the tile.
+    /// Silence here would be a potion that visibly did nothing.
     #[test]
     fn a_mana_potion_on_a_creature_spends_the_charge_and_restores_nothing() {
         let drunk = drink_potion_on(
@@ -952,7 +955,18 @@ mod tests {
 
         assert!(!drunk.denied);
         assert_eq!(drunk.charges_left, Some(2));
-        assert_eq!(drunk.broadcast_kinds(), Vec::<&str>::new());
+        assert_eq!(drunk.broadcast_kinds(), ["mana"]);
+        assert!(
+            drunk.broadcasts.iter().any(|b| matches!(
+                b,
+                BroadcastMessage::AgentHealed {
+                    amount: 0,
+                    restore_type: RestoreType::Mana,
+                    ..
+                }
+            )),
+            "a creature has no mana to take, so the restore must report zero"
+        );
     }
 
     #[test]

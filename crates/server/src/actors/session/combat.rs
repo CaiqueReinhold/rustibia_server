@@ -86,7 +86,7 @@ impl SessionActor {
             .send_message(ServerMessage::ShowEffect {
                 effect_id: effect,
                 position: position.clone(),
-                delta: Vec::new(),
+                delta: vec![(0, 0)],
             })
             .await?;
         if damage.value > 0 {
@@ -126,16 +126,6 @@ impl SessionActor {
     }
 
     pub(super) async fn potion_drunk(&self, target: AgentKey, position: Position) -> Result<()> {
-        self.connection
-            .send_message(ServerMessage::ShowEffect {
-                effect_id: GAME_CONFIG.effect_ids.potion_use,
-                position: position.clone(),
-                delta: Vec::new(),
-            })
-            .await?;
-
-        // The text carries no agent, but it is still only for a drinker
-        // this session has told the client about.
         if self.agents.get_local(&target).is_some() {
             self.connection
                 .send_message(ServerMessage::FloatingText {
@@ -156,6 +146,14 @@ impl SessionActor {
         amount: u32,
         restore_type: RestoreType,
     ) -> Result<()> {
+        self.connection
+            .send_message(ServerMessage::ShowEffect {
+                effect_id: GAME_CONFIG.effect_ids.healing_spell,
+                position: position.clone(),
+                delta: vec![(0, 0)],
+            })
+            .await?;
+
         if amount > 0 {
             self.connection
                 .send_message(ServerMessage::FloatingText {
@@ -163,8 +161,8 @@ impl SessionActor {
                     position,
                     text_type: FloatingTextType::HitPoints,
                     color: Some(match restore_type {
-                        RestoreType::Life => GAME_CONFIG.text_colors.lightgreen,
-                        RestoreType::Mana => GAME_CONFIG.text_colors.lightblue,
+                        RestoreType::Life => GAME_CONFIG.text_colors.palepink,
+                        RestoreType::Mana => GAME_CONFIG.text_colors.blue,
                     }),
                 })
                 .await?;
@@ -181,7 +179,7 @@ impl SessionActor {
             .send_message(ServerMessage::ShowEffect {
                 effect_id: GAME_CONFIG.effect_ids.miss,
                 position,
-                delta: Vec::new(),
+                delta: vec![(0, 0)],
             })
             .await?;
         Ok(())
@@ -242,7 +240,7 @@ impl SessionActor {
             .send_message(ServerMessage::ShowEffect {
                 effect_id: GAME_CONFIG.effect_ids.puff,
                 position,
-                delta: Vec::new(),
+                delta: vec![(0, 0)],
             })
             .await?;
 
@@ -421,8 +419,11 @@ mod tests {
         assert_eq!(text, "You're exausted");
     }
 
+    /// The sparkle over the drinker is `AgentHealed`'s job now, not this one's — a potion
+    /// that emitted its own would draw the same effect twice on the same tile. All that is
+    /// left here is the "Aaaah...", and it goes only to a session that knows the drinker.
     #[tokio::test]
-    async fn drinking_sends_the_effect_and_the_creature_say() {
+    async fn drinking_says_aaah_over_a_drinker_this_session_knows() {
         let mut map = GameMap::new();
         let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
         let (mut session, mut connection_rx, _world_rx, _tick_tx) = SessionActor::for_test(me, map);
@@ -437,19 +438,19 @@ mod tests {
         assert!(
             sent.iter().any(|c| matches!(
                 c,
-                ConnectionCommand::SendPlayerMessage(ServerMessage::ShowEffect { .. })
-            )),
-            "no effect was sent: {sent:?}"
-        );
-        assert!(
-            sent.iter().any(|c| matches!(
-                c,
                 ConnectionCommand::SendPlayerMessage(ServerMessage::FloatingText {
                     text_type: FloatingTextType::CreatureSay,
                     ..
                 })
             )),
             "no creature say was sent: {sent:?}"
+        );
+        assert!(
+            !sent.iter().any(|c| matches!(
+                c,
+                ConnectionCommand::SendPlayerMessage(ServerMessage::ShowEffect { .. })
+            )),
+            "the heal draws the sparkle; a second one here would double it: {sent:?}"
         );
     }
 }

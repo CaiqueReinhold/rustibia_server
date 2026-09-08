@@ -11,9 +11,10 @@ spells:
       - heal:
           target:
             type: self
-          base_power: 8
+          base_power: 25
           level_factor: 0.2
           magic_factor: 1.4
+          spread: 0.4
   - id: 2
     name: Fire Wave
     words: exevo flam hur
@@ -33,7 +34,7 @@ spells:
           level_factor: 0.2
           magic_factor: 0.4
           spread: 0.25
-          effect_id: 37
+          effect_id: 16
   - id: 3
     name: Divine Caldera
     words: exevo mas san

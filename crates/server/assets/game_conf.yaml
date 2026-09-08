@@ -28,12 +28,12 @@ effect_ids:
   shield_hit: 3
   armor_hit: 4
   poison_hit: 17
-  ice_hit: 53
-  earth_hit: 51
+  ice_hit: 44
+  earth_hit: 9
   fire_hit: 37
-  holy_hit: 73
-  death_hit: 18
-  energy_hit: 38
+  holy_hit: 40
+  death_hit: 39
+  energy_hit: 12
   potion_use: 13
   miss: 3
   puff: 3
@@ -54,6 +54,7 @@ text_colors:
   yellow: [255, 255, 0]
   white: [255, 255, 255]
   eletric_purple: [204, 51, 255]
+  palepink: [255, 204, 204]
 
 combat:
   auto_attack_ticks: 40
