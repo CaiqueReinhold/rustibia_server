@@ -33,8 +33,10 @@ pub enum SpellsLoadError {
         name: String,
         shape: AreaShapeId,
     },
-    #[error("spell {id:?} ({name}) has a {field} of {value}, outside 0.00..=655.35")]
-    Factor {
+    #[error(
+        "spell {id:?} ({name}) has a {field} of {value}, which must be a finite number of 0 or more"
+    )]
+    Number {
         id: SpellId,
         name: String,
         field: &'static str,
@@ -50,7 +52,7 @@ pub enum SpellsLoadError {
         name: String,
         kind: String,
     },
-    #[error("spell {id:?} ({name}) targets `{target}`, not `self`, `target` or an `area`")]
+    #[error("spell {id:?} ({name}) targets `{target}`, not `self`, `target` or `area`")]
     UnknownTarget {
         id: SpellId,
         name: String,
@@ -82,7 +84,7 @@ struct RawSpell {
     group_cooldown: Option<TickDelta>,
     cooldown_ticks: TickDelta,
     mana: u32,
-    level: u32,
+    level: u16,
     vocations: Vec<Vocation>,
     effects: Vec<serde_yaml::Value>,
 }
@@ -92,12 +94,25 @@ struct RawSpell {
 struct RawAttack {
     target: serde_yaml::Value,
     element: CombatElement,
-    base_power: u16,
+    base_power: f64,
     level_factor: f64,
     magic_factor: f64,
+    spread: f64,
     effect_id: EffectId,
     #[serde(default)]
     missile_id: Option<MissileId>,
+}
+
+/// `self` carries no fields of its own, and this is what refuses one written under it rather
+/// than dropping it.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawCaster {}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawTargeted {
+    range: u16,
 }
 
 #[derive(Deserialize)]
@@ -119,24 +134,24 @@ enum RawOrigin {
 
 // ── Conversion ────────────────────────────────────────────────────────────────
 
-const FACTOR_SCALE: f64 = 100.0;
-
-fn parse_factor(
+/// Read as an `f64` and narrowed here so the error can name the number as authored: a value
+/// too large for an `f32` becomes an infinity on the way in, and `inf` names nothing.
+fn parse_number(
     id: SpellId,
     name: &str,
     field: &'static str,
     value: f64,
-) -> Result<u16, SpellsLoadError> {
-    let scaled = (value * FACTOR_SCALE).round();
-    if !scaled.is_finite() || scaled < 0.0 || scaled > f64::from(u16::MAX) {
-        return Err(SpellsLoadError::Factor {
+) -> Result<f32, SpellsLoadError> {
+    let narrowed = value as f32;
+    if !narrowed.is_finite() || narrowed < 0.0 {
+        return Err(SpellsLoadError::Number {
             id,
             name: name.to_string(),
             field,
             value,
         });
     }
-    Ok(scaled as u16)
+    Ok(narrowed)
 }
 
 fn single_entry(value: serde_yaml::Value) -> Option<(String, serde_yaml::Value)> {
@@ -149,6 +164,15 @@ fn single_entry(value: serde_yaml::Value) -> Option<(String, serde_yaml::Value)>
     }
 }
 
+/// A target is a mapping tagged by `type:`. Taking the tag out leaves exactly the fields of
+/// the mode it names, so `deny_unknown_fields` still catches a typo among them. Hand-rolled
+/// rather than an internally tagged serde enum because a `serde_yaml` error raised off a
+/// `Value` carries no line, and this way the error names the spell.
+fn take_type(value: &mut serde_yaml::Value) -> Option<String> {
+    let tag = value.as_mapping_mut()?.remove("type")?;
+    Some(tag.as_str()?.to_string())
+}
+
 fn parse_origin(origin: RawOrigin) -> AreaOrigin {
     match origin {
         RawOrigin::Caster => AreaOrigin::Caster,
@@ -159,7 +183,7 @@ fn parse_origin(origin: RawOrigin) -> AreaOrigin {
 fn parse_target(
     id: SpellId,
     name: &str,
-    value: serde_yaml::Value,
+    mut value: serde_yaml::Value,
     shapes: &HashMap<AreaShapeId, Arc<AreaShape>>,
 ) -> Result<SpellTargetMode, SpellsLoadError> {
     let unknown = |target: String| SpellsLoadError::UnknownTarget {
@@ -168,34 +192,40 @@ fn parse_target(
         target,
     };
 
-    if let Some(named) = value.as_str() {
-        return match named {
-            "self" => Ok(SpellTargetMode::Caster),
-            "target" => Ok(SpellTargetMode::Target),
-            other => Err(unknown(other.to_string())),
-        };
+    let kind =
+        take_type(&mut value).ok_or_else(|| unknown("a mapping without a `type`".to_string()))?;
+
+    match kind.as_str() {
+        "self" => {
+            let RawCaster {} = serde_yaml::from_value(value)?;
+            Ok(SpellTargetMode::Caster)
+        }
+        "target" => {
+            let targeted: RawTargeted = serde_yaml::from_value(value)?;
+            Ok(SpellTargetMode::Target {
+                range: targeted.range,
+            })
+        }
+        "area" => {
+            let area: RawArea = serde_yaml::from_value(value)?;
+            let shape =
+                shapes
+                    .get(&area.shape)
+                    .cloned()
+                    .ok_or_else(|| SpellsLoadError::UnknownShape {
+                        id,
+                        name: name.to_string(),
+                        shape: area.shape.clone(),
+                    })?;
+
+            Ok(SpellTargetMode::Area {
+                origin: parse_origin(area.origin),
+                rotate: area.rotate,
+                shape,
+            })
+        }
+        other => Err(unknown(other.to_string())),
     }
-
-    let (kind, payload) = single_entry(value).ok_or_else(|| unknown("a mapping".to_string()))?;
-    if kind != "area" {
-        return Err(unknown(kind));
-    }
-
-    let area: RawArea = serde_yaml::from_value(payload)?;
-    let shape = shapes
-        .get(&area.shape)
-        .cloned()
-        .ok_or_else(|| SpellsLoadError::UnknownShape {
-            id,
-            name: name.to_string(),
-            shape: area.shape.clone(),
-        })?;
-
-    Ok(SpellTargetMode::Area {
-        origin: parse_origin(area.origin),
-        rotate: area.rotate,
-        shape,
-    })
 }
 
 fn parse_effect(
@@ -215,9 +245,10 @@ fn parse_effect(
             let spell_attack = SpellAttack {
                 target: parse_target(id, name, attack.target, shapes)?,
                 element: attack.element,
-                base_power: attack.base_power,
-                level_factor: parse_factor(id, name, "level_factor", attack.level_factor)?,
-                magic_factor: parse_factor(id, name, "magic_factor", attack.magic_factor)?,
+                base_power: parse_number(id, name, "base_power", attack.base_power)?,
+                level_factor: parse_number(id, name, "level_factor", attack.level_factor)?,
+                magic_factor: parse_number(id, name, "magic_factor", attack.magic_factor)?,
+                spread: parse_number(id, name, "spread", attack.spread)?,
                 effect_id: attack.effect_id,
                 missile_id: attack.missile_id,
             };
@@ -324,34 +355,58 @@ spells:
     effects:
       - attack:
           target:
-            area:
-              origin: self
-              rotate: true
-              shape: probe
+            type: area
+            origin: self
+            rotate: true
+            shape: probe
           element: fire
           base_power: 40
           level_factor: 0.2
           magic_factor: 1.4
+          spread: 0.25
           effect_id: 37
 "#;
 
-    fn attack(spell: &Spell) -> (&SpellTargetMode, u16, u16, Option<MissileId>) {
+    const TARGET_SPELL: &str = r#"
+spells:
+  - id: 8
+    name: Test Strike
+    group: attack
+    cooldown_ticks: 40
+    mana: 25
+    level: 12
+    vocations: [sorcerer]
+    effects:
+      - attack:
+          target:
+            type: target
+            range: 4
+          element: energy
+          base_power: 45
+          level_factor: 0.2
+          magic_factor: 1.5
+          spread: 0.25
+          effect_id: 38
+          missile_id: 36
+"#;
+
+    fn only_spell(spells: &HashMap<SpellId, Arc<Spell>>) -> Arc<Spell> {
+        let id = spells.keys().copied().next().expect("loaded no spells");
+        spells[&id].clone()
+    }
+
+    fn attack(spell: &Spell) -> &SpellAttack {
         match &spell.effects[0] {
-            SpellEffect::Attack(attk) => (
-                &attk.target,
-                attk.level_factor,
-                attk.magic_factor,
-                attk.missile_id,
-            ),
+            SpellEffect::Attack(attack) => attack,
         }
     }
 
     #[test]
     fn an_area_spell_holds_the_shape_it_names() {
         let spells = load_spells_from_str(AREA_SPELL, &shape("probe")).unwrap();
-        let spell = &spells[&spells.keys().copied().next().unwrap()];
+        let spell = only_spell(&spells);
 
-        match attack(spell).0 {
+        match &attack(&spell).target {
             SpellTargetMode::Area {
                 origin: AreaOrigin::Caster,
                 rotate: true,
@@ -377,16 +432,53 @@ spells:
         );
     }
 
-    /// The scale pin. Authored decimals become hundredths; if this ever changes silently,
-    /// every spell's damage moves by a factor of a hundred and nothing fails to compile.
+    /// The scale pin. Every number an attack carries reaches `SpellAttack` as authored — the
+    /// loader scales nothing — and the damage formula owns what each one means. If this ever
+    /// changes silently, every spell's damage moves and nothing fails to compile.
     #[test]
-    fn a_factor_is_stored_in_hundredths() {
+    fn the_numbers_reach_the_spell_as_authored() {
         let spells = load_spells_from_str(AREA_SPELL, &shape("probe")).unwrap();
-        let spell = &spells[&spells.keys().copied().next().unwrap()];
-        let (_, level_factor, magic_factor, missile) = attack(spell);
+        let spell = only_spell(&spells);
+        let attack = attack(&spell);
 
-        assert_eq!((level_factor, magic_factor), (20, 140));
-        assert_eq!(missile, None, "a wave lands where it is cast");
+        assert_eq!(
+            (
+                attack.base_power,
+                attack.level_factor,
+                attack.magic_factor,
+                attack.spread
+            ),
+            (40.0, 0.2, 1.4, 0.25)
+        );
+        assert_eq!(attack.missile_id, None, "a wave lands where it is cast");
+    }
+
+    /// The range gates the cast, so a spell that loads without the range it was authored with
+    /// is one that reaches further than intended, or not at all.
+    #[test]
+    fn a_targeted_spell_carries_its_range() {
+        let spells = load_spells_from_str(TARGET_SPELL, &shape("probe")).unwrap();
+        let spell = only_spell(&spells);
+
+        assert!(
+            matches!(attack(&spell).target, SpellTargetMode::Target { range: 4 }),
+            "unexpected target mode: {:?}",
+            attack(&spell).target
+        );
+    }
+
+    /// `type:` names the mode, and a name this server has no mode for must not load as some
+    /// other mode — nor as a spell whose target silently defaults.
+    #[test]
+    fn a_target_type_the_server_cannot_run_is_refused() {
+        let contents = TARGET_SPELL.replace("type: target", "type: cone");
+        let error = load_spells_from_str(&contents, &shape("probe"))
+            .expect_err("an unknown target mode must not load");
+
+        assert!(
+            matches!(&error, SpellsLoadError::UnknownTarget { target, .. } if target == "cone"),
+            "unexpected error: {error}"
+        );
     }
 
     #[test]
@@ -398,7 +490,7 @@ spells:
         assert!(
             matches!(
                 error,
-                SpellsLoadError::Factor {
+                SpellsLoadError::Number {
                     field: "level_factor",
                     ..
                 }
@@ -467,10 +559,17 @@ spells:
                 .clone()
         };
 
-        assert_eq!(attack(&named("Energy Strike")).3, Some(MissileId(36)));
-        assert_eq!(attack(&named("Fire Wave")).3, None);
+        assert_eq!(
+            attack(&named("Energy Strike")).missile_id,
+            Some(MissileId(36))
+        );
         assert!(matches!(
-            attack(&named("Divine Caldera")).0,
+            attack(&named("Energy Strike")).target,
+            SpellTargetMode::Target { range: 3 }
+        ));
+        assert_eq!(attack(&named("Fire Wave")).missile_id, None);
+        assert!(matches!(
+            attack(&named("Divine Caldera")).target,
             SpellTargetMode::Area { rotate: false, .. }
         ));
     }

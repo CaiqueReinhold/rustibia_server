@@ -25,13 +25,14 @@ spells:
     effects:
       - attack:
           target:
-            area:
-              origin: self
-              shape: small_wave
+            type: area
+            origin: self
+            shape: small_wave
           element: fire
           base_power: 40
           level_factor: 0.2
           magic_factor: 0.4
+          spread: 0.25
           effect_id: 37
   - id: 3
     name: Divine Caldera
@@ -43,13 +44,14 @@ spells:
     effects:
       - attack:
           target:
-            area:
-              origin: self
-              shape: circle3
+            type: area
+            origin: self
+            shape: circle3
           element: holy
           base_power: 160
           level_factor: 0.2
           magic_factor: 0.4
+          spread: 0.25
           effect_id: 37
   - id: 4
     name: Energy Strike
@@ -60,10 +62,13 @@ spells:
     vocations: [sorcerer, druid]
     effects:
       - attack:
-          target: target
+          target:
+            type: target
+            range: 3
           element: energy
           base_power: 45
           level_factor: 0.2
           magic_factor: 1.5
+          spread: 0.25
           effect_id: 38
           missile_id: 36

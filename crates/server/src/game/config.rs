@@ -114,6 +114,9 @@ pub struct CombatConfig {
     pub pool_item_id: ItemId,
     pub human_corpse_item_id: ItemId,
     pub unarmed_skill: u16,
+    pub attack_group_cooldown: TickDelta,
+    pub healing_group_cooldown: TickDelta,
+    pub support_group_cooldown: TickDelta,
 }
 
 #[derive(Deserialize)]

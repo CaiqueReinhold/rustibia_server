@@ -1,6 +1,6 @@
 use crate::{
     entities::agent::AgentKey,
-    game::{TickCtx, combat, config::GAME_CONFIG, targeting},
+    game::{TickCtx, combat, targeting},
 };
 
 pub fn combat_system(ctx: &mut TickCtx) {
@@ -24,7 +24,7 @@ fn drive_auto_attack(ctx: &mut TickCtx, agent_key: AgentKey) {
         return;
     };
     if let Some(attacker) = ctx.map.get_agent_mut(plan.attacker) {
-        attacker.next_auto_attack_tick = ctx.tick + GAME_CONFIG.combat.auto_attack_ticks;
+        attacker.stamp_auto_attack(ctx.tick);
     }
     combat::execute_attack(ctx, plan);
 }

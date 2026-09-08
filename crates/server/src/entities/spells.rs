@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use strum::EnumCount;
+
 use crate::{
     entities::{
         agent::{AgentId, AgentKey},
@@ -8,7 +10,7 @@ use crate::{
         position::Position,
         vocation::Vocation,
     },
-    game::TickDelta,
+    game::{TickDelta, config::GAME_CONFIG},
 };
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, serde::Deserialize)]
@@ -16,12 +18,30 @@ use crate::{
 #[repr(transparent)]
 pub struct SpellId(pub u16);
 
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, serde::Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, serde::Deserialize, EnumCount)]
 #[serde(rename_all = "snake_case")]
 pub enum SpellGroup {
     Attack,
     Healing,
     Support,
+}
+
+impl SpellGroup {
+    pub fn index(&self) -> usize {
+        match self {
+            SpellGroup::Attack => 0,
+            SpellGroup::Healing => 1,
+            SpellGroup::Support => 2,
+        }
+    }
+
+    pub fn cooldown(&self) -> TickDelta {
+        match self {
+            SpellGroup::Attack => GAME_CONFIG.combat.attack_group_cooldown,
+            SpellGroup::Healing => GAME_CONFIG.combat.attack_group_cooldown,
+            SpellGroup::Support => GAME_CONFIG.combat.support_group_cooldown,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -32,7 +52,7 @@ pub struct Spell {
     pub group_cooldown: Option<TickDelta>,
     pub cooldown: TickDelta,
     pub mana: u32,
-    pub level: u32,
+    pub level: u16,
     pub vocations: Vec<Vocation>,
     pub effects: Vec<SpellEffect>,
 }
@@ -41,9 +61,10 @@ pub struct Spell {
 pub struct SpellAttack {
     pub target: SpellTargetMode,
     pub element: CombatElement,
-    pub base_power: u16,
-    pub level_factor: u16,
-    pub magic_factor: u16,
+    pub base_power: f32,
+    pub level_factor: f32,
+    pub magic_factor: f32,
+    pub spread: f32,
     pub effect_id: EffectId,
     pub missile_id: Option<MissileId>,
 }
@@ -56,7 +77,9 @@ pub enum SpellEffect {
 #[derive(Debug)]
 pub enum SpellTargetMode {
     Caster,
-    Target,
+    Target {
+        range: u16,
+    },
     Area {
         origin: AreaOrigin,
         rotate: bool,

@@ -1,8 +1,13 @@
 use std::sync::Arc;
 
 use slotmap::new_key_type;
+use smallvec::SmallVec;
+use strum::EnumCount;
 
-use crate::local_id::LocalId;
+use crate::{
+    entities::spells::{Spell, SpellGroup, SpellId},
+    local_id::LocalId,
+};
 
 use super::{inventory::Inventory, player::Player};
 use crate::{
@@ -122,6 +127,8 @@ pub struct Agent {
     // player
     pub next_use_tick: Tick,
 
+    spell_cooldowns: SmallVec<[(SpellId, Tick); 4]>,
+    group_cooldowns: [Tick; SpellGroup::COUNT],
     target: Option<AgentKey>,
     target_seq: u32,
     participation: Participation,
@@ -184,6 +191,8 @@ impl Agent {
             participation: Participation::default(),
             origin: player.origin.clone(),
             respawn_ticks: None,
+            spell_cooldowns: SmallVec::new(),
+            group_cooldowns: [Tick(0); SpellGroup::COUNT],
         }
     }
 
@@ -205,6 +214,8 @@ impl Agent {
             participation: Participation::default(),
             origin,
             respawn_ticks: None,
+            spell_cooldowns: SmallVec::new(),
+            group_cooldowns: [Tick(0); SpellGroup::COUNT],
         }
     }
 
@@ -361,6 +372,31 @@ impl Agent {
             AgentInner::Creature(c) => c.corpse,
             AgentInner::Player(..) => GAME_CONFIG.combat.human_corpse_item_id,
         }
+    }
+
+    pub fn next_spell_tick(&self, spell_id: SpellId) -> Tick {
+        self.spell_cooldowns
+            .iter()
+            .find(|(id, _)| spell_id == *id)
+            .map(|(_, tick)| *tick)
+            .unwrap_or(Tick(0))
+    }
+
+    pub fn next_spell_group_tick(&self, group: SpellGroup) -> Tick {
+        self.group_cooldowns[group.index()]
+    }
+
+    pub fn stamp_spell(&mut self, current_tick: Tick, spell: &Spell) {
+        self.spell_cooldowns
+            .retain(|(id, tick)| current_tick < *tick || *id != spell.id);
+        self.spell_cooldowns
+            .push((spell.id, current_tick + spell.cooldown));
+        self.group_cooldowns[spell.group.index()] =
+            current_tick + spell.group_cooldown.unwrap_or(spell.group.cooldown());
+    }
+
+    pub fn stamp_auto_attack(&mut self, current_tick: Tick) {
+        self.next_auto_attack_tick = current_tick + GAME_CONFIG.combat.auto_attack_ticks;
     }
 
     pub fn to_snapshot(&self, position: Position) -> Option<PlayerSnapshot> {

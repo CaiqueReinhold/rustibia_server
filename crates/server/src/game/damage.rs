@@ -1,12 +1,17 @@
 use crate::entities::agent::AgentKey;
 use crate::entities::combat::{CombatDamage, CombatElement};
+use crate::entities::creature::CreatureKind;
 use crate::entities::items::{Item, ItemFlag};
+use crate::entities::player::Player;
 use crate::entities::position::{ItemPlacement, Position};
+use crate::entities::spells::SpellAttack;
 use crate::game::TickCtx;
+use crate::game::combat::weapon_skill;
 use crate::game::config::GAME_CONFIG;
 use crate::game::death;
 use crate::game::events::BroadcastMessage;
 use crate::game::item_action::check_decay;
+use crate::game::random::Rolls;
 use crate::persistence::items::ITEM_CONFIGS;
 
 /// The target may no longer be in the map when this returns: a lethal hit reaps it. Anything
@@ -77,6 +82,45 @@ pub fn apply_damage(
     }
 }
 
+pub fn get_player_base_damage(player: &Player, roll: &mut Rolls) -> (CombatElement, u32) {
+    let level = player.level();
+    let skill = weapon_skill(player);
+    let min = get_min_damage(player.weapon_attack(), level, skill.value);
+    let max = get_max_damage(player.weapon_attack(), level, skill.value);
+    (player.weapon_element(), roll.damage_roll(min, max))
+}
+
+pub fn get_creature_base_damage(creature: &CreatureKind, roll: &mut Rolls) -> (CombatElement, u32) {
+    (
+        CombatElement::Physical,
+        roll.damage_roll(creature.auto_attack_damage.0, creature.auto_attack_damage.1),
+    )
+}
+
+pub fn get_spell_base_damage(
+    player: &Player,
+    spell: &SpellAttack,
+    roll: &mut Rolls,
+) -> (CombatElement, u32) {
+    let center = spell.base_power
+        * (1.0
+            + (f32::from(player.level()) * spell.level_factor / 100.0)
+            + (f32::from(player.skill_magic()) * spell.magic_factor / 100.0));
+    let min = (center * (1.0 - spell.spread)).max(0.0).round() as u32;
+    let max = (center * (1.0 + spell.spread)).round() as u32;
+    (spell.element, roll.damage_roll(min, max))
+}
+
+fn get_max_damage(attack_value: u16, level: u16, skill_value: u16) -> u32 {
+    (((level as f32) / 5.5) + (((skill_value as f32) / 3.5) * ((attack_value as f32) / 3.0)))
+        .round() as u32
+}
+
+fn get_min_damage(attack_value: u16, level: u16, skill_value: u16) -> u32 {
+    (((level as f32) / 5.0) + (((skill_value as f32) / 10.0) * ((attack_value as f32) / 10.0)))
+        .round() as u32
+}
+
 fn draw_blood(ctx: &mut TickCtx, attacked_pos: &Position, attacked_key: AgentKey) {
     let Some(config) = ITEM_CONFIGS.get(&GAME_CONFIG.combat.pool_item_id) else {
         return;
@@ -128,8 +172,10 @@ fn draw_blood(ctx: &mut TickCtx, attacked_pos: &Position, attacked_key: AgentKey
 mod tests {
     use super::*;
     use crate::entities::agent::Agent;
+    use crate::entities::combat::AttackPlan;
     use crate::entities::map::{GameMap, MapTile};
-    use crate::game::TestHarness;
+    use crate::game::combat::plan_auto_attack;
+    use crate::game::{TestHarness, Tick};
     use crate::persistence::test_fixtures::{a_test_creature, a_test_snapshot};
 
     fn physical(value: u32) -> CombatDamage {
@@ -410,5 +456,42 @@ mod tests {
         };
         assert_eq!(ticks(first), 40);
         assert_eq!(ticks(second), 60);
+    }
+
+    fn planned_damage(plan: &AttackPlan) -> Option<&CombatDamage> {
+        plan.damage.first().map(|(_, damage)| damage)
+    }
+
+    fn duel(attacker: Agent, target: Agent) -> (GameMap, AgentKey, AgentKey) {
+        let a = Position::new(10, 10, 7);
+        let b = Position::new(11, 10, 7);
+        let mut map = GameMap::new();
+        map.insert_tile(a.clone(), MapTile::new());
+        map.insert_tile(b.clone(), MapTile::new());
+        let attacker = map.insert_agent(attacker, &a).unwrap();
+        let target = map.insert_agent(target, &b).unwrap();
+        map.get_agent_mut(attacker)
+            .unwrap()
+            .set_target(Some(target), 0);
+        (map, attacker, target)
+    }
+
+    /// Pins the `weapon_attack()` fallback the test above depends on.
+    #[test]
+    fn an_unarmed_player_still_deals_damage() {
+        let (map, attacker, _) = duel(
+            Agent::from_player(a_test_snapshot(1, 1)),
+            a_test_creature("Rat", 10, (1, 2)),
+        );
+        let mut roll = Rolls::new(1);
+
+        let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
+
+        assert!(
+            planned_damage(&plan).is_some_and(|damage| damage.value > 0),
+            "unarmed swings must still hurt"
+        );
+        assert_eq!(get_min_damage(5, 1, GAME_CONFIG.combat.unarmed_skill), 5);
+        assert_eq!(get_max_damage(5, 1, GAME_CONFIG.combat.unarmed_skill), 48);
     }
 }

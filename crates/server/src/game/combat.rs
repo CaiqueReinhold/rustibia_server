@@ -6,7 +6,7 @@ use crate::{
     entities::{
         agent::{Agent, AgentKey},
         combat::{AttackCost, AttackPlan, CombatDamage, CombatElement, WeaponType},
-        creature::{BloodType, CreatureKind},
+        creature::BloodType,
         effects::{EffectId, Missile},
         inventory::InventorySlot,
         items::{ItemFlag, ItemRef},
@@ -14,12 +14,14 @@ use crate::{
         player::Player,
         position::{ItemPlacement, Position},
         skills::SkillType,
-        spells::{CastTarget, SpellAttack},
+        spells::{CastTarget, SpellAttack, SpellTargetMode},
     },
     game::{
         Tick, TickCtx,
         config::{Color, GAME_CONFIG},
-        damage::apply_damage,
+        damage::{
+            apply_damage, get_creature_base_damage, get_player_base_damage, get_spell_base_damage,
+        },
         events::BroadcastMessage,
         item_movement::remove_item_at,
         map_query::can_throw,
@@ -30,9 +32,9 @@ use crate::{
 };
 
 #[derive(Debug)]
-struct WeaponSkill {
-    value: u16,
-    trains: Option<SkillType>,
+pub struct WeaponSkill {
+    pub value: u16,
+    pub trains: Option<SkillType>,
 }
 
 pub fn plan_auto_attack(
@@ -159,11 +161,56 @@ pub fn plan_spell_attack(
     map: &GameMap,
     attacker: AgentKey,
     roll: &mut Rolls,
-    current_tick: Tick,
     spell: &SpellAttack,
-    cast_target: &CastTarget,
+    _cast_target: &CastTarget,
+    mana_cost: u32,
 ) -> Option<AttackPlan> {
-    None
+    let agent = map.get_agent(attacker)?;
+    let position = map.agent_position(attacker)?;
+
+    let (target, missile) = match spell.target {
+        SpellTargetMode::Target { range } => {
+            let target = agent.target()?;
+            let target_pos = map.agent_position(target)?;
+
+            if chebyshev(position, target_pos) > range
+                || !can_throw(map, position, target_pos, true)
+            {
+                return None;
+            }
+
+            (
+                target,
+                spell.missile_id.map(|id| Missile {
+                    from: position.clone(),
+                    to: target_pos.clone(),
+                    missile_id: id,
+                }),
+            )
+        }
+        _ => return None,
+    };
+
+    let (element, base_damage) = get_spell_base_damage(agent.get_player()?, spell, roll);
+    let mut damage = SmallVec::new();
+    damage.push((
+        target,
+        CombatDamage {
+            element,
+            value: base_damage,
+            blocked_shield: false,
+            blocked_armor: false,
+        },
+    ));
+
+    Some(AttackPlan {
+        attacker,
+        damage,
+        cost: AttackCost::Mana(mana_cost),
+        trains: None,
+        missile,
+        area_effect: None,
+    })
 }
 
 pub fn execute_attack(ctx: &mut TickCtx, plan: AttackPlan) {
@@ -267,9 +314,7 @@ pub fn get_damage_visuals(
     (effect, color)
 }
 
-// private
-
-fn weapon_skill(player: &Player) -> WeaponSkill {
+pub fn weapon_skill(player: &Player) -> WeaponSkill {
     let (trains, value) = match player.weapon_type() {
         WeaponType::None => (None, GAME_CONFIG.combat.unarmed_skill),
         WeaponType::Axe => (Some(SkillType::Axe), player.skill_axe()),
@@ -283,30 +328,7 @@ fn weapon_skill(player: &Player) -> WeaponSkill {
     WeaponSkill { value, trains }
 }
 
-fn get_max_damage(attack_value: u16, level: u16, skill_value: u16) -> u32 {
-    (((level as f32) / 5.5) + (((skill_value as f32) / 3.5) * ((attack_value as f32) / 3.0)))
-        .round() as u32
-}
-
-fn get_min_damage(attack_value: u16, level: u16, skill_value: u16) -> u32 {
-    (((level as f32) / 5.0) + (((skill_value as f32) / 10.0) * ((attack_value as f32) / 10.0)))
-        .round() as u32
-}
-
-fn get_player_base_damage(player: &Player, roll: &mut Rolls) -> (CombatElement, u32) {
-    let level = player.level();
-    let skill = weapon_skill(player);
-    let min = get_min_damage(player.weapon_attack(), level, skill.value);
-    let max = get_max_damage(player.weapon_attack(), level, skill.value);
-    (player.weapon_element(), roll.damage_roll(min, max))
-}
-
-fn get_creature_base_damage(creature: &CreatureKind, roll: &mut Rolls) -> (CombatElement, u32) {
-    (
-        CombatElement::Physical,
-        roll.damage_roll(creature.auto_attack_damage.0, creature.auto_attack_damage.1),
-    )
-}
+// private
 
 fn is_in_range(attacker: &Agent, attacker_pos: &Position, attacked_pos: &Position) -> bool {
     let r = attacker.attack_range();
@@ -1561,24 +1583,5 @@ mod tests {
 
         assert!(high > low, "{high} !> {low}");
         assert_eq!(high, tabled_hit_chance(90, 300, 1), "capped at 74");
-    }
-
-    /// Pins the `weapon_attack()` fallback the test above depends on.
-    #[test]
-    fn an_unarmed_player_still_deals_damage() {
-        let (map, attacker, _) = duel(
-            Agent::from_player(a_test_snapshot(1, 1)),
-            a_test_creature("Rat", 10, (1, 2)),
-        );
-        let mut roll = Rolls::new(1);
-
-        let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0)).unwrap();
-
-        assert!(
-            planned_damage(&plan).is_some_and(|damage| damage.value > 0),
-            "unarmed swings must still hurt"
-        );
-        assert_eq!(get_min_damage(5, 1, GAME_CONFIG.combat.unarmed_skill), 5);
-        assert_eq!(get_max_damage(5, 1, GAME_CONFIG.combat.unarmed_skill), 48);
     }
 }

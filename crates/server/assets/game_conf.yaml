@@ -31,6 +31,8 @@ effect_ids:
   ice_hit: 1
   earth_hit: 1
   fire_hit: 1
+  holy_hit: 73
+  death_hit: 1
   energy_hit: 1
   potion_use: 13
   miss: 3
@@ -56,6 +58,9 @@ combat:
   pool_item_id: 2886
   unarmed_skill: 100
   human_corpse_item_id: 111
+  attack_group_cooldown: 40
+  healing_group_cooldown: 20
+  support_group_cooldown: 20
 
 skills:
   min_level: 10

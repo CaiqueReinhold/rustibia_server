@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use crate::entities::{
-    agent::{Agent, AgentKey, Facing},
+    agent::{AgentKey, Facing},
     combat::CombatDamage,
     creature::BloodType,
     effects::Missile,

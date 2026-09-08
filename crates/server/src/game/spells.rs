@@ -1,12 +1,11 @@
 use crate::{
     entities::{
         agent::{Agent, AgentKey},
-        map::GameMap,
-        position::Position,
+        player::Player,
         spells::{CastTarget, Spell, SpellAttack, SpellEffect, SpellId},
     },
     game::{
-        TickCtx,
+        Tick, TickCtx,
         combat::{execute_attack, plan_spell_attack},
         events::BroadcastMessage,
     },
@@ -25,12 +24,14 @@ pub fn cast_spell(ctx: &mut TickCtx, agent_key: AgentKey, spell_id: SpellId, tar
         });
         return;
     };
+    let Some(player) = ctx.map.get_player(agent_key) else {
+        return;
+    };
+    let Some(agent) = ctx.map.get_agent(agent_key) else {
+        return;
+    };
 
-    if !ctx
-        .map
-        .get_agent(agent_key)
-        .is_some_and(|a| has_spell_requirements(spell, a))
-    {
+    if !has_spell_requirements(spell, player) {
         ctx.events.push(BroadcastMessage::SpellDenied {
             agent_key,
             position,
@@ -39,33 +40,40 @@ pub fn cast_spell(ctx: &mut TickCtx, agent_key: AgentKey, spell_id: SpellId, tar
         return;
     }
 
-    if !ctx
-        .map
-        .get_agent(agent_key)
-        .is_some_and(|_| is_target_valid(ctx.map, &position, &spell, &target))
-    {
+    if player.mana().available() < spell.mana {
         ctx.events.push(BroadcastMessage::SpellDenied {
             agent_key,
             position,
-            reason: "Invalid target".to_owned(),
+            reason: "Not enough mana".to_owned(),
         });
+        return;
     }
 
-    route_spell(ctx, agent_key, &spell, target);
+    if !can_cast_spell(agent, spell, ctx.tick) {
+        ctx.events.push(BroadcastMessage::SpellDenied {
+            agent_key,
+            position,
+            reason: "You're exausted".to_owned(),
+        });
+        return;
+    }
+
+    route_spell(ctx, agent_key, spell, target);
 }
 
-fn has_spell_requirements(spell: &Spell, agent: &Agent) -> bool {
-    true
+fn has_spell_requirements(spell: &Spell, player: &Player) -> bool {
+    spell.level <= player.level() && spell.vocations.contains(&player.vocation())
 }
 
-fn is_target_valid(map: &GameMap, position: &Position, spell: &Spell, target: &CastTarget) -> bool {
-    true
+fn can_cast_spell(agent: &Agent, spell: &Spell, current_tick: Tick) -> bool {
+    agent.next_spell_group_tick(spell.group) >= current_tick
+        && agent.next_spell_tick(spell.id) >= current_tick
 }
 
 fn route_spell(ctx: &mut TickCtx, agent_key: AgentKey, spell: &Spell, target: CastTarget) {
     for effect in &spell.effects {
         match effect {
-            SpellEffect::Attack(attack) => attack_spell(ctx, agent_key, &target, attack),
+            SpellEffect::Attack(attack) => attack_spell(ctx, agent_key, &target, attack, spell),
         }
     }
 }
@@ -75,10 +83,20 @@ fn attack_spell(
     agent_key: AgentKey,
     target: &CastTarget,
     spell_attack: &SpellAttack,
+    spell: &Spell,
 ) {
-    if let Some(plan) =
-        plan_spell_attack(ctx.map, agent_key, ctx.roll, ctx.tick, spell_attack, target)
-    {
+    if let Some(plan) = plan_spell_attack(
+        ctx.map,
+        agent_key,
+        ctx.roll,
+        spell_attack,
+        target,
+        spell.mana,
+    ) {
         execute_attack(ctx, plan);
+    }
+    if let Some(agent) = ctx.map.get_agent_mut(agent_key) {
+        agent.stamp_spell(ctx.tick, spell);
+        agent.stamp_auto_attack(ctx.tick);
     }
 }
