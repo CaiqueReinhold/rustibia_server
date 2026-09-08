@@ -442,6 +442,16 @@ impl MessageRouterActor {
                     None,
                 );
             }
+            BroadcastMessage::AreaEffectAppeared { area_effect } => {
+                self.send_to_rect(
+                    message,
+                    map,
+                    Rect::player_viewport(&area_effect.origin),
+                    area_effect.origin.z,
+                    false,
+                    None,
+                );
+            }
         }
     }
 

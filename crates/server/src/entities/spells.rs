@@ -48,6 +48,7 @@ impl SpellGroup {
 pub struct Spell {
     pub id: SpellId,
     pub name: String,
+    pub words: String,
     pub group: SpellGroup,
     pub group_cooldown: Option<TickDelta>,
     pub cooldown: TickDelta,
@@ -82,7 +83,6 @@ pub enum SpellTargetMode {
     },
     Area {
         origin: AreaOrigin,
-        rotate: bool,
         shape: Arc<AreaShape>,
     },
 }

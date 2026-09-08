@@ -40,7 +40,7 @@ pub fn cast_spell(ctx: &mut TickCtx, agent_key: AgentKey, spell_id: SpellId, tar
         return;
     }
 
-    if player.mana().available() < spell.mana {
+    if player.mana().current < spell.mana {
         ctx.events.push(BroadcastMessage::SpellDenied {
             agent_key,
             position,
@@ -59,6 +59,12 @@ pub fn cast_spell(ctx: &mut TickCtx, agent_key: AgentKey, spell_id: SpellId, tar
     }
 
     route_spell(ctx, agent_key, spell, target);
+
+    ctx.events.push(BroadcastMessage::SpellCast {
+        agent_key,
+        position,
+        spell_id,
+    });
 }
 
 fn has_spell_requirements(spell: &Spell, player: &Player) -> bool {
@@ -66,8 +72,8 @@ fn has_spell_requirements(spell: &Spell, player: &Player) -> bool {
 }
 
 fn can_cast_spell(agent: &Agent, spell: &Spell, current_tick: Tick) -> bool {
-    agent.next_spell_group_tick(spell.group) >= current_tick
-        && agent.next_spell_tick(spell.id) >= current_tick
+    agent.next_spell_group_tick(spell.group) <= current_tick
+        && agent.next_spell_tick(spell.id) <= current_tick
 }
 
 fn route_spell(ctx: &mut TickCtx, agent_key: AgentKey, spell: &Spell, target: CastTarget) {

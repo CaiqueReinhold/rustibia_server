@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use crate::entities::{agent::Facing, position::Position};
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, serde::Deserialize)]
@@ -19,11 +17,11 @@ pub struct Missile {
     pub to: Position,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AreaEffect {
     pub effect_id: EffectId,
     pub origin: Position,
-    pub shape: Arc<AreaShape>,
+    pub delta: Vec<(i8, i8)>,
 }
 
 pub type AreaShapeId = String;

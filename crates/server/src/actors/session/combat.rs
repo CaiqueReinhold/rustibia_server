@@ -2,16 +2,18 @@ use anyhow::Result;
 
 use crate::{
     actors::{session::SessionActor, world::WorldCommand},
+    config::CONFIG,
     entities::{
         agent::{AgentId, AgentKey},
+        chat::{ChannelId, ChatMessageType},
         combat::CombatDamage,
         creature::BloodType,
-        effects::MissileId,
         position::Position,
         spells::{CastTarget, SpellId, SpellTarget},
     },
     game::{combat::get_damage_visuals, config::GAME_CONFIG},
     messages::{FloatingTextType, ServerMessage, TextMessageType},
+    persistence::spells::SPELLS,
 };
 
 impl SessionActor {
@@ -157,19 +159,73 @@ impl SessionActor {
         Ok(())
     }
 
-    pub(super) async fn missile_launched(
+    pub(super) async fn spell_cast(&self, agent_key: AgentKey, spell_id: SpellId) -> Result<()> {
+        let (chat, cooldown) = {
+            let map = self.shared_map.load();
+            let Some(agent) = map.get_agent(agent_key) else {
+                return Ok(());
+            };
+            let Some(position) = map.agent_position(agent_key) else {
+                return Ok(());
+            };
+            let Some(spell) = SPELLS.get(&spell_id) else {
+                return Ok(());
+            };
+            (
+                ServerMessage::ChatMessage {
+                    author: agent.name().to_owned(),
+                    message_type: ChatMessageType::Local,
+                    channel: ChannelId(0),
+                    position: Some(position.clone()),
+                    message: spell.words.clone(),
+                },
+                if self.player_key == agent_key {
+                    Some(ServerMessage::SpellCast {
+                        spell: spell_id,
+                        spell_cooldown_ms: (spell.cooldown.0
+                            * CONFIG.tick_duration.as_millis() as u64)
+                            as u32,
+                        group_cooldown_ms: (spell
+                            .group_cooldown
+                            .unwrap_or(spell.group.cooldown())
+                            .0
+                            * CONFIG.tick_duration.as_millis() as u64)
+                            as u32,
+                    })
+                } else {
+                    None
+                },
+            )
+        };
+        self.connection.send_message(chat).await?;
+        if let Some(cd) = cooldown {
+            self.connection.send_message(cd).await?;
+        }
+        Ok(())
+    }
+
+    pub(super) async fn spell_denied(
         &self,
-        from: Position,
-        to: Position,
-        missile_id: MissileId,
+        agent_key: AgentKey,
+        position: Position,
+        reason: String,
     ) -> Result<()> {
         self.connection
-            .send_message(ServerMessage::LaunchMissile {
-                from,
-                to,
-                missile_id,
+            .send_message(ServerMessage::ShowEffect {
+                effect_id: GAME_CONFIG.effect_ids.puff,
+                position,
+                delta: Vec::new(),
             })
             .await?;
+
+        if self.player_key == agent_key {
+            self.connection
+                .send_message(ServerMessage::TextMessage {
+                    text: reason,
+                    message_type: TextMessageType::ActionDenied,
+                })
+                .await?;
+        }
         Ok(())
     }
 }
@@ -268,6 +324,69 @@ mod tests {
             )),
             "a miss must not draw a number: {sent:?}"
         );
+    }
+
+    /// The puff is what a bystander sees; the reason is the caster's own feedback.
+    /// Sending the text to every viewport would explain a cast that was never
+    /// theirs, and would leak which spells a stranger cannot afford.
+    #[tokio::test]
+    async fn a_denied_cast_puffs_for_everyone_and_explains_itself_only_to_the_caster() {
+        let mut map = GameMap::new();
+        let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let stranger = seat_player(&mut map, &Position::new(102, 100, 7), 2);
+        let (session, mut connection_rx, _world_rx, _tick_tx) = SessionActor::for_test(me, map);
+        let tile = Position::new(102, 100, 7);
+
+        session
+            .spell_denied(stranger, tile.clone(), "Not enough mana".to_owned())
+            .await
+            .unwrap();
+
+        let sent: Vec<_> = std::iter::from_fn(|| connection_rx.try_recv().ok()).collect();
+        let effect = sent
+            .iter()
+            .find_map(|c| match c {
+                ConnectionCommand::SendPlayerMessage(ServerMessage::ShowEffect {
+                    effect_id,
+                    position,
+                    ..
+                }) => Some((*effect_id, position.clone())),
+                _ => None,
+            })
+            .unwrap_or_else(|| panic!("no puff was sent: {sent:?}"));
+        assert_eq!(effect, (GAME_CONFIG.effect_ids.puff, tile));
+        assert!(
+            !sent.iter().any(|c| matches!(
+                c,
+                ConnectionCommand::SendPlayerMessage(ServerMessage::TextMessage { .. })
+            )),
+            "another player's refusal must not be explained here: {sent:?}"
+        );
+    }
+
+    #[tokio::test]
+    async fn the_caster_is_told_why_their_own_cast_was_refused() {
+        let mut map = GameMap::new();
+        let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let (session, mut connection_rx, _world_rx, _tick_tx) = SessionActor::for_test(me, map);
+
+        session
+            .spell_denied(me, Position::new(100, 100, 7), "You're exausted".to_owned())
+            .await
+            .unwrap();
+
+        let sent: Vec<_> = std::iter::from_fn(|| connection_rx.try_recv().ok()).collect();
+        let text = sent
+            .iter()
+            .find_map(|c| match c {
+                ConnectionCommand::SendPlayerMessage(ServerMessage::TextMessage {
+                    text,
+                    message_type: TextMessageType::ActionDenied,
+                }) => Some(text.clone()),
+                _ => None,
+            })
+            .unwrap_or_else(|| panic!("the caster was told nothing: {sent:?}"));
+        assert_eq!(text, "You're exausted");
     }
 
     #[tokio::test]

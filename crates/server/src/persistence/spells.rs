@@ -79,6 +79,7 @@ struct SpellsFile {
 struct RawSpell {
     id: SpellId,
     name: String,
+    words: String,
     group: SpellGroup,
     #[serde(default)]
     group_cooldown: Option<TickDelta>,
@@ -120,7 +121,6 @@ struct RawTargeted {
 struct RawArea {
     origin: RawOrigin,
     #[serde(default)]
-    rotate: bool,
     shape: AreaShapeId,
 }
 
@@ -220,7 +220,6 @@ fn parse_target(
 
             Ok(SpellTargetMode::Area {
                 origin: parse_origin(area.origin),
-                rotate: area.rotate,
                 shape,
             })
         }
@@ -283,6 +282,7 @@ impl RawSpell {
         Ok(Spell {
             id: self.id,
             name: self.name,
+            words: self.words,
             group: self.group,
             group_cooldown: self.group_cooldown,
             cooldown: self.cooldown_ticks,
@@ -409,7 +409,6 @@ spells:
         match &attack(&spell).target {
             SpellTargetMode::Area {
                 origin: AreaOrigin::Caster,
-                rotate: true,
                 shape,
             } => assert_eq!(
                 shape.get_delta(crate::entities::agent::Facing::North),
@@ -570,7 +569,7 @@ spells:
         assert_eq!(attack(&named("Fire Wave")).missile_id, None);
         assert!(matches!(
             attack(&named("Divine Caldera")).target,
-            SpellTargetMode::Area { rotate: false, .. }
+            SpellTargetMode::Area { .. }
         ));
     }
 

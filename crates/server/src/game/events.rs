@@ -5,7 +5,7 @@ use crate::entities::{
     agent::{AgentKey, Facing},
     combat::CombatDamage,
     creature::BloodType,
-    effects::Missile,
+    effects::{AreaEffect, Missile},
     inventory::InventorySlot,
     items::{ItemGuid, ItemRef},
     position::{Direction, Position},
@@ -109,6 +109,9 @@ pub enum BroadcastMessage {
     PotionDrunk {
         target: AgentKey,
         position: Position,
+    },
+    AreaEffectAppeared {
+        area_effect: AreaEffect,
     },
     SpellCast {
         agent_key: AgentKey,

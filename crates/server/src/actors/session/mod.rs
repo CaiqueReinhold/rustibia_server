@@ -442,14 +442,17 @@ impl SessionActor {
             }
             BroadcastMessage::SpellCast {
                 agent_key,
-                position,
                 spell_id,
-            } => Ok(()),
+                ..
+            } => self.spell_cast(agent_key, spell_id).await,
             BroadcastMessage::SpellDenied {
                 agent_key,
                 position,
                 reason,
-            } => Ok(()),
+            } => self.spell_denied(agent_key, position, reason).await,
+            BroadcastMessage::AreaEffectAppeared { area_effect } => {
+                self.area_effect_appeared(area_effect).await
+            }
         }
     }
 

@@ -28,14 +28,15 @@ effect_ids:
   shield_hit: 3
   armor_hit: 4
   poison_hit: 17
-  ice_hit: 1
-  earth_hit: 1
-  fire_hit: 1
+  ice_hit: 53
+  earth_hit: 51
+  fire_hit: 37
   holy_hit: 73
-  death_hit: 1
-  energy_hit: 1
+  death_hit: 18
+  energy_hit: 38
   potion_use: 13
   miss: 3
+  puff: 3
 
 text_colors:
   blue: [0, 0, 255]

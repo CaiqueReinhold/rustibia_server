@@ -10,6 +10,7 @@ use crate::actors::player_query::{get_agent_desc, get_player_desc, get_player_sk
 use crate::actors::session::{SessionActor, SessionError};
 use crate::constants::view::AGENT_DESPAWN_RADIUS;
 use crate::entities::agent::AgentKey;
+use crate::entities::effects::{AreaEffect, MissileId};
 use crate::entities::map::GameMap;
 use crate::entities::position::{Position, Rect};
 use crate::entities::skills::SkillType;
@@ -276,6 +277,33 @@ impl SessionActor {
                 })
                 .await?;
         }
+        Ok(())
+    }
+
+    pub(super) async fn missile_launched(
+        &self,
+        from: Position,
+        to: Position,
+        missile_id: MissileId,
+    ) -> Result<()> {
+        self.connection
+            .send_message(ServerMessage::LaunchMissile {
+                from,
+                to,
+                missile_id,
+            })
+            .await?;
+        Ok(())
+    }
+
+    pub(super) async fn area_effect_appeared(&self, area_effect: AreaEffect) -> Result<()> {
+        self.connection
+            .send_message(ServerMessage::ShowEffect {
+                effect_id: area_effect.effect_id,
+                position: area_effect.origin,
+                delta: area_effect.delta,
+            })
+            .await?;
         Ok(())
     }
 }

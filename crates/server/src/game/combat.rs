@@ -7,14 +7,14 @@ use crate::{
         agent::{Agent, AgentKey},
         combat::{AttackCost, AttackPlan, CombatDamage, CombatElement, WeaponType},
         creature::BloodType,
-        effects::{EffectId, Missile},
+        effects::{AreaEffect, EffectId, Missile},
         inventory::InventorySlot,
         items::{ItemFlag, ItemRef},
         map::GameMap,
         player::Player,
         position::{ItemPlacement, Position},
         skills::SkillType,
-        spells::{CastTarget, SpellAttack, SpellTargetMode},
+        spells::{AreaOrigin, CastTarget, SpellAttack, SpellTargetMode},
     },
     game::{
         Tick, TickCtx,
@@ -162,29 +162,67 @@ pub fn plan_spell_attack(
     attacker: AgentKey,
     roll: &mut Rolls,
     spell: &SpellAttack,
-    _cast_target: &CastTarget,
+    cast_target: &CastTarget,
     mana_cost: u32,
 ) -> Option<AttackPlan> {
     let agent = map.get_agent(attacker)?;
     let position = map.agent_position(attacker)?;
 
-    let (target, missile) = match spell.target {
+    let (targets, missile, area) = match &spell.target {
         SpellTargetMode::Target { range } => {
             let target = agent.target()?;
             let target_pos = map.agent_position(target)?;
 
-            if chebyshev(position, target_pos) > range
+            if chebyshev(position, target_pos) > *range
                 || !can_throw(map, position, target_pos, true)
             {
                 return None;
             }
 
             (
-                target,
+                Vec::from([target]),
                 spell.missile_id.map(|id| Missile {
                     from: position.clone(),
                     to: target_pos.clone(),
                     missile_id: id,
+                }),
+                None,
+            )
+        }
+        SpellTargetMode::Area { origin, shape } => {
+            let origin_pos = match origin {
+                AreaOrigin::Caster => position,
+                AreaOrigin::Target => match cast_target {
+                    CastTarget::Agent(key) => map.agent_position(*key)?,
+                    CastTarget::Position(pos) => pos,
+                    CastTarget::None => {
+                        return None;
+                    }
+                },
+            };
+            let delta = shape.get_delta(agent.facing());
+            let positions: Vec<Position> = delta
+                .iter()
+                .flat_map(|(dx, dy)| origin_pos.checked_offset(*dx as i32, *dy as i32))
+                .collect();
+            let agents: Vec<AgentKey> = positions
+                .iter()
+                .flat_map(|pos| map.iter_agents_at(pos).ok())
+                .flatten()
+                .copied()
+                .filter(|key| *key != attacker)
+                .collect();
+            (
+                agents,
+                spell.missile_id.map(|missile_id| Missile {
+                    missile_id,
+                    from: position.clone(),
+                    to: origin_pos.clone(),
+                }),
+                Some(AreaEffect {
+                    effect_id: spell.effect_id,
+                    origin: origin_pos.clone(),
+                    delta: delta.iter().copied().collect(),
                 }),
             )
         }
@@ -192,16 +230,20 @@ pub fn plan_spell_attack(
     };
 
     let (element, base_damage) = get_spell_base_damage(agent.get_player()?, spell, roll);
-    let mut damage = SmallVec::new();
-    damage.push((
-        target,
-        CombatDamage {
-            element,
-            value: base_damage,
-            blocked_shield: false,
-            blocked_armor: false,
-        },
-    ));
+    let damage = targets
+        .into_iter()
+        .map(|target| {
+            (
+                target,
+                CombatDamage {
+                    element,
+                    value: base_damage,
+                    blocked_shield: false,
+                    blocked_armor: false,
+                },
+            )
+        })
+        .collect();
 
     Some(AttackPlan {
         attacker,
@@ -209,7 +251,7 @@ pub fn plan_spell_attack(
         cost: AttackCost::Mana(mana_cost),
         trains: None,
         missile,
-        area_effect: None,
+        area_effect: area,
     })
 }
 
@@ -262,6 +304,11 @@ pub fn execute_attack(ctx: &mut TickCtx, plan: AttackPlan) {
     if let Some(position) = missed_at {
         ctx.events.push(BroadcastMessage::AttackMissed { position });
         return;
+    }
+
+    if let Some(area) = plan.area_effect {
+        ctx.events
+            .push(BroadcastMessage::AreaEffectAppeared { area_effect: area });
     }
 
     for (target, dmg) in plan.damage.into_iter() {

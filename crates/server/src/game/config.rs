@@ -92,6 +92,7 @@ pub struct EffectsConfig {
     pub death_hit: EffectId,
     pub potion_use: EffectId,
     pub miss: EffectId,
+    pub puff: EffectId,
 }
 
 #[derive(Deserialize, Debug, Clone, Copy)]
