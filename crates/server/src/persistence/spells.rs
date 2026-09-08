@@ -11,7 +11,7 @@ use crate::config::CONFIG;
 use crate::entities::combat::CombatElement;
 use crate::entities::effects::{AreaShape, AreaShapeId, EffectId, MissileId};
 use crate::entities::spells::{
-    AreaOrigin, Spell, SpellAttack, SpellEffect, SpellGroup, SpellId, SpellTargetMode,
+    AreaOrigin, Spell, SpellAttack, SpellEffect, SpellGroup, SpellHealing, SpellId, SpellTargetMode,
 };
 use crate::entities::vocation::Vocation;
 use crate::game::TickDelta;
@@ -102,6 +102,17 @@ struct RawAttack {
     effect_id: EffectId,
     #[serde(default)]
     missile_id: Option<MissileId>,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawHealing {
+    target: serde_yaml::Value,
+    base_power: f64,
+    level_factor: f64,
+    magic_factor: f64,
+    #[serde(default)]
+    spread: f64,
 }
 
 /// `self` carries no fields of its own, and this is what refuses one written under it rather
@@ -253,6 +264,17 @@ fn parse_effect(
             };
             Ok(SpellEffect::Attack(spell_attack))
         }
+        "heal" => {
+            let healing: RawHealing = serde_yaml::from_value(payload)?;
+            let spell_healing = SpellHealing {
+                target: parse_target(id, name, healing.target, shapes)?,
+                base_power: parse_number(id, name, "base_power", healing.base_power)?,
+                level_factor: parse_number(id, name, "level_factor", healing.level_factor)?,
+                magic_factor: parse_number(id, name, "magic_factor", healing.magic_factor)?,
+                spread: parse_number(id, name, "spread", healing.spread)?,
+            };
+            Ok(SpellEffect::Healing(spell_healing))
+        }
         other => Err(SpellsLoadError::UnknownEffect {
             id,
             name: name.to_string(),
@@ -347,6 +369,7 @@ mod tests {
 spells:
   - id: 7
     name: Test Wave
+    words: test wave
     group: attack
     cooldown_ticks: 40
     mana: 25
@@ -357,7 +380,6 @@ spells:
           target:
             type: area
             origin: self
-            rotate: true
             shape: probe
           element: fire
           base_power: 40
@@ -371,6 +393,7 @@ spells:
 spells:
   - id: 8
     name: Test Strike
+    words: test strike
     group: attack
     cooldown_ticks: 40
     mana: 25
@@ -398,6 +421,14 @@ spells:
     fn attack(spell: &Spell) -> &SpellAttack {
         match &spell.effects[0] {
             SpellEffect::Attack(attack) => attack,
+            SpellEffect::Healing(_) => panic!("healing spell"),
+        }
+    }
+
+    fn healing(spell: &Spell) -> &SpellHealing {
+        match &spell.effects[0] {
+            SpellEffect::Healing(healing) => healing,
+            SpellEffect::Attack(_) => panic!("attack spell"),
         }
     }
 
@@ -510,15 +541,46 @@ spells:
         );
     }
 
-    /// Healing is authored the same way and has no planner yet. The loader must refuse the
-    /// effect rather than drop it: a spell that loads with its only effect missing is a
-    /// spell that costs mana and does nothing.
+    /// The loader must refuse an effect it cannot run rather than drop it: a spell that
+    /// loads with its only effect missing is a spell that costs mana and does nothing.
+    /// `summon` stands in for the next kind authored ahead of its planner, which is what
+    /// `heal` was until it got one.
     #[test]
     fn an_effect_kind_the_server_cannot_run_is_refused() {
         let contents = r#"
 spells:
   - id: 1
-    name: Light Healing
+    name: Test Summon
+    words: test summon
+    group: support
+    cooldown_ticks: 20
+    mana: 20
+    level: 8
+    vocations: [druid]
+    effects:
+      - summon:
+          kind: rat
+          count: 2
+"#;
+        let error = load_spells_from_str(contents, &shape("probe"))
+            .expect_err("an unknown effect kind must not load as an empty spell");
+
+        assert!(
+            matches!(&error, SpellsLoadError::UnknownEffect { kind, .. } if kind == "summon"),
+            "unexpected error: {error}"
+        );
+    }
+
+    /// A heal carries neither an element nor an effect id, so nothing but this says the
+    /// numbers under `heal:` reach `SpellHealing` as authored. An unwritten `spread`
+    /// restores a flat amount rather than defaulting to some variance.
+    #[test]
+    fn a_healing_spell_carries_its_numbers_and_defaults_its_spread() {
+        let contents = r#"
+spells:
+  - id: 9
+    name: Test Healing
+    words: test healing
     group: healing
     cooldown_ticks: 20
     mana: 20
@@ -526,18 +588,25 @@ spells:
     vocations: [druid]
     effects:
       - heal:
-          target: self
+          target:
+            type: self
           base_power: 8
           level_factor: 0.2
           magic_factor: 1.4
-          effect_id: 13
 "#;
-        let error = load_spells_from_str(contents, &shape("probe"))
-            .expect_err("an unknown effect kind must not load as an empty spell");
+        let spells = load_spells_from_str(contents, &shape("probe")).unwrap();
+        let spell = only_spell(&spells);
 
-        assert!(
-            matches!(&error, SpellsLoadError::UnknownEffect { kind, .. } if kind == "heal"),
-            "unexpected error: {error}"
+        let healing = healing(&spell);
+        assert!(matches!(healing.target, SpellTargetMode::Caster));
+        assert_eq!(
+            (
+                healing.base_power,
+                healing.level_factor,
+                healing.magic_factor,
+                healing.spread
+            ),
+            (8.0, 0.2, 1.4, 0.0)
         );
     }
 
@@ -567,6 +636,10 @@ spells:
             SpellTargetMode::Target { range: 3 }
         ));
         assert_eq!(attack(&named("Fire Wave")).missile_id, None);
+        assert!(matches!(
+            healing(&named("Light Healing")).target,
+            SpellTargetMode::Caster
+        ));
         assert!(matches!(
             attack(&named("Divine Caldera")).target,
             SpellTargetMode::Area { .. }

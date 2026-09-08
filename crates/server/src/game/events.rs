@@ -1,18 +1,22 @@
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use crate::entities::{
-    agent::{AgentKey, Facing},
-    combat::CombatDamage,
-    creature::BloodType,
-    effects::{AreaEffect, Missile},
-    inventory::InventorySlot,
-    items::{ItemGuid, ItemRef},
-    position::{Direction, Position},
-    skills::SkillType,
-    spells::SpellId,
-};
+use crate::entities::healing::RestoreType;
 use crate::persistence::player::PlayerSnapshot;
+use crate::{
+    entities::{
+        agent::{AgentKey, Facing},
+        combat::CombatDamage,
+        creature::BloodType,
+        effects::{AreaEffect, Missile},
+        inventory::InventorySlot,
+        items::{ItemGuid, ItemRef},
+        position::{Direction, Position},
+        skills::SkillType,
+        spells::SpellId,
+    },
+    game::spells::SpellCastingDenyReason,
+};
 
 #[derive(Clone, Debug)]
 pub enum BroadcastMessage {
@@ -103,9 +107,9 @@ pub enum BroadcastMessage {
     PlayerManaUpdated {
         agent_key: AgentKey,
     },
-    AgentLifeUpdated {
-        agent_key: AgentKey,
-    },
+    // AgentLifeUpdated {
+    //     agent_key: AgentKey,
+    // },
     PotionDrunk {
         target: AgentKey,
         position: Position,
@@ -121,14 +125,20 @@ pub enum BroadcastMessage {
     SpellDenied {
         agent_key: AgentKey,
         position: Position,
-        reason: String,
+        reason: SpellCastingDenyReason,
+    },
+    AgentHealed {
+        agent_key: AgentKey,
+        position: Position,
+        amount: u32,
+        restore_type: RestoreType,
     },
 }
 
 #[derive(PartialEq, Eq, Hash)]
 enum RefreshKey {
     Tile(Position),
-    Life(AgentKey),
+    // Life(AgentKey),
     Mana(AgentKey),
     Slot(AgentKey, InventorySlot),
     Container(ItemGuid),
@@ -138,7 +148,7 @@ impl BroadcastMessage {
     fn refresh_key(&self) -> Option<RefreshKey> {
         match self {
             BroadcastMessage::TileChanged { position } => Some(RefreshKey::Tile(position.clone())),
-            BroadcastMessage::AgentLifeUpdated { agent_key } => Some(RefreshKey::Life(*agent_key)),
+            // BroadcastMessage::AgentLifeUpdated { agent_key } => Some(RefreshKey::Life(*agent_key)),
             BroadcastMessage::PlayerManaUpdated { agent_key } => Some(RefreshKey::Mana(*agent_key)),
             BroadcastMessage::UpdateInventorySlot { agent_key, slot } => {
                 Some(RefreshKey::Slot(*agent_key, *slot))
@@ -224,20 +234,6 @@ mod tests {
             ),
             "{msgs:?}"
         );
-    }
-
-    #[test]
-    fn a_creature_hit_by_two_players_has_its_life_read_once() {
-        let rat = key(1);
-        let mut msgs = vec![
-            BroadcastMessage::AgentLifeUpdated { agent_key: rat },
-            BroadcastMessage::AgentLifeUpdated { agent_key: key(2) },
-            BroadcastMessage::AgentLifeUpdated { agent_key: rat },
-        ];
-
-        dedupe_refreshes(&mut msgs);
-
-        assert_eq!(msgs.len(), 2, "{msgs:?}");
     }
 
     #[test]

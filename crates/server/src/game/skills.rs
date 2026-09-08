@@ -85,7 +85,7 @@ pub fn tick_skill(
     agent_key: AgentKey,
     skill: SkillType,
     ticks: u64,
-    messages: &mut Vec<BroadcastMessage>,
+    events: &mut Vec<BroadcastMessage>,
 ) {
     let vocation = player.vocation();
     let Some(skill_value) = player.skills_mut().get_mut(&skill) else {
@@ -96,7 +96,7 @@ pub fn tick_skill(
         required_ticks(vocation, &skill, level)
     });
 
-    messages.push(if gained > 0 {
+    events.push(if gained > 0 {
         BroadcastMessage::SkillUpgraded {
             agent_key,
             skill_type: skill,

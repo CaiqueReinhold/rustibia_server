@@ -8,6 +8,7 @@ pub mod death;
 pub mod description;
 pub mod events;
 pub mod experience;
+pub mod healing;
 pub mod item_action;
 pub mod item_movement;
 pub mod item_multi_action;

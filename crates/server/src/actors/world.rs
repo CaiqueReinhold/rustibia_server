@@ -33,7 +33,7 @@ use crate::persistence::spawns::SpawnPoint;
 #[derive(Debug, Display)]
 pub enum WorldCommand {
     SpawnPlayer {
-        player: Agent,
+        player: Box<Agent>,
         session: SessionActorHandle,
         tx: oneshot::Sender<(AgentKey, MessageRouterGuard)>,
     },
@@ -173,7 +173,7 @@ impl WorldActorHandle {
             .tx
             .send((
                 WorldCommand::SpawnPlayer {
-                    player,
+                    player: Box::new(player),
                     session,
                     tx,
                 },
@@ -355,7 +355,7 @@ impl WorldActor {
                 player,
                 session,
                 tx,
-            } => self.spawn_player(player, session, tx, broadcast_messages),
+            } => self.spawn_player(*player, session, tx, broadcast_messages),
             WorldCommand::Walk {
                 direction,
                 agent_key,

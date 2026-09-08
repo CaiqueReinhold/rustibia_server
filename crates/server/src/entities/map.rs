@@ -567,6 +567,7 @@ mod tests {
     use crate::entities::items::ItemId;
     use crate::entities::items::{ItemAttribute, ItemConfig};
     use crate::entities::position::Position;
+    use crate::entities::skills::{SkillType, SkillValue};
     use crate::persistence::test_fixtures::{a_creature_kind, a_player_with_a_full_backpack};
     use std::collections::HashSet;
 
@@ -726,10 +727,16 @@ mod tests {
         let (mut map, keys) = map_with_players(1);
         let snapshot = map.clone();
 
-        map.get_player_mut(keys[0]).unwrap().mana_mut().current = 7;
+        map.get_player_mut(keys[0]).unwrap().skills_mut().insert(
+            SkillType::Level,
+            SkillValue {
+                value: 7,
+                current_ticks: 0,
+            },
+        );
 
-        assert_eq!(snapshot.get_player(keys[0]).unwrap().mana().current, 100);
-        assert_eq!(map.get_player(keys[0]).unwrap().mana().current, 7);
+        assert_eq!(snapshot.get_player(keys[0]).unwrap().level(), 1);
+        assert_eq!(map.get_player(keys[0]).unwrap().level(), 7);
     }
 
     #[test]
@@ -742,7 +749,11 @@ mod tests {
             let start = std::time::Instant::now();
             for _ in 0..ROUNDS {
                 for key in &keys {
-                    map.get_player_mut(*key).unwrap().mana_mut().current += 1;
+                    map.get_player_mut(*key)
+                        .unwrap()
+                        .skills_mut()
+                        .entry(SkillType::Level)
+                        .and_modify(|skill| skill.current_ticks += 1);
                 }
             }
             let elapsed = start.elapsed();

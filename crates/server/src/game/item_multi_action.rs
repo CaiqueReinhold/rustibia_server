@@ -1,8 +1,11 @@
+use smallvec::SmallVec;
 use tracing::{error, warn};
 
 use crate::{
     entities::{
         agent::AgentKey,
+        combat::AttackCost,
+        healing::{HealPlan, Restore},
         items::{Bounds, Item, ItemFlag, ItemId, ItemMultiAction, ItemRef},
         map::GameMap,
         position::{ItemPlacement, Position},
@@ -11,6 +14,7 @@ use crate::{
         Mark, TickCtx,
         config::GAME_CONFIG,
         events::BroadcastMessage,
+        healing::execute_healing,
         item_action::{ItemActionError, transform},
         item_movement::{insert_item_at, remove_item_at, return_item},
         map_query::find_item_in_placement,
@@ -245,39 +249,9 @@ fn potion(
     mana: Option<Bounds>,
     flask: Option<ItemId>,
 ) -> Result<(), ItemActionError> {
-    let health_roll = health.map(|b| ctx.roll.uniform(b.min, b.max));
-    let mana_roll = mana.map(|b| ctx.roll.uniform(b.min, b.max));
-
     let Ok((_, _, source_container)) = remove_item_at(ctx, potion, 1) else {
         return Err(ItemActionError::ActionFailed);
     };
-
-    if let Some(amount) = health_roll {
-        match ctx.map.get_agent_mut(target) {
-            Some(agent) => {
-                agent.restore_life(amount);
-                ctx.events
-                    .push(BroadcastMessage::AgentLifeUpdated { agent_key: target });
-            }
-            None => error!("agent {target:?} vanished mid-drink; life not restored"),
-        }
-    }
-    if let Some(amount) = mana_roll {
-        match ctx.map.get_player_mut(target) {
-            Some(player) => {
-                player.mana_mut().add(amount);
-                ctx.events
-                    .push(BroadcastMessage::PlayerManaUpdated { agent_key: target });
-            }
-            None => error!("agent {target:?} vanished mid-drink; mana not restored"),
-        }
-    }
-
-    if let Some(position) = ctx.map.agent_position(target).cloned() {
-        ctx.events
-            .push(BroadcastMessage::PotionDrunk { target, position });
-    }
-
     if let Some(flask) = flask {
         match ITEM_CONFIGS.get(&flask) {
             Some(config) => {
@@ -297,6 +271,21 @@ fn potion(
         }
     }
 
+    let life = health.map(|b| ctx.roll.uniform(b.min, b.max));
+    let mana = mana.map(|b| ctx.roll.uniform(b.min, b.max));
+    let plan = HealPlan {
+        caster: agent_key,
+        cost: AttackCost::None,
+        restores: SmallVec::from([(target, Restore { life, mana })]),
+        area_effect: None,
+    };
+    execute_healing(ctx, plan);
+
+    if let Some(position) = ctx.map.agent_position(target).cloned() {
+        ctx.events
+            .push(BroadcastMessage::PotionDrunk { target, position });
+    }
+
     Ok(())
 }
 
@@ -306,6 +295,7 @@ mod tests {
     use crate::constants::items::MAX_STACK_AMOUNT;
     use crate::entities::{
         agent::{Agent, Pool},
+        healing::RestoreType,
         inventory::InventorySlot,
         items::{Item, ItemAttribute, ItemConfig, ItemGuid, ItemId},
         map::MapTile,
@@ -631,8 +621,14 @@ mod tests {
             self.broadcasts
                 .iter()
                 .filter_map(|b| match b {
-                    BroadcastMessage::AgentLifeUpdated { .. } => Some("life"),
-                    BroadcastMessage::PlayerManaUpdated { .. } => Some("mana"),
+                    BroadcastMessage::AgentHealed {
+                        restore_type: RestoreType::Life,
+                        ..
+                    } => Some("life"),
+                    BroadcastMessage::AgentHealed {
+                        restore_type: RestoreType::Mana,
+                        ..
+                    } => Some("mana"),
                     BroadcastMessage::UseItemDenied { .. } => Some("denied"),
                     _ => None,
                 })
@@ -668,10 +664,16 @@ mod tests {
                 other.mana = pool(50, 1000);
                 Some(map.insert_agent(Agent::from_player(other), &there).unwrap())
             }
-            Target::Creature => Some(
-                map.insert_agent(a_test_creature("Rat", 1000, (1, 1)), &there)
-                    .unwrap(),
-            ),
+            Target::Creature => {
+                let rat = map
+                    .insert_agent(a_test_creature("Rat", 1000, (1, 1)), &there)
+                    .unwrap();
+                // Wounded to 10, matching the other targets. A creature spawns full, and a
+                // full pool takes nothing -- a heal aimed at it would restore zero and the
+                // test would pass against a potion that healed nobody.
+                map.get_agent_mut(rat).unwrap().take_hit(990);
+                Some(rat)
+            }
             Target::Nobody => None,
         };
 
@@ -706,7 +708,7 @@ mod tests {
                 .iter()
                 .any(|b| matches!(b, BroadcastMessage::UseItemDenied { .. })),
             life: map.get_agent(user).unwrap().life().clone(),
-            mana: map.get_player(user).unwrap().mana().clone(),
+            mana: map.get_agent(user).unwrap().mana().clone(),
             target_life,
             charges_left: map
                 .iter_items(&here)

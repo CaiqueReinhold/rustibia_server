@@ -24,10 +24,11 @@ use crate::{
         },
         events::BroadcastMessage,
         item_movement::remove_item_at,
-        map_query::can_throw,
+        map_query::{can_target, can_throw},
         pathfinding::chebyshev,
         random::Rolls,
         skills::tick_skill,
+        spells::{SpellCastingDenyReason, consume_mana},
     },
 };
 
@@ -73,7 +74,7 @@ pub fn plan_auto_attack(
             }),
             WeaponType::Wand | WeaponType::Rod => {
                 let mana_cost = player.weapon_mana_cost();
-                if !player.has_enough_mana(mana_cost) {
+                if agent.mana().current <= mana_cost {
                     return None;
                 }
                 AttackCost::Mana(mana_cost)
@@ -154,6 +155,7 @@ pub fn plan_auto_attack(
         trains,
         missile,
         area_effect: None,
+        missed,
     })
 }
 
@@ -163,20 +165,36 @@ pub fn plan_spell_attack(
     roll: &mut Rolls,
     spell: &SpellAttack,
     cast_target: &CastTarget,
-    mana_cost: u32,
-) -> Option<AttackPlan> {
-    let agent = map.get_agent(attacker)?;
-    let position = map.agent_position(attacker)?;
+) -> Result<AttackPlan, SpellCastingDenyReason> {
+    let agent = map
+        .get_agent(attacker)
+        .ok_or(SpellCastingDenyReason::InvalidState(
+            attacker,
+            "spell caster not found",
+        ))?;
+    let position = map
+        .agent_position(attacker)
+        .ok_or(SpellCastingDenyReason::InvalidState(
+            attacker,
+            "spell caster not found",
+        ))?;
 
     let (targets, missile, area) = match &spell.target {
         SpellTargetMode::Target { range } => {
-            let target = agent.target()?;
-            let target_pos = map.agent_position(target)?;
+            let target = agent
+                .target()
+                .ok_or(SpellCastingDenyReason::InvalidTarget)?;
+            let target_pos =
+                map.agent_position(target)
+                    .ok_or(SpellCastingDenyReason::InvalidState(
+                        target,
+                        "spell target not found",
+                    ))?;
 
             if chebyshev(position, target_pos) > *range
                 || !can_throw(map, position, target_pos, true)
             {
-                return None;
+                return Err(SpellCastingDenyReason::OutOfReach);
             }
 
             (
@@ -190,46 +208,41 @@ pub fn plan_spell_attack(
             )
         }
         SpellTargetMode::Area { origin, shape } => {
-            let origin_pos = match origin {
-                AreaOrigin::Caster => position,
-                AreaOrigin::Target => match cast_target {
-                    CastTarget::Agent(key) => map.agent_position(*key)?,
-                    CastTarget::Position(pos) => pos,
-                    CastTarget::None => {
-                        return None;
-                    }
-                },
-            };
-            let delta = shape.get_delta(agent.facing());
-            let positions: Vec<Position> = delta
-                .iter()
-                .flat_map(|(dx, dy)| origin_pos.checked_offset(*dx as i32, *dy as i32))
-                .collect();
-            let agents: Vec<AgentKey> = positions
-                .iter()
-                .flat_map(|pos| map.iter_agents_at(pos).ok())
-                .flatten()
-                .copied()
-                .filter(|key| *key != attacker)
-                .collect();
+            let origin = resolve_area_origin(map, origin, position, cast_target)
+                .ok_or(SpellCastingDenyReason::InvalidTarget)?;
+            let (mut agents, delta) = resolve_area(map, origin, shape.get_delta(agent.facing()));
+            agents.retain(|key| attacker != *key);
             (
                 agents,
                 spell.missile_id.map(|missile_id| Missile {
                     missile_id,
                     from: position.clone(),
-                    to: origin_pos.clone(),
+                    to: origin.clone(),
                 }),
                 Some(AreaEffect {
                     effect_id: spell.effect_id,
-                    origin: origin_pos.clone(),
-                    delta: delta.iter().copied().collect(),
+                    origin: origin.clone(),
+                    delta,
                 }),
             )
         }
-        _ => return None,
+        _ => return Err(SpellCastingDenyReason::InvalidTarget),
     };
 
-    let (element, base_damage) = get_spell_base_damage(agent.get_player()?, spell, roll);
+    let base_damage = get_spell_base_damage(
+        agent
+            .get_player()
+            .ok_or(SpellCastingDenyReason::InvalidState(
+                attacker,
+                "non player casting spell",
+            ))?,
+        spell.base_power,
+        spell.level_factor,
+        spell.magic_factor,
+        spell.spread,
+        roll,
+    );
+    let element = spell.element;
     let damage = targets
         .into_iter()
         .map(|target| {
@@ -245,26 +258,85 @@ pub fn plan_spell_attack(
         })
         .collect();
 
-    Some(AttackPlan {
+    Ok(AttackPlan {
         attacker,
         damage,
-        cost: AttackCost::Mana(mana_cost),
+        cost: AttackCost::None,
         trains: None,
         missile,
         area_effect: area,
+        missed: false,
     })
 }
 
+pub fn resolve_area_origin<'a>(
+    map: &'a GameMap,
+    origin: &'a AreaOrigin,
+    caster_pos: &'a Position,
+    cast_target: &'a CastTarget,
+) -> Option<&'a Position> {
+    match origin {
+        AreaOrigin::Caster => Some(caster_pos),
+        AreaOrigin::Target => match cast_target {
+            CastTarget::Agent(key) => map
+                .agent_position(*key)
+                .filter(|pos| can_target(caster_pos, pos) && can_throw(map, caster_pos, pos, true)),
+            CastTarget::Position(pos) => Some(pos),
+            CastTarget::None => None,
+        },
+    }
+}
+
+pub fn resolve_area(
+    map: &GameMap,
+    origin: &Position,
+    shape: &[(i8, i8)],
+) -> (Vec<AgentKey>, Vec<(i8, i8)>) {
+    let affected_area: Vec<((i8, i8), Position)> = shape
+        .iter()
+        .flat_map(|(dx, dy)| {
+            origin
+                .checked_offset(*dx as i32, *dy as i32)
+                .map(|pos| ((*dx, *dy), pos))
+        })
+        .filter(|(_, pos)| can_throw(map, origin, pos, true))
+        .collect();
+
+    (
+        affected_area
+            .iter()
+            .flat_map(|(_, pos)| map.iter_agents_at(pos).ok())
+            .flatten()
+            .copied()
+            .collect(),
+        affected_area.into_iter().map(|(delta, _)| delta).collect(),
+    )
+}
+
 pub fn execute_attack(ctx: &mut TickCtx, plan: AttackPlan) {
-    let missed_at = plan
-        .missile
-        .as_ref()
-        .filter(|_| plan.damage.is_empty())
-        .map(|missile| missile.to.clone());
+    match plan.cost {
+        AttackCost::Item(item) => {
+            if let Err(e) = remove_item_at(ctx, &item, 1) {
+                error!("Failed to consume item({:?}) on attack: {}", item, e);
+            };
+        }
+        AttackCost::Mana(mana_cost) => {
+            if let Some(agent) = ctx.map.get_agent_mut(plan.attacker) {
+                consume_mana(plan.attacker, agent, mana_cost, ctx.events);
+            }
+        }
+        AttackCost::None => {}
+    }
 
     if let Some(missile) = plan.missile {
+        let miss_pos = missile.to.clone();
         ctx.events
             .push(BroadcastMessage::MissileLaunched { missile });
+        if plan.missed {
+            ctx.events
+                .push(BroadcastMessage::AttackMissed { position: miss_pos });
+            return;
+        }
     }
 
     for (target, dmg) in &plan.damage {
@@ -281,29 +353,11 @@ pub fn execute_attack(ctx: &mut TickCtx, plan: AttackPlan) {
         .iter()
         .any(|(_, damage)| damage.value > 0);
 
-    match plan.cost {
-        AttackCost::Item(item) => {
-            if let Err(e) = remove_item_at(ctx, &item, 1) {
-                error!("Failed to consume item({:?}) on attack: {}", item, e);
-            };
-        }
-        AttackCost::Mana(mana_cost) => {
-            if let Some(player) = ctx.map.get_player_mut(plan.attacker) {
-                consume_mana(plan.attacker, player, mana_cost, ctx.events);
-            }
-        }
-        AttackCost::None => {}
-    }
     if let Some(skill_type) = plan.trains
         && landed
         && let Some(player) = ctx.map.get_player_mut(plan.attacker)
     {
         tick_skill(player, plan.attacker, skill_type, 1, ctx.events);
-    }
-
-    if let Some(position) = missed_at {
-        ctx.events.push(BroadcastMessage::AttackMissed { position });
-        return;
     }
 
     if let Some(area) = plan.area_effect {
@@ -514,17 +568,6 @@ fn apply_armor(base_attack_value: u32, target: &Agent, roll: &mut Rolls) -> u32 
         return base_attack_value;
     }
     base_attack_value.saturating_sub(roll.uniform(armor / 2, armor))
-}
-
-fn consume_mana(
-    agent_key: AgentKey,
-    player: &mut Player,
-    mana_cost: u32,
-    msgs: &mut Vec<BroadcastMessage>,
-) {
-    player.mana_mut().remove(mana_cost);
-    msgs.push(BroadcastMessage::PlayerManaUpdated { agent_key });
-    tick_skill(player, agent_key, SkillType::Magic, mana_cost as u64, msgs);
 }
 
 #[cfg(test)]
@@ -999,8 +1042,13 @@ mod tests {
     /// Pins the broadcast order the spec calls load-bearing: cost, then skill, then damage.
     /// The `Magic` skill entry is required — `tick_skill` returns without emitting for a skill
     /// the player does not have, and `a_test_snapshot` carries only `Level`.
+    ///
+    /// The auto-attack cooldown is **not** asserted here: it is the one auto-attack-specific
+    /// thing the executor lost when the spell planners joined it, and it is stamped by
+    /// `systems::combat_system` instead. `a_swing_stamps_the_auto_attack_cooldown` is what
+    /// covers it now.
     #[test]
-    fn executing_sets_the_cooldown_and_spends_the_mana() {
+    fn executing_spends_the_mana_in_the_order_the_spec_pins() {
         let mut snapshot = armed(Some(a_wand(20)), None);
         snapshot.skills.insert(
             SkillType::Magic,
@@ -1020,11 +1068,7 @@ mod tests {
         execute_attack(&mut h.ctx(&mut map), plan);
 
         let agent = map.get_agent(attacker).unwrap();
-        assert_eq!(
-            agent.next_auto_attack_tick,
-            Tick(7) + GAME_CONFIG.combat.auto_attack_ticks
-        );
-        assert_eq!(agent.get_player().unwrap().mana().current, 80);
+        assert_eq!(agent.mana().current, 80);
         assert_eq!(
             broadcast_kinds(&h.events),
             ["mana", "skill", "damage", "blood"]
@@ -1403,7 +1447,7 @@ mod tests {
 
         execute_attack(&mut h.ctx(&mut map), plan);
 
-        assert_eq!(broadcast_kinds(&h.events), ["missile", "ammo", "miss"]);
+        assert_eq!(broadcast_kinds(&h.events), ["ammo", "missile", "miss"]);
         let arrows = map
             .get_agent(attacker)
             .unwrap()

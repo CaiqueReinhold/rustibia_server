@@ -4,7 +4,6 @@ use crate::entities::creature::CreatureKind;
 use crate::entities::items::{Item, ItemFlag};
 use crate::entities::player::Player;
 use crate::entities::position::{ItemPlacement, Position};
-use crate::entities::spells::SpellAttack;
 use crate::game::TickCtx;
 use crate::game::combat::weapon_skill;
 use crate::game::config::GAME_CONFIG;
@@ -99,16 +98,19 @@ pub fn get_creature_base_damage(creature: &CreatureKind, roll: &mut Rolls) -> (C
 
 pub fn get_spell_base_damage(
     player: &Player,
-    spell: &SpellAttack,
+    base_power: f32,
+    level_factor: f32,
+    magic_factor: f32,
+    spread: f32,
     roll: &mut Rolls,
-) -> (CombatElement, u32) {
-    let center = spell.base_power
+) -> u32 {
+    let center = base_power
         * (1.0
-            + (f32::from(player.level()) * spell.level_factor / 100.0)
-            + (f32::from(player.skill_magic()) * spell.magic_factor / 100.0));
-    let min = (center * (1.0 - spell.spread)).max(0.0).round() as u32;
-    let max = (center * (1.0 + spell.spread)).round() as u32;
-    (spell.element, roll.damage_roll(min, max))
+            + (f32::from(player.level()) * level_factor / 100.0)
+            + (f32::from(player.skill_magic()) * magic_factor / 100.0));
+    let min = (center * (1.0 - spread)).max(0.0).round() as u32;
+    let max = (center * (1.0 + spread)).round() as u32;
+    roll.damage_roll(min, max)
 }
 
 fn get_max_damage(attack_value: u16, level: u16, skill_value: u16) -> u32 {

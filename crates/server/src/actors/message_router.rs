@@ -14,6 +14,7 @@ use crate::{
     entities::{
         agent::AgentKey,
         chat::ChannelId,
+        healing::RestoreType,
         map::GameMap,
         position::{ItemPlacement, Rect},
     },
@@ -400,18 +401,18 @@ impl MessageRouterActor {
             BroadcastMessage::PlayerManaUpdated { agent_key } => {
                 self.send_to(message, agent_key);
             }
-            BroadcastMessage::AgentLifeUpdated { agent_key } => {
-                if let Some(position) = map.agent_position(*agent_key) {
-                    self.send_to_rect(
-                        message,
-                        map,
-                        Rect::player_viewport(position),
-                        position.z,
-                        false,
-                        None,
-                    );
-                }
-            }
+            // BroadcastMessage::AgentLifeUpdated { agent_key } => {
+            //     if let Some(position) = map.agent_position(*agent_key) {
+            //         self.send_to_rect(
+            //             message,
+            //             map,
+            //             Rect::player_viewport(position),
+            //             position.z,
+            //             false,
+            //             None,
+            //         );
+            //     }
+            // }
             BroadcastMessage::PotionDrunk { position, .. } => {
                 self.send_to_rect(
                     message,
@@ -442,6 +443,22 @@ impl MessageRouterActor {
                     None,
                 );
             }
+            BroadcastMessage::AgentHealed {
+                agent_key,
+                position,
+                restore_type,
+                ..
+            } => match restore_type {
+                RestoreType::Life => self.send_to_rect(
+                    message,
+                    map,
+                    Rect::player_viewport(position),
+                    position.z,
+                    false,
+                    None,
+                ),
+                RestoreType::Mana => self.send_to(message, agent_key),
+            },
             BroadcastMessage::AreaEffectAppeared { area_effect } => {
                 self.send_to_rect(
                     message,

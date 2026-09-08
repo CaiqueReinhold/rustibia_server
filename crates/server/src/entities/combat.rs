@@ -61,6 +61,7 @@ pub struct AttackPlan {
     pub trains: Option<SkillType>,
     pub missile: Option<Missile>,
     pub area_effect: Option<AreaEffect>,
+    pub missed: bool,
 }
 
 #[derive(Debug, Clone, Default)]

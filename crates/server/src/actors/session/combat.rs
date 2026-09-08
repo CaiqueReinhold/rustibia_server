@@ -8,10 +8,11 @@ use crate::{
         chat::{ChannelId, ChatMessageType},
         combat::CombatDamage,
         creature::BloodType,
+        healing::RestoreType,
         position::Position,
         spells::{CastTarget, SpellId, SpellTarget},
     },
-    game::{combat::get_damage_visuals, config::GAME_CONFIG},
+    game::{combat::get_damage_visuals, config::GAME_CONFIG, spells::SpellCastingDenyReason},
     messages::{FloatingTextType, ServerMessage, TextMessageType},
     persistence::spells::SPELLS,
 };
@@ -148,6 +149,33 @@ impl SessionActor {
         Ok(())
     }
 
+    pub(super) async fn agent_healed(
+        &self,
+        agent_key: AgentKey,
+        position: Position,
+        amount: u32,
+        restore_type: RestoreType,
+    ) -> Result<()> {
+        if amount > 0 {
+            self.connection
+                .send_message(ServerMessage::FloatingText {
+                    text: amount.to_string(),
+                    position,
+                    text_type: FloatingTextType::HitPoints,
+                    color: Some(match restore_type {
+                        RestoreType::Life => GAME_CONFIG.text_colors.lightgreen,
+                        RestoreType::Mana => GAME_CONFIG.text_colors.lightblue,
+                    }),
+                })
+                .await?;
+        }
+
+        match restore_type {
+            RestoreType::Life => self.life_updated(agent_key).await,
+            RestoreType::Mana => self.mana_updated().await,
+        }
+    }
+
     pub(super) async fn attack_missed(&self, position: Position) -> Result<()> {
         self.connection
             .send_message(ServerMessage::ShowEffect {
@@ -208,7 +236,7 @@ impl SessionActor {
         &self,
         agent_key: AgentKey,
         position: Position,
-        reason: String,
+        reason: SpellCastingDenyReason,
     ) -> Result<()> {
         self.connection
             .send_message(ServerMessage::ShowEffect {
@@ -221,7 +249,7 @@ impl SessionActor {
         if self.player_key == agent_key {
             self.connection
                 .send_message(ServerMessage::TextMessage {
-                    text: reason,
+                    text: reason.to_string(),
                     message_type: TextMessageType::ActionDenied,
                 })
                 .await?;
@@ -338,7 +366,7 @@ mod tests {
         let tile = Position::new(102, 100, 7);
 
         session
-            .spell_denied(stranger, tile.clone(), "Not enough mana".to_owned())
+            .spell_denied(stranger, tile.clone(), SpellCastingDenyReason::NoMana)
             .await
             .unwrap();
 
@@ -371,7 +399,11 @@ mod tests {
         let (session, mut connection_rx, _world_rx, _tick_tx) = SessionActor::for_test(me, map);
 
         session
-            .spell_denied(me, Position::new(100, 100, 7), "You're exausted".to_owned())
+            .spell_denied(
+                me,
+                Position::new(100, 100, 7),
+                SpellCastingDenyReason::StillInCooldown,
+            )
             .await
             .unwrap();
 

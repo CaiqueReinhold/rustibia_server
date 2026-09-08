@@ -27,7 +27,7 @@ pub fn get_player_desc(map: &GameMap, key: AgentKey, id: AgentId) -> Option<Serv
         name: agent.name().to_string(),
         level: player.level(),
         life: agent.life().clone(),
-        mana: player.mana().clone(),
+        mana: agent.mana().clone(),
         outfit: agent.outfit(),
         speed: agent.speed(),
         capacity: player.capacity_available(),

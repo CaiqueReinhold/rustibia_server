@@ -37,6 +37,7 @@ effect_ids:
   potion_use: 13
   miss: 3
   puff: 3
+  healing_spell: 13
 
 text_colors:
   blue: [0, 0, 255]

@@ -1,20 +1,19 @@
 spells:
-  # TODO: healing has no planner yet, and `SpellEffect` has no `Heal` variant, so the
-  # loader refuses this effect rather than dropping it. Uncomment when healing lands.
-  # - id: 1
-  #   name: Light Healing
-  #   group: healing
-  #   cooldown_ticks: 20
-  #   mana: 20
-  #   level: 8
-  #   vocations: [druid, sorcerer, paladin]
-  #   effects:
-  #     - heal:
-  #         target: self
-  #         base_power: 8
-  #         level_factor: 0.2
-  #         magic_factor: 1.4
-  #         effect_id: 13
+  - id: 1
+    name: Light Healing
+    words: exura
+    group: healing
+    cooldown_ticks: 20
+    mana: 20
+    level: 8
+    vocations: [druid, sorcerer, paladin]
+    effects:
+      - heal:
+          target:
+            type: self
+          base_power: 8
+          level_factor: 0.2
+          magic_factor: 1.4
   - id: 2
     name: Fire Wave
     words: exevo flam hur
@@ -72,6 +71,6 @@ spells:
           base_power: 45
           level_factor: 0.2
           magic_factor: 1.5
-          spread: 0.25
+          spread: 0.35
           effect_id: 38
           missile_id: 36

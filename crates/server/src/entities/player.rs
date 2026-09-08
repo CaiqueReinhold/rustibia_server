@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::entities::{
-    agent::Pool,
     combat::{AmmoType, CombatElement, WeaponType},
     inventory::{Inventory, InventorySlot},
     items::{Item, ItemFlag},
@@ -30,7 +29,6 @@ pub struct Player {
     admin: bool,
     last_logout_position: Position,
     vocation: Vocation,
-    mana: Pool,
     capacity: u32,
     inventory: Arc<Inventory>,
     skills: HashMap<SkillType, SkillValue>,
@@ -45,7 +43,6 @@ impl Player {
         admin: bool,
         last_logout_position: Position,
         vocation: Vocation,
-        mana: Pool,
         capacity: u32,
         inventory: Inventory,
         skills: HashMap<SkillType, SkillValue>,
@@ -57,7 +54,6 @@ impl Player {
             admin,
             last_logout_position,
             vocation,
-            mana,
             capacity,
             inventory: Arc::new(inventory),
             skills,
@@ -86,14 +82,6 @@ impl Player {
 
     pub fn vocation(&self) -> Vocation {
         self.vocation
-    }
-
-    pub fn mana(&self) -> &Pool {
-        &self.mana
-    }
-
-    pub fn mana_mut(&mut self) -> &mut Pool {
-        &mut self.mana
     }
 
     pub fn capacity(&self) -> u32 {
@@ -131,10 +119,6 @@ impl Player {
 
     pub fn can_carry(&self, additional_weight: u32) -> bool {
         self.inventory.carried_weight() + additional_weight <= self.capacity
-    }
-
-    pub fn has_enough_mana(&self, mana_cost: u32) -> bool {
-        self.mana.current >= mana_cost
     }
 
     pub fn has_shield(&self) -> bool {

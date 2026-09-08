@@ -436,7 +436,7 @@ impl SessionActor {
                 ..
             } => self.skill_upgraded(skill_type, gained, amount).await,
             BroadcastMessage::PlayerManaUpdated { .. } => self.mana_updated().await,
-            BroadcastMessage::AgentLifeUpdated { agent_key } => self.life_updated(agent_key).await,
+            // BroadcastMessage::AgentLifeUpdated { agent_key } => self.life_updated(agent_key).await,
             BroadcastMessage::PotionDrunk { target, position } => {
                 self.potion_drunk(target, position).await
             }
@@ -450,6 +450,15 @@ impl SessionActor {
                 position,
                 reason,
             } => self.spell_denied(agent_key, position, reason).await,
+            BroadcastMessage::AgentHealed {
+                agent_key,
+                position,
+                amount,
+                restore_type,
+            } => {
+                self.agent_healed(agent_key, position, amount, restore_type)
+                    .await
+            }
             BroadcastMessage::AreaEffectAppeared { area_effect } => {
                 self.area_effect_appeared(area_effect).await
             }

@@ -38,7 +38,7 @@ impl SpellGroup {
     pub fn cooldown(&self) -> TickDelta {
         match self {
             SpellGroup::Attack => GAME_CONFIG.combat.attack_group_cooldown,
-            SpellGroup::Healing => GAME_CONFIG.combat.attack_group_cooldown,
+            SpellGroup::Healing => GAME_CONFIG.combat.healing_group_cooldown,
             SpellGroup::Support => GAME_CONFIG.combat.support_group_cooldown,
         }
     }
@@ -71,16 +71,29 @@ pub struct SpellAttack {
 }
 
 #[derive(Debug)]
+pub struct SpellHealing {
+    pub target: SpellTargetMode,
+    pub base_power: f32,
+    pub level_factor: f32,
+    pub magic_factor: f32,
+    pub spread: f32,
+}
+
+#[derive(Debug)]
 pub enum SpellEffect {
     Attack(SpellAttack),
+    Healing(SpellHealing),
 }
 
 #[derive(Debug)]
 pub enum SpellTargetMode {
+    /// Accepts only CastTarget::None
     Caster,
-    Target {
-        range: u16,
-    },
+    /// Accepts only CastTarget::None, the target is always
+    /// agent.target()
+    Target { range: u16 },
+    /// if origin is caster accepts only CastTarget::None
+    /// otherwise accepts only CastTarget::Agent or CastTarget::Position
     Area {
         origin: AreaOrigin,
         shape: Arc<AreaShape>,

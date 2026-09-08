@@ -114,6 +114,7 @@ new_key_type! { pub struct AgentKey; }
 pub struct Agent {
     inner: AgentInner,
     life: Pool,
+    mana: Pool,
     outfit: (OutfitId, OutfitColors),
     base_speed: u16,
     facing: Facing,
@@ -172,7 +173,6 @@ impl Agent {
             player.admin,
             player.position,
             player.vocation,
-            player.mana,
             player.capacity,
             Inventory::from_snapshot(player.inventory),
             player.skills,
@@ -181,6 +181,7 @@ impl Agent {
             inner: AgentInner::Player(Arc::new(p)),
             facing: player.facing,
             life: player.life,
+            mana: player.mana,
             outfit: player.outfit,
             base_speed: player.speed,
             next_walk_tick: Tick(0),
@@ -203,6 +204,10 @@ impl Agent {
         Self {
             inner: AgentInner::Creature(kind),
             life,
+            mana: Pool {
+                current: 0,
+                maximum: 0,
+            },
             outfit,
             base_speed: speed,
             facing: Facing::South,
@@ -248,18 +253,30 @@ impl Agent {
         &self.life
     }
 
-    pub fn is_fleeing(&self) -> bool {
-        self.get_creature_kind()
-            .and_then(|kind| kind.flee_threshold)
-            .is_some_and(|threshold| self.life.current <= threshold)
-    }
-
-    pub fn take_hit(&mut self, damage: u32) {
-        self.life.current = self.life.current.saturating_sub(damage);
+    pub fn mana(&self) -> &Pool {
+        &self.mana
     }
 
     pub fn restore_life(&mut self, amount: u32) {
         self.life.add(amount);
+    }
+
+    pub fn restore_mana(&mut self, amount: u32) {
+        self.mana.add(amount);
+    }
+
+    pub fn remove_mana(&mut self, amount: u32) {
+        self.mana.remove(amount);
+    }
+
+    pub fn take_hit(&mut self, damage: u32) {
+        self.life.remove(damage);
+    }
+
+    pub fn is_fleeing(&self) -> bool {
+        self.get_creature_kind()
+            .and_then(|kind| kind.flee_threshold)
+            .is_some_and(|threshold| self.life.current <= threshold)
     }
 
     pub fn outfit(&self) -> (OutfitId, OutfitColors) {
@@ -388,7 +405,7 @@ impl Agent {
 
     pub fn stamp_spell(&mut self, current_tick: Tick, spell: &Spell) {
         self.spell_cooldowns
-            .retain(|(id, tick)| current_tick < *tick || *id != spell.id);
+            .retain(|(id, tick)| current_tick < *tick && *id != spell.id);
         self.spell_cooldowns
             .push((spell.id, current_tick + spell.cooldown));
         self.group_cooldowns[spell.group.index()] =
@@ -411,7 +428,7 @@ impl Agent {
             origin: self.origin.clone(),
             facing: self.facing,
             life: self.life.clone(),
-            mana: player.mana().clone(),
+            mana: self.mana.clone(),
             capacity: player.capacity(),
             speed: self.base_speed,
             outfit: self.outfit,
@@ -755,11 +772,23 @@ mod tests {
         let mut a = a_backpacked_agent();
         let b = a.clone();
 
-        a.get_player_mut().unwrap().mana_mut().current = 7;
+        a.get_player_mut().unwrap().skills_mut().insert(
+            SkillType::Magic,
+            SkillValue {
+                value: 7,
+                current_ticks: 0,
+            },
+        );
         assert!(!Arc::ptr_eq(player_arc(&a), player_arc(&b)));
 
         let after_first = Arc::as_ptr(player_arc(&a));
-        a.get_player_mut().unwrap().mana_mut().current = 8;
+        a.get_player_mut().unwrap().skills_mut().insert(
+            SkillType::Magic,
+            SkillValue {
+                value: 8,
+                current_ticks: 0,
+            },
+        );
         assert_eq!(Arc::as_ptr(player_arc(&a)), after_first);
     }
 
@@ -768,7 +797,13 @@ mod tests {
         let mut a = a_backpacked_agent();
         let b = a.clone();
 
-        a.get_player_mut().unwrap().mana_mut().current = 7;
+        a.get_player_mut().unwrap().skills_mut().insert(
+            SkillType::Magic,
+            SkillValue {
+                value: 7,
+                current_ticks: 0,
+            },
+        );
 
         assert!(std::ptr::eq(
             a.get_player().unwrap().inventory(),
