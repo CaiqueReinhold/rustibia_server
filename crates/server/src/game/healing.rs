@@ -99,10 +99,10 @@ fn restore_agent(ctx: &mut TickCtx, agent_key: AgentKey, restore: &Restore) {
 
     let life = restore
         .life
-        .map(|amount| amount.min(agent.life().available()));
+        .map(|amount| amount.min(agent.life().missing()));
     let mana = restore
         .mana
-        .map(|amount| amount.min(agent.mana().available()));
+        .map(|amount| amount.min(agent.mana().missing()));
 
     if let Some(life) = life {
         agent.restore_life(life);

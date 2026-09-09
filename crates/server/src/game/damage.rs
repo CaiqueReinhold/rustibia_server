@@ -55,7 +55,7 @@ pub fn apply_damage(
     let applied = damage.value;
 
     if let Some(agent) = ctx.map.get_agent_mut(target) {
-        agent.take_hit(applied);
+        agent.remove_life(applied);
         if records_participation && let Some(source) = source {
             agent.record_damage(source, applied);
         }

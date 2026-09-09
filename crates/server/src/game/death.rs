@@ -182,7 +182,7 @@ mod tests {
         let rat = map
             .insert_agent(a_spawned_creature(origin.clone(), TickDelta(600)), &died_at)
             .unwrap();
-        map.get_agent_mut(rat).unwrap().take_hit(1);
+        map.get_agent_mut(rat).unwrap().remove_life(1);
         let mut h = TestHarness::seeded(1);
         h.tick = Tick(50);
 

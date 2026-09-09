@@ -78,7 +78,7 @@ pub struct Pool {
 }
 
 impl Pool {
-    pub fn available(&self) -> u32 {
+    pub fn missing(&self) -> u32 {
         self.maximum - self.current
     }
 
@@ -262,20 +262,20 @@ impl Agent {
         &self.mana
     }
 
-    pub fn restore_life(&mut self, amount: u32) {
-        self.life.add(amount);
+    pub fn remove_life(&mut self, amount: u32) {
+        self.life.remove(amount);
     }
 
-    pub fn restore_mana(&mut self, amount: u32) {
-        self.mana.add(amount);
+    pub fn restore_life(&mut self, amount: u32) {
+        self.life.add(amount);
     }
 
     pub fn remove_mana(&mut self, amount: u32) {
         self.mana.remove(amount);
     }
 
-    pub fn take_hit(&mut self, damage: u32) {
-        self.life.remove(damage);
+    pub fn restore_mana(&mut self, amount: u32) {
+        self.mana.add(amount);
     }
 
     pub fn is_fleeing(&self) -> bool {

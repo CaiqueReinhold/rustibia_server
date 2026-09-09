@@ -669,7 +669,7 @@ mod tests {
                 // Wounded to 10, matching the other targets. A creature spawns full, and a
                 // full pool takes nothing -- a heal aimed at it would restore zero and the
                 // test would pass against a potion that healed nobody.
-                map.get_agent_mut(rat).unwrap().take_hit(990);
+                map.get_agent_mut(rat).unwrap().remove_life(990);
                 Some(rat)
             }
             Target::Nobody => None,

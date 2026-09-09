@@ -635,7 +635,7 @@ mod tests {
         let key = map
             .insert_agent(a_test_creature_that_flees("Rat", 10, (1, 2), 5), &at(x, y))
             .unwrap();
-        map.get_agent_mut(key).unwrap().take_hit(6);
+        map.get_agent_mut(key).unwrap().remove_life(6);
         key
     }
 

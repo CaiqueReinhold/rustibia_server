@@ -865,7 +865,7 @@ mod tests {
             "above its threshold the same creature swings"
         );
 
-        map.get_agent_mut(attacker).unwrap().take_hit(6);
+        map.get_agent_mut(attacker).unwrap().remove_life(6);
 
         assert!(plan_auto_attack(&map, attacker, &mut roll, Tick(0)).is_none());
     }
@@ -878,13 +878,13 @@ mod tests {
             Agent::from_player(a_test_snapshot(1, 1)),
         );
         let mut roll = Rolls::new(1);
-        map.get_agent_mut(attacker).unwrap().take_hit(4);
+        map.get_agent_mut(attacker).unwrap().remove_life(4);
         assert!(
             plan_auto_attack(&map, attacker, &mut roll, Tick(0)).is_some(),
             "6 of 10"
         );
 
-        map.get_agent_mut(attacker).unwrap().take_hit(1);
+        map.get_agent_mut(attacker).unwrap().remove_life(1);
 
         assert!(
             plan_auto_attack(&map, attacker, &mut roll, Tick(0)).is_none(),

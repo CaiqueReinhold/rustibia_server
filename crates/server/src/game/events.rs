@@ -107,9 +107,6 @@ pub enum BroadcastMessage {
     PlayerManaUpdated {
         agent_key: AgentKey,
     },
-    // AgentLifeUpdated {
-    //     agent_key: AgentKey,
-    // },
     PotionDrunk {
         target: AgentKey,
         position: Position,
@@ -247,7 +244,6 @@ impl BroadcastMessage {
 #[derive(PartialEq, Eq, Hash)]
 enum RefreshKey {
     Tile(Position),
-    // Life(AgentKey),
     Mana(AgentKey),
     Slot(AgentKey, InventorySlot),
     Container(ItemGuid),
@@ -257,7 +253,6 @@ impl BroadcastMessage {
     fn refresh_key(&self) -> Option<RefreshKey> {
         match self {
             BroadcastMessage::TileChanged { position } => Some(RefreshKey::Tile(position.clone())),
-            // BroadcastMessage::AgentLifeUpdated { agent_key } => Some(RefreshKey::Life(*agent_key)),
             BroadcastMessage::PlayerManaUpdated { agent_key } => Some(RefreshKey::Mana(*agent_key)),
             BroadcastMessage::UpdateInventorySlot { agent_key, slot } => {
                 Some(RefreshKey::Slot(*agent_key, *slot))
