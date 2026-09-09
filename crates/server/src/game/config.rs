@@ -1,7 +1,9 @@
 use std::fs;
+use std::path::Path;
 
 use once_cell::sync::Lazy;
 use serde::Deserialize;
+use thiserror::Error;
 
 use crate::entities::vocation::Vocation;
 use crate::{
@@ -14,7 +16,16 @@ use crate::{
     game::TickDelta,
 };
 
-pub static GAME_CONFIG: Lazy<GameConfig> = Lazy::new(read_from_file);
+pub static GAME_CONFIG: Lazy<GameConfig> =
+    Lazy::new(|| load_game_config(&CONFIG.game_config_path).expect("failed to load game config"));
+
+#[derive(Error, Debug)]
+pub enum GameConfigLoadError {
+    #[error("I/O error: {0}")]
+    ReadError(#[from] std::io::Error),
+    #[error("YAML parse error: {0}")]
+    ParseError(#[from] serde_yaml::Error),
+}
 
 #[derive(Deserialize)]
 pub struct GameConfig {
@@ -164,8 +175,18 @@ pub struct SkillsConfig {
     pub vocations: VocationCurves,
 }
 
-fn read_from_file() -> GameConfig {
-    let contents =
-        fs::read_to_string(&CONFIG.game_config_path).expect("failed to read game config");
-    serde_yaml::from_str(&contents).expect("failed to parse game config")
+pub fn load_game_config(path: impl AsRef<Path>) -> Result<GameConfig, GameConfigLoadError> {
+    Ok(serde_yaml::from_str(&fs::read_to_string(path)?)?)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_shipped_config_file_parses() {
+        if let Err(e) = load_game_config(&CONFIG.game_config_path) {
+            panic!("{} does not match GameConfig: {e}", CONFIG.game_config_path);
+        }
+    }
 }
