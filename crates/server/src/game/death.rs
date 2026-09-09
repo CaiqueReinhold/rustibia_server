@@ -61,12 +61,7 @@ pub fn reap(ctx: &mut TickCtx, agent_key: AgentKey, source: Option<AgentKey>) {
     if let Some(creature) = agent.get_creature_kind() {
         roll_creature_loot(&mut corpse, creature, ctx.roll);
     }
-    if let Err(e) = insert_item_at(
-        ctx,
-        corpse,
-        &ItemPlacement::Map(position.clone()),
-        None,
-    ) {
+    if let Err(e) = insert_item_at(ctx, corpse, &ItemPlacement::Map(position.clone()), None) {
         error!(
             "Error inserting creature corpse at tile {}: {}",
             position, e

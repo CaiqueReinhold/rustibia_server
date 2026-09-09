@@ -133,7 +133,9 @@ fn tool_target<'a>(map: &GameMap, target: &'a UseTarget) -> Result<&'a ItemRef, 
 }
 
 fn shovel(ctx: &mut TickCtx, target: &ItemRef) -> Result<(), ItemActionError> {
-    let target_item_id = find_item(ctx.map, &target.placement, &target.guid).unwrap().item_id;
+    let target_item_id = find_item(ctx.map, &target.placement, &target.guid)
+        .unwrap()
+        .item_id;
     if !GAME_CONFIG
         .multi_action
         .diggable_ids
@@ -161,7 +163,9 @@ fn first_available_position_up(
 }
 
 fn rope(ctx: &mut TickCtx, agent_key: AgentKey, target: &ItemRef) -> Result<(), ItemActionError> {
-    let target_item_id = find_item(ctx.map, &target.placement, &target.guid).unwrap().item_id;
+    let target_item_id = find_item(ctx.map, &target.placement, &target.guid)
+        .unwrap()
+        .item_id;
     let ItemPlacement::Map(pos) = &target.placement else {
         return Err(ItemActionError::ActionFailed);
     };

@@ -1,6 +1,6 @@
 use slotmap::SlotMap;
 use smallvec::SmallVec;
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, ops::RangeInclusive, sync::Arc};
 use thiserror::Error;
 
 use crate::constants::view::MAX_VISIBLE_ITEMS;
@@ -49,10 +49,12 @@ impl ChunkCoord {
     }
 }
 
+fn local_index_of(lx: u16, ly: u16) -> usize {
+    ly as usize * CHUNK_SIDE as usize + lx as usize
+}
+
 fn local_index(pos: &Position) -> usize {
-    let lx = (pos.x & CHUNK_MASK) as usize;
-    let ly = (pos.y & CHUNK_MASK) as usize;
-    ly * CHUNK_SIDE as usize + lx
+    local_index_of(pos.x & CHUNK_MASK, pos.y & CHUNK_MASK)
 }
 
 #[derive(Debug, Clone)]
@@ -67,6 +69,35 @@ impl Chunk {
             .collect::<Vec<_>>()
             .into_boxed_slice();
         Chunk { tiles }
+    }
+}
+
+/// One chunk's share of a rect, in chunk-local coordinates.
+struct ChunkSlice<'a> {
+    chunk: Option<&'a Chunk>,
+    base_x: u16,
+    base_y: u16,
+    z: u8,
+    lx: RangeInclusive<u16>,
+    ly: RangeInclusive<u16>,
+}
+
+impl<'a> ChunkSlice<'a> {
+    fn tiles(self) -> impl Iterator<Item = (Position, Option<&'a MapTile>)> {
+        let ChunkSlice {
+            chunk,
+            base_x,
+            base_y,
+            z,
+            lx,
+            ly,
+        } = self;
+        ly.flat_map(move |ly| {
+            lx.clone().map(move |lx| {
+                let tile = chunk.and_then(|chunk| chunk.tiles[local_index_of(lx, ly)].as_ref());
+                (Position::new(base_x + lx, base_y + ly, z), tile)
+            })
+        })
     }
 }
 
@@ -213,11 +244,13 @@ impl GameMap {
         Ok(tile.agents.iter())
     }
 
-    pub fn iter_agents_in_rect<'a>(
+    /// Splits `rect` into the chunks it covers, each clamped to its own bounds. A chunk the map
+    /// does not hold is still yielded, because a caller filling a fixed grid needs its holes.
+    fn iter_chunks_in_rect<'a>(
         &'a self,
         rect: &Rect,
         z: u8,
-    ) -> impl Iterator<Item = (AgentKey, Position)> + use<'a> {
+    ) -> impl Iterator<Item = ChunkSlice<'a>> + use<'a> {
         let (x0, y0) = (rect.min_x(), rect.min_y());
         let (x1, y1) = (rect.max_x(), rect.max_y());
         let cx_range = (x0 >> CHUNK_BITS)..=(x1 >> CHUNK_BITS);
@@ -225,30 +258,30 @@ impl GameMap {
 
         cy_range
             .flat_map(move |cy| cx_range.clone().map(move |cx| (cx, cy)))
-            .filter_map(move |(cx, cy)| {
-                self.chunks
-                    .get(&ChunkCoord { cx, cy, z })
-                    .map(|chunk| (cx, cy, chunk))
-            })
-            .flat_map(move |(cx, cy, chunk)| {
-                // Clamp the rect to this chunk's bounds, in chunk-local coords.
+            .map(move |(cx, cy)| {
                 let base_x = cx << CHUNK_BITS;
                 let base_y = cy << CHUNK_BITS;
-                let lx0 = x0.max(base_x) - base_x;
-                let lx1 = x1.min(base_x + CHUNK_MASK) - base_x;
-                let ly0 = y0.max(base_y) - base_y;
-                let ly1 = y1.min(base_y + CHUNK_MASK) - base_y;
-
-                (ly0..=ly1)
-                    .flat_map(move |ly| {
-                        (lx0..=lx1).filter_map(move |lx| {
-                            chunk.tiles[ly as usize * CHUNK_SIDE as usize + lx as usize]
-                                .as_ref()
-                                .map(|tile| (Position::new(base_x + lx, base_y + ly, z), tile))
-                        })
-                    })
-                    .flat_map(|(pos, tile)| tile.agents.iter().map(move |key| (*key, pos.clone())))
+                ChunkSlice {
+                    chunk: self.chunks.get(&ChunkCoord { cx, cy, z }).map(Arc::as_ref),
+                    base_x,
+                    base_y,
+                    z,
+                    lx: (x0.max(base_x) - base_x)..=(x1.min(base_x + CHUNK_MASK) - base_x),
+                    ly: (y0.max(base_y) - base_y)..=(y1.min(base_y + CHUNK_MASK) - base_y),
+                }
             })
+    }
+
+    pub fn iter_agents_in_rect<'a>(
+        &'a self,
+        rect: &Rect,
+        z: u8,
+    ) -> impl Iterator<Item = (AgentKey, Position)> + use<'a> {
+        self.iter_chunks_in_rect(rect, z)
+            .filter(|slice| slice.chunk.is_some())
+            .flat_map(ChunkSlice::tiles)
+            .filter_map(|(pos, tile)| Some((pos, tile?)))
+            .flat_map(|(pos, tile)| tile.agents.iter().map(move |key| (*key, pos.clone())))
     }
 
     pub fn iter_tiles_in_rect<'a>(
@@ -256,36 +289,8 @@ impl GameMap {
         rect: &Rect,
         z: u8,
     ) -> impl Iterator<Item = (Position, Option<&'a MapTile>)> + use<'a> {
-        let (x0, y0) = (rect.min_x(), rect.min_y());
-        let (x1, y1) = (rect.max_x(), rect.max_y());
-        let cx_range = (x0 >> CHUNK_BITS)..=(x1 >> CHUNK_BITS);
-        let cy_range = (y0 >> CHUNK_BITS)..=(y1 >> CHUNK_BITS);
-
-        cy_range
-            .flat_map(move |cy| cx_range.clone().map(move |cx| (cx, cy)))
-            .flat_map(move |(cx, cy)| {
-                let chunk = self.chunks.get(&ChunkCoord { cx, cy, z });
-
-                // Clamp the rect to this chunk's bounds, in chunk-local coords.
-                let base_x = cx << CHUNK_BITS;
-                let base_y = cy << CHUNK_BITS;
-                let lx0 = x0.max(base_x) - base_x;
-                let lx1 = x1.min(base_x + CHUNK_MASK) - base_x;
-                let ly0 = y0.max(base_y) - base_y;
-                let ly1 = y1.min(base_y + CHUNK_MASK) - base_y;
-
-                (ly0..=ly1).flat_map(move |ly| {
-                    (lx0..=lx1).map(move |lx| {
-                        (
-                            Position::new(base_x + lx, base_y + ly, z),
-                            chunk.and_then(|chunk| {
-                                chunk.tiles[ly as usize * CHUNK_SIDE as usize + lx as usize]
-                                    .as_ref()
-                            }),
-                        )
-                    })
-                })
-            })
+        self.iter_chunks_in_rect(rect, z)
+            .flat_map(ChunkSlice::tiles)
     }
 
     pub fn iter_agents(&self) -> impl Iterator<Item = (AgentKey, &Agent)> {

@@ -79,8 +79,14 @@ impl SessionActor {
         author: AgentKey,
         message: String,
     ) -> Result<()> {
-        self.send_chat(author, ChatMessageType::Private, ChannelId(0), None, message)
-            .await
+        self.send_chat(
+            author,
+            ChatMessageType::Private,
+            ChannelId(0),
+            None,
+            message,
+        )
+        .await
     }
 
     pub(super) async fn receive_channel_message(
@@ -190,8 +196,8 @@ mod tests {
     use crate::actors::session::test_support::seat_player;
     use crate::entities::map::GameMap;
     use crate::entities::position::Position;
-    use crate::messages::TextMessageType;
     use crate::game::Tick;
+    use crate::messages::TextMessageType;
 
     /// The wire names an author by the character name both sides already know, so
     /// nothing has to be introduced first and no id can go stale.

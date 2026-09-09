@@ -49,13 +49,7 @@ fn displace_inventory_items(
     // Displace any item currently in the slot back to the source
     // (inventory-to-inventory swaps are rejected upstream, so source is always Map)
     if let Some(current_item) = current_item
-        && insert_item_at(
-            ctx,
-            current_item.clone(),
-            source_placement,
-            None,
-        )
-        .is_err()
+        && insert_item_at(ctx, current_item.clone(), source_placement, None).is_err()
     {
         let fallback = ctx.map.agent_position(agent).cloned();
         if let Some(fallback) = fallback
@@ -234,8 +228,7 @@ pub fn move_item(
     }
 
     // --- Remove from source ---
-    let Ok((source_item, source_index)) = remove_item_at(ctx, &source, amount)
-    else {
+    let Ok((source_item, source_index)) = remove_item_at(ctx, &source, amount) else {
         ctx.events.push(BroadcastMessage::MoveItemDenied {
             agent_key: agent,
             message: "Can't move this".to_string(),
@@ -317,20 +310,21 @@ pub fn return_item(
     if merge_into_like_stack(ctx.map, placement, &mut item) {
         // `insert_item_at` emits its own refresh, but a merge never reaches it: a
         // flask that stacks silently stays invisible until the container is reopened.
-        ctx.events.push(match (placement.site(), placement.container()) {
-            (_, Some((guid, _))) => BroadcastMessage::ContainerUpdated {
-                item: ItemRef {
-                    guid: guid.clone(),
-                    placement: placement.site_placement(),
+        ctx.events
+            .push(match (placement.site(), placement.container()) {
+                (_, Some((guid, _))) => BroadcastMessage::ContainerUpdated {
+                    item: ItemRef {
+                        guid: guid.clone(),
+                        placement: placement.site_placement(),
+                    },
                 },
-            },
-            (PlacementSite::Tile(pos), None) => BroadcastMessage::TileChanged {
-                position: pos.clone(),
-            },
-            (PlacementSite::Slot(slot, agent_key), None) => {
-                BroadcastMessage::UpdateInventorySlot { agent_key, slot }
-            }
-        });
+                (PlacementSite::Tile(pos), None) => BroadcastMessage::TileChanged {
+                    position: pos.clone(),
+                },
+                (PlacementSite::Slot(slot, agent_key), None) => {
+                    BroadcastMessage::UpdateInventorySlot { agent_key, slot }
+                }
+            });
         if item.amount == 0 {
             return Ok(());
         }
@@ -503,8 +497,10 @@ pub fn insert_item_at(
                     .insert(slot, None, item)
                 {
                     Ok(..) => {
-                        ctx.events
-                            .push(BroadcastMessage::UpdateInventorySlot { agent_key: agent, slot });
+                        ctx.events.push(BroadcastMessage::UpdateInventorySlot {
+                            agent_key: agent,
+                            slot,
+                        });
                     }
                     Err(e) => return Err(e),
                 }
@@ -570,8 +566,8 @@ pub fn remove_item_at(
 mod tests {
     use super::*;
     use crate::entities::agent::Agent;
-    use crate::entities::items::{ItemGuid, ItemId};
     use crate::entities::items::{ItemAttribute, ItemConfig};
+    use crate::entities::items::{ItemGuid, ItemId};
     use crate::entities::map::MapTile;
     use crate::entities::position::Position;
     use crate::game::TestHarness;
@@ -652,7 +648,13 @@ mod tests {
         tile
     }
 
-    fn drop_onto(map: &mut GameMap, agent: AgentKey, source: Position, guid: ItemGuid, to: Position) -> Vec<BroadcastMessage> {
+    fn drop_onto(
+        map: &mut GameMap,
+        agent: AgentKey,
+        source: Position,
+        guid: ItemGuid,
+        to: Position,
+    ) -> Vec<BroadcastMessage> {
         let mut h = TestHarness::new();
         move_item(
             &mut h.ctx(map),

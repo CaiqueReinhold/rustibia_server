@@ -1786,11 +1786,7 @@ mod tests {
         assert_eq!(name, &[2, 0, b'A', b'b'], "name is u16-length-prefixed");
 
         let rest = &dst[after_facing + 4..];
-        assert_eq!(
-            &rest[..2],
-            &[9, 0],
-            "level precedes the pools"
-        );
+        assert_eq!(&rest[..2], &[9, 0], "level precedes the pools");
         assert_eq!(
             &rest[2..18],
             &[30, 0, 0, 0, 40, 0, 0, 0, 50, 0, 0, 0, 60, 0, 0, 0],

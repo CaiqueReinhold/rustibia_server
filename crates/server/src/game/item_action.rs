@@ -58,20 +58,8 @@ pub fn decay_item(ctx: &mut TickCtx, item_ref: ItemRef) {
         ctx.rollback_to(mark);
         return;
     };
-    if insert_item_at(
-        ctx,
-        new_item,
-        &item_ref.placement,
-        source_index,
-    )
-    .is_err()
-    {
-        if let Err(e) = insert_item_at(
-            ctx,
-            old_item.clone(),
-            &item_ref.placement,
-            source_index,
-        ) {
+    if insert_item_at(ctx, new_item, &item_ref.placement, source_index).is_err() {
+        if let Err(e) = insert_item_at(ctx, old_item.clone(), &item_ref.placement, source_index) {
             error!(
                 "Failed to revert item move. Item {:?} at {:?}. Error {}",
                 old_item, item_ref.placement, e
@@ -196,12 +184,7 @@ pub(super) fn transform(
     let new_item = Item::new(config.clone(), 1);
     check_decay(ctx.scheduled, &new_item, item.placement.clone(), ctx.tick);
 
-    if let Err(e) = insert_item_at(
-        ctx,
-        new_item.clone(),
-        &item.placement,
-        source_index,
-    ) {
+    if let Err(e) = insert_item_at(ctx, new_item.clone(), &item.placement, source_index) {
         let result = match e {
             ItemMovementError::NotEnoughCap
                 if let ItemPlacement::Inventory(_, agent_key) = &item.placement =>
@@ -216,12 +199,7 @@ pub(super) fn transform(
         };
 
         if result.is_err() {
-            if let Err(e) = insert_item_at(
-                ctx,
-                old_item.clone(),
-                &item.placement,
-                source_index,
-            ) {
+            if let Err(e) = insert_item_at(ctx, old_item.clone(), &item.placement, source_index) {
                 error!(
                     "Failed to revert item move. Item {:?} at {:?}. Error: {}",
                     old_item, item.placement, e

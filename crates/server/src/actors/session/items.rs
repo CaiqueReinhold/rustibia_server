@@ -43,14 +43,15 @@ impl SessionActor {
         // Dropping onto a container already in that slot puts the item inside it rather than
         // beside it.
         let target = match (&target, item_at_placement(&map, &target)) {
-            (
-                ItemPlacement::Container { within, .. },
-                Some(occupant),
-            ) if occupant.config.has_flag(ItemFlag::Container) => ItemPlacement::Container {
-                guid: occupant.guid.clone(),
-                within: within.clone(),
-                index: 0,
-            },
+            (ItemPlacement::Container { within, .. }, Some(occupant))
+                if occupant.config.has_flag(ItemFlag::Container) =>
+            {
+                ItemPlacement::Container {
+                    guid: occupant.guid.clone(),
+                    within: within.clone(),
+                    index: 0,
+                }
+            }
             _ => target,
         };
 
