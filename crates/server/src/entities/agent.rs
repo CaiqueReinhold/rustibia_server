@@ -421,9 +421,9 @@ impl Agent {
         self.next_auto_attack_tick = current_tick + GAME_CONFIG.combat.auto_attack_ticks;
     }
 
-    pub fn to_snapshot(&self, position: Position) -> Option<PlayerSnapshot> {
+    pub fn to_snapshot(&self, position: Position) -> Option<Box<PlayerSnapshot>> {
         let player = self.get_player()?;
-        Some(PlayerSnapshot {
+        Some(Box::new(PlayerSnapshot {
             id: player.id(),
             account_id: player.account_id(),
             admin: player.admin(),
@@ -439,7 +439,7 @@ impl Agent {
             outfit: self.outfit,
             skills: player.skills().clone(),
             inventory: player.inventory().slots().clone(),
-        })
+        }))
     }
 }
 
@@ -707,7 +707,7 @@ mod tests {
         assert_eq!(agent.participation().total(), 50);
 
         let snapshot = agent.to_snapshot(Position::new(1, 1, 7)).unwrap();
-        let restored = Agent::from_player(snapshot);
+        let restored = Agent::from_player(*snapshot);
 
         assert_eq!(restored.participation().total(), 0);
     }
@@ -756,7 +756,7 @@ mod tests {
         agent.set_target(Some(victim), 0);
 
         let snapshot = agent.to_snapshot(Position::new(1, 1, 7)).unwrap();
-        let restored = Agent::from_player(snapshot);
+        let restored = Agent::from_player(*snapshot);
 
         assert!(restored.target().is_none());
     }

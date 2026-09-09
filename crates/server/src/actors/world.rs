@@ -491,10 +491,7 @@ impl WorldActor {
         }
 
         let position = self.map.agent_position(agent_key).cloned();
-        let snapshot = position
-            .clone()
-            .and_then(|pos| agent.to_snapshot(pos))
-            .map(Arc::new);
+        let snapshot = position.clone().and_then(|pos| agent.to_snapshot(pos));
         self.map.remove_agent(agent_key);
         broadcast_messages.push(BroadcastMessage::AgentDespawned {
             agent_key,

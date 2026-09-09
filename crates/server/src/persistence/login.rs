@@ -40,13 +40,13 @@ pub trait LoginRepository: Send + Sync {
     fn redeem(
         &self,
         auth_token: &str,
-    ) -> impl Future<Output = Result<PlayerSnapshot, LoginError>> + Send;
+    ) -> impl Future<Output = Result<Box<PlayerSnapshot>, LoginError>> + Send;
 }
 
 pub fn snapshot_from_record(
     record: CharacterRecord,
     items: &HashMap<ItemId, Arc<ItemConfig>>,
-) -> Result<PlayerSnapshot, LoginError> {
+) -> Result<Box<PlayerSnapshot>, LoginError> {
     let id = u32::try_from(record.id)
         .map(PlayerId)
         .map_err(|_| malformed(format!("character id {} is negative", record.id)))?;
@@ -92,7 +92,7 @@ pub fn snapshot_from_record(
         }
     }
 
-    Ok(PlayerSnapshot {
+    Ok(Box::new(PlayerSnapshot {
         id,
         account_id: record.account_id,
         admin: record.admin,
@@ -119,7 +119,7 @@ pub fn snapshot_from_record(
         ),
         skills,
         inventory,
-    })
+    }))
 }
 
 fn coords(c: rustibia_contract::Coords, what: &str) -> Result<Position, LoginError> {
@@ -225,7 +225,7 @@ impl SqlLoginRepository {
         Self { pool, items }
     }
 
-    async fn redeem_inner(&self, auth_token: &str) -> Result<PlayerSnapshot, LoginError> {
+    async fn redeem_inner(&self, auth_token: &str) -> Result<Box<PlayerSnapshot>, LoginError> {
         use sqlx::Row;
 
         let mut tx = self
@@ -340,7 +340,7 @@ impl LoginRepository for SqlLoginRepository {
     fn redeem(
         &self,
         auth_token: &str,
-    ) -> impl Future<Output = Result<PlayerSnapshot, LoginError>> + Send {
+    ) -> impl Future<Output = Result<Box<PlayerSnapshot>, LoginError>> + Send {
         self.redeem_inner(auth_token)
     }
 }
@@ -402,7 +402,7 @@ impl HttpLoginRepository {
             .map_err(ClientError::Build)
     }
 
-    async fn redeem_inner(&self, auth_token: &str) -> Result<PlayerSnapshot, LoginError> {
+    async fn redeem_inner(&self, auth_token: &str) -> Result<Box<PlayerSnapshot>, LoginError> {
         let request = RedeemRequest {
             auth_token: auth_token.to_string(),
         };
@@ -437,7 +437,7 @@ impl LoginRepository for HttpLoginRepository {
     fn redeem(
         &self,
         auth_token: &str,
-    ) -> impl Future<Output = Result<PlayerSnapshot, LoginError>> + Send {
+    ) -> impl Future<Output = Result<Box<PlayerSnapshot>, LoginError>> + Send {
         self.redeem_inner(auth_token)
     }
 }

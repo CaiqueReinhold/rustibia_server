@@ -1,8 +1,6 @@
 //! What the client currently knows about: viewport descriptions, the agent
 //! id map and its recycling, spawn/despawn, and the current target.
 
-use std::sync::Arc;
-
 use anyhow::Result;
 use tracing::error;
 
@@ -138,15 +136,11 @@ impl SessionActor {
     pub(super) async fn agent_despawned(
         &mut self,
         agent_key: AgentKey,
-        snapshot: Option<Arc<PlayerSnapshot>>,
+        snapshot: Option<Box<PlayerSnapshot>>,
     ) -> Result<()> {
         if self.player_key == agent_key {
             if let Some(snapshot) = snapshot {
-                if let Err(e) = self
-                    .persistence
-                    .save_player(snapshot.as_ref().clone())
-                    .await
-                {
+                if let Err(e) = self.persistence.save_player(snapshot).await {
                     error!(
                         session = self.session_id,
                         "Failed to save player on logout: {e}"

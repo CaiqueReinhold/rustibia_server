@@ -124,7 +124,7 @@ impl<L: LoginRepository + 'static> AuthActor<L> {
             self.session_id.clone(),
             connection.clone(),
             self.world_ctx.clone(),
-            Agent::from_player(player),
+            Agent::from_player(*player),
             registry_guard,
         );
 
@@ -158,13 +158,13 @@ mod tests {
     /// A `LoginRepository` that answers from a script. No database, no network — the
     /// point of the seam is that this actor can be tested without either.
     struct FakeLogin {
-        answer: Result<PlayerSnapshot, LoginError>,
+        answer: Result<Box<PlayerSnapshot>, LoginError>,
     }
 
     impl FakeLogin {
         fn accepting(character_id: u32) -> Self {
             Self {
-                answer: Ok(a_test_snapshot(character_id, 1)),
+                answer: Ok(Box::new(a_test_snapshot(character_id, 1))),
             }
         }
 
@@ -174,7 +174,7 @@ mod tests {
     }
 
     impl LoginRepository for FakeLogin {
-        async fn redeem(&self, _auth_token: &str) -> Result<PlayerSnapshot, LoginError> {
+        async fn redeem(&self, _auth_token: &str) -> Result<Box<PlayerSnapshot>, LoginError> {
             match &self.answer {
                 Ok(snapshot) => Ok(snapshot.clone()),
                 Err(LoginError::Rejected) => Err(LoginError::Rejected),

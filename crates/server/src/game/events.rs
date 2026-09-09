@@ -1,5 +1,4 @@
 use std::collections::HashSet;
-use std::sync::Arc;
 
 use crate::entities::healing::RestoreType;
 use crate::persistence::player::PlayerSnapshot;
@@ -68,7 +67,7 @@ pub enum BroadcastMessage {
     AgentDespawned {
         agent_key: AgentKey,
         position: Position,
-        snapshot: Option<Arc<PlayerSnapshot>>,
+        snapshot: Option<Box<PlayerSnapshot>>,
     },
     LogoutDenied {
         agent_key: AgentKey,

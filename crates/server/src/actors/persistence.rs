@@ -10,7 +10,7 @@ use crate::persistence::player::{PlayerRepository, PlayerSnapshot};
 
 #[derive(Clone, Debug)]
 pub enum PersistenceCommand {
-    SavePlayer(PlayerSnapshot),
+    SavePlayer(Box<PlayerSnapshot>),
     MarkOnline(PlayerId),
     MarkOffline(PlayerId),
 }
@@ -23,7 +23,7 @@ pub struct PersistenceActorHandle {
 impl PersistenceActorHandle {
     pub async fn save_player(
         &self,
-        player: PlayerSnapshot,
+        player: Box<PlayerSnapshot>,
     ) -> Result<(), mpsc::error::SendError<PersistenceCommand>> {
         self.tx.send(PersistenceCommand::SavePlayer(player)).await?;
         Ok(())
