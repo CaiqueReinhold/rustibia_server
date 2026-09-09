@@ -62,7 +62,7 @@ impl PlayerRepository {
 
     pub async fn save(&self, snapshot: &PlayerSnapshot) -> Result<(), PlayerRepositoryError> {
         let inventory = serialize_inventory(&snapshot.inventory);
-        let facing = facing_to_i16(snapshot.facing);
+        let facing = snapshot.facing.as_id() as i16;
         let (outfit_id, colors) = snapshot.outfit;
 
         let mut tx = self.pool.begin().await?;
@@ -117,7 +117,7 @@ impl PlayerRepository {
                  VALUES ($1, $2, $3, $4)",
             )
             .bind(snapshot.id.0 as i32)
-            .bind(skill_type_to_i16(skill_type))
+            .bind(skill_type.as_id() as i16)
             .bind(skill_value.value as i16)
             .bind(skill_value.current_ticks as i64)
             .execute(&mut *tx)
@@ -145,38 +145,6 @@ fn serialize_item(item: &Item) -> StoredItem {
             .as_ref()
             .map(|children| children.iter().map(serialize_item).collect()),
     }
-}
-
-// The four functions below are two inverse pairs, and the `_to_i16` half of each is what
-// `save` writes. Keep them adjacent: the `i16_to_` half is read by `login.rs` when a
-// `CharacterRecord` becomes a `PlayerSnapshot`, and changing one direction without the
-// other silently rewrites every stored value on the next save.
-
-fn facing_to_i16(f: Facing) -> i16 {
-    match f {
-        Facing::North => 0,
-        Facing::East => 1,
-        Facing::South => 2,
-        Facing::West => 3,
-    }
-}
-
-pub(crate) fn i16_to_facing(n: i16) -> Option<Facing> {
-    match n {
-        0 => Some(Facing::North),
-        1 => Some(Facing::East),
-        2 => Some(Facing::South),
-        3 => Some(Facing::West),
-        _ => None,
-    }
-}
-
-fn skill_type_to_i16(s: &SkillType) -> i16 {
-    s.as_id() as i16
-}
-
-pub(crate) fn i16_to_skill_type(n: i16) -> Option<SkillType> {
-    u8::try_from(n).ok().and_then(SkillType::from_id)
 }
 
 #[cfg(test)]

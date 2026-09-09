@@ -9,7 +9,7 @@ use sqlx::PgPool;
 use thiserror::Error;
 use tracing::warn;
 
-use crate::entities::agent::{OutfitColors, OutfitId};
+use crate::entities::agent::{Facing, OutfitColors, OutfitId};
 use crate::entities::player::PlayerId;
 use crate::entities::vocation::Vocation;
 use crate::entities::{
@@ -19,7 +19,7 @@ use crate::entities::{
     position::Position,
     skills::{SkillType, SkillValue},
 };
-use crate::persistence::player::{PlayerSnapshot, i16_to_facing, i16_to_skill_type};
+use crate::persistence::player::PlayerSnapshot;
 
 #[derive(Debug, Error)]
 pub enum LoginError {
@@ -56,7 +56,7 @@ pub fn snapshot_from_record(
 
     let mut skills: HashMap<SkillType, SkillValue> = HashMap::new();
     for row in record.skills {
-        let Some(skill_type) = i16_to_skill_type(row.skill_type) else {
+        let Some(skill_type) = SkillType::from_id(row.skill_type) else {
             warn!(
                 character = %id,
                 skill_type = row.skill_type,
@@ -100,7 +100,7 @@ pub fn snapshot_from_record(
         vocation,
         position: coords(record.position, "position")?,
         origin: coords(record.origin, "origin")?,
-        facing: i16_to_facing(record.facing)
+        facing: Facing::from_id(record.facing)
             .ok_or_else(|| malformed(format!("unknown facing discriminant {}", record.facing)))?,
         life: pool(record.life, "life")?,
         mana: pool(record.mana, "mana")?,

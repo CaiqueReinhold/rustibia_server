@@ -73,7 +73,7 @@ fn parse_flag(s: &str) -> Option<ItemFlag> {
 }
 
 fn parse_inventory_slot(s: u64) -> Option<InventorySlot> {
-    InventorySlot::from_id(s as u16)
+    InventorySlot::from_id(s)
 }
 
 /// A `{min, max}` mapping. Both halves are required: a range missing one of them

@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use slotmap::new_key_type;
 use smallvec::SmallVec;
-use strum::EnumCount;
+use strum::{EnumCount, FromRepr};
 
 use crate::{
     entities::spells::{Spell, SpellGroup, SpellId},
@@ -99,12 +99,23 @@ impl Pool {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, FromRepr)]
+#[repr(u8)]
 pub enum Facing {
-    North,
-    East,
-    South,
-    West,
+    North = 0,
+    East = 1,
+    South = 2,
+    West = 3,
+}
+
+impl Facing {
+    pub fn as_id(&self) -> u8 {
+        *self as u8
+    }
+
+    pub fn from_id(id: impl TryInto<u8>) -> Option<Self> {
+        Self::from_repr(id.try_into().ok()?)
+    }
 }
 
 #[derive(Clone, Debug)]

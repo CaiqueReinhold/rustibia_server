@@ -637,7 +637,7 @@ impl Encoder<ServerMessage> for GameMessageCodec {
             ServerMessage::PlayerWalkDenied => dst.put_u8(SRV_PLAYER_WALK_DENIED),
             ServerMessage::IventorySlotUpdated { slot, item_id } => {
                 dst.put_u8(SRV_INVETORY_SLOT_UPDATED);
-                dst.put_u8(slot.as_id() as u8);
+                dst.put_u8(slot.as_id());
                 encode_optional_item(item_id, dst);
             }
             ServerMessage::PlayerCapacityUpdated { cap } => {

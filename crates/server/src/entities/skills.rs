@@ -1,18 +1,21 @@
+use strum::{EnumIter, FromRepr};
+
 #[derive(Clone, Debug)]
 pub struct SkillValue {
     pub value: u16,
     pub current_ticks: u64,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter, FromRepr)]
+#[repr(u8)]
 pub enum SkillType {
-    Level,
-    Sword,
-    Club,
-    Axe,
-    Distance,
-    Magic,
-    Shielding,
+    Level = 0,
+    Axe = 1,
+    Club = 2,
+    Sword = 3,
+    Distance = 4,
+    Magic = 5,
+    Shielding = 6,
 }
 
 impl SkillType {
@@ -20,43 +23,27 @@ impl SkillType {
     pub fn default_value(&self) -> u16 {
         match self {
             SkillType::Level | SkillType::Magic => 1,
-            SkillType::Sword
+            SkillType::Axe
             | SkillType::Club
-            | SkillType::Axe
+            | SkillType::Sword
             | SkillType::Distance
             | SkillType::Shielding => 10,
         }
     }
 
     pub fn as_id(&self) -> u8 {
-        match self {
-            SkillType::Level => 0,
-            SkillType::Axe => 1,
-            SkillType::Club => 2,
-            SkillType::Sword => 3,
-            SkillType::Distance => 4,
-            SkillType::Magic => 5,
-            SkillType::Shielding => 6,
-        }
+        *self as u8
     }
 
-    pub fn from_id(id: u8) -> Option<Self> {
-        match id {
-            0 => Some(SkillType::Level),
-            1 => Some(SkillType::Axe),
-            2 => Some(SkillType::Club),
-            3 => Some(SkillType::Sword),
-            4 => Some(SkillType::Distance),
-            5 => Some(SkillType::Magic),
-            6 => Some(SkillType::Shielding),
-            _ => None,
-        }
+    pub fn from_id(id: impl TryInto<u8>) -> Option<Self> {
+        Self::from_repr(id.try_into().ok()?)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use strum::IntoEnumIterator;
 
     /// The client repeats these ids and nothing links the two — separate
     /// repositories, no shared crate. The matching assertion lives in the
@@ -78,29 +65,17 @@ mod tests {
         assert_eq!(SkillType::Level.default_value(), 1);
         assert_eq!(SkillType::Magic.default_value(), 1);
 
-        for weapon in [
-            SkillType::Sword,
-            SkillType::Club,
-            SkillType::Axe,
-            SkillType::Distance,
-            SkillType::Shielding,
-        ] {
+        for weapon in
+            SkillType::iter().filter(|s| !matches!(s, SkillType::Level | SkillType::Magic))
+        {
             assert_eq!(weapon.default_value(), 10, "{weapon:?}");
         }
     }
 
     #[test]
     fn every_id_round_trips_and_unknown_ids_are_rejected() {
-        for skill in [
-            SkillType::Level,
-            SkillType::Axe,
-            SkillType::Club,
-            SkillType::Sword,
-            SkillType::Distance,
-            SkillType::Magic,
-            SkillType::Shielding,
-        ] {
-            assert_eq!(SkillType::from_id(skill.as_id()), Some(skill.clone()));
+        for skill in SkillType::iter() {
+            assert_eq!(SkillType::from_id(skill.as_id()), Some(skill));
         }
         assert_eq!(SkillType::from_id(7), None);
         assert_eq!(SkillType::from_id(255), None);

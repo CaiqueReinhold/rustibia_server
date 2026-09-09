@@ -49,7 +49,7 @@ pub fn get_player_skills(map: &GameMap, key: AgentKey) -> Option<ServerMessage> 
         .iter()
         .map(|(skill, value)| {
             (
-                skill.clone(),
+                *skill,
                 SkillProgress {
                     level: value.value,
                     percent_bp: progress_bp(player.vocation(), skill, value),

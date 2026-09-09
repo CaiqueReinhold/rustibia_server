@@ -1,54 +1,32 @@
+use strum::FromRepr;
+
 use crate::entities::items::{Item, ItemGuid};
 use crate::game::item_movement::ItemMovementError;
 use std::collections::HashMap;
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, Copy)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Copy, FromRepr)]
+#[repr(u8)]
 pub enum InventorySlot {
-    Head,
-    Amulet,
-    Chest,
-    Backpack,
-    LeftHand,
-    RightHand,
-    BothHands,
-    Ring,
-    Legs,
-    Feet,
-    Trinket,
+    BothHands = 0,
+    Head = 1,
+    Amulet = 2,
+    Backpack = 3,
+    Chest = 4,
+    RightHand = 5,
+    LeftHand = 6,
+    Legs = 7,
+    Feet = 8,
+    Ring = 9,
+    Trinket = 10,
 }
 
 impl InventorySlot {
-    pub fn as_id(&self) -> u32 {
-        match self {
-            InventorySlot::BothHands => 0,
-            InventorySlot::Head => 1,
-            InventorySlot::Amulet => 2,
-            InventorySlot::Backpack => 3,
-            InventorySlot::Chest => 4,
-            InventorySlot::RightHand => 5,
-            InventorySlot::LeftHand => 6,
-            InventorySlot::Legs => 7,
-            InventorySlot::Feet => 8,
-            InventorySlot::Ring => 9,
-            InventorySlot::Trinket => 10,
-        }
+    pub fn as_id(&self) -> u8 {
+        *self as u8
     }
 
-    pub fn from_id(id: u16) -> Option<Self> {
-        match id {
-            0 => Some(InventorySlot::BothHands),
-            1 => Some(InventorySlot::Head),
-            2 => Some(InventorySlot::Amulet),
-            3 => Some(InventorySlot::Backpack),
-            4 => Some(InventorySlot::Chest),
-            5 => Some(InventorySlot::RightHand),
-            6 => Some(InventorySlot::LeftHand),
-            7 => Some(InventorySlot::Legs),
-            8 => Some(InventorySlot::Feet),
-            9 => Some(InventorySlot::Ring),
-            10 => Some(InventorySlot::Trinket),
-            _ => None,
-        }
+    pub fn from_id(id: impl TryInto<u8>) -> Option<Self> {
+        Self::from_repr(id.try_into().ok()?)
     }
 }
 

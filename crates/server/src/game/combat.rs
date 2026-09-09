@@ -343,7 +343,7 @@ pub fn weapon_skill(player: &Player) -> WeaponSkill {
     };
     // A wand resolves against magic level but does not train it by firing; mana spent is what
     // trains magic, and `consume_mana` is where that happens.
-    let trains = (!matches!(weapon, WeaponType::Wand | WeaponType::Rod)).then(|| skill.clone());
+    let trains = (!matches!(weapon, WeaponType::Wand | WeaponType::Rod)).then_some(skill);
     WeaponSkill {
         value: player.skill(skill),
         trains,

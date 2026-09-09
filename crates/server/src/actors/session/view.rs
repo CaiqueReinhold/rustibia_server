@@ -249,10 +249,10 @@ impl SessionActor {
         gained: u16,
         amount: u64,
     ) -> Result<()> {
-        self.send_skill_update(skill.clone(), amount).await?;
+        self.send_skill_update(skill, amount).await?;
         let map = self.shared_map.load();
         let message = map.get_player(self.player_key).map(|p| {
-            let value = p.skill(skill.clone());
+            let value = p.skill(skill);
             match skill {
                 SkillType::Axe => format!("You advanced to axe fighting {value}"),
                 SkillType::Club => format!("You advanced to club fighting {value}"),

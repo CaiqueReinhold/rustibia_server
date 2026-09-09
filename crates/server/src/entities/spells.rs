@@ -28,11 +28,7 @@ pub enum SpellGroup {
 
 impl SpellGroup {
     pub fn index(&self) -> usize {
-        match self {
-            SpellGroup::Attack => 0,
-            SpellGroup::Healing => 1,
-            SpellGroup::Support => 2,
-        }
+        *self as usize
     }
 
     pub fn cooldown(&self) -> TickDelta {
