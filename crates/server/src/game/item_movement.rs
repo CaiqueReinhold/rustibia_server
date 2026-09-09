@@ -7,11 +7,11 @@ use crate::{
         agent::AgentKey,
         combat::WeaponType,
         inventory::InventorySlot,
-        items::{Item, ItemFlag, ItemGuid, ItemId, ItemRef},
-        map::{GameMap, MapError, RemovedItem},
-        position::{ItemPlacement, Rect},
+        items::{Item, ItemFlag, ItemId, ItemRef},
+        map::{GameMap, MapError},
+        position::{ItemPlacement, PlacementSite, Rect},
     },
-    game::map_query::{can_throw, find_item_in_placement},
+    game::map_query::{can_throw, find_item},
 };
 
 use super::TickCtx;
@@ -40,7 +40,6 @@ fn displace_inventory_items(
     source_item: &Item,
     source_placement: &ItemPlacement,
     source_slot: Option<InventorySlot>,
-    source_container: Option<&(ItemGuid, usize)>,
 ) -> Result<(), ItemMovementError> {
     let current_item = ctx
         .map
@@ -53,7 +52,6 @@ fn displace_inventory_items(
         && insert_item_at(
             ctx,
             current_item.clone(),
-            source_container,
             source_placement,
             None,
         )
@@ -64,7 +62,6 @@ fn displace_inventory_items(
             && let Err(e) = insert_item_at(
                 ctx,
                 current_item.clone(),
-                None,
                 &ItemPlacement::Map(fallback),
                 None,
             )
@@ -151,7 +148,6 @@ pub fn move_item(
     source: ItemRef,
     amount: u8,
     to: ItemPlacement,
-    target_container: Option<ItemGuid>,
 ) {
     if ctx.map.get_player(agent).is_none() {
         return;
@@ -171,7 +167,7 @@ pub fn move_item(
         return;
     }
 
-    let item = find_item_in_placement(ctx.map, &source);
+    let item = find_item(ctx.map, &source.placement, &source.guid);
 
     // Validate source item: Unmove flag and stack amount.
     if let Some(item) = item
@@ -185,8 +181,8 @@ pub fn move_item(
     }
 
     // Validate target placement.
-    match (&to, target_container.as_ref()) {
-        (ItemPlacement::Map(pos), None) => {
+    match (to.site(), to.container()) {
+        (PlacementSite::Tile(pos), None) => {
             if !ctx.map.can_drop_item(pos)
                 || !Rect::player_viewport(player_pos).contains(pos)
                 || !can_throw(ctx.map, player_pos, pos, false)
@@ -198,13 +194,13 @@ pub fn move_item(
                 return;
             }
         }
-        (ItemPlacement::Inventory(target_slot, _), None) => {
+        (PlacementSite::Slot(target_slot, _), None) => {
             let compatible = item
                 .and_then(|it| it.config.attr_inventory())
                 .map(|item_slot| {
-                    item_slot == *target_slot
+                    item_slot == target_slot
                         || (item_slot == InventorySlot::BothHands
-                            && *target_slot == InventorySlot::LeftHand)
+                            && target_slot == InventorySlot::LeftHand)
                 })
                 .unwrap_or(false);
             if !compatible {
@@ -215,21 +211,15 @@ pub fn move_item(
                 return;
             }
         }
-        (placement, Some(container_guid)) => {
+        (_, Some((container_guid, _))) => {
             let take_ok = item
                 .map(|it| it.config.has_flag(ItemFlag::Take))
                 .unwrap_or(false);
-            let target_is_ammo_container = find_item_in_placement(
-                ctx.map,
-                &ItemRef {
-                    guid: container_guid.clone(),
-                    placement: placement.clone(),
-                },
-            )
-            .map(|it| it.config.has_flag(ItemFlag::AmmoContainer))
-            .unwrap_or(false);
+            let target_is_ammo_container = find_item(ctx.map, &to.site_placement(), container_guid)
+                .map(|it| it.config.has_flag(ItemFlag::AmmoContainer))
+                .unwrap_or(false);
             let can_drop_to_container = item
-                .filter(|_| container_guid == &source.guid)
+                .filter(|_| *container_guid == source.guid)
                 .filter(|_| target_is_ammo_container)
                 .map(|it| it.config.attr_ammo_type().is_some())
                 .unwrap_or(true);
@@ -244,7 +234,7 @@ pub fn move_item(
     }
 
     // --- Remove from source ---
-    let Ok((source_item, source_index, source_container)) = remove_item_at(ctx, &source, amount)
+    let Ok((source_item, source_index)) = remove_item_at(ctx, &source, amount)
     else {
         ctx.events.push(BroadcastMessage::MoveItemDenied {
             agent_key: agent,
@@ -254,9 +244,7 @@ pub fn move_item(
     };
 
     // --- Add to target ---
-    let result = if let ItemPlacement::Inventory(slot, agent) = &to
-        && target_container.is_none()
-    {
+    let result = if let ItemPlacement::Inventory(slot, agent) = &to {
         displace_inventory_items(
             ctx,
             *agent,
@@ -264,25 +252,16 @@ pub fn move_item(
             &source_item,
             &source.placement,
             source_item.config.attr_inventory(),
-            source_container.as_ref(),
         )
     } else {
         Ok(())
     };
 
-    let container = target_container.as_ref().map(|guid| (guid.clone(), 0));
-    let result = result
-        .and_then(|_| insert_item_at(ctx, source_item.clone(), container.as_ref(), &to, None));
+    let result = result.and_then(|_| insert_item_at(ctx, source_item.clone(), &to, None));
 
     if let Err(error) = result {
         // Restore item to its exact source position on failure
-        if let Err(e) = insert_item_at(
-            ctx,
-            source_item.clone(),
-            source_container.as_ref(),
-            &source.placement,
-            source_index,
-        ) {
+        if let Err(e) = insert_item_at(ctx, source_item.clone(), &source.placement, source_index) {
             error!(
                 "Failed to revert item move. Item {:?} at {:?}. Error: {}",
                 source_item, source.placement, e
@@ -332,33 +311,24 @@ pub fn return_item(
     ctx: &mut TickCtx,
     agent: AgentKey,
     placement: &ItemPlacement,
-    container: Option<&(ItemGuid, usize)>,
     index: Option<usize>,
     mut item: Item,
 ) -> Result<(), ItemMovementError> {
-    if merge_into_like_stack(
-        ctx.map,
-        placement,
-        container.map(|(guid, _)| guid),
-        &mut item,
-    ) {
+    if merge_into_like_stack(ctx.map, placement, &mut item) {
         // `insert_item_at` emits its own refresh, but a merge never reaches it: a
         // flask that stacks silently stays invisible until the container is reopened.
-        ctx.events.push(match (placement, container) {
+        ctx.events.push(match (placement.site(), placement.container()) {
             (_, Some((guid, _))) => BroadcastMessage::ContainerUpdated {
                 item: ItemRef {
                     guid: guid.clone(),
-                    placement: placement.clone(),
+                    placement: placement.site_placement(),
                 },
             },
-            (ItemPlacement::Map(pos), None) => BroadcastMessage::TileChanged {
+            (PlacementSite::Tile(pos), None) => BroadcastMessage::TileChanged {
                 position: pos.clone(),
             },
-            (ItemPlacement::Inventory(slot, agent_key), None) => {
-                BroadcastMessage::UpdateInventorySlot {
-                    agent_key: *agent_key,
-                    slot: *slot,
-                }
+            (PlacementSite::Slot(slot, agent_key), None) => {
+                BroadcastMessage::UpdateInventorySlot { agent_key, slot }
             }
         });
         if item.amount == 0 {
@@ -366,8 +336,8 @@ pub fn return_item(
         }
     }
 
-    let slot_taken = match (placement, container) {
-        (ItemPlacement::Inventory(slot, agent_key), None) => ctx
+    let slot_taken = match placement {
+        ItemPlacement::Inventory(slot, agent_key) => ctx
             .map
             .get_player(*agent_key)
             .map(|player| player.inventory().get(slot).is_some())
@@ -375,7 +345,7 @@ pub fn return_item(
         _ => false,
     };
 
-    if !slot_taken && insert_item_at(ctx, item.clone(), container, placement, index).is_ok() {
+    if !slot_taken && insert_item_at(ctx, item.clone(), placement, index).is_ok() {
         return Ok(());
     }
 
@@ -384,21 +354,17 @@ pub fn return_item(
         .agent_position(agent)
         .cloned()
         .ok_or(ItemMovementError::PlayerDespawned)?;
-    insert_item_at(ctx, item, None, &ItemPlacement::Map(pos), None)
+    insert_item_at(ctx, item, &ItemPlacement::Map(pos), None)
 }
 
 /// Moves as much of `item` as the cap allows onto a like stack already sitting in
 /// `placement`, reducing `item.amount` by whatever it consumed. Reports whether
 /// anything moved.
-fn merge_into_like_stack(
-    map: &mut GameMap,
-    placement: &ItemPlacement,
-    container: Option<&ItemGuid>,
-    item: &mut Item,
-) -> bool {
+fn merge_into_like_stack(map: &mut GameMap, placement: &ItemPlacement, item: &mut Item) -> bool {
     let item_id = item.item_id;
-    match placement {
-        ItemPlacement::Map(pos) => {
+    let container = placement.container().map(|(guid, _)| guid);
+    match placement.site() {
+        PlacementSite::Tile(pos) => {
             let Ok(mut items) = map.iter_items_mut(pos) else {
                 return false;
             };
@@ -414,13 +380,13 @@ fn merge_into_like_stack(
                 None => false,
             }
         }
-        ItemPlacement::Inventory(slot, agent_key) => {
+        PlacementSite::Slot(slot, agent_key) => {
             let unit_weight = item.config.attr_weight().unwrap_or(0);
-            let Some(player) = map.get_player_mut(*agent_key) else {
+            let Some(player) = map.get_player_mut(agent_key) else {
                 return false;
             };
             let inventory = player.inventory_mut();
-            let Some(slot_item) = inventory.get_mut(slot) else {
+            let Some(slot_item) = inventory.get_mut(&slot) else {
                 return false;
             };
             let stack = match container {
@@ -463,22 +429,23 @@ fn top_up(stack: &mut Item, item: &mut Item) -> u8 {
 pub fn insert_item_at(
     ctx: &mut TickCtx,
     item: Item,
-    container: Option<&(ItemGuid, usize)>,
     placement: &ItemPlacement,
     index: Option<usize>,
 ) -> Result<(), ItemMovementError> {
-    match placement {
-        ItemPlacement::Map(pos) => {
+    let container = placement.container().map(|(g, i)| (g.clone(), i));
+    let site = placement.site_placement();
+    match placement.site() {
+        PlacementSite::Tile(pos) => {
             match ctx
                 .map
-                .place_item(pos, index, container.map(|(g, i)| (g, *i)), item)
+                .place_item(pos, index, container.as_ref().map(|(g, i)| (g, *i)), item)
             {
                 Ok(..) => {
-                    if let Some((guid, _)) = container {
+                    if let Some((guid, _)) = &container {
                         ctx.events.push(BroadcastMessage::ContainerUpdated {
                             item: ItemRef {
                                 guid: guid.clone(),
-                                placement: placement.clone(),
+                                placement: site.clone(),
                             },
                         });
                     } else {
@@ -496,10 +463,10 @@ pub fn insert_item_at(
                 }
             }
         }
-        ItemPlacement::Inventory(slot, agent) => {
+        PlacementSite::Slot(slot, agent) => {
             let can_carry = ctx
                 .map
-                .get_player(*agent)
+                .get_player(agent)
                 .map(|player| player.can_carry(item.total_weight()))
                 .unwrap_or(false);
 
@@ -508,10 +475,10 @@ pub fn insert_item_at(
             }
 
             if let Some((c_guid, c_index)) = container.as_ref() {
-                let result = ctx.map.get_player_mut(*agent).map(|player| {
+                let result = ctx.map.get_player_mut(agent).map(|player| {
                     player
                         .inventory_mut()
-                        .insert(*slot, Some((c_guid, *c_index)), item)
+                        .insert(slot, Some((c_guid, *c_index)), item)
                 });
                 let Some(result) = result else {
                     return Err(ItemMovementError::PlayerDespawned);
@@ -521,7 +488,7 @@ pub fn insert_item_at(
                         ctx.events.push(BroadcastMessage::ContainerUpdated {
                             item: ItemRef {
                                 guid: c_guid.clone(),
-                                placement: placement.clone(),
+                                placement: site.clone(),
                             },
                         });
                     }
@@ -530,16 +497,14 @@ pub fn insert_item_at(
             } else {
                 match ctx
                     .map
-                    .get_player_mut(*agent)
+                    .get_player_mut(agent)
                     .unwrap()
                     .inventory_mut()
-                    .insert(*slot, None, item)
+                    .insert(slot, None, item)
                 {
                     Ok(..) => {
-                        ctx.events.push(BroadcastMessage::UpdateInventorySlot {
-                            agent_key: *agent,
-                            slot: *slot,
-                        });
+                        ctx.events
+                            .push(BroadcastMessage::UpdateInventorySlot { agent_key: agent, slot });
                     }
                     Err(e) => return Err(e),
                 }
@@ -553,9 +518,9 @@ pub fn remove_item_at(
     ctx: &mut TickCtx,
     item: &ItemRef,
     amount: u8,
-) -> Result<RemovedItem, ItemMovementError> {
-    let removed = match &item.placement {
-        ItemPlacement::Map(pos) => {
+) -> Result<(Item, Option<usize>), ItemMovementError> {
+    let removed = match item.placement.site() {
+        PlacementSite::Tile(pos) => {
             let removed = ctx.map.remove_item_from_tile(pos, &item.guid, amount);
             match &removed {
                 Some((_, Some(_), None)) => {
@@ -567,37 +532,35 @@ pub fn remove_item_at(
                     ctx.events.push(BroadcastMessage::ContainerUpdated {
                         item: ItemRef {
                             guid: guid.clone(),
-                            placement: item.placement.clone(),
+                            placement: item.placement.site_placement(),
                         },
                     });
                 }
                 _ => (),
             };
-            removed
+            removed.map(|(i, index, _)| (i, index))
         }
-        ItemPlacement::Inventory(slot, agent_key) => {
+        PlacementSite::Slot(slot, agent_key) => {
             let removed = ctx
                 .map
-                .get_player_mut(*agent_key)
-                .and_then(|player| player.inventory_mut().remove(*slot, &item.guid, amount));
+                .get_player_mut(agent_key)
+                .and_then(|player| player.inventory_mut().remove(slot, &item.guid, amount));
             match &removed {
                 Some((_, Some((guid, _)))) => {
                     ctx.events.push(BroadcastMessage::ContainerUpdated {
                         item: ItemRef {
                             guid: guid.clone(),
-                            placement: item.placement.clone(),
+                            placement: item.placement.site_placement(),
                         },
                     });
                 }
                 Some((_, None)) => {
-                    ctx.events.push(BroadcastMessage::UpdateInventorySlot {
-                        agent_key: *agent_key,
-                        slot: *slot,
-                    });
+                    ctx.events
+                        .push(BroadcastMessage::UpdateInventorySlot { agent_key, slot });
                 }
                 None => (),
             };
-            removed.map(|(i, p)| (i, None, p))
+            removed.map(|(i, _)| (i, None))
         }
     };
     removed.ok_or(ItemMovementError::ItemNotInPosition)
@@ -607,7 +570,7 @@ pub fn remove_item_at(
 mod tests {
     use super::*;
     use crate::entities::agent::Agent;
-    use crate::entities::items::ItemId;
+    use crate::entities::items::{ItemGuid, ItemId};
     use crate::entities::items::{ItemAttribute, ItemConfig};
     use crate::entities::map::MapTile;
     use crate::entities::position::Position;
@@ -700,7 +663,6 @@ mod tests {
             },
             1,
             ItemPlacement::Map(to),
-            None,
         );
         h.events
     }
@@ -751,7 +713,6 @@ mod tests {
             },
             1,
             ItemPlacement::Map(target.clone()),
-            None,
         );
 
         assert!(map.get_item_by_id(&target, &guid).is_some());
@@ -777,7 +738,6 @@ mod tests {
             },
             1,
             ItemPlacement::Inventory(InventorySlot::Backpack, agent),
-            None,
         );
 
         assert_eq!(
@@ -826,7 +786,6 @@ mod tests {
             },
             1,
             ItemPlacement::Inventory(InventorySlot::Head, agent),
-            None,
         );
 
         assert_eq!(
@@ -844,7 +803,6 @@ mod tests {
             },
             1,
             ItemPlacement::Map(target),
-            None,
         );
 
         assert_eq!(
@@ -980,7 +938,6 @@ mod tests {
             },
             1,
             ItemPlacement::Inventory(InventorySlot::LeftHand, agent),
-            None,
         );
 
         assert!(
@@ -1034,7 +991,6 @@ mod tests {
             agent,
             &ItemPlacement::Map(gone),
             None,
-            None,
             item,
         )
         .unwrap();
@@ -1062,8 +1018,11 @@ mod tests {
         return_item(
             &mut h.ctx(&mut map),
             agent,
-            &ItemPlacement::Inventory(InventorySlot::Backpack, agent),
-            Some(&(container_guid, 0)),
+            &ItemPlacement::Container {
+                guid: container_guid,
+                within: Box::new(ItemPlacement::Inventory(InventorySlot::Backpack, agent)),
+                index: 0,
+            },
             Some(0),
             a_flask(1),
         )
@@ -1115,7 +1074,6 @@ mod tests {
             &mut h.ctx(&mut map),
             agent,
             &ItemPlacement::Inventory(InventorySlot::Head, agent),
-            None,
             None,
             item,
         )

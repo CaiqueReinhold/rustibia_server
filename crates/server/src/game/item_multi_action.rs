@@ -16,7 +16,7 @@ use crate::{
         healing::execute_healing,
         item_action::{ItemActionError, transform},
         item_movement::{insert_item_at, remove_item_at, return_item},
-        map_query::find_item_in_placement,
+        map_query::find_item,
     },
     persistence::items::ITEM_CONFIGS,
 };
@@ -39,7 +39,7 @@ pub fn use_item_with(ctx: &mut TickCtx, agent_key: AgentKey, source: ItemRef, ta
         return use_item_failed(ctx, mark, agent_key, "Can't use that fast");
     }
 
-    let Some(source_item) = find_item_in_placement(ctx.map, &source) else {
+    let Some(source_item) = find_item(ctx.map, &source.placement, &source.guid) else {
         return use_item_failed(ctx, mark, agent_key, "Item was not found");
     };
     let source_item_id = source_item.item_id;
@@ -126,14 +126,14 @@ fn route_multi_action(
 
 fn tool_target<'a>(map: &GameMap, target: &'a UseTarget) -> Result<&'a ItemRef, ItemActionError> {
     let item = target.item.as_ref().ok_or(ItemActionError::ActionFailed)?;
-    if find_item_in_placement(map, item).is_none() {
+    if find_item(map, &item.placement, &item.guid).is_none() {
         return Err(ItemActionError::ActionFailed);
     }
     Ok(item)
 }
 
 fn shovel(ctx: &mut TickCtx, target: &ItemRef) -> Result<(), ItemActionError> {
-    let target_item_id = find_item_in_placement(ctx.map, target).unwrap().item_id;
+    let target_item_id = find_item(ctx.map, &target.placement, &target.guid).unwrap().item_id;
     if !GAME_CONFIG
         .multi_action
         .diggable_ids
@@ -161,10 +161,9 @@ fn first_available_position_up(
 }
 
 fn rope(ctx: &mut TickCtx, agent_key: AgentKey, target: &ItemRef) -> Result<(), ItemActionError> {
-    let target_item_id = find_item_in_placement(ctx.map, target).unwrap().item_id;
-    let pos = match &target.placement {
-        ItemPlacement::Map(pos) => pos,
-        ItemPlacement::Inventory(..) => return Err(ItemActionError::ActionFailed),
+    let target_item_id = find_item(ctx.map, &target.placement, &target.guid).unwrap().item_id;
+    let ItemPlacement::Map(pos) = &target.placement else {
+        return Err(ItemActionError::ActionFailed);
     };
     let Some(target_pos) = first_available_position_up(ctx.map, pos, agent_key) else {
         return Err(ItemActionError::InvalidState);
@@ -220,14 +219,8 @@ fn rope(ctx: &mut TickCtx, agent_key: AgentKey, target: &ItemRef) -> Result<(), 
                 },
                 amount,
             )
-            .and_then(|(removed_item, index, container)| {
-                insert_item_at(
-                    ctx,
-                    removed_item,
-                    container.as_ref(),
-                    &ItemPlacement::Map(target_pos),
-                    index,
-                )
+            .and_then(|(removed_item, index)| {
+                insert_item_at(ctx, removed_item, &ItemPlacement::Map(target_pos), index)
             });
             if hauled.is_err() {
                 return Err(ItemActionError::ActionFailed);
@@ -248,21 +241,14 @@ fn potion(
     mana: Option<Bounds>,
     flask: Option<ItemId>,
 ) -> Result<(), ItemActionError> {
-    let Ok((_, _, source_container)) = remove_item_at(ctx, potion, 1) else {
+    if remove_item_at(ctx, potion, 1).is_err() {
         return Err(ItemActionError::ActionFailed);
-    };
+    }
     if let Some(flask) = flask {
         match ITEM_CONFIGS.get(&flask) {
             Some(config) => {
                 let flask = Item::new(config.clone(), 1);
-                if let Err(e) = return_item(
-                    ctx,
-                    agent_key,
-                    &potion.placement,
-                    source_container.as_ref(),
-                    None,
-                    flask,
-                ) {
+                if let Err(e) = return_item(ctx, agent_key, &potion.placement, None, flask) {
                     error!("could not give the empty flask to {agent_key:?}: {e}");
                 }
             }
@@ -1081,7 +1067,11 @@ mod tests {
             user,
             ItemRef {
                 guid: potion_guid,
-                placement: ItemPlacement::Inventory(InventorySlot::Backpack, user),
+                placement: ItemPlacement::Container {
+                    guid: guids.last().unwrap().clone(),
+                    within: Box::new(ItemPlacement::Inventory(InventorySlot::Backpack, user)),
+                    index: beside_it.len(),
+                },
             },
             UseTarget {
                 item: None,

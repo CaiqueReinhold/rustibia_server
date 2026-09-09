@@ -8,7 +8,7 @@ use crate::{
         items::{CONTAINER_COORD_FLAG, INVENTORY_COORD_FLAG},
         view::{PLAYER_VIEWPORT_HEIGHT, PLAYER_VIEWPORT_WIDTH},
     },
-    entities::{agent::AgentKey, inventory::InventorySlot},
+    entities::{agent::AgentKey, inventory::InventorySlot, items::ItemGuid},
 };
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Default, serde::Deserialize)]
@@ -41,9 +41,9 @@ impl Position {
     }
 
     pub fn placement_is_adjacent(&self, placement: &ItemPlacement) -> bool {
-        match placement {
-            ItemPlacement::Map(pos) => self.is_adjacent(pos),
-            ItemPlacement::Inventory(..) => true,
+        match placement.site() {
+            PlacementSite::Tile(pos) => self.is_adjacent(pos),
+            PlacementSite::Slot(..) => true,
         }
     }
 
@@ -140,10 +140,51 @@ pub const ALL_DIRECTIONS: [Direction; 8] = [
     Direction::NorthWest,
 ];
 
+/// Where an item sits. `Map` and `Inventory` mean *directly* on that tile or *directly* in that
+/// slot; anything nested is `Container`, so a placement and a guid together name one item rather
+/// than "somewhere under here".
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum ItemPlacement {
     Map(Position),
     Inventory(InventorySlot, AgentKey),
+
+    Container {
+        guid: ItemGuid,
+        within: Box<ItemPlacement>,
+        index: usize,
+    },
+}
+
+pub enum PlacementSite<'a> {
+    Tile(&'a Position),
+    Slot(InventorySlot, AgentKey),
+}
+
+impl ItemPlacement {
+    /// `site` as a placement of its own.
+    pub fn site_placement(&self) -> ItemPlacement {
+        match self.site() {
+            PlacementSite::Tile(pos) => ItemPlacement::Map(pos.clone()),
+            PlacementSite::Slot(slot, agent_key) => ItemPlacement::Inventory(slot, agent_key),
+        }
+    }
+
+    /// The container this names, if it names one: its guid and the slot within it.
+    pub fn container(&self) -> Option<(&ItemGuid, usize)> {
+        match self {
+            ItemPlacement::Container { guid, index, .. } => Some((guid, *index)),
+            _ => None,
+        }
+    }
+
+    /// The tile or slot this rests in, following the container chain to its root.
+    pub fn site(&self) -> PlacementSite<'_> {
+        match self {
+            ItemPlacement::Map(pos) => PlacementSite::Tile(pos),
+            ItemPlacement::Inventory(slot, agent_key) => PlacementSite::Slot(*slot, *agent_key),
+            ItemPlacement::Container { within, .. } => within.site(),
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]

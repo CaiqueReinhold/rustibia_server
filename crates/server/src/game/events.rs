@@ -10,7 +10,7 @@ use crate::{
         effects::{AreaEffect, Missile},
         inventory::InventorySlot,
         items::{ItemGuid, ItemRef},
-        position::{Direction, ItemPlacement, Position},
+        position::{Direction, PlacementSite, Position},
         skills::SkillType,
         spells::SpellId,
     },
@@ -217,9 +217,9 @@ impl BroadcastMessage {
                 agent: *agent_key,
             },
 
-            Self::ContainerUpdated { item } => match &item.placement {
-                ItemPlacement::Inventory(_slot, agent_key) => Routing::Agent(*agent_key),
-                ItemPlacement::Map(pos) => Routing::Viewport {
+            Self::ContainerUpdated { item } => match item.placement.site() {
+                PlacementSite::Slot(_, agent_key) => Routing::Agent(agent_key),
+                PlacementSite::Tile(pos) => Routing::Viewport {
                     at: pos,
                     same_floor: true,
                 },

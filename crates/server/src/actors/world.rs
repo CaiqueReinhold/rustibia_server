@@ -15,7 +15,7 @@ use crate::actors::session::SessionActorHandle;
 use crate::config::CONFIG;
 use crate::entities::agent::{Agent, AgentKey, Facing};
 use crate::entities::creature::CreatureKind;
-use crate::entities::items::{ItemGuid, ItemRef};
+use crate::entities::items::ItemRef;
 use crate::entities::map::GameMap;
 use crate::entities::position::{Direction, ItemPlacement, Position};
 use crate::entities::spells::{CastTarget, SpellId};
@@ -46,7 +46,6 @@ pub enum WorldCommand {
         source: ItemRef,
         amount: u8,
         to: ItemPlacement,
-        target_container: Option<ItemGuid>,
     },
     UseItem {
         agent: AgentKey,
@@ -370,10 +369,9 @@ impl WorldActor {
                 source,
                 amount,
                 to,
-                target_container,
             } => {
                 self.with_ctx(broadcast_messages, |ctx| {
-                    item_movement::move_item(ctx, agent, source, amount, to, target_container)
+                    item_movement::move_item(ctx, agent, source, amount, to)
                 });
                 Ok(())
             }

@@ -15,7 +15,7 @@ use crate::{
     },
 };
 
-use super::{events::BroadcastMessage, map_query::find_item_in_placement};
+use super::{events::BroadcastMessage, map_query::find_item};
 use crate::persistence::items::ITEM_CONFIGS;
 
 #[derive(Error, Debug)]
@@ -30,7 +30,7 @@ pub enum ItemActionError {
 
 pub fn decay_item(ctx: &mut TickCtx, item_ref: ItemRef) {
     let mark = ctx.mark();
-    let Some(item) = find_item_in_placement(ctx.map, &item_ref) else {
+    let Some(item) = find_item(ctx.map, &item_ref.placement, &item_ref.guid) else {
         return;
     };
     let Some((_, decay_to)) = item.config.attr_decay() else {
@@ -54,14 +54,13 @@ pub fn decay_item(ctx: &mut TickCtx, item_ref: ItemRef) {
         item_ref.placement.clone(),
         ctx.tick,
     );
-    let Ok((old_item, source_index, source_cointainer)) = remove_item_at(ctx, &item_ref, 1) else {
+    let Ok((old_item, source_index)) = remove_item_at(ctx, &item_ref, 1) else {
         ctx.rollback_to(mark);
         return;
     };
     if insert_item_at(
         ctx,
         new_item,
-        source_cointainer.as_ref(),
         &item_ref.placement,
         source_index,
     )
@@ -70,7 +69,6 @@ pub fn decay_item(ctx: &mut TickCtx, item_ref: ItemRef) {
         if let Err(e) = insert_item_at(
             ctx,
             old_item.clone(),
-            source_cointainer.as_ref(),
             &item_ref.placement,
             source_index,
         ) {
@@ -124,7 +122,7 @@ pub fn use_item(ctx: &mut TickCtx, agent_key: AgentKey, item_ref: ItemRef) {
         return use_item_failed(ctx, mark, agent_key, "Item is too far");
     }
 
-    let Some(item) = find_item_in_placement(ctx.map, &item_ref) else {
+    let Some(item) = find_item(ctx.map, &item_ref.placement, &item_ref.guid) else {
         return use_item_failed(ctx, mark, agent_key, "Item was not found");
     };
 
@@ -191,7 +189,7 @@ pub(super) fn transform(
         return Err(ItemActionError::ActionFailed);
     };
 
-    let Ok((old_item, source_index, source_container)) = remove_item_at(ctx, item, 1) else {
+    let Ok((old_item, source_index)) = remove_item_at(ctx, item, 1) else {
         return Err(ItemActionError::ActionFailed);
     };
 
@@ -201,7 +199,6 @@ pub(super) fn transform(
     if let Err(e) = insert_item_at(
         ctx,
         new_item.clone(),
-        source_container.as_ref(),
         &item.placement,
         source_index,
     ) {
@@ -210,7 +207,7 @@ pub(super) fn transform(
                 if let ItemPlacement::Inventory(_, agent_key) = &item.placement =>
             {
                 if let Some(pos) = ctx.map.agent_position(*agent_key).cloned() {
-                    insert_item_at(ctx, new_item, None, &ItemPlacement::Map(pos), None)
+                    insert_item_at(ctx, new_item, &ItemPlacement::Map(pos), None)
                 } else {
                     Err(ItemMovementError::PlayerDespawned)
                 }
@@ -222,7 +219,6 @@ pub(super) fn transform(
             if let Err(e) = insert_item_at(
                 ctx,
                 old_item.clone(),
-                source_container.as_ref(),
                 &item.placement,
                 source_index,
             ) {

@@ -3,7 +3,6 @@
 
 use anyhow::Result;
 
-use crate::actors::player_query::client_position_to_placement;
 use crate::actors::session::{SessionActor, SessionError};
 use crate::actors::world::WorldCommand;
 use crate::entities::agent::{AgentId, AgentKey};
@@ -13,8 +12,8 @@ use crate::entities::position::{ItemPlacement, Position, Rect};
 use crate::game::description::get_look_description;
 use crate::game::item_multi_action::UseTarget;
 use crate::game::map_query::{
-    find_item_in_reach, find_item_in_slot, find_parent_container, get_tile, iter_visible_floors,
-    retrieve_item,
+    find_item, find_item_in_reach, find_parent_container, get_tile, item_at_placement,
+    iter_visible_floors, resolve_client_coord, retrieve_item,
 };
 use crate::messages::ServerMessage;
 use crate::messages::TextMessageType;
@@ -38,32 +37,21 @@ impl SessionActor {
         };
         let item_guid = item.guid.clone();
 
-        // Resolve target: Position → (ItemPlacement, Option<container_guid>).
-        let (target_placement, target_container) = if to.is_container_coord() {
-            let container_id = ContainerId(to.y);
-            let Some(guid) = self.containers.get_global(container_id) else {
-                return Ok(());
-            };
-            let Some((container, placement)) = find_item_in_reach(&map, guid, player_key) else {
-                return Ok(());
-            };
-            // If the target slot holds a container, redirect into it.
-            let slot = to.z as usize;
-            let effective_guid = container
-                .content
-                .as_ref()
-                .and_then(|c| c.get(slot))
-                .filter(|it| it.config.has_flag(ItemFlag::Container))
-                .map(|it| it.guid.clone())
-                .unwrap_or_else(|| container.guid.clone());
-            (placement, Some(effective_guid))
-        } else if to.is_inventory_coord() {
-            let Some(target_slot) = InventorySlot::from_id(to.y) else {
-                return Ok(());
-            };
-            (ItemPlacement::Inventory(target_slot, player_key), None)
-        } else {
-            (ItemPlacement::Map(to), None)
+        let Some(target) = resolve_client_coord(to, &map, &self.containers, player_key) else {
+            return Ok(());
+        };
+        // Dropping onto a container already in that slot puts the item inside it rather than
+        // beside it.
+        let target = match (&target, item_at_placement(&map, &target)) {
+            (
+                ItemPlacement::Container { within, .. },
+                Some(occupant),
+            ) if occupant.config.has_flag(ItemFlag::Container) => ItemPlacement::Container {
+                guid: occupant.guid.clone(),
+                within: within.clone(),
+                index: 0,
+            },
+            _ => target,
         };
 
         self.world
@@ -74,8 +62,7 @@ impl SessionActor {
                     placement: source_placement,
                 },
                 amount,
-                to: target_placement,
-                target_container,
+                to: target,
             })
             .await;
 
@@ -170,12 +157,12 @@ impl SessionActor {
         let player_pos = map
             .agent_position(self.player_key)
             .ok_or(SessionError::InvalidState)?;
-        let Some((placement, guid)) =
-            client_position_to_placement(position, &map, &self.containers, self.player_key)
+        let Some(placement) =
+            resolve_client_coord(position, &map, &self.containers, self.player_key)
         else {
             return Ok(());
         };
-        let desc = get_look_description(&map, &placement, guid, player_pos);
+        let desc = get_look_description(&map, &placement, player_pos);
         self.connection
             .send_message(ServerMessage::TextMessage {
                 text: desc,
@@ -187,23 +174,8 @@ impl SessionActor {
 
     pub(super) async fn open_container(&mut self, item_ref: ItemRef) -> Result<()> {
         let map = self.shared_map.load();
-        let item = match &item_ref.placement {
-            ItemPlacement::Map(position) => {
-                let item = map.get_item_by_id(position, &item_ref.guid);
-                let Some(item) = item else {
-                    return Err(SessionError::InvalidState.into());
-                };
-                item
-            }
-            ItemPlacement::Inventory(slot, agent_key) => {
-                let Some(agent) = map.get_agent(*agent_key) else {
-                    return Err(SessionError::InvalidState.into());
-                };
-                let Some(item) = find_item_in_slot(agent, *slot, &item_ref.guid) else {
-                    return Err(SessionError::InvalidState.into());
-                };
-                item
-            }
+        let Some(item) = find_item(&map, &item_ref.placement, &item_ref.guid) else {
+            return Err(SessionError::InvalidState.into());
         };
 
         let Some(capacity) = item.config.attr_capacity() else {
@@ -238,23 +210,8 @@ impl SessionActor {
     pub(super) async fn update_container(&mut self, item_ref: ItemRef) -> Result<()> {
         if let Some(local_id) = self.containers.get_local(&item_ref.guid) {
             let map = self.shared_map.load();
-            let item = match &item_ref.placement {
-                ItemPlacement::Map(position) => {
-                    let item = map.get_item_by_id(position, &item_ref.guid);
-                    let Some(item) = item else {
-                        return Err(SessionError::InvalidState.into());
-                    };
-                    item
-                }
-                ItemPlacement::Inventory(slot, agent_key) => {
-                    let Some(agent) = map.get_agent(*agent_key) else {
-                        return Err(SessionError::InvalidState.into());
-                    };
-                    let Some(item) = find_item_in_slot(agent, *slot, &item_ref.guid) else {
-                        return Err(SessionError::InvalidState.into());
-                    };
-                    item
-                }
+            let Some(item) = find_item(&map, &item_ref.placement, &item_ref.guid) else {
+                return Err(SessionError::InvalidState.into());
             };
 
             let Some(content) = &item.content else {

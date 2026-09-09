@@ -2,14 +2,11 @@ use crate::{
     entities::{
         agent::{Agent, AgentId, AgentKey},
         inventory::InventorySlot,
-        items::{ContainerId, ItemGuid},
         map::GameMap,
-        position::{ItemPlacement, Position},
+        position::Position,
         skills::SkillType,
     },
-    game::map_query::find_item_in_reach,
     game::skills::{progress_bp, total_experience},
-    local_id::LocalIdMap,
     messages::{ServerMessage, SkillProgress},
 };
 
@@ -81,30 +78,6 @@ pub fn get_agent_desc(agent: &Agent, agent_id: AgentId, position: Position) -> S
         name: agent.name().to_owned(),
         life: agent.life().to_wire(),
         speed: agent.speed(),
-    }
-}
-
-pub fn client_position_to_placement(
-    position: Position,
-    map: &GameMap,
-    containers: &LocalIdMap<ItemGuid, ContainerId>,
-    agent_key: AgentKey,
-) -> Option<(ItemPlacement, Option<ItemGuid>)> {
-    if position.is_container_coord() {
-        let container_id = ContainerId(position.y);
-        let guid = containers.get_global(container_id)?;
-        let (item, placement) = find_item_in_reach(map, guid, agent_key)?;
-        let guid = item
-            .content
-            .as_ref()
-            .and_then(|content| content.get(position.z as usize))
-            .map(|item| item.guid.clone());
-        Some((placement, guid))
-    } else if position.is_inventory_coord() {
-        let slot = InventorySlot::from_id(position.y)?;
-        Some((ItemPlacement::Inventory(slot, agent_key), None))
-    } else {
-        Some((ItemPlacement::Map(position), None))
     }
 }
 

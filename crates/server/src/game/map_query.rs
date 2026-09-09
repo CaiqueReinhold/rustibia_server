@@ -4,11 +4,11 @@ use crate::{
         PLAYER_VIEWPORT_WIDTH, UNDERGROUND_REACH, VIEWPORT_SIZE,
     },
     entities::{
-        agent::{Agent, AgentKey},
+        agent::AgentKey,
         inventory::InventorySlot,
-        items::{ClientItemRef, ContainerId, Item, ItemGuid, ItemRef},
+        items::{ClientItemRef, ContainerId, Item, ItemGuid},
         map::GameMap,
-        position::{Direction, ItemPlacement, Position, Rect},
+        position::{Direction, ItemPlacement, PlacementSite, Position, Rect},
     },
     local_id::LocalIdMap,
     messages::ItemStack,
@@ -157,8 +157,9 @@ pub fn get_agents_in_viewport<'a>(
     map: &'a GameMap,
     position: &'a Position,
 ) -> impl Iterator<Item = (AgentKey, Position)> + 'a {
-    iter_visible_floors(position.z)
-        .flat_map(move |floor| map.iter_agents_in_rect(&floor_viewport_rect(position, floor), floor))
+    iter_visible_floors(position.z).flat_map(move |floor| {
+        map.iter_agents_in_rect(&floor_viewport_rect(position, floor), floor)
+    })
 }
 
 pub fn get_agents_in_expansion<'a>(
@@ -185,33 +186,43 @@ pub fn get_tile(map: &GameMap, position: &Position) -> Box<ItemStack> {
     stack
 }
 
+pub fn resolve_client_coord(
+    position: Position,
+    map: &GameMap,
+    containers: &LocalIdMap<ItemGuid, ContainerId>,
+    agent_key: AgentKey,
+) -> Option<ItemPlacement> {
+    if position.is_container_coord() {
+        let guid = containers.get_global(ContainerId(position.y))?;
+        let (_, within) = find_item_in_reach(map, guid, agent_key)?;
+        Some(ItemPlacement::Container {
+            guid: guid.clone(),
+            within: Box::new(within),
+            index: position.z as usize,
+        })
+    } else if position.is_inventory_coord() {
+        Some(ItemPlacement::Inventory(
+            InventorySlot::from_id(position.y)?,
+            agent_key,
+        ))
+    } else {
+        Some(ItemPlacement::Map(position))
+    }
+}
+
 pub fn retrieve_item<'a>(
     map: &'a GameMap,
     cli_item: &'a ClientItemRef,
     containers: &'a LocalIdMap<ItemGuid, ContainerId>,
     agent_key: AgentKey,
 ) -> Option<(&'a Item, ItemPlacement)> {
-    if cli_item.position.is_container_coord() {
-        let container_id = ContainerId(cli_item.position.y);
-        let guid = containers.get_global(container_id)?;
-        let (container, placement) = find_item_in_reach(map, guid, agent_key)?;
-        let slot = cli_item.position.z as usize;
-        let item = container.content.as_ref()?.get(slot);
-        item.filter(|it| it.item_id == cli_item.item_id)
-            .map(|item| (item, placement))
-    } else if cli_item.position.is_inventory_coord() {
-        let player = map.get_player(agent_key)?;
-        let slot = InventorySlot::from_id(cli_item.position.y)?;
-        player
-            .inventory()
-            .get(&slot)
-            .filter(|it| it.item_id == cli_item.item_id)
-            .map(|it| (it, ItemPlacement::Inventory(slot, agent_key)))
-    } else {
-        let item = map.get_item_at(&cli_item.position, cli_item.stack_index as usize);
-        item.filter(|it| it.item_id == cli_item.item_id)
-            .map(|item| (item, ItemPlacement::Map(cli_item.position.clone())))
-    }
+    let placement = resolve_client_coord(cli_item.position.clone(), map, containers, agent_key)?;
+    // A map coordinate names the tile; which of its items is meant comes from the stack index.
+    let item = match &placement {
+        ItemPlacement::Map(pos) => map.get_item_at(pos, cli_item.stack_index as usize)?,
+        other => item_at_placement(map, other)?,
+    };
+    (item.item_id == cli_item.item_id).then_some((item, placement))
 }
 
 fn iter_adjacent(pos: &Position) -> impl Iterator<Item = Position> {
@@ -224,36 +235,24 @@ fn iter_adjacent(pos: &Position) -> impl Iterator<Item = Position> {
     (y_start..=y_end).flat_map(move |y| (x_start..=x_end).map(move |x| Position { x, y, z }))
 }
 
-pub fn find_item_in_slot<'a>(
-    agent: &'a Agent,
-    slot: InventorySlot,
-    guid: &'a ItemGuid,
-) -> Option<&'a Item> {
-    let player = agent.get_player()?;
-    player.inventory().get(&slot)?.find_by_guid(guid)
-}
-
+/// The nearest site holding `guid`: the tiles around the agent first, then its own slots.
 pub fn find_item_in_reach<'a>(
     map: &'a GameMap,
-    guid: &'a ItemGuid,
+    guid: &ItemGuid,
     agent_key: AgentKey,
 ) -> Option<(&'a Item, ItemPlacement)> {
     let player_pos = map.agent_position(agent_key)?;
-    for pos in iter_adjacent(player_pos) {
-        if let Some(item) = map.get_item_by_id(&pos, guid) {
-            return Some((item, ItemPlacement::Map(pos)));
-        }
-    }
+    let tiles = iter_adjacent(player_pos).map(ItemPlacement::Map);
+    let slots = map
+        .get_player(agent_key)
+        .into_iter()
+        .flat_map(|player| player.inventory().keys())
+        .map(move |slot| ItemPlacement::Inventory(*slot, agent_key));
 
-    let agent = map.get_agent(agent_key)?;
-    let player = agent.get_player()?;
-    for slot in player.inventory().keys() {
-        if let Some(item) = find_item_in_slot(agent, *slot, guid) {
-            return Some((item, ItemPlacement::Inventory(*slot, agent_key)));
-        }
-    }
-
-    None
+    tiles.chain(slots).find_map(|site| {
+        let item = find_item(map, &site, guid)?;
+        Some((item, site))
+    })
 }
 
 pub fn find_parent_container<'a>(
@@ -270,14 +269,44 @@ pub fn find_parent_container<'a>(
     None
 }
 
-pub fn find_item_in_placement<'a>(map: &'a GameMap, item_ref: &ItemRef) -> Option<&'a Item> {
-    match &item_ref.placement {
-        ItemPlacement::Map(item_pos) => map.get_item_by_id(item_pos, &item_ref.guid),
-        ItemPlacement::Inventory(slot, inv_agent_key) => map
-            .get_player(*inv_agent_key)
-            .and_then(|player| player.inventory().get(slot))
-            .map(|item| item.find_by_guid(&item_ref.guid))
-            .unwrap_or(None),
+/// The item `guid` names, looked for at `placement`.
+///
+/// `Map` and `Inventory` narrow to a tile or a slot and are **searched**: a bag inside a backpack
+/// is still reported by `find_item_in_reach` as sitting in that slot, so a container is located the
+/// way it was found rather than by an exact path — which is why `ItemPlacement::Container` does not
+/// nest. `Container` already addresses one slot, so there the guid only confirms the item has not
+/// moved on.
+pub fn find_item<'a>(
+    map: &'a GameMap,
+    placement: &ItemPlacement,
+    guid: &ItemGuid,
+) -> Option<&'a Item> {
+    if let ItemPlacement::Container { .. } = placement {
+        return item_at_placement(map, placement).filter(|it| it.guid == *guid);
+    }
+    match placement.site() {
+        PlacementSite::Tile(pos) => map.get_item_by_id(pos, guid),
+        PlacementSite::Slot(slot, agent_key) => map
+            .get_player(agent_key)?
+            .inventory()
+            .get(&slot)?
+            .find_by_guid(guid),
+    }
+}
+
+/// The item a placement names outright. A `Map` placement names a tile rather than one of the
+/// items on it, so it has none.
+pub fn item_at_placement<'a>(map: &'a GameMap, placement: &ItemPlacement) -> Option<&'a Item> {
+    match placement {
+        ItemPlacement::Map(..) => None,
+        ItemPlacement::Inventory(slot, agent_key) => {
+            map.get_player(*agent_key)?.inventory().get(slot)
+        }
+        ItemPlacement::Container {
+            guid,
+            within,
+            index,
+        } => find_item(map, within, guid)?.content.as_ref()?.get(*index),
     }
 }
 
@@ -374,6 +403,76 @@ pub fn can_throw(map: &GameMap, from: &Position, to: &Position, same_floor: bool
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The wire packs three different addresses into one `Position`, distinguished only by a
+    /// flag in `x`, and every item command the client sends arrives as one. Nothing else covers
+    /// the decode.
+    #[test]
+    fn a_client_coordinate_decodes_to_the_thing_it_names() {
+        use crate::constants::items::{CONTAINER_COORD_FLAG, INVENTORY_COORD_FLAG};
+        use crate::entities::agent::Agent;
+        use crate::entities::map::MapTile;
+        use crate::persistence::test_fixtures::a_player_with_a_full_backpack;
+
+        let at = Position::new(10, 10, 7);
+        let mut map = GameMap::new();
+        map.insert_tile(at.clone(), MapTile::new());
+        let key = map
+            .insert_agent(Agent::from_player(a_player_with_a_full_backpack(1, 1)), &at)
+            .unwrap();
+
+        let backpack = map
+            .get_player(key)
+            .unwrap()
+            .inventory()
+            .get(&InventorySlot::Backpack)
+            .unwrap()
+            .guid
+            .clone();
+        let mut containers: LocalIdMap<ItemGuid, ContainerId> = LocalIdMap::new();
+        let open = containers.get_or_insert(backpack.clone());
+
+        let ground = Position::new(11, 10, 7);
+        assert_eq!(
+            resolve_client_coord(ground.clone(), &map, &containers, key),
+            Some(ItemPlacement::Map(ground))
+        );
+
+        let slot = Position::new(
+            INVENTORY_COORD_FLAG,
+            InventorySlot::Backpack.as_id() as u16,
+            0,
+        );
+        assert_eq!(
+            resolve_client_coord(slot, &map, &containers, key),
+            Some(ItemPlacement::Inventory(InventorySlot::Backpack, key))
+        );
+
+        assert_eq!(
+            resolve_client_coord(
+                Position::new(CONTAINER_COORD_FLAG, open.0, 2),
+                &map,
+                &containers,
+                key
+            ),
+            Some(ItemPlacement::Container {
+                guid: backpack,
+                within: Box::new(ItemPlacement::Inventory(InventorySlot::Backpack, key)),
+                index: 2,
+            })
+        );
+
+        // A container id this session never handed out, or one whose slot it has since freed.
+        assert!(
+            resolve_client_coord(
+                Position::new(CONTAINER_COORD_FLAG, 4242, 0),
+                &map,
+                &containers,
+                key
+            )
+            .is_none()
+        );
+    }
 
     #[test]
     fn the_viewport_pairs_each_agent_with_its_own_tile() {

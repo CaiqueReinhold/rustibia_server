@@ -1,21 +1,21 @@
 use crate::{
     entities::{
         agent::Agent,
-        items::{Item, ItemGuid},
+        items::Item,
         map::GameMap,
         position::{ItemPlacement, Position},
     },
-    game::map_query::{TileEntity, get_top_entity},
+    game::map_query::{TileEntity, get_top_entity, item_at_placement},
 };
 use std::fmt::{Error, Write};
 
 pub fn get_look_description(
     map: &GameMap,
     placement: &ItemPlacement,
-    guid: Option<ItemGuid>,
     player_pos: &Position,
 ) -> String {
     let desc = match placement {
+        // A tile names no item of its own, so a look there describes whatever is on top.
         ItemPlacement::Map(look_pos) => get_top_entity(map, look_pos).map(|entity| match entity {
             TileEntity::Agent(agent_key) => map
                 .get_agent(agent_key)
@@ -23,17 +23,9 @@ pub fn get_look_description(
                 .unwrap_or(Ok("".to_owned())),
             TileEntity::Item(item) => get_item_description(item, player_pos.is_adjacent(look_pos)),
         }),
-        ItemPlacement::Inventory(slot, agent_key) => map
-            .get_player(*agent_key)
-            .map(|player| player.inventory().get(slot))
-            .unwrap_or(None)
-            .map(|item| {
-                guid.and_then(|guid| {
-                    item.find_by_guid(&guid)
-                        .map(|it| get_item_description(it, true))
-                })
-                .unwrap_or(get_item_description(item, true))
-            }),
+        ItemPlacement::Inventory(..) | ItemPlacement::Container { .. } => {
+            item_at_placement(map, placement).map(|item| get_item_description(item, true))
+        }
     };
 
     desc.and_then(|e| e.ok())

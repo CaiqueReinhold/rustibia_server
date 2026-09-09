@@ -64,7 +64,6 @@ pub fn reap(ctx: &mut TickCtx, agent_key: AgentKey, source: Option<AgentKey>) {
     if let Err(e) = insert_item_at(
         ctx,
         corpse,
-        None,
         &ItemPlacement::Map(position.clone()),
         None,
     ) {
