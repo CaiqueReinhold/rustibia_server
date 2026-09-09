@@ -91,9 +91,7 @@ fn get_state(ctx: &CreatureBehaviourContext) -> CreatureBehavior {
         return CreatureBehavior::Fleeing;
     } else if agent.target().is_some() {
         return CreatureBehavior::InCombat;
-    } else if pathfinding::chebyshev(agent.get_origin(), position)
-        > GAME_CONFIG.movement.wander_distance
-    {
+    } else if agent.get_origin().distance(position) > GAME_CONFIG.movement.wander_distance {
         return CreatureBehavior::Returning;
     }
 
@@ -141,7 +139,7 @@ fn in_combat(mut ctx: CreatureBehaviourContext) -> Option<CreatureAction> {
     let target_position = ctx.map.agent_position(target_key)?;
 
     // TODO: ajust for ranged creatures
-    if pathfinding::chebyshev(postion, target_position) > 1 {
+    if !postion.is_within(target_position, 1) {
         match pathfinding::next_step(
             ctx.map,
             ctx.creature,
@@ -305,14 +303,14 @@ fn search_target(creature: AgentKey, map: &GameMap) -> Option<AgentKey> {
         .iter()
         .filter_map(|(key, pos)| {
             let ticks = reachable.cost_to(&Goal::adjacent(pos.clone()))?;
-            Some((*key, ticks, pathfinding::chebyshev(from, pos)))
+            Some((*key, ticks, from.distance(pos)))
         })
         .min_by_key(|(_, ticks, distance)| (*ticks, *distance))
         .map(|(key, ..)| key)
         .or_else(|| {
             candidates
                 .iter()
-                .min_by_key(|(_, pos)| pathfinding::chebyshev(from, pos))
+                .min_by_key(|(_, pos)| from.distance(pos))
                 .map(|(key, _)| *key)
         })
 }

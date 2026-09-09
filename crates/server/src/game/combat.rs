@@ -23,7 +23,6 @@ use crate::{
         events::BroadcastMessage,
         item_movement::remove_item_at,
         map_query::can_throw,
-        pathfinding::chebyshev,
         random::Rolls,
         skills::tick_skill,
         spells::{SpellCastingDenyReason, consume_mana, resolve_spell_targets, roll_power},
@@ -52,7 +51,7 @@ pub fn plan_auto_attack(
         return None;
     }
 
-    if !is_in_range(agent, &from, &to) {
+    if !from.is_within(&to, agent.attack_range() as u16) {
         return None;
     }
 
@@ -88,7 +87,7 @@ pub fn plan_auto_attack(
 
     let missed = match agent.get_player() {
         Some(player) if is_distance_weapon(player.weapon_type()) => {
-            distance_hit_chance(player, chebyshev(&from, &to)) < roll.uniform(1, 100) as i32
+            distance_hit_chance(player, from.distance(&to)) < roll.uniform(1, 100) as i32
         }
         _ => false,
     };
@@ -352,13 +351,6 @@ pub fn weapon_skill(player: &Player) -> WeaponSkill {
 
 // private
 
-fn is_in_range(attacker: &Agent, attacker_pos: &Position, attacked_pos: &Position) -> bool {
-    let r = attacker.attack_range();
-    let dx = attacked_pos.x.abs_diff(attacker_pos.x);
-    let dy = attacked_pos.y.abs_diff(attacker_pos.y);
-    (r as u16) >= dx && (r as u16) >= dy && attacker_pos.z == attacked_pos.z
-}
-
 /// The nine tiles a missed shot can land on, the target's own included.
 const MISS_OFFSETS: [(i32, i32); 9] = [
     (-1, -1),
@@ -451,7 +443,7 @@ fn tabled_hit_chance(max_hit_chance: u8, skill: u16, distance: u16) -> i32 {
 /// A missed shot scatters onto one of the nine tiles around its target if the
 /// attacker was not standing next to it.
 fn miss_position(map: &GameMap, from: &Position, to: &Position, roll: &mut Rolls) -> Position {
-    if from.is_adjacent(to) {
+    if from.is_within(to, 1) {
         return to.clone();
     }
     let landable: Vec<Position> = MISS_OFFSETS
@@ -1427,7 +1419,7 @@ mod tests {
             .collect();
 
         assert!(
-            landings.iter().all(|pos| pos.is_adjacent(&target_pos)),
+            landings.iter().all(|pos| pos.is_within(&target_pos, 1)),
             "a shot landed outside the nine tiles: {landings:?}"
         );
         assert!(

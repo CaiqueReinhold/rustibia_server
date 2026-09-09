@@ -21,7 +21,7 @@ pub fn get_look_description(
                 .get_agent(agent_key)
                 .map(get_agent_description)
                 .unwrap_or(Ok("".to_owned())),
-            TileEntity::Item(item) => get_item_description(item, player_pos.is_adjacent(look_pos)),
+            TileEntity::Item(item) => get_item_description(item, player_pos.is_within(look_pos, 1)),
         }),
         ItemPlacement::Inventory(..) | ItemPlacement::Container { .. } => {
             item_at_placement(map, placement).map(|item| get_item_description(item, true))

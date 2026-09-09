@@ -31,18 +31,21 @@ impl Position {
         self.x == INVENTORY_COORD_FLAG
     }
 
-    pub fn is_adjacent(&self, other: &Position) -> bool {
-        if self.z != other.z {
-            return false;
-        }
-        let dx = (self.x as i64 - other.x as i64).abs();
-        let dy = (self.y as i64 - other.y as i64).abs();
-        dx <= 1 && dy <= 1
+    /// Tiles between here and `other`, a diagonal counting as one step — tiles, not ticks: the
+    /// unit a range is expressed in, not the cost of walking it. Ignores the floor, like
+    /// `Rect::contains`.
+    pub fn distance(&self, other: &Position) -> u16 {
+        self.x.abs_diff(other.x).max(self.y.abs_diff(other.y))
+    }
+
+    /// Within `range` tiles of `other`, on the same floor.
+    pub fn is_within(&self, other: &Position, range: u16) -> bool {
+        self.z == other.z && self.distance(other) <= range
     }
 
     pub fn placement_is_adjacent(&self, placement: &ItemPlacement) -> bool {
         match placement.site() {
-            PlacementSite::Tile(pos) => self.is_adjacent(pos),
+            PlacementSite::Tile(pos) => self.is_within(pos, 1),
             PlacementSite::Slot(..) => true,
         }
     }
@@ -251,6 +254,26 @@ impl Rect {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_diagonal_is_one_step_and_the_floor_is_not_counted() {
+        let here = Position::new(10, 10, 7);
+
+        assert_eq!(here.distance(&Position::new(11, 11, 7)), 1);
+        assert_eq!(here.distance(&Position::new(14, 12, 7)), 4);
+        assert_eq!(here.distance(&Position::new(10, 10, 0)), 0);
+    }
+
+    /// The floor check is what separates a range from a distance: `distance` ignores `z`,
+    /// every predicate built on it does not.
+    #[test]
+    fn a_range_is_floor_scoped() {
+        let here = Position::new(10, 10, 7);
+
+        assert!(here.is_within(&Position::new(14, 10, 7), 4));
+        assert!(!here.is_within(&Position::new(15, 10, 7), 4));
+        assert!(!here.is_within(&Position::new(14, 10, 6), 4));
+    }
 
     #[test]
     fn rect_contains_its_edges_but_not_beyond() {

@@ -152,7 +152,7 @@ pub fn move_item(
     };
 
     if let ItemPlacement::Map(pos) = &source.placement
-        && !player_pos.is_adjacent(pos)
+        && !player_pos.is_within(pos, 1)
     {
         ctx.events.push(BroadcastMessage::MoveItemDenied {
             agent_key: agent,

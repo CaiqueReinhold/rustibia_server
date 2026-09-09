@@ -18,7 +18,6 @@ use crate::{
         events::BroadcastMessage,
         healing::{execute_healing, plan_healing_spell},
         map_query::{can_target, can_throw},
-        pathfinding::chebyshev,
         random::Rolls,
         skills::tick_skill,
     },
@@ -152,8 +151,7 @@ pub fn resolve_spell_targets(
                         "spell target not found",
                     ))?;
 
-            if chebyshev(position, target_pos) > *range
-                || !can_throw(map, position, target_pos, true)
+            if position.distance(target_pos) > *range || !can_throw(map, position, target_pos, true)
             {
                 return Err(SpellCastingDenyReason::OutOfReach);
             }

@@ -102,13 +102,7 @@ impl Reachable {
     }
 }
 
-/// Tiles, not ticks: the unit a range is expressed in, not the cost of walking it.
-pub fn chebyshev(from: &Position, to: &Position) -> u16 {
-    from.x.abs_diff(to.x).max(from.y.abs_diff(to.y))
-}
-
 // private
-
 fn successors(
     map: &GameMap,
     walker: AgentKey,
@@ -159,8 +153,8 @@ impl pathfinding::num_traits::Zero for TickDelta {
 
 fn heuristic(goal: &Goal, from: &Position) -> TickDelta {
     let tiles = match goal {
-        Goal::Tile(tile) => chebyshev(from, tile),
-        Goal::Within { of, range } => chebyshev(from, of).saturating_sub(*range),
+        Goal::Tile(tile) => from.distance(tile),
+        Goal::Within { of, range } => from.distance(of).saturating_sub(*range),
     };
     TickDelta(tiles as u64)
 }
@@ -168,7 +162,7 @@ fn heuristic(goal: &Goal, from: &Position) -> TickDelta {
 fn goal_is_met(goal: &Goal, pos: &Position) -> bool {
     match goal {
         Goal::Tile(tile) => pos == tile,
-        Goal::Within { of, range } => pos.z == of.z && chebyshev(pos, of) <= *range,
+        Goal::Within { of, range } => pos.is_within(of, *range),
     }
 }
 
