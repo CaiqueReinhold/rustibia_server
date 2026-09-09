@@ -7,7 +7,7 @@ use crate::{
         agent::AgentKey,
         inventory::InventorySlot,
         items::{ClientItemRef, ContainerId, Item, ItemGuid},
-        map::GameMap,
+        map::{GameMap, MapTile},
         position::{Direction, ItemPlacement, PlacementSite, Position, Rect},
     },
     local_id::LocalIdMap,
@@ -45,6 +45,19 @@ pub fn floor_viewport_rect(viewport_center: &Position, floor: u8) -> Rect {
     )
 }
 
+/// A tile as the wire draws it: its visible items, then `None` for the rest of the stack.
+fn item_stack(tile: Option<&MapTile>) -> ItemStack {
+    let mut stack: ItemStack = [None; MAX_VISIBLE_ITEMS];
+    for (i, item) in tile
+        .into_iter()
+        .flat_map(MapTile::visible_items)
+        .enumerate()
+    {
+        stack[i] = Some((item.item_id, item.wire_subtype()));
+    }
+    stack
+}
+
 pub fn get_map_desc_on_viewport(
     map: &GameMap,
     viewport_center: &Position,
@@ -63,13 +76,9 @@ pub fn get_map_desc_on_viewport(
             if col >= PLAYER_VIEWPORT_WIDTH || row >= PLAYER_VIEWPORT_HEIGHT {
                 continue;
             }
-            let idx = row * PLAYER_VIEWPORT_WIDTH + col;
-            if let Some(tile) = tile {
-                for (j, item) in tile.visible_items().enumerate() {
-                    found_any = true;
-                    tiles[idx][j] = Some((item.item_id, item.wire_subtype()));
-                }
-            }
+            let stack = item_stack(tile);
+            found_any |= stack[0].is_some();
+            tiles[row * PLAYER_VIEWPORT_WIDTH + col] = stack;
         }
         if found_any {
             floors.push((floor, tiles));
@@ -127,27 +136,17 @@ pub fn get_map_expansion(
     let mut floors = Vec::new();
     for floor in iter_visible_floors(viewport_center.z) {
         let (rect1, rect2) = expansion_rects(viewport_center, direction, floor);
-        let tiles = [Some(rect1), rect2]
-            .into_iter()
-            .flatten()
-            .flat_map(move |rect| map.iter_tiles_in_rect(&rect, floor));
+        let mut stacks = Vec::with_capacity(PLAYER_VIEWPORT_WIDTH + PLAYER_VIEWPORT_HEIGHT - 1);
+        stacks.extend(
+            [Some(rect1), rect2]
+                .into_iter()
+                .flatten()
+                .flat_map(|rect| map.iter_tiles_in_rect(&rect, floor))
+                .map(|(_, tile)| item_stack(tile)),
+        );
 
-        let mut found_any = false;
-        let mut parsed_tiles =
-            Vec::with_capacity(PLAYER_VIEWPORT_WIDTH + PLAYER_VIEWPORT_HEIGHT - 1);
-        for (_, tile) in tiles {
-            let mut stack: ItemStack = [None; MAX_VISIBLE_ITEMS];
-            if let Some(tile) = tile {
-                for (i, item) in tile.visible_items().enumerate() {
-                    found_any = true;
-                    stack[i] = Some((item.item_id, item.wire_subtype()));
-                }
-            }
-            parsed_tiles.push(stack)
-        }
-
-        if found_any {
-            floors.push((floor, parsed_tiles.into_boxed_slice()));
+        if stacks.iter().any(|stack| stack[0].is_some()) {
+            floors.push((floor, stacks.into_boxed_slice()));
         }
     }
     floors
@@ -176,14 +175,8 @@ pub fn get_agents_in_expansion<'a>(
     })
 }
 
-pub fn get_tile(map: &GameMap, position: &Position) -> Box<ItemStack> {
-    let mut stack: Box<ItemStack> = Box::new([None; MAX_VISIBLE_ITEMS]);
-    if let Ok(items) = map.get_visible_items(position) {
-        for (i, item) in items.enumerate() {
-            stack[i] = Some((item.item_id, item.wire_subtype()));
-        }
-    }
-    stack
+pub fn tile_stack(map: &GameMap, position: &Position) -> Box<ItemStack> {
+    Box::new(item_stack(map.get_tile(position).ok()))
 }
 
 pub fn resolve_client_coord(

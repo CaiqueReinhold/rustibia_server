@@ -159,7 +159,7 @@ impl GameMap {
             .ok_or(MapError::TileDoesNotExist)
     }
 
-    fn get_tile(&self, pos: &Position) -> Result<&MapTile, MapError> {
+    pub fn get_tile(&self, pos: &Position) -> Result<&MapTile, MapError> {
         self.chunks
             .get(&ChunkCoord::from_pos(pos))
             .and_then(|chunk| chunk.tiles[local_index(pos)].as_ref())
@@ -371,14 +371,6 @@ impl GameMap {
         tile.items
             .iter()
             .find_map(|it| it.config.attr_floor_change())
-    }
-
-    pub fn get_visible_items(
-        &self,
-        pos: &Position,
-    ) -> Result<impl Iterator<Item = &Item>, MapError> {
-        let tile = self.get_tile(pos)?;
-        Ok(tile.items.iter().take(MAX_VISIBLE_ITEMS))
     }
 
     pub fn get_top_item(&self, pos: &Position) -> Option<&Item> {

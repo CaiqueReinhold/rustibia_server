@@ -12,8 +12,8 @@ use crate::entities::position::{ItemPlacement, Position, Rect};
 use crate::game::description::get_look_description;
 use crate::game::item_multi_action::UseTarget;
 use crate::game::map_query::{
-    find_item, find_item_in_reach, find_parent_container, get_tile, item_at_placement,
-    iter_visible_floors, resolve_client_coord, retrieve_item,
+    find_item, find_item_in_reach, find_parent_container, item_at_placement, iter_visible_floors,
+    resolve_client_coord, retrieve_item, tile_stack,
 };
 use crate::messages::ServerMessage;
 use crate::messages::TextMessageType;
@@ -284,7 +284,7 @@ impl SessionActor {
         if Rect::player_viewport(player_pos).contains(&position)
             && iter_visible_floors(player_pos.z).any(|z| z == position.z)
         {
-            let tile = get_tile(&map, &position);
+            let tile = tile_stack(&map, &position);
             self.connection
                 .send_message(ServerMessage::TileChanged {
                     position,
