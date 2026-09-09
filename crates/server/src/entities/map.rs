@@ -410,76 +410,20 @@ impl GameMap {
         let tile = self.get_tile_mut(pos).ok()?;
 
         if let Some(idx) = tile.items.iter().position(|i| i.guid == *guid) {
-            let current_amount = tile.items[idx].amount;
-            if current_amount > amount {
-                let item = &mut tile.items[idx];
-                item.amount -= amount;
-                return Some((
-                    Item {
-                        guid: ItemGuid::new(),
-                        config: item.config.clone(),
-                        item_id: item.item_id,
-                        amount,
-                        fluid: None,
-                        content: None,
-                    },
-                    Some(idx),
-                    None,
-                ));
-            } else if current_amount == amount {
-                return Some((tile.items.remove(idx), Some(idx), None));
-            }
-            return None;
-        }
-
-        for item in tile.items.iter_mut() {
-            if let Some(content) = &mut item.content {
-                let found = Self::remove_from_container(&item.guid, content, guid, amount);
-                if let Some((item, parent)) = found {
-                    return Some((item, None, parent));
+            let held = tile.items[idx].amount;
+            return match held.cmp(&amount) {
+                std::cmp::Ordering::Greater => {
+                    Some((tile.items[idx].split_off(amount), Some(idx), None))
                 }
-            }
-        }
-        None
-    }
-
-    fn remove_from_container(
-        parent_guid: &ItemGuid,
-        items: &mut Vec<Item>,
-        guid: &ItemGuid,
-        amount: u8,
-    ) -> Option<(Item, Option<(ItemGuid, usize)>)> {
-        if let Some(idx) = items.iter().position(|i| i.guid == *guid) {
-            let current_amount = items[idx].amount;
-            if current_amount > amount {
-                let item = &mut items[idx];
-                item.amount -= amount;
-                return Some((
-                    Item {
-                        guid: ItemGuid::new(),
-                        config: item.config.clone(),
-                        item_id: item.item_id,
-                        amount,
-                        fluid: None,
-                        content: None,
-                    },
-                    Some((parent_guid.clone(), idx)),
-                ));
-            } else if current_amount == amount {
-                return Some((items.remove(idx), Some((parent_guid.clone(), idx))));
-            }
-            return None;
+                std::cmp::Ordering::Equal => Some((tile.items.remove(idx), Some(idx), None)),
+                std::cmp::Ordering::Less => None,
+            };
         }
 
-        for item in items.iter_mut() {
-            if let Some(content) = &mut item.content {
-                let found = Self::remove_from_container(&item.guid, content, guid, amount);
-                if found.is_some() {
-                    return found;
-                }
-            }
-        }
-        None
+        tile.items
+            .iter_mut()
+            .find_map(|item| item.remove_nested(guid, amount))
+            .map(|(removed, parent)| (removed, None, Some(parent)))
     }
 
     /// Place `item` at `pos`.
@@ -655,6 +599,46 @@ mod tests {
         let (_, _, parent) = map.remove_item_from_tile(&pos, &stack_guid, 20).unwrap();
 
         assert_eq!(parent, Some((bag_guid, 0)));
+    }
+
+    #[test]
+    fn removing_from_a_bag_inside_a_bag_names_the_inner_one() {
+        let pos = Position::new(10, 10, 7);
+        let mut map = map_with_one_tile(&pos);
+        let outer = a_bag();
+        let outer_guid = outer.guid.clone();
+        map.place_item(&pos, None, None, outer).unwrap();
+        let inner = a_bag();
+        let inner_guid = inner.guid.clone();
+        map.place_item(&pos, None, Some((&outer_guid, 0)), inner)
+            .unwrap();
+        let stack = a_stack_of(50);
+        let stack_guid = stack.guid.clone();
+        map.place_item(&pos, None, Some((&inner_guid, 0)), stack)
+            .unwrap();
+
+        let (removed, tile_index, parent) =
+            map.remove_item_from_tile(&pos, &stack_guid, 20).unwrap();
+
+        assert_eq!(removed.amount, 20);
+        assert_eq!(tile_index, None);
+        assert_eq!(parent, Some((inner_guid, 0)));
+    }
+
+    #[test]
+    fn removing_more_than_a_stack_holds_removes_nothing() {
+        let pos = Position::new(10, 10, 7);
+        let mut map = map_with_one_tile(&pos);
+        let stack = a_stack_of(5);
+        let stack_guid = stack.guid.clone();
+        map.place_item(&pos, None, None, stack).unwrap();
+
+        assert!(map.remove_item_from_tile(&pos, &stack_guid, 20).is_none());
+        assert_eq!(
+            map.get_item_by_id(&pos, &stack_guid).unwrap().amount,
+            5,
+            "a refused removal must leave the stack untouched"
+        );
     }
 
     fn map_with_players(count: u32) -> (GameMap, Vec<AgentKey>) {

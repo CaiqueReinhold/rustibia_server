@@ -31,16 +31,6 @@ impl Position {
         self.x == INVENTORY_COORD_FLAG
     }
 
-    pub fn in_viewport(&self, other: &Position) -> bool {
-        let half_x = (PLAYER_VIEWPORT_WIDTH / 2) as u16;
-        let half_y = (PLAYER_VIEWPORT_HEIGHT / 2) as u16;
-        let start_x = self.x.saturating_sub(half_x);
-        let end_x = self.x + half_x;
-        let start_y = self.y.saturating_sub(half_y);
-        let end_y = self.y + half_y;
-        other.x >= start_x && other.x <= end_x && other.y >= start_y && other.y <= end_y
-    }
-
     pub fn is_adjacent(&self, other: &Position) -> bool {
         if self.z != other.z {
             return false;
@@ -231,6 +221,19 @@ mod tests {
         assert!(!rect.contains(&Position::new(9, 22, 7)));
         assert!(!rect.contains(&Position::new(15, 22, 7)));
         assert!(!rect.contains(&Position::new(12, 25, 7)));
+    }
+
+    #[test]
+    fn a_player_viewport_at_the_map_edge_clamps_instead_of_overflowing() {
+        let rect = Rect::player_viewport(&Position::new(u16::MAX, u16::MAX, 7));
+
+        assert_eq!((rect.max_x(), rect.max_y()), (u16::MAX, u16::MAX));
+        assert!(rect.contains(&Position::new(u16::MAX, u16::MAX, 7)));
+
+        let origin = Rect::player_viewport(&Position::new(0, 0, 7));
+
+        assert_eq!((origin.min_x(), origin.min_y()), (0, 0));
+        assert!(origin.contains(&Position::new(0, 0, 7)));
     }
 
     #[test]

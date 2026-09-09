@@ -11,7 +11,8 @@ use crate::config::CONFIG;
 use crate::entities::combat::CombatElement;
 use crate::entities::effects::{AreaShape, AreaShapeId, EffectId, MissileId};
 use crate::entities::spells::{
-    AreaOrigin, Spell, SpellAttack, SpellEffect, SpellGroup, SpellHealing, SpellId, SpellTargetMode,
+    AreaOrigin, PowerCurve, Spell, SpellAttack, SpellEffect, SpellGroup, SpellHealing, SpellId,
+    SpellTargetMode,
 };
 use crate::entities::vocation::Vocation;
 use crate::game::TickDelta;
@@ -165,6 +166,22 @@ fn parse_number(
     Ok(narrowed)
 }
 
+fn parse_power(
+    id: SpellId,
+    name: &str,
+    base_power: f64,
+    level_factor: f64,
+    magic_factor: f64,
+    spread: f64,
+) -> Result<PowerCurve, SpellsLoadError> {
+    Ok(PowerCurve {
+        base_power: parse_number(id, name, "base_power", base_power)?,
+        level_factor: parse_number(id, name, "level_factor", level_factor)?,
+        magic_factor: parse_number(id, name, "magic_factor", magic_factor)?,
+        spread: parse_number(id, name, "spread", spread)?,
+    })
+}
+
 fn single_entry(value: serde_yaml::Value) -> Option<(String, serde_yaml::Value)> {
     match value {
         serde_yaml::Value::Mapping(mapping) if mapping.len() == 1 => {
@@ -255,10 +272,14 @@ fn parse_effect(
             let spell_attack = SpellAttack {
                 target: parse_target(id, name, attack.target, shapes)?,
                 element: attack.element,
-                base_power: parse_number(id, name, "base_power", attack.base_power)?,
-                level_factor: parse_number(id, name, "level_factor", attack.level_factor)?,
-                magic_factor: parse_number(id, name, "magic_factor", attack.magic_factor)?,
-                spread: parse_number(id, name, "spread", attack.spread)?,
+                power: parse_power(
+                    id,
+                    name,
+                    attack.base_power,
+                    attack.level_factor,
+                    attack.magic_factor,
+                    attack.spread,
+                )?,
                 effect_id: attack.effect_id,
                 missile_id: attack.missile_id,
             };
@@ -268,10 +289,14 @@ fn parse_effect(
             let healing: RawHealing = serde_yaml::from_value(payload)?;
             let spell_healing = SpellHealing {
                 target: parse_target(id, name, healing.target, shapes)?,
-                base_power: parse_number(id, name, "base_power", healing.base_power)?,
-                level_factor: parse_number(id, name, "level_factor", healing.level_factor)?,
-                magic_factor: parse_number(id, name, "magic_factor", healing.magic_factor)?,
-                spread: parse_number(id, name, "spread", healing.spread)?,
+                power: parse_power(
+                    id,
+                    name,
+                    healing.base_power,
+                    healing.level_factor,
+                    healing.magic_factor,
+                    healing.spread,
+                )?,
             };
             Ok(SpellEffect::Healing(spell_healing))
         }
@@ -473,10 +498,10 @@ spells:
 
         assert_eq!(
             (
-                attack.base_power,
-                attack.level_factor,
-                attack.magic_factor,
-                attack.spread
+                attack.power.base_power,
+                attack.power.level_factor,
+                attack.power.magic_factor,
+                attack.power.spread
             ),
             (40.0, 0.2, 1.4, 0.25)
         );
@@ -601,10 +626,10 @@ spells:
         assert!(matches!(healing.target, SpellTargetMode::Caster));
         assert_eq!(
             (
-                healing.base_power,
-                healing.level_factor,
-                healing.magic_factor,
-                healing.spread
+                healing.power.base_power,
+                healing.power.level_factor,
+                healing.power.magic_factor,
+                healing.power.spread
             ),
             (8.0, 0.2, 1.4, 0.0)
         );

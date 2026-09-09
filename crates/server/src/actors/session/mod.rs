@@ -383,11 +383,9 @@ impl SessionActor {
                 agent_key,
                 position,
             } => self.player_spawned(agent_key, position).await,
-            BroadcastMessage::MoveItemDenied { message, .. } => {
-                self.move_item_denied(message).await
-            }
+            BroadcastMessage::MoveItemDenied { message, .. } => self.deny(&message).await,
             BroadcastMessage::TileChanged { position } => self.tile_changed(position).await,
-            BroadcastMessage::UseItemDenied { message, .. } => self.use_item_denied(message).await,
+            BroadcastMessage::UseItemDenied { message, .. } => self.deny(&message).await,
             BroadcastMessage::OpenContainer { item, .. } => self.open_container(item).await,
             BroadcastMessage::ContainerUpdated { item } => self.update_container(item).await,
             BroadcastMessage::AgentWalkDenied { .. } => self.walk_denied().await,
@@ -470,6 +468,17 @@ impl SessionActor {
         Ok(())
     }
 
+    /// The one place a refusal reaches the player.
+    async fn deny(&self, text: &str) -> Result<()> {
+        self.connection
+            .send_message(ServerMessage::TextMessage {
+                text: text.to_owned(),
+                message_type: TextMessageType::ActionDenied,
+            })
+            .await?;
+        Ok(())
+    }
+
     async fn tick_schedules(&mut self) -> Result<()> {
         self.check_walk_queue().await?;
         self.check_capacity_changed().await?;
@@ -490,13 +499,7 @@ impl SessionActor {
     }
 
     async fn logout_denied(&self) -> Result<()> {
-        self.connection
-            .send_message(ServerMessage::TextMessage {
-                text: "You may not logout during an action.".to_string(),
-                message_type: TextMessageType::ActionDenied,
-            })
-            .await?;
-        Ok(())
+        self.deny("You may not logout during an action.").await
     }
 
     #[cfg(test)]

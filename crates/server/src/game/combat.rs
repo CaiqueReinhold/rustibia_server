@@ -14,21 +14,19 @@ use crate::{
         player::Player,
         position::{ItemPlacement, Position},
         skills::SkillType,
-        spells::{AreaOrigin, CastTarget, SpellAttack, SpellTargetMode},
+        spells::{CastTarget, SpellAttack, SpellTargetMode},
     },
     game::{
         Tick, TickCtx,
         config::{Color, GAME_CONFIG},
-        damage::{
-            apply_damage, get_creature_base_damage, get_player_base_damage, get_spell_base_damage,
-        },
+        damage::{apply_damage, get_creature_base_damage, get_player_base_damage},
         events::BroadcastMessage,
         item_movement::remove_item_at,
-        map_query::{can_target, can_throw},
+        map_query::can_throw,
         pathfinding::chebyshev,
         random::Rolls,
         skills::tick_skill,
-        spells::{SpellCastingDenyReason, consume_mana},
+        spells::{SpellCastingDenyReason, consume_mana, resolve_spell_targets, roll_power},
     },
 };
 
@@ -74,7 +72,7 @@ pub fn plan_auto_attack(
             }),
             WeaponType::Wand | WeaponType::Rod => {
                 let mana_cost = player.weapon_mana_cost();
-                if agent.mana().current <= mana_cost {
+                if !agent.mana().can_afford(mana_cost) {
                     return None;
                 }
                 AttackCost::Mana(mana_cost)
@@ -166,91 +164,55 @@ pub fn plan_spell_attack(
     spell: &SpellAttack,
     cast_target: &CastTarget,
 ) -> Result<AttackPlan, SpellCastingDenyReason> {
-    let agent = map
-        .get_agent(attacker)
-        .ok_or(SpellCastingDenyReason::InvalidState(
-            attacker,
-            "spell caster not found",
-        ))?;
-    let position = map
+    if matches!(spell.target, SpellTargetMode::Caster) {
+        return Err(SpellCastingDenyReason::InvalidTarget);
+    }
+
+    let from = map
         .agent_position(attacker)
         .ok_or(SpellCastingDenyReason::InvalidState(
             attacker,
             "spell caster not found",
+        ))?
+        .clone();
+    let player = map
+        .get_player(attacker)
+        .ok_or(SpellCastingDenyReason::InvalidState(
+            attacker,
+            "non player casting spell",
         ))?;
 
-    let (targets, missile, area) = match &spell.target {
-        SpellTargetMode::Target { range } => {
-            let target = agent
-                .target()
-                .ok_or(SpellCastingDenyReason::InvalidTarget)?;
-            let target_pos =
-                map.agent_position(target)
-                    .ok_or(SpellCastingDenyReason::InvalidState(
-                        target,
-                        "spell target not found",
-                    ))?;
+    let mut targets = resolve_spell_targets(map, attacker, &spell.target, cast_target)?;
+    targets.keys.retain(|key| attacker != *key);
 
-            if chebyshev(position, target_pos) > *range
-                || !can_throw(map, position, target_pos, true)
-            {
-                return Err(SpellCastingDenyReason::OutOfReach);
-            }
+    let missile = spell
+        .missile_id
+        .zip(targets.aim.clone())
+        .map(|(missile_id, to)| Missile {
+            missile_id,
+            from,
+            to,
+        });
+    let area_effect = targets
+        .delta
+        .zip(targets.aim)
+        .map(|(delta, origin)| AreaEffect {
+            effect_id: spell.effect_id,
+            origin,
+            delta,
+        });
 
-            (
-                Vec::from([target]),
-                spell.missile_id.map(|id| Missile {
-                    from: position.clone(),
-                    to: target_pos.clone(),
-                    missile_id: id,
-                }),
-                None,
-            )
-        }
-        SpellTargetMode::Area { origin, shape } => {
-            let origin = resolve_area_origin(map, origin, position, cast_target)
-                .ok_or(SpellCastingDenyReason::InvalidTarget)?;
-            let (mut agents, delta) = resolve_area(map, origin, shape.get_delta(agent.facing()));
-            agents.retain(|key| attacker != *key);
-            (
-                agents,
-                spell.missile_id.map(|missile_id| Missile {
-                    missile_id,
-                    from: position.clone(),
-                    to: origin.clone(),
-                }),
-                Some(AreaEffect {
-                    effect_id: spell.effect_id,
-                    origin: origin.clone(),
-                    delta,
-                }),
-            )
-        }
-        _ => return Err(SpellCastingDenyReason::InvalidTarget),
-    };
-
-    let base_damage = get_spell_base_damage(
-        agent
-            .get_player()
-            .ok_or(SpellCastingDenyReason::InvalidState(
-                attacker,
-                "non player casting spell",
-            ))?,
-        spell.base_power,
-        spell.level_factor,
-        spell.magic_factor,
-        spell.spread,
-        roll,
-    );
+    let value = roll_power(player, &spell.power, roll);
     let element = spell.element;
     let damage = targets
+        .keys
         .into_iter()
         .map(|target| {
             (
                 target,
                 CombatDamage {
                     element,
-                    value: base_damage,
+                    value,
                     blocked_shield: false,
                     blocked_armor: false,
                 },
@@ -264,53 +226,9 @@ pub fn plan_spell_attack(
         cost: AttackCost::None,
         trains: None,
         missile,
-        area_effect: area,
+        area_effect,
         missed: false,
     })
-}
-
-pub fn resolve_area_origin<'a>(
-    map: &'a GameMap,
-    origin: &'a AreaOrigin,
-    caster_pos: &'a Position,
-    cast_target: &'a CastTarget,
-) -> Option<&'a Position> {
-    match origin {
-        AreaOrigin::Caster => Some(caster_pos),
-        AreaOrigin::Target => match cast_target {
-            CastTarget::Agent(key) => map
-                .agent_position(*key)
-                .filter(|pos| can_target(caster_pos, pos) && can_throw(map, caster_pos, pos, true)),
-            CastTarget::Position(pos) => Some(pos),
-            CastTarget::None => None,
-        },
-    }
-}
-
-pub fn resolve_area(
-    map: &GameMap,
-    origin: &Position,
-    shape: &[(i8, i8)],
-) -> (Vec<AgentKey>, Vec<(i8, i8)>) {
-    let affected_area: Vec<((i8, i8), Position)> = shape
-        .iter()
-        .flat_map(|(dx, dy)| {
-            origin
-                .checked_offset(*dx as i32, *dy as i32)
-                .map(|pos| ((*dx, *dy), pos))
-        })
-        .filter(|(_, pos)| can_throw(map, origin, pos, true))
-        .collect();
-
-    (
-        affected_area
-            .iter()
-            .flat_map(|(_, pos)| map.iter_agents_at(pos).ok())
-            .flatten()
-            .copied()
-            .collect(),
-        affected_area.into_iter().map(|(delta, _)| delta).collect(),
-    )
 }
 
 pub fn execute_attack(ctx: &mut TickCtx, plan: AttackPlan) {
@@ -891,6 +809,35 @@ mod tests {
     fn a_wand_without_mana_plans_nothing() {
         let mut snapshot = armed(Some(a_wand(500)), None);
         snapshot.mana.current = 10;
+        let (map, attacker, _) = duel(
+            Agent::from_player(snapshot),
+            a_test_creature("Rat", 10, (1, 2)),
+        );
+        let mut roll = Rolls::new(1);
+
+        assert!(plan_auto_attack(&map, attacker, &mut roll, Tick(0)).is_none());
+    }
+
+    #[test]
+    fn a_wand_with_exactly_its_mana_cost_still_fires() {
+        let mut snapshot = armed(Some(a_wand(20)), None);
+        snapshot.mana.current = 20;
+        let (map, attacker, _) = duel(
+            Agent::from_player(snapshot),
+            a_test_creature("Rat", 10, (1, 2)),
+        );
+        let mut roll = Rolls::new(1);
+
+        let plan = plan_auto_attack(&map, attacker, &mut roll, Tick(0))
+            .expect("exactly enough mana must fire");
+
+        assert!(matches!(plan.cost, AttackCost::Mana(20)));
+    }
+
+    #[test]
+    fn a_wand_one_short_of_its_mana_cost_plans_nothing() {
+        let mut snapshot = armed(Some(a_wand(20)), None);
+        snapshot.mana.current = 19;
         let (map, attacker, _) = duel(
             Agent::from_player(snapshot),
             a_test_creature("Rat", 10, (1, 2)),

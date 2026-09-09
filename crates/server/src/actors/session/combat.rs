@@ -13,7 +13,7 @@ use crate::{
         spells::{CastTarget, SpellId, SpellTarget},
     },
     game::{combat::get_damage_visuals, config::GAME_CONFIG, spells::SpellCastingDenyReason},
-    messages::{FloatingTextType, ServerMessage, TextMessageType},
+    messages::{FloatingTextType, ServerMessage},
     persistence::spells::SPELLS,
 };
 
@@ -43,13 +43,7 @@ impl SessionActor {
             SpellTarget::None => CastTarget::None,
             SpellTarget::Agent(agent_id) => {
                 let Some(key) = self.agents.get_global(agent_id) else {
-                    self.connection
-                        .send_message(ServerMessage::TextMessage {
-                            text: "Invalid target".to_owned(),
-                            message_type: TextMessageType::ActionDenied,
-                        })
-                        .await?;
-                    return Ok(());
+                    return self.deny("Invalid target").await;
                 };
                 CastTarget::Agent(*key)
             }
@@ -100,29 +94,7 @@ impl SessionActor {
                 .await?;
         }
 
-        let map = self.shared_map.load();
-        let Some(agent_id) = self.agents.get_local(&agent_key) else {
-            return Ok(());
-        };
-        let Some(agent) = map.get_agent(agent_key) else {
-            // agent died and got removed, no need to send life update
-            return Ok(());
-        };
-        let (current, max) = if agent_key == self.player_key {
-            (agent.life().current, agent.life().maximum)
-        } else {
-            (agent.life().to_wire(), 100)
-        };
-
-        self.connection
-            .send_message(ServerMessage::AgentLifeChanged {
-                agent_id,
-                current,
-                max,
-            })
-            .await?;
-
-        Ok(())
+        self.life_updated(agent_key).await
     }
 
     pub(super) async fn potion_drunk(&self, target: AgentKey, position: Position) -> Result<()> {
@@ -245,12 +217,7 @@ impl SessionActor {
             .await?;
 
         if self.player_key == agent_key {
-            self.connection
-                .send_message(ServerMessage::TextMessage {
-                    text: reason.to_string(),
-                    message_type: TextMessageType::ActionDenied,
-                })
-                .await?;
+            self.deny(&reason.to_string()).await?;
         }
         Ok(())
     }
@@ -263,6 +230,7 @@ mod tests {
     use crate::actors::session::test_support::seat_player;
     use crate::entities::combat::CombatElement;
     use crate::entities::map::GameMap;
+    use crate::messages::TextMessageType;
 
     /// The killing blow. `game::damage::apply_damage` reaps its target inside the
     /// tick that produced this message, so the agent is already gone from the

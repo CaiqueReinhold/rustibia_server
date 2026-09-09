@@ -12,7 +12,6 @@ use crate::entities::chat::SayTarget;
 use crate::game::config::GAME_CONFIG;
 use crate::messages::FloatingTextType;
 use crate::messages::ServerMessage;
-use crate::messages::TextMessageType;
 
 impl SessionActor {
     fn agent_name(&self, agent_key: AgentKey) -> Option<String> {
@@ -26,16 +25,6 @@ impl SessionActor {
         map.iter_agents()
             .find(|(_, agent)| !agent.is_creature() && agent.name().eq_ignore_ascii_case(name))
             .map(|(key, _)| key)
-    }
-
-    pub(super) async fn deny(&self, text: &str) -> Result<()> {
-        self.connection
-            .send_message(ServerMessage::TextMessage {
-                text: text.to_owned(),
-                message_type: TextMessageType::ActionDenied,
-            })
-            .await?;
-        Ok(())
     }
 
     pub(super) async fn send_chat(
@@ -191,6 +180,7 @@ mod tests {
     use crate::actors::session::test_support::seat_player;
     use crate::entities::map::GameMap;
     use crate::entities::position::Position;
+    use crate::messages::TextMessageType;
     use crate::game::Tick;
 
     /// The wire names an author by the character name both sides already know, so

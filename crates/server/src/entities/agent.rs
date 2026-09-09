@@ -81,6 +81,10 @@ impl Pool {
         self.maximum - self.current
     }
 
+    pub fn can_afford(&self, cost: u32) -> bool {
+        self.current >= cost
+    }
+
     pub fn remove(&mut self, amount: u32) {
         self.current = self.current.saturating_sub(amount)
     }
@@ -494,6 +498,29 @@ mod tests {
             },
             inventory: HashMap::new(),
         }
+    }
+
+    #[test]
+    fn a_pool_can_afford_exactly_what_it_holds_and_no_more() {
+        let pool = Pool {
+            current: 20,
+            maximum: 100,
+        };
+
+        assert!(pool.can_afford(19));
+        assert!(pool.can_afford(20));
+        assert!(!pool.can_afford(21));
+    }
+
+    #[test]
+    fn an_empty_pool_affords_only_a_free_cost() {
+        let pool = Pool {
+            current: 0,
+            maximum: 100,
+        };
+
+        assert!(pool.can_afford(0));
+        assert!(!pool.can_afford(1));
     }
 
     #[test]

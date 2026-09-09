@@ -1,25 +1,17 @@
-use tracing::error;
-
 use crate::{
     entities::{
         agent::AgentKey,
-        combat::AttackCost,
         effects::AreaEffect,
         healing::{HealPlan, Restore, RestoreType},
         map::GameMap,
-        spells::{CastTarget, SpellHealing, SpellTargetMode},
+        spells::{CastTarget, SpellHealing},
     },
     game::{
         TickCtx,
-        combat::{resolve_area, resolve_area_origin},
         config::GAME_CONFIG,
-        damage::get_spell_base_damage,
         events::BroadcastMessage,
-        item_movement::remove_item_at,
-        map_query::can_throw,
-        pathfinding::chebyshev,
         random::Rolls,
-        spells::{SpellCastingDenyReason, consume_mana},
+        spells::{SpellCastingDenyReason, resolve_spell_targets, roll_power},
     },
 };
 
@@ -30,78 +22,36 @@ pub fn plan_healing_spell(
     spell: &SpellHealing,
     cast_target: &CastTarget,
 ) -> Result<HealPlan, SpellCastingDenyReason> {
-    let agent = map
-        .get_agent(caster)
+    let player = map
+        .get_player(caster)
         .ok_or(SpellCastingDenyReason::InvalidState(
             caster,
-            "spell caster not found",
-        ))?;
-    let position = map
-        .agent_position(caster)
-        .ok_or(SpellCastingDenyReason::InvalidState(
-            caster,
-            "spell caster not found",
+            "non player casting spell",
         ))?;
 
-    let (targets, area_effect) = match &spell.target {
-        SpellTargetMode::Caster => ([caster].to_vec(), None),
-        SpellTargetMode::Target { range } => {
-            let target = agent
-                .target()
-                .ok_or(SpellCastingDenyReason::InvalidTarget)?;
-            let target_pos =
-                map.agent_position(target)
-                    .ok_or(SpellCastingDenyReason::InvalidState(
-                        target,
-                        "spell target not found",
-                    ))?;
+    let targets = resolve_spell_targets(map, caster, &spell.target, cast_target)?;
 
-            if chebyshev(position, target_pos) > *range
-                || !can_throw(map, position, target_pos, true)
-            {
-                return Err(SpellCastingDenyReason::OutOfReach);
-            }
+    let area_effect = targets
+        .delta
+        .zip(targets.aim)
+        .map(|(delta, origin)| AreaEffect {
+            effect_id: GAME_CONFIG.effect_ids.healing_spell,
+            origin,
+            delta,
+        });
 
-            ([target].to_vec(), None)
-        }
-        SpellTargetMode::Area { origin, shape } => {
-            let origin = resolve_area_origin(map, origin, position, cast_target)
-                .ok_or(SpellCastingDenyReason::InvalidTarget)?;
-            let (agents, delta) = resolve_area(map, origin, shape.get_delta(agent.facing()));
-            (
-                agents,
-                Some(AreaEffect {
-                    effect_id: GAME_CONFIG.effect_ids.healing_spell,
-                    origin: origin.clone(),
-                    delta,
-                }),
-            )
-        }
-    };
-
-    let heal_value = get_spell_base_damage(
-        map.get_player(caster)
-            .ok_or(SpellCastingDenyReason::InvalidState(
-                caster,
-                "non player caster",
-            ))?,
-        spell.base_power,
-        spell.level_factor,
-        spell.magic_factor,
-        spell.spread,
-        roll,
-    );
+    let life = roll_power(player, &spell.power, roll);
 
     Ok(HealPlan {
         caster,
-        cost: AttackCost::None,
         restores: targets
+            .keys
             .into_iter()
             .map(|target| {
                 (
                     target,
                     Restore {
-                        life: Some(heal_value),
+                        life: Some(life),
                         mana: None,
                     },
                 )
@@ -112,20 +62,6 @@ pub fn plan_healing_spell(
 }
 
 pub fn execute_healing(ctx: &mut TickCtx, plan: HealPlan) {
-    match plan.cost {
-        AttackCost::Item(item) => {
-            if let Err(e) = remove_item_at(ctx, &item, 1) {
-                error!("Failed to consume item({:?}) on attack: {}", item, e);
-            };
-        }
-        AttackCost::Mana(mana_cost) => {
-            if let Some(agent) = ctx.map.get_agent_mut(plan.caster) {
-                consume_mana(plan.caster, agent, mana_cost, ctx.events);
-            }
-        }
-        AttackCost::None => {}
-    }
-
     if let Some(area) = plan.area_effect {
         ctx.events
             .push(BroadcastMessage::AreaEffectAppeared { area_effect: area });

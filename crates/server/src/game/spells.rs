@@ -3,15 +3,23 @@ use thiserror::Error;
 use crate::{
     entities::{
         agent::{Agent, AgentKey},
+        map::GameMap,
         player::Player,
+        position::Position,
         skills::SkillType,
-        spells::{CastTarget, Spell, SpellAttack, SpellEffect, SpellGroup, SpellHealing, SpellId},
+        spells::{
+            AreaOrigin, CastTarget, PowerCurve, Spell, SpellAttack, SpellEffect, SpellGroup,
+            SpellHealing, SpellId, SpellTargetMode,
+        },
     },
     game::{
         Tick, TickCtx,
         combat::{execute_attack, plan_spell_attack},
         events::BroadcastMessage,
         healing::{execute_healing, plan_healing_spell},
+        map_query::{can_target, can_throw},
+        pathfinding::chebyshev,
+        random::Rolls,
         skills::tick_skill,
     },
     persistence::spells::SPELLS,
@@ -64,7 +72,7 @@ pub fn cast_spell(ctx: &mut TickCtx, agent_key: AgentKey, spell_id: SpellId, tar
         return;
     }
 
-    if agent.mana().current < spell.mana {
+    if !agent.mana().can_afford(spell.mana) {
         ctx.events.push(BroadcastMessage::SpellDenied {
             agent_key,
             position,
@@ -97,6 +105,131 @@ pub fn cast_spell(ctx: &mut TickCtx, agent_key: AgentKey, spell_id: SpellId, tar
             spell_id,
         });
     }
+}
+
+pub struct SpellTargets {
+    /// Includes the caster when an area covers it; a planner that must not hit its own
+    /// caster filters this itself.
+    pub keys: Vec<AgentKey>,
+    /// The single target's tile, or an area's centre. `None` for a cast on the caster.
+    pub aim: Option<Position>,
+    pub delta: Option<Vec<(i8, i8)>>,
+}
+
+pub fn resolve_spell_targets(
+    map: &GameMap,
+    caster: AgentKey,
+    mode: &SpellTargetMode,
+    cast_target: &CastTarget,
+) -> Result<SpellTargets, SpellCastingDenyReason> {
+    let agent = map
+        .get_agent(caster)
+        .ok_or(SpellCastingDenyReason::InvalidState(
+            caster,
+            "spell caster not found",
+        ))?;
+    let position = map
+        .agent_position(caster)
+        .ok_or(SpellCastingDenyReason::InvalidState(
+            caster,
+            "spell caster not found",
+        ))?;
+
+    match mode {
+        SpellTargetMode::Caster => Ok(SpellTargets {
+            keys: Vec::from([caster]),
+            aim: None,
+            delta: None,
+        }),
+        SpellTargetMode::Target { range } => {
+            let target = agent
+                .target()
+                .ok_or(SpellCastingDenyReason::InvalidTarget)?;
+            let target_pos =
+                map.agent_position(target)
+                    .ok_or(SpellCastingDenyReason::InvalidState(
+                        target,
+                        "spell target not found",
+                    ))?;
+
+            if chebyshev(position, target_pos) > *range
+                || !can_throw(map, position, target_pos, true)
+            {
+                return Err(SpellCastingDenyReason::OutOfReach);
+            }
+
+            Ok(SpellTargets {
+                keys: Vec::from([target]),
+                aim: Some(target_pos.clone()),
+                delta: None,
+            })
+        }
+        SpellTargetMode::Area { origin, shape } => {
+            let origin = resolve_area_origin(map, origin, position, cast_target)
+                .ok_or(SpellCastingDenyReason::InvalidTarget)?;
+            let (keys, delta) = resolve_area(map, origin, shape.get_delta(agent.facing()));
+            Ok(SpellTargets {
+                keys,
+                aim: Some(origin.clone()),
+                delta: Some(delta),
+            })
+        }
+    }
+}
+
+/// The curve's centre scaled by the caster's level and magic level, rolled across its spread.
+pub fn roll_power(player: &Player, curve: &PowerCurve, roll: &mut Rolls) -> u32 {
+    let center = curve.base_power
+        * (1.0
+            + (f32::from(player.level()) * curve.level_factor / 100.0)
+            + (f32::from(player.skill_magic()) * curve.magic_factor / 100.0));
+    let min = (center * (1.0 - curve.spread)).max(0.0).round() as u32;
+    let max = (center * (1.0 + curve.spread)).round() as u32;
+    roll.damage_roll(min, max)
+}
+
+fn resolve_area_origin<'a>(
+    map: &'a GameMap,
+    origin: &'a AreaOrigin,
+    caster_pos: &'a Position,
+    cast_target: &'a CastTarget,
+) -> Option<&'a Position> {
+    match origin {
+        AreaOrigin::Caster => Some(caster_pos),
+        AreaOrigin::Target => match cast_target {
+            CastTarget::Agent(key) => map
+                .agent_position(*key)
+                .filter(|pos| can_target(caster_pos, pos) && can_throw(map, caster_pos, pos, true)),
+            CastTarget::Position(pos) => Some(pos),
+            CastTarget::None => None,
+        },
+    }
+}
+
+fn resolve_area(
+    map: &GameMap,
+    origin: &Position,
+    shape: &[(i8, i8)],
+) -> (Vec<AgentKey>, Vec<(i8, i8)>) {
+    let affected_area: Vec<((i8, i8), Position)> = shape
+        .iter()
+        .flat_map(|(dx, dy)| {
+            origin
+                .checked_offset(*dx as i32, *dy as i32)
+                .map(|pos| ((*dx, *dy), pos))
+        })
+        .filter(|(_, pos)| can_throw(map, origin, pos, true))
+        .collect();
+
+    (
+        affected_area
+            .iter()
+            .flat_map(|(_, pos)| map.iter_agents_at(pos).ok())
+            .flatten()
+            .copied()
+            .collect(),
+        affected_area.into_iter().map(|(delta, _)| delta).collect(),
+    )
 }
 
 pub fn consume_mana(

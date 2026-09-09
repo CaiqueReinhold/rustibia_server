@@ -96,23 +96,6 @@ pub fn get_creature_base_damage(creature: &CreatureKind, roll: &mut Rolls) -> (C
     )
 }
 
-pub fn get_spell_base_damage(
-    player: &Player,
-    base_power: f32,
-    level_factor: f32,
-    magic_factor: f32,
-    spread: f32,
-    roll: &mut Rolls,
-) -> u32 {
-    let center = base_power
-        * (1.0
-            + (f32::from(player.level()) * level_factor / 100.0)
-            + (f32::from(player.skill_magic()) * magic_factor / 100.0));
-    let min = (center * (1.0 - spread)).max(0.0).round() as u32;
-    let max = (center * (1.0 + spread)).round() as u32;
-    roll.damage_roll(min, max)
-}
-
 fn get_max_damage(attack_value: u16, level: u16, skill_value: u16) -> u32 {
     (((level as f32) / 5.5) + (((skill_value as f32) / 3.5) * ((attack_value as f32) / 3.0)))
         .round() as u32

@@ -9,9 +9,9 @@ use crate::{
         inventory::InventorySlot,
         items::{Item, ItemFlag, ItemGuid, ItemId, ItemRef},
         map::{GameMap, MapError, RemovedItem},
-        position::ItemPlacement,
+        position::{ItemPlacement, Rect},
     },
-    game::map_query::find_item_in_placement,
+    game::map_query::{can_throw, find_item_in_placement},
 };
 
 use super::TickCtx;
@@ -171,31 +171,26 @@ pub fn move_item(
         return;
     }
 
+    let item = find_item_in_placement(ctx.map, &source);
+
     // Validate source item: Unmove flag and stack amount.
+    if let Some(item) = item
+        && (item.config.has_flag(ItemFlag::Unmove) || item.amount < amount)
     {
-        let item = match &source.placement {
-            ItemPlacement::Map(pos) => ctx.map.get_item_by_id(pos, &source.guid),
-            ItemPlacement::Inventory(slot, _) => ctx
-                .map
-                .get_player(agent)
-                .and_then(|p| p.inventory().get(slot))
-                .and_then(|it| it.find_by_guid(&source.guid)),
-        };
-        if let Some(item) = item
-            && (item.config.has_flag(ItemFlag::Unmove) || item.amount < amount)
-        {
-            ctx.events.push(BroadcastMessage::MoveItemDenied {
-                agent_key: agent,
-                message: "Can't move this".to_string(),
-            });
-            return;
-        }
+        ctx.events.push(BroadcastMessage::MoveItemDenied {
+            agent_key: agent,
+            message: "Can't move this".to_string(),
+        });
+        return;
     }
 
     // Validate target placement.
     match (&to, target_container.as_ref()) {
         (ItemPlacement::Map(pos), None) => {
-            if !ctx.map.can_drop_item(pos) || !player_pos.in_viewport(pos) {
+            if !ctx.map.can_drop_item(pos)
+                || !Rect::player_viewport(player_pos).contains(pos)
+                || !can_throw(ctx.map, player_pos, pos, false)
+            {
                 ctx.events.push(BroadcastMessage::MoveItemDenied {
                     agent_key: agent,
                     message: "Can't drop here".to_string(),
@@ -204,14 +199,6 @@ pub fn move_item(
             }
         }
         (ItemPlacement::Inventory(target_slot, _), None) => {
-            let item = match &source.placement {
-                ItemPlacement::Map(pos) => ctx.map.get_item_by_id(pos, &source.guid),
-                ItemPlacement::Inventory(slot, _) => ctx
-                    .map
-                    .get_player(agent)
-                    .and_then(|p| p.inventory().get(slot))
-                    .and_then(|it| it.find_by_guid(&source.guid)),
-            };
             let compatible = item
                 .and_then(|it| it.get_slot())
                 .map(|item_slot| {
@@ -229,14 +216,6 @@ pub fn move_item(
             }
         }
         (placement, Some(container_guid)) => {
-            let item = match &source.placement {
-                ItemPlacement::Map(pos) => ctx.map.get_item_by_id(pos, &source.guid),
-                ItemPlacement::Inventory(slot, _) => ctx
-                    .map
-                    .get_player(agent)
-                    .and_then(|p| p.inventory().get(slot))
-                    .and_then(|it| it.find_by_guid(&source.guid)),
-            };
             let take_ok = item
                 .map(|it| it.config.has_flag(ItemFlag::Take))
                 .unwrap_or(false);
@@ -692,6 +671,69 @@ mod tests {
             .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &here)
             .unwrap();
         (map, agent, source, target, guid)
+    }
+
+    fn a_wall_tile() -> MapTile {
+        let mut tile = MapTile::new();
+        tile.push_item(Item::new(
+            Arc::new(ItemConfig::new(
+                ItemId(2),
+                "wall".to_string(),
+                None,
+                None,
+                HashSet::from([ItemFlag::Ground, ItemFlag::FullBank, ItemFlag::Unpass]),
+                HashSet::new(),
+            )),
+            1,
+        ));
+        tile
+    }
+
+    fn drop_onto(map: &mut GameMap, agent: AgentKey, source: Position, guid: ItemGuid, to: Position) -> Vec<BroadcastMessage> {
+        let mut h = TestHarness::new();
+        move_item(
+            &mut h.ctx(map),
+            agent,
+            ItemRef {
+                guid,
+                placement: ItemPlacement::Map(source),
+            },
+            1,
+            ItemPlacement::Map(to),
+            None,
+        );
+        h.events
+    }
+
+    #[test]
+    fn a_drop_onto_another_floor_is_allowed_when_the_throw_is_clear() {
+        let (mut map, agent, source, _, guid) = a_player_beside(a_movable_item(100));
+        let above = Position::new(11, 10, 6);
+        map.insert_tile(above.clone(), a_ground_tile());
+
+        let events = drop_onto(&mut map, agent, source, guid.clone(), above.clone());
+
+        assert!(map.get_item_by_id(&above, &guid).is_some(), "{events:?}");
+    }
+
+    #[test]
+    fn a_drop_through_a_wall_is_refused() {
+        // (11,10) holds the source item, so the wall goes further along the same row and the
+        // drop reaches past it.
+        let (mut map, agent, source, _, guid) = a_player_beside(a_movable_item(100));
+        let target = Position::new(14, 10, 7);
+        map.insert_tile(Position::new(13, 10, 7), a_wall_tile());
+        map.insert_tile(target.clone(), a_ground_tile());
+
+        let events = drop_onto(&mut map, agent, source, guid.clone(), target.clone());
+
+        assert!(map.get_item_by_id(&target, &guid).is_none());
+        assert!(
+            events
+                .iter()
+                .any(|e| matches!(e, BroadcastMessage::MoveItemDenied { .. })),
+            "{events:?}"
+        );
     }
 
     #[test]

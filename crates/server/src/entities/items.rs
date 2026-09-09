@@ -1,7 +1,6 @@
 use std::{collections::HashSet, fmt::Display, sync::Arc};
 
 use strum::{EnumCount, EnumIter};
-use uuid::Uuid;
 
 use crate::{
     entities::{
@@ -366,7 +365,7 @@ impl Item {
         let item_id = config.id;
         Item {
             config,
-            guid: ItemGuid(Uuid::now_v7().to_string()),
+            guid: ItemGuid::new(),
             item_id,
             amount,
             fluid: None,
@@ -378,7 +377,7 @@ impl Item {
         let item_id = config.id;
         Item {
             config,
-            guid: ItemGuid(Uuid::now_v7().to_string()),
+            guid: ItemGuid::new(),
             item_id,
             amount: 1,
             fluid: Some(fluid),
@@ -447,6 +446,48 @@ impl Item {
             .iter_mut()
             .find_map(|i| i.find_by_guid_mut(guid))
     }
+
+    /// Splits `amount` off this stack into a new item with its own guid. The caller must have
+    /// established `amount < self.amount`.
+    pub fn split_off(&mut self, amount: u8) -> Item {
+        self.amount -= amount;
+        Item {
+            guid: ItemGuid::new(),
+            config: self.config.clone(),
+            item_id: self.item_id,
+            amount,
+            fluid: None,
+            content: None,
+        }
+    }
+
+    /// Removes `amount` of `guid` from somewhere inside this container, reporting the removed
+    /// item and the container it came out of. `None` when this item does not hold `guid`, or
+    /// holds fewer than `amount` of it.
+    pub fn remove_nested(
+        &mut self,
+        guid: &ItemGuid,
+        amount: u8,
+    ) -> Option<(Item, (ItemGuid, usize))> {
+        let content = self.content.as_mut()?;
+
+        if let Some(idx) = content.iter().position(|i| i.guid == *guid) {
+            let held = content[idx].amount;
+            return match held.cmp(&amount) {
+                std::cmp::Ordering::Greater => {
+                    Some((content[idx].split_off(amount), (self.guid.clone(), idx)))
+                }
+                std::cmp::Ordering::Equal => {
+                    Some((content.remove(idx), (self.guid.clone(), idx)))
+                }
+                std::cmp::Ordering::Less => None,
+            };
+        }
+
+        content
+            .iter_mut()
+            .find_map(|item| item.remove_nested(guid, amount))
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -488,7 +529,38 @@ pub enum ItemMultiAction {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashSet;
     use strum::IntoEnumIterator;
+
+    fn a_stack(amount: u8) -> Item {
+        Item::new(
+            Arc::new(ItemConfig::new(
+                ItemId(3031),
+                "gold coin".to_string(),
+                None,
+                None,
+                HashSet::from([ItemFlag::Cumulative, ItemFlag::Take]),
+                HashSet::new(),
+            )),
+            amount,
+        )
+    }
+
+    /// A split that kept the source guid would leave two items answering to one identity, and
+    /// every later lookup by guid could reach either.
+    #[test]
+    fn a_split_stack_gets_an_identity_of_its_own() {
+        let mut stack = a_stack(50);
+        let original = stack.guid.clone();
+
+        let taken = stack.split_off(20);
+
+        assert_eq!(taken.amount, 20);
+        assert_eq!(stack.amount, 30);
+        assert_ne!(taken.guid, original);
+        assert_eq!(stack.guid, original);
+        assert_eq!(taken.item_id, stack.item_id);
+    }
 
     /// The client repeats this enum with the same discriminants, and nothing
     /// links the two -- they are separate repositories. This literal is the pin:

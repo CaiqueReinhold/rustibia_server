@@ -4,7 +4,6 @@ use tracing::{error, warn};
 use crate::{
     entities::{
         agent::AgentKey,
-        combat::AttackCost,
         healing::{HealPlan, Restore},
         items::{Bounds, Item, ItemFlag, ItemId, ItemMultiAction, ItemRef},
         map::GameMap,
@@ -275,7 +274,6 @@ fn potion(
     let mana = mana.map(|b| ctx.roll.uniform(b.min, b.max));
     let plan = HealPlan {
         caster: agent_key,
-        cost: AttackCost::None,
         restores: SmallVec::from([(target, Restore { life, mana })]),
         area_effect: None,
     };

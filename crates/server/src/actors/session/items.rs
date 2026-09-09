@@ -9,11 +9,12 @@ use crate::actors::world::WorldCommand;
 use crate::entities::agent::{AgentId, AgentKey};
 use crate::entities::inventory::InventorySlot;
 use crate::entities::items::{ClientItemRef, ContainerId, ItemFlag, ItemId, ItemRef};
-use crate::entities::position::{ItemPlacement, Position};
+use crate::entities::position::{ItemPlacement, Position, Rect};
 use crate::game::description::get_look_description;
 use crate::game::item_multi_action::UseTarget;
 use crate::game::map_query::{
-    find_item_in_reach, find_item_in_slot, find_parent_container, get_tile, retrieve_item,
+    find_item_in_reach, find_item_in_slot, find_parent_container, get_tile, iter_visible_floors,
+    retrieve_item,
 };
 use crate::messages::ServerMessage;
 use crate::messages::TextMessageType;
@@ -184,28 +185,6 @@ impl SessionActor {
         Ok(())
     }
 
-    pub(super) async fn move_item_denied(&self, message: String) -> Result<()> {
-        self.connection
-            .send_message(ServerMessage::TextMessage {
-                text: message,
-                message_type: TextMessageType::ActionDenied,
-            })
-            .await?;
-
-        Ok(())
-    }
-
-    pub(super) async fn use_item_denied(&self, message: String) -> Result<()> {
-        self.connection
-            .send_message(ServerMessage::TextMessage {
-                text: message,
-                message_type: TextMessageType::ActionDenied,
-            })
-            .await?;
-
-        Ok(())
-    }
-
     pub(super) async fn open_container(&mut self, item_ref: ItemRef) -> Result<()> {
         let map = self.shared_map.load();
         let item = match &item_ref.placement {
@@ -344,7 +323,9 @@ impl SessionActor {
             .agent_position(self.player_key)
             .ok_or(SessionError::NotSpawned)?;
 
-        if player_pos.in_viewport(&position) {
+        if Rect::player_viewport(player_pos).contains(&position)
+            && iter_visible_floors(player_pos.z).any(|z| z == position.z)
+        {
             let tile = get_tile(&map, &position);
             self.connection
                 .send_message(ServerMessage::TileChanged {
@@ -370,5 +351,66 @@ impl SessionActor {
             self.prev_capacity = player.capacity_available();
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::actors::connection::ConnectionCommand;
+    use crate::actors::session::test_support::seat_player;
+    use crate::entities::map::{GameMap, MapTile};
+
+    async fn forwarded_tiles(player_at: Position, changed: Position) -> Vec<Position> {
+        let mut map = GameMap::new();
+        let me = seat_player(&mut map, &player_at, 1);
+        map.insert_tile(changed.clone(), MapTile::new());
+        let (mut session, mut connection_rx, _world_rx, _tick_tx) = SessionActor::for_test(me, map);
+
+        session.tile_changed(changed).await.unwrap();
+
+        std::iter::from_fn(|| connection_rx.try_recv().ok())
+            .filter_map(|c| match c {
+                ConnectionCommand::SendPlayerMessage(ServerMessage::TileChanged {
+                    position,
+                    ..
+                }) => Some(position),
+                _ => None,
+            })
+            .collect()
+    }
+
+    #[tokio::test]
+    async fn a_tile_change_on_the_players_own_floor_is_forwarded() {
+        let changed = Position::new(101, 100, 7);
+
+        let sent = forwarded_tiles(Position::new(100, 100, 7), changed.clone()).await;
+
+        assert_eq!(sent, vec![changed]);
+    }
+
+    /// A player on the surface sees the whole stack above them, so a floor nearer the sky
+    /// is still theirs to draw.
+    #[tokio::test]
+    async fn a_tile_change_on_another_visible_floor_is_forwarded() {
+        let changed = Position::new(101, 100, 5);
+
+        let sent = forwarded_tiles(Position::new(100, 100, 7), changed.clone()).await;
+
+        assert_eq!(sent, vec![changed]);
+    }
+
+    #[tokio::test]
+    async fn a_tile_change_on_a_floor_the_player_cannot_see_is_dropped() {
+        let sent = forwarded_tiles(Position::new(100, 100, 7), Position::new(101, 100, 10)).await;
+
+        assert!(sent.is_empty(), "{sent:?}");
+    }
+
+    #[tokio::test]
+    async fn a_tile_change_outside_the_viewport_is_dropped() {
+        let sent = forwarded_tiles(Position::new(100, 100, 7), Position::new(140, 100, 7)).await;
+
+        assert!(sent.is_empty(), "{sent:?}");
     }
 }

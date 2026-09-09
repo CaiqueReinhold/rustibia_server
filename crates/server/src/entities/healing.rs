@@ -1,10 +1,9 @@
 use smallvec::SmallVec;
 
-use crate::entities::{agent::AgentKey, combat::AttackCost, effects::AreaEffect};
+use crate::entities::{agent::AgentKey, effects::AreaEffect};
 
 pub struct HealPlan {
     pub caster: AgentKey,
-    pub cost: AttackCost,
     pub restores: SmallVec<[(AgentKey, Restore); 1]>,
     pub area_effect: Option<AreaEffect>,
 }

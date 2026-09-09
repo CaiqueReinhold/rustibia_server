@@ -151,15 +151,7 @@ impl Inventory {
         let slot_item = self.slots.get_mut(&slot)?;
         if slot_item.guid == *guid {
             if slot_item.amount > amount {
-                slot_item.amount -= amount;
-                let partial = Item {
-                    guid: ItemGuid::new(),
-                    config: slot_item.config.clone(),
-                    item_id: slot_item.item_id,
-                    amount,
-                    fluid: None,
-                    content: None,
-                };
+                let partial = slot_item.split_off(amount);
                 self.carried_weight -= partial.total_weight();
                 return Some((partial, None));
             } else if slot_item.amount == amount {
@@ -170,15 +162,10 @@ impl Inventory {
             }
             return None;
         }
-        // Item is nested in a container within the slot
-        if let Some(content) = &mut slot_item.content {
-            let result = remove_from_container(&slot_item.guid.clone(), content, guid, amount);
-            if let Some((ref removed, _)) = result {
-                self.carried_weight -= removed.total_weight();
-            }
-            return result;
-        }
-        None
+
+        let (removed, parent) = slot_item.remove_nested(guid, amount)?;
+        self.carried_weight -= removed.total_weight();
+        Some((removed, Some(parent)))
     }
 
     /// Remove whatever item is currently in `slot`, regardless of guid.
@@ -258,45 +245,6 @@ fn find_available_container(item: &Item) -> Option<&ItemGuid> {
     for child in item.content.as_ref()? {
         if let Some(guid) = find_available_container(child) {
             return Some(guid);
-        }
-    }
-    None
-}
-
-fn remove_from_container(
-    parent_guid: &ItemGuid,
-    items: &mut Vec<Item>,
-    guid: &ItemGuid,
-    amount: u8,
-) -> Option<(Item, Option<(ItemGuid, usize)>)> {
-    if let Some(idx) = items.iter().position(|i| i.guid == *guid) {
-        let current_amount = items[idx].amount;
-        if current_amount > amount {
-            let item = &mut items[idx];
-            item.amount -= amount;
-            return Some((
-                Item {
-                    guid: ItemGuid::new(),
-                    config: item.config.clone(),
-                    item_id: item.item_id,
-                    amount,
-                    fluid: None,
-                    content: None,
-                },
-                Some((parent_guid.clone(), idx)),
-            ));
-        } else if current_amount == amount {
-            return Some((items.remove(idx), Some((parent_guid.clone(), idx))));
-        }
-        return None;
-    }
-
-    for item in items.iter_mut() {
-        if let Some(content) = &mut item.content {
-            let found = remove_from_container(&item.guid, content, guid, amount);
-            if found.is_some() {
-                return found;
-            }
         }
     }
     None

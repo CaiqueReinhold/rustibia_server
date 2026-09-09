@@ -58,14 +58,21 @@ pub struct Spell {
     pub effects: Vec<SpellEffect>,
 }
 
+/// `level_factor` and `magic_factor` are percentages of `base_power`; `spread` is the
+/// fraction either side of the centre the roll spans.
 #[derive(Debug)]
-pub struct SpellAttack {
-    pub target: SpellTargetMode,
-    pub element: CombatElement,
+pub struct PowerCurve {
     pub base_power: f32,
     pub level_factor: f32,
     pub magic_factor: f32,
     pub spread: f32,
+}
+
+#[derive(Debug)]
+pub struct SpellAttack {
+    pub target: SpellTargetMode,
+    pub element: CombatElement,
+    pub power: PowerCurve,
     pub effect_id: EffectId,
     pub missile_id: Option<MissileId>,
 }
@@ -73,10 +80,7 @@ pub struct SpellAttack {
 #[derive(Debug)]
 pub struct SpellHealing {
     pub target: SpellTargetMode,
-    pub base_power: f32,
-    pub level_factor: f32,
-    pub magic_factor: f32,
-    pub spread: f32,
+    pub power: PowerCurve,
 }
 
 #[derive(Debug)]
