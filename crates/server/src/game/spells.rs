@@ -182,7 +182,7 @@ pub fn roll_power(player: &Player, curve: &PowerCurve, roll: &mut Rolls) -> u32 
     let center = curve.base_power
         * (1.0
             + (f32::from(player.level()) * curve.level_factor / 100.0)
-            + (f32::from(player.skill_magic()) * curve.magic_factor / 100.0));
+            + (f32::from(player.skill(SkillType::Magic)) * curve.magic_factor / 100.0));
     let min = (center * (1.0 - curve.spread)).max(0.0).round() as u32;
     let max = (center * (1.0 + curve.spread)).round() as u32;
     roll.damage_roll(min, max)

@@ -16,6 +16,18 @@ pub enum SkillType {
 }
 
 impl SkillType {
+    /// What a character is worth in this skill before it has a row for it.
+    pub fn default_value(&self) -> u16 {
+        match self {
+            SkillType::Level | SkillType::Magic => 1,
+            SkillType::Sword
+            | SkillType::Club
+            | SkillType::Axe
+            | SkillType::Distance
+            | SkillType::Shielding => 10,
+        }
+    }
+
     pub fn as_id(&self) -> u8 {
         match self {
             SkillType::Level => 0,
@@ -59,6 +71,22 @@ mod tests {
         assert_eq!(SkillType::Distance.as_id(), 4);
         assert_eq!(SkillType::Magic.as_id(), 5);
         assert_eq!(SkillType::Shielding.as_id(), 6);
+    }
+
+    #[test]
+    fn a_skill_with_no_row_answers_with_its_default() {
+        assert_eq!(SkillType::Level.default_value(), 1);
+        assert_eq!(SkillType::Magic.default_value(), 1);
+
+        for weapon in [
+            SkillType::Sword,
+            SkillType::Club,
+            SkillType::Axe,
+            SkillType::Distance,
+            SkillType::Shielding,
+        ] {
+            assert_eq!(weapon.default_value(), 10, "{weapon:?}");
+        }
     }
 
     #[test]

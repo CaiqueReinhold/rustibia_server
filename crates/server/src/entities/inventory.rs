@@ -122,7 +122,7 @@ impl Inventory {
                 let container = slot_item
                     .find_by_guid_mut(target_guid)
                     .ok_or(ItemMovementError::ItemNotInPosition)?;
-                let cap = container.container_capacity().unwrap();
+                let cap = container.config.attr_capacity().unwrap();
                 let content = container
                     .content
                     .as_mut()

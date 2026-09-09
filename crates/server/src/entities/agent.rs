@@ -14,10 +14,11 @@ use crate::{
     config,
     constants::movement::{DIAGONAL_STEP_FACTOR, SPEED_PARAM_A, SPEED_PARAM_B, SPEED_PARAM_C},
     entities::{
-        combat::{Participation, WeaponType},
+        combat::Participation,
         creature::{BloodType, CreatureKind},
         items::ItemId,
         position::Position,
+        skills::SkillType,
     },
     game::{Tick, TickDelta, config::GAME_CONFIG},
     persistence::player::PlayerSnapshot,
@@ -374,15 +375,15 @@ impl Agent {
             AgentInner::Player(p) => {
                 let def = p.defense() as f32;
                 let skill = if p.has_shield() {
-                    p.skill_shielding() as f32
+                    p.skill(SkillType::Shielding)
                 } else {
-                    match p.weapon_type() {
-                        WeaponType::Axe => p.skill_axe() as f32,
-                        WeaponType::Sword => p.skill_sword() as f32,
-                        WeaponType::Club => p.skill_club() as f32,
-                        _ => 0.,
+                    match p.weapon_type().skill() {
+                        Some(s @ (SkillType::Axe | SkillType::Sword | SkillType::Club)) => {
+                            p.skill(s)
+                        }
+                        _ => 0,
                     }
-                };
+                } as f32;
                 ((skill / 4. + 2.23) * def * 0.15) as u32
             }
         }

@@ -188,49 +188,12 @@ impl Player {
             .unwrap_or(0)
     }
 
-    pub fn get_skill(&self, skill: SkillType) -> Option<&SkillValue> {
-        self.skills.get(&skill)
-    }
-
-    pub fn skill_sword(&self) -> u16 {
-        self.get_skill(SkillType::Sword)
-            .map(|st| st.value)
-            .unwrap_or(10)
-    }
-
-    pub fn skill_axe(&self) -> u16 {
-        self.get_skill(SkillType::Axe)
-            .map(|st| st.value)
-            .unwrap_or(10)
-    }
-
-    pub fn skill_club(&self) -> u16 {
-        self.get_skill(SkillType::Club)
-            .map(|st| st.value)
-            .unwrap_or(10)
-    }
-
-    pub fn skill_distance(&self) -> u16 {
-        self.get_skill(SkillType::Distance)
-            .map(|st| st.value)
-            .unwrap_or(10)
-    }
-
-    pub fn skill_magic(&self) -> u16 {
-        self.get_skill(SkillType::Magic)
-            .map(|st| st.value)
-            .unwrap_or(1)
-    }
-
-    pub fn skill_shielding(&self) -> u16 {
-        self.get_skill(SkillType::Shielding)
-            .map(|st| st.value)
-            .unwrap_or(10)
+    pub fn skill(&self, skill: SkillType) -> u16 {
+        let default = skill.default_value();
+        self.skills.get(&skill).map_or(default, |st| st.value)
     }
 
     pub fn level(&self) -> u16 {
-        self.get_skill(SkillType::Level)
-            .map(|st| st.value)
-            .unwrap_or(1)
+        self.skill(SkillType::Level)
     }
 }

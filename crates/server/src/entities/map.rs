@@ -449,7 +449,7 @@ impl GameMap {
                 let tile = self.get_tile_mut(pos)?;
                 for existing_item in &mut tile.items {
                     if let Some(c) = existing_item.find_by_guid_mut(target) {
-                        let cap = c.container_capacity().unwrap();
+                        let cap = c.config.attr_capacity().unwrap();
                         if let Some(content) = &mut c.content {
                             if content.len() >= cap as usize {
                                 return Err(MapError::ContainerIsFull);

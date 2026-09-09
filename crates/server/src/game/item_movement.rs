@@ -121,7 +121,7 @@ fn displace_inventory_items(
         .unwrap()
         .inventory()
         .get(&InventorySlot::LeftHand)
-        .map(|it| it.get_slot().unwrap() == InventorySlot::BothHands)
+        .map(|it| it.config.attr_inventory().unwrap() == InventorySlot::BothHands)
         .unwrap_or(false);
     if slot == InventorySlot::RightHand && left_is_two_handed {
         let player = ctx.map.get_player_mut(agent).unwrap();
@@ -200,7 +200,7 @@ pub fn move_item(
         }
         (ItemPlacement::Inventory(target_slot, _), None) => {
             let compatible = item
-                .and_then(|it| it.get_slot())
+                .and_then(|it| it.config.attr_inventory())
                 .map(|item_slot| {
                     item_slot == *target_slot
                         || (item_slot == InventorySlot::BothHands
@@ -263,7 +263,7 @@ pub fn move_item(
             *slot,
             &source_item,
             &source.placement,
-            source_item.get_slot(),
+            source_item.config.attr_inventory(),
             source_container.as_ref(),
         )
     } else {

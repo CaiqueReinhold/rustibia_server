@@ -253,20 +253,20 @@ impl SessionActor {
     ) -> Result<()> {
         self.send_skill_update(skill.clone(), amount).await?;
         let map = self.shared_map.load();
-        let message = map.get_player(self.player_key).map(|p| match skill {
-            SkillType::Axe => format!("You advanced to axe fighting {}", p.skill_axe()),
-            SkillType::Club => format!("You advanced to club fighting {}", p.skill_club()),
-            SkillType::Sword => format!("You advanced to sword fighting {}", p.skill_sword()),
-            SkillType::Distance => {
-                format!("You advanced to distance fighting {}", p.skill_distance())
+        let message = map.get_player(self.player_key).map(|p| {
+            let value = p.skill(skill.clone());
+            match skill {
+                SkillType::Axe => format!("You advanced to axe fighting {value}"),
+                SkillType::Club => format!("You advanced to club fighting {value}"),
+                SkillType::Sword => format!("You advanced to sword fighting {value}"),
+                SkillType::Distance => format!("You advanced to distance fighting {value}"),
+                SkillType::Magic => format!("You advanced to magic level {value}"),
+                SkillType::Shielding => format!("You advanced to shielding {value}"),
+                SkillType::Level => format!(
+                    "You advanced from level {} to level {value}",
+                    value.saturating_sub(gained)
+                ),
             }
-            SkillType::Magic => format!("You advanced to magic level {}", p.skill_magic()),
-            SkillType::Shielding => format!("You advanced to shielding {}", p.skill_shielding()),
-            SkillType::Level => format!(
-                "You advanced from level {} to level {}",
-                p.level().saturating_sub(gained),
-                p.level()
-            ),
         });
 
         if let Some(message) = message {

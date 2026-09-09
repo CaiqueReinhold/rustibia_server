@@ -334,17 +334,20 @@ pub fn get_damage_visuals(
 }
 
 pub fn weapon_skill(player: &Player) -> WeaponSkill {
-    let (trains, value) = match player.weapon_type() {
-        WeaponType::None => (None, GAME_CONFIG.combat.unarmed_skill),
-        WeaponType::Axe => (Some(SkillType::Axe), player.skill_axe()),
-        WeaponType::Club => (Some(SkillType::Club), player.skill_club()),
-        WeaponType::Sword => (Some(SkillType::Sword), player.skill_sword()),
-        WeaponType::Bow | WeaponType::Crossbow | WeaponType::Distance => {
-            (Some(SkillType::Distance), player.skill_distance())
-        }
-        WeaponType::Wand | WeaponType::Rod => (None, player.skill_magic()),
+    let weapon = player.weapon_type();
+    let Some(skill) = weapon.skill() else {
+        return WeaponSkill {
+            value: GAME_CONFIG.combat.unarmed_skill,
+            trains: None,
+        };
     };
-    WeaponSkill { value, trains }
+    // A wand resolves against magic level but does not train it by firing; mana spent is what
+    // trains magic, and `consume_mana` is where that happens.
+    let trains = (!matches!(weapon, WeaponType::Wand | WeaponType::Rod)).then(|| skill.clone());
+    WeaponSkill {
+        value: player.skill(skill),
+        trains,
+    }
 }
 
 // private
@@ -402,7 +405,7 @@ fn distance_hit_chance(player: &Player, distance: u16) -> i32 {
                     None => THROWN_HIT_CEILING,
                 },
             );
-        tabled_hit_chance(ceiling, player.skill_distance(), distance)
+        tabled_hit_chance(ceiling, player.skill(SkillType::Distance), distance)
     };
 
     if ammo.is_some()

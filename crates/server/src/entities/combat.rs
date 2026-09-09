@@ -32,6 +32,23 @@ pub enum WeaponType {
     Rod,
 }
 
+impl WeaponType {
+    /// The skill a swing is resolved against. `None` for bare hands, which use the flat
+    /// `combat.unarmed_skill` rather than a character column.
+    pub fn skill(self) -> Option<SkillType> {
+        match self {
+            WeaponType::None => None,
+            WeaponType::Axe => Some(SkillType::Axe),
+            WeaponType::Club => Some(SkillType::Club),
+            WeaponType::Sword => Some(SkillType::Sword),
+            WeaponType::Bow | WeaponType::Crossbow | WeaponType::Distance => {
+                Some(SkillType::Distance)
+            }
+            WeaponType::Wand | WeaponType::Rod => Some(SkillType::Magic),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AmmoType {
     Arrow,

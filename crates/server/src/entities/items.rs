@@ -53,7 +53,7 @@ impl ItemGuid {
 
 impl Display for ItemGuid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", &self.0)
+        write!(f, "{}", self.0)
     }
 }
 
@@ -177,6 +177,19 @@ pub struct ItemConfig {
     attributes: HashSet<ItemAttribute>,
 }
 
+macro_rules! attr_accessors {
+    ($($name:ident -> $variant:ident: $ty:ty,)*) => {
+        $(
+            pub fn $name(&self) -> Option<$ty> {
+                self.get_attributes().find_map(|attr| match attr {
+                    ItemAttribute::$variant(a) => Some(*a),
+                    _ => None,
+                })
+            }
+        )*
+    };
+}
+
 impl ItemConfig {
     pub fn new(
         id: ItemId,
@@ -204,142 +217,34 @@ impl ItemConfig {
         self.attributes.iter()
     }
 
-    pub fn attr_capacity(&self) -> Option<u8> {
-        self.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::Capacity(a) => Some(*a),
-            _ => None,
-        })
+    attr_accessors! {
+        attr_capacity -> Capacity: u8,
+        attr_weight -> Weight: u32,
+        attr_floor_change -> FloorChange: FloorChangeDirection,
+        attr_inventory -> Inventory: InventorySlot,
+        attr_tile_friction -> TileFriction: u16,
+        attr_action -> Action: ItemAction,
+        attr_multi_action -> MultiAction: ItemMultiAction,
+        attr_armor -> Armor: u16,
+        attr_extra_def -> ExtraDef: i16,
+        attr_defense -> Defense: u16,
+        attr_weapon_type -> WeaponType: WeaponType,
+        attr_weapon_attack -> WeaponAttack: u16,
+        attr_weapon_element -> WeaponElement: CombatElement,
+        attr_ammo_type -> AmmoType: AmmoType,
+        attr_weapon_range -> WeaponRange: u8,
+        attr_hit_chance -> HitChance: i16,
+        attr_max_hit_chance -> MaxHitChance: u8,
+        attr_mana_cost -> ManaCost: u32,
+        attr_missile_id -> MissileId: MissileId,
+        attr_speed -> Speed: i16,
     }
 
-    pub fn attr_weight(&self) -> Option<u32> {
-        self.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::Weight(a) => Some(*a),
-            _ => None,
-        })
-    }
-
-    pub fn attr_floor_change(&self) -> Option<FloorChangeDirection> {
-        self.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::FloorChange(a) => Some(*a),
-            _ => None,
-        })
-    }
-
-    pub fn attr_tile_friction(&self) -> Option<u16> {
-        self.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::TileFriction(a) => Some(*a),
-            _ => None,
-        })
-    }
-
-    pub fn attr_action(&self) -> Option<ItemAction> {
-        self.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::Action(a) => Some(*a),
-            _ => None,
-        })
-    }
-
-    pub fn attr_multi_action(&self) -> Option<ItemMultiAction> {
-        self.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::MultiAction(a) => Some(*a),
-            _ => None,
-        })
-    }
-
+    /// Written out rather than generated: `Decay` is the one attribute whose variant carries
+    /// two fields, and it answers with both.
     pub fn attr_decay(&self) -> Option<(TickDelta, ItemId)> {
         self.get_attributes().find_map(|attr| match attr {
             ItemAttribute::Decay { decay_to, duration } => Some((*duration, *decay_to)),
-            _ => None,
-        })
-    }
-
-    pub fn attr_armor(&self) -> Option<u16> {
-        self.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::Armor(a) => Some(*a),
-            _ => None,
-        })
-    }
-
-    pub fn attr_extra_def(&self) -> Option<i16> {
-        self.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::ExtraDef(a) => Some(*a),
-            _ => None,
-        })
-    }
-
-    pub fn attr_defense(&self) -> Option<u16> {
-        self.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::Defense(a) => Some(*a),
-            _ => None,
-        })
-    }
-
-    pub fn attr_weapon_type(&self) -> Option<WeaponType> {
-        self.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::WeaponType(a) => Some(*a),
-            _ => None,
-        })
-    }
-
-    pub fn attr_weapon_attack(&self) -> Option<u16> {
-        self.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::WeaponAttack(a) => Some(*a),
-            _ => None,
-        })
-    }
-
-    pub fn attr_weapon_element(&self) -> Option<CombatElement> {
-        self.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::WeaponElement(a) => Some(*a),
-            _ => None,
-        })
-    }
-
-    pub fn attr_ammo_type(&self) -> Option<AmmoType> {
-        self.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::AmmoType(a) => Some(*a),
-            _ => None,
-        })
-    }
-
-    pub fn attr_weapon_range(&self) -> Option<u8> {
-        self.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::WeaponRange(a) => Some(*a),
-            _ => None,
-        })
-    }
-
-    pub fn attr_hit_chance(&self) -> Option<i16> {
-        self.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::HitChance(a) => Some(*a),
-            _ => None,
-        })
-    }
-
-    pub fn attr_max_hit_chance(&self) -> Option<u8> {
-        self.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::MaxHitChance(a) => Some(*a),
-            _ => None,
-        })
-    }
-
-    pub fn attr_mana_cost(&self) -> Option<u32> {
-        self.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::ManaCost(a) => Some(*a),
-            _ => None,
-        })
-    }
-
-    pub fn attr_missile_id(&self) -> Option<MissileId> {
-        self.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::MissileId(a) => Some(*a),
-            _ => None,
-        })
-    }
-
-    pub fn attr_speed(&self) -> Option<i16> {
-        self.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::Speed(a) => Some(*a),
             _ => None,
         })
     }
@@ -393,33 +298,14 @@ impl Item {
         &self.config.name
     }
 
-    pub fn container_capacity(&self) -> Option<u8> {
-        self.config.attr_capacity()
-    }
-
     pub fn available_capacity(&self) -> Option<usize> {
-        let cap = self.container_capacity()? as usize;
+        let cap = self.config.attr_capacity()? as usize;
         let used = self.content.as_ref().map(|c| c.len()).unwrap_or(0);
         Some(cap.saturating_sub(used))
     }
 
-    pub fn get_slot(&self) -> Option<InventorySlot> {
-        self.config.get_attributes().find_map(|attr| match attr {
-            ItemAttribute::Inventory(s) => Some(*s),
-            _ => None,
-        })
-    }
-
     pub fn total_weight(&self) -> u32 {
-        let own = self
-            .config
-            .get_attributes()
-            .find_map(|attr| match attr {
-                ItemAttribute::Weight(w) => Some(*w),
-                _ => None,
-            })
-            .unwrap_or(0)
-            * self.amount as u32;
+        let own = self.config.attr_weight().unwrap_or(0) * self.amount as u32;
         let inner = self
             .content
             .as_ref()
@@ -477,9 +363,7 @@ impl Item {
                 std::cmp::Ordering::Greater => {
                     Some((content[idx].split_off(amount), (self.guid.clone(), idx)))
                 }
-                std::cmp::Ordering::Equal => {
-                    Some((content.remove(idx), (self.guid.clone(), idx)))
-                }
+                std::cmp::Ordering::Equal => Some((content.remove(idx), (self.guid.clone(), idx))),
                 std::cmp::Ordering::Less => None,
             };
         }
@@ -589,6 +473,99 @@ mod tests {
                     "{set:?} answers for {other:?}"
                 );
             }
+        }
+    }
+
+    fn only(attr: ItemAttribute) -> ItemConfig {
+        ItemConfig::new(
+            ItemId(1),
+            "thing".to_string(),
+            None,
+            None,
+            [],
+            HashSet::from([attr]),
+        )
+    }
+
+    fn answered(c: &ItemConfig) -> Vec<&'static str> {
+        let mut found = Vec::new();
+        let mut check = |name, present: bool| {
+            if present {
+                found.push(name);
+            }
+        };
+        check("capacity", c.attr_capacity().is_some());
+        check("weight", c.attr_weight().is_some());
+        check("floor_change", c.attr_floor_change().is_some());
+        check("inventory", c.attr_inventory().is_some());
+        check("tile_friction", c.attr_tile_friction().is_some());
+        check("action", c.attr_action().is_some());
+        check("multi_action", c.attr_multi_action().is_some());
+        check("armor", c.attr_armor().is_some());
+        check("extra_def", c.attr_extra_def().is_some());
+        check("defense", c.attr_defense().is_some());
+        check("weapon_type", c.attr_weapon_type().is_some());
+        check("weapon_attack", c.attr_weapon_attack().is_some());
+        check("weapon_element", c.attr_weapon_element().is_some());
+        check("ammo_type", c.attr_ammo_type().is_some());
+        check("weapon_range", c.attr_weapon_range().is_some());
+        check("hit_chance", c.attr_hit_chance().is_some());
+        check("max_hit_chance", c.attr_max_hit_chance().is_some());
+        check("mana_cost", c.attr_mana_cost().is_some());
+        check("missile_id", c.attr_missile_id().is_some());
+        check("speed", c.attr_speed().is_some());
+        check("decay", c.attr_decay().is_some());
+        found
+    }
+
+    /// The accessors are generated from a `name -> Variant: Type` list, and a name paired with
+    /// the wrong variant compiles whenever the two share a Rust type -- which four of them do
+    /// for `u16`, three for `u8`, three for `i16` and two for `u32`. Nothing else would catch
+    /// `attr_armor -> Defense`.
+    #[test]
+    fn an_attribute_is_read_by_exactly_one_accessor() {
+        for (attr, expected) in [
+            (ItemAttribute::Capacity(1), "capacity"),
+            (ItemAttribute::Weight(1), "weight"),
+            (
+                ItemAttribute::FloorChange(FloorChangeDirection::Up),
+                "floor_change",
+            ),
+            (ItemAttribute::Inventory(InventorySlot::Head), "inventory"),
+            (ItemAttribute::TileFriction(1), "tile_friction"),
+            (
+                ItemAttribute::Action(ItemAction::Transform { into: ItemId(9) }),
+                "action",
+            ),
+            (
+                ItemAttribute::MultiAction(ItemMultiAction::Shovel),
+                "multi_action",
+            ),
+            (ItemAttribute::Armor(1), "armor"),
+            (ItemAttribute::ExtraDef(1), "extra_def"),
+            (ItemAttribute::Defense(1), "defense"),
+            (ItemAttribute::WeaponType(WeaponType::Axe), "weapon_type"),
+            (ItemAttribute::WeaponAttack(1), "weapon_attack"),
+            (
+                ItemAttribute::WeaponElement(CombatElement::Fire),
+                "weapon_element",
+            ),
+            (ItemAttribute::AmmoType(AmmoType::Arrow), "ammo_type"),
+            (ItemAttribute::WeaponRange(1), "weapon_range"),
+            (ItemAttribute::HitChance(1), "hit_chance"),
+            (ItemAttribute::MaxHitChance(1), "max_hit_chance"),
+            (ItemAttribute::ManaCost(1), "mana_cost"),
+            (ItemAttribute::MissileId(MissileId(1)), "missile_id"),
+            (ItemAttribute::Speed(1), "speed"),
+            (
+                ItemAttribute::Decay {
+                    duration: TickDelta(1),
+                    decay_to: ItemId(2),
+                },
+                "decay",
+            ),
+        ] {
+            assert_eq!(answered(&only(attr)), vec![expected]);
         }
     }
 
