@@ -289,11 +289,10 @@ fn search_target(creature: AgentKey, map: &GameMap) -> Option<AgentKey> {
     let viewport = Rect::player_viewport(from);
     let candidates: Vec<(AgentKey, Position)> = map
         .iter_agents_in_rect(&viewport, from.z)
-        .filter(|key| {
-            map.get_agent(**key)
+        .filter(|(key, _)| {
+            map.get_agent(*key)
                 .is_some_and(|agent| !agent.is_creature())
         })
-        .filter_map(|key| map.agent_position(*key).map(|pos| (*key, pos.clone())))
         .filter(|(_, pos)| can_throw(map, from, pos, true))
         .collect();
 

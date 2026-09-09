@@ -10,7 +10,7 @@ use crate::{
         effects::{AreaEffect, Missile},
         inventory::InventorySlot,
         items::{ItemGuid, ItemRef},
-        position::{Direction, Position},
+        position::{Direction, ItemPlacement, Position},
         skills::SkillType,
         spells::SpellId,
     },
@@ -74,6 +74,7 @@ pub enum BroadcastMessage {
     },
     AgentSaid {
         agent_key: AgentKey,
+        position: Position,
         message: String,
     },
     AgentLostTarget {
@@ -132,6 +133,115 @@ pub enum BroadcastMessage {
         amount: u32,
         restore_type: RestoreType,
     },
+}
+
+/// Who a broadcast reaches.
+pub enum Routing<'a> {
+    Agent(AgentKey),
+    Viewport {
+        at: &'a Position,
+        same_floor: bool,
+    },
+    EitherViewport([&'a Position; 2]),
+    ViewportAndAgent {
+        at: &'a Position,
+        agent: AgentKey,
+    },
+    Move {
+        from: &'a Position,
+        to: &'a Position,
+        mover: AgentKey,
+    },
+}
+
+impl BroadcastMessage {
+    pub fn routing(&self) -> Routing<'_> {
+        match self {
+            Self::AgentChangedDirection { position, .. }
+            | Self::PlayerSpawned { position, .. }
+            | Self::TileChanged { position }
+            | Self::DamageTaken { position, .. }
+            | Self::AttackMissed { position } => Routing::Viewport {
+                at: position,
+                same_floor: false,
+            },
+
+            Self::PotionDrunk { position, .. }
+            | Self::SpellCast { position, .. }
+            | Self::SpellDenied { position, .. }
+            | Self::AgentSaid { position, .. } => Routing::Viewport {
+                at: position,
+                same_floor: true,
+            },
+
+            Self::AreaEffectAppeared { area_effect } => Routing::Viewport {
+                at: &area_effect.origin,
+                same_floor: false,
+            },
+
+            Self::MoveItemDenied { agent_key, .. }
+            | Self::OpenContainer { agent_key, .. }
+            | Self::AgentWalkDenied { agent_key }
+            | Self::AgentLostTarget { agent_key, .. }
+            | Self::UpdateInventorySlot { agent_key, .. }
+            | Self::UseItemDenied { agent_key, .. }
+            | Self::LogoutDenied { agent_key }
+            | Self::SkillProgressUpdated { agent_key, .. }
+            | Self::SkillUpgraded { agent_key, .. }
+            | Self::PlayerManaUpdated { agent_key } => Routing::Agent(*agent_key),
+
+            Self::AgentMoved {
+                agent_key,
+                from_position,
+                to_position,
+                ..
+            } => Routing::Move {
+                from: from_position,
+                to: to_position,
+                mover: *agent_key,
+            },
+
+            Self::AgentTeleported {
+                from_position,
+                to_position,
+                ..
+            } => Routing::EitherViewport([from_position, to_position]),
+
+            Self::MissileLaunched { missile } => {
+                Routing::EitherViewport([&missile.from, &missile.to])
+            }
+
+            Self::AgentDespawned {
+                agent_key,
+                position,
+                ..
+            } => Routing::ViewportAndAgent {
+                at: position,
+                agent: *agent_key,
+            },
+
+            Self::ContainerUpdated { item } => match &item.placement {
+                ItemPlacement::Inventory(_slot, agent_key) => Routing::Agent(*agent_key),
+                ItemPlacement::Map(pos) => Routing::Viewport {
+                    at: pos,
+                    same_floor: true,
+                },
+            },
+
+            Self::AgentHealed {
+                agent_key,
+                position,
+                restore_type,
+                ..
+            } => match restore_type {
+                RestoreType::Life => Routing::Viewport {
+                    at: position,
+                    same_floor: false,
+                },
+                RestoreType::Mana => Routing::Agent(*agent_key),
+            },
+        }
+    }
 }
 
 #[derive(PartialEq, Eq, Hash)]
@@ -214,6 +324,112 @@ mod tests {
                 blocked_shield: false,
                 blocked_armor: false,
             },
+        }
+    }
+
+    fn at() -> Position {
+        Position::new(10, 10, 7)
+    }
+
+    /// Grouping the `Viewport` messages by `same_floor` is the one mis-pairing the compiler
+    /// cannot catch: every variant in both groups binds a `position`, so moving one between
+    /// them type-checks and silently changes who sees it.
+    #[test]
+    fn only_the_local_messages_are_limited_to_the_speakers_floor() {
+        let same_floor = |m: BroadcastMessage| match m.routing() {
+            Routing::Viewport { same_floor, .. } => same_floor,
+            other => panic!(
+                "expected a viewport routing, got {:?}",
+                RoutingShape(&other)
+            ),
+        };
+
+        assert!(same_floor(BroadcastMessage::AgentSaid {
+            agent_key: key(1),
+            position: at(),
+            message: "hello".to_owned()
+        }));
+
+        assert!(same_floor(BroadcastMessage::PotionDrunk {
+            target: key(1),
+            position: at()
+        }));
+        assert!(same_floor(BroadcastMessage::SpellCast {
+            agent_key: key(1),
+            position: at(),
+            spell_id: SpellId(1)
+        }));
+        assert!(same_floor(BroadcastMessage::SpellDenied {
+            agent_key: key(1),
+            position: at(),
+            reason: crate::game::spells::SpellCastingDenyReason::NoMana
+        }));
+        assert!(same_floor(container("bag", ItemPlacement::Map(at()))));
+
+        assert!(!same_floor(tile(10)));
+        assert!(!same_floor(hit(key(1), 5)));
+        assert!(!same_floor(BroadcastMessage::AttackMissed {
+            position: at()
+        }));
+        assert!(!same_floor(BroadcastMessage::PlayerSpawned {
+            agent_key: key(1),
+            position: at()
+        }));
+        assert!(!same_floor(BroadcastMessage::AreaEffectAppeared {
+            area_effect: AreaEffect::single(crate::entities::effects::EffectId(1), at())
+        }));
+        assert!(!same_floor(BroadcastMessage::AgentHealed {
+            agent_key: key(1),
+            position: at(),
+            amount: 5,
+            restore_type: RestoreType::Life,
+        }));
+    }
+
+    /// A despawn binds both a key and a position, so it would group cleanly with the
+    /// agent-addressed messages and stop reaching the bystanders who need to un-draw it.
+    #[test]
+    fn a_despawn_reaches_the_viewport_as_well_as_the_agent_it_removed() {
+        let message = BroadcastMessage::AgentDespawned {
+            agent_key: key(1),
+            position: at(),
+            snapshot: None,
+        };
+
+        assert!(matches!(
+            message.routing(),
+            Routing::ViewportAndAgent { agent, .. } if agent == key(1)
+        ));
+    }
+
+    /// Speech routes off the tile it rode in on, not off wherever the map has the speaker
+    /// now -- which is what lets it survive the speaker leaving in the same tick.
+    #[test]
+    fn speech_routes_from_the_tile_it_carries() {
+        let message = BroadcastMessage::AgentSaid {
+            agent_key: key(1),
+            position: Position::new(42, 43, 5),
+            message: "hello".to_owned(),
+        };
+
+        assert!(matches!(
+            message.routing(),
+            Routing::Viewport { at, .. } if *at == Position::new(42, 43, 5)
+        ));
+    }
+
+    struct RoutingShape<'a>(&'a Routing<'a>);
+
+    impl std::fmt::Debug for RoutingShape<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let name = match self.0 {
+                Routing::Agent(..) => "Agent",
+                Routing::Viewport { .. } => "Viewport",
+                Routing::EitherViewport(..) => "EitherViewport",
+                Routing::ViewportAndAgent { .. } => "ViewportAndAgent",
+                Routing::Move { .. } => "Move",
+            };
+            f.write_str(name)
         }
     }
 

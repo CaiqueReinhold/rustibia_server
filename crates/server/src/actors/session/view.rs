@@ -8,7 +8,7 @@ use crate::actors::player_query::{get_agent_desc, get_player_desc, get_player_sk
 use crate::actors::session::{SessionActor, SessionError};
 use crate::constants::view::AGENT_DESPAWN_RADIUS;
 use crate::entities::agent::AgentKey;
-use crate::entities::effects::{AreaEffect, MissileId};
+use crate::entities::effects::MissileId;
 use crate::entities::map::GameMap;
 use crate::entities::position::{Position, Rect};
 use crate::entities::skills::SkillType;
@@ -45,16 +45,7 @@ impl SessionActor {
 
             Ok(())
         } else {
-            let Some(agent) = map.get_agent(agent_key) else {
-                return Ok(());
-            };
-            let agent_id = self.agents.get_or_insert(agent_key);
-
-            self.connection
-                .send_message(get_agent_desc(agent, agent_id, position))
-                .await?;
-
-            Ok(())
+            self.introduce_agent(agent_key, position, &map).await
         }
     }
 
@@ -63,15 +54,12 @@ impl SessionActor {
         position: &Position,
         map: &GameMap,
     ) -> Result<()> {
-        for (key, agent, pos) in get_agents_in_viewport(map, position) {
+        for (key, pos) in get_agents_in_viewport(map, position) {
             if key == self.player_key {
                 continue;
             }
             if self.agents.get_local(&key).is_none() {
-                let agent_id = self.agents.get_or_insert(key);
-                self.connection
-                    .send_message(get_agent_desc(agent, agent_id, pos))
-                    .await?;
+                self.introduce_agent(key, pos, map).await?;
             }
         }
         Ok(())
@@ -117,6 +105,22 @@ impl SessionActor {
             self.forget_agent(key).await?;
         }
 
+        Ok(())
+    }
+
+    pub(super) async fn introduce_agent(
+        &mut self,
+        agent_key: AgentKey,
+        position: Position,
+        map: &GameMap,
+    ) -> Result<()> {
+        let Some(agent) = map.get_agent(agent_key) else {
+            return Ok(());
+        };
+        let agent_id = self.agents.get_or_insert(agent_key);
+        self.connection
+            .send_message(get_agent_desc(agent, agent_id, position))
+            .await?;
         Ok(())
     }
 
@@ -285,17 +289,6 @@ impl SessionActor {
                 from,
                 to,
                 missile_id,
-            })
-            .await?;
-        Ok(())
-    }
-
-    pub(super) async fn area_effect_appeared(&self, area_effect: AreaEffect) -> Result<()> {
-        self.connection
-            .send_message(ServerMessage::ShowEffect {
-                effect_id: area_effect.effect_id,
-                position: area_effect.origin,
-                delta: area_effect.delta,
             })
             .await?;
         Ok(())

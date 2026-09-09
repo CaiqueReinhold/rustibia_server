@@ -31,6 +31,7 @@ use crate::entities::agent::Agent;
 use crate::entities::agent::AgentId;
 use crate::entities::agent::AgentKey;
 use crate::entities::chat::ChannelId;
+use crate::entities::effects::AreaEffect;
 use crate::entities::items::ContainerId;
 use crate::entities::items::ItemGuid;
 use crate::entities::map::GameMap;
@@ -406,9 +407,11 @@ impl SessionActor {
                 ..
             } => self.agent_teleported(agent_key, to_position).await,
             BroadcastMessage::LogoutDenied { .. } => self.logout_denied().await,
-            BroadcastMessage::AgentSaid { agent_key, message } => {
-                self.agent_said(agent_key, message).await
-            }
+            BroadcastMessage::AgentSaid {
+                agent_key,
+                position,
+                message,
+            } => self.agent_said(agent_key, position, message).await,
             BroadcastMessage::AgentLostTarget { seq, .. } => self.target_lost(seq).await,
             BroadcastMessage::DamageTaken {
                 agent_key,
@@ -458,13 +461,24 @@ impl SessionActor {
                     .await
             }
             BroadcastMessage::AreaEffectAppeared { area_effect } => {
-                self.area_effect_appeared(area_effect).await
+                self.send_effect(area_effect).await
             }
         }
     }
 
     async fn pong(&self) -> Result<()> {
         self.connection.send_message(ServerMessage::Pong).await?;
+        Ok(())
+    }
+
+    async fn send_effect(&self, effect: AreaEffect) -> Result<()> {
+        self.connection
+            .send_message(ServerMessage::ShowEffect {
+                effect_id: effect.effect_id,
+                position: effect.origin,
+                delta: effect.delta,
+            })
+            .await?;
         Ok(())
     }
 

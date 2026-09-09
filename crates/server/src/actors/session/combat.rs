@@ -8,6 +8,7 @@ use crate::{
         chat::{ChannelId, ChatMessageType},
         combat::CombatDamage,
         creature::BloodType,
+        effects::AreaEffect,
         healing::RestoreType,
         position::Position,
         spells::{CastTarget, SpellId, SpellTarget},
@@ -76,12 +77,7 @@ impl SessionActor {
         damage: CombatDamage,
     ) -> Result<()> {
         let (effect, text_color) = get_damage_visuals(&damage, blood_type.as_ref());
-        self.connection
-            .send_message(ServerMessage::ShowEffect {
-                effect_id: effect,
-                position: position.clone(),
-                delta: vec![(0, 0)],
-            })
+        self.send_effect(AreaEffect::single(effect, position.clone()))
             .await?;
         if damage.value > 0 {
             self.connection
@@ -118,13 +114,11 @@ impl SessionActor {
         amount: u32,
         restore_type: RestoreType,
     ) -> Result<()> {
-        self.connection
-            .send_message(ServerMessage::ShowEffect {
-                effect_id: GAME_CONFIG.effect_ids.healing_spell,
-                position: position.clone(),
-                delta: vec![(0, 0)],
-            })
-            .await?;
+        self.send_effect(AreaEffect::single(
+            GAME_CONFIG.effect_ids.healing_spell,
+            position.clone(),
+        ))
+        .await?;
 
         if amount > 0 {
             self.connection
@@ -147,14 +141,8 @@ impl SessionActor {
     }
 
     pub(super) async fn attack_missed(&self, position: Position) -> Result<()> {
-        self.connection
-            .send_message(ServerMessage::ShowEffect {
-                effect_id: GAME_CONFIG.effect_ids.miss,
-                position,
-                delta: vec![(0, 0)],
-            })
-            .await?;
-        Ok(())
+        self.send_effect(AreaEffect::single(GAME_CONFIG.effect_ids.miss, position))
+            .await
     }
 
     pub(super) async fn spell_cast(&self, agent_key: AgentKey, spell_id: SpellId) -> Result<()> {
@@ -208,12 +196,7 @@ impl SessionActor {
         position: Position,
         reason: SpellCastingDenyReason,
     ) -> Result<()> {
-        self.connection
-            .send_message(ServerMessage::ShowEffect {
-                effect_id: GAME_CONFIG.effect_ids.puff,
-                position,
-                delta: vec![(0, 0)],
-            })
+        self.send_effect(AreaEffect::single(GAME_CONFIG.effect_ids.puff, position))
             .await?;
 
         if self.player_key == agent_key {

@@ -217,7 +217,7 @@ impl GameMap {
         &'a self,
         rect: &Rect,
         z: u8,
-    ) -> impl Iterator<Item = &'a AgentKey> + use<'a> {
+    ) -> impl Iterator<Item = (AgentKey, Position)> + use<'a> {
         let (x0, y0) = (rect.min_x(), rect.min_y());
         let (x1, y1) = (rect.max_x(), rect.max_y());
         let cx_range = (x0 >> CHUNK_BITS)..=(x1 >> CHUNK_BITS);
@@ -242,10 +242,12 @@ impl GameMap {
                 (ly0..=ly1)
                     .flat_map(move |ly| {
                         (lx0..=lx1).filter_map(move |lx| {
-                            chunk.tiles[ly as usize * CHUNK_SIDE as usize + lx as usize].as_ref()
+                            chunk.tiles[ly as usize * CHUNK_SIDE as usize + lx as usize]
+                                .as_ref()
+                                .map(|tile| (Position::new(base_x + lx, base_y + ly, z), tile))
                         })
                     })
-                    .flat_map(|tile| tile.agents.iter())
+                    .flat_map(|(pos, tile)| tile.agents.iter().map(move |key| (*key, pos.clone())))
             })
     }
 
@@ -849,7 +851,7 @@ mod tests {
         let ko = map.insert_agent(new_creature(), &outside).unwrap();
 
         let rect = Rect::new(0, 0, 20, 10);
-        let found: Vec<_> = map.iter_agents_in_rect(&rect, 7).copied().collect();
+        let found: Vec<_> = map.iter_agents_in_rect(&rect, 7).map(|(k, _)| k).collect();
 
         assert_eq!(found.len(), 2);
         assert!(found.contains(&ka));
@@ -940,7 +942,7 @@ mod tests {
         map.insert_agent(new_creature(), &just_outside).unwrap();
 
         let rect = Rect::new(0, 0, 10, 10);
-        let found: Vec<_> = map.iter_agents_in_rect(&rect, 7).copied().collect();
+        let found: Vec<_> = map.iter_agents_in_rect(&rect, 7).map(|(k, _)| k).collect();
         assert_eq!(found, vec![ki]);
     }
 }

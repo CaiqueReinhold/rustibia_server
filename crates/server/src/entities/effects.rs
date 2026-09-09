@@ -24,6 +24,17 @@ pub struct AreaEffect {
     pub delta: Vec<(i8, i8)>,
 }
 
+impl AreaEffect {
+    /// Covering only the tile it names.
+    pub fn single(effect_id: EffectId, origin: Position) -> Self {
+        Self {
+            effect_id,
+            origin,
+            delta: vec![(0, 0)],
+        }
+    }
+}
+
 pub type AreaShapeId = String;
 
 #[derive(Debug)]

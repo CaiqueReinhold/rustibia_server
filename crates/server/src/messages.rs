@@ -552,19 +552,11 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u16_le(agent_id.0);
                 encode_position(position, dst);
                 encode_facing(facing, dst);
-                let name_bytes = name.as_bytes();
-                dst.put_u16_le(name_bytes.len() as u16);
-                dst.put_slice(name_bytes);
+                encode_string(&name, dst);
                 dst.put_u16_le(level);
-                dst.put_u32_le(life.current);
-                dst.put_u32_le(life.maximum);
-                dst.put_u32_le(mana.current);
-                dst.put_u32_le(mana.maximum);
-                dst.put_u16_le(outfit.0.0);
-                dst.put_u8(outfit.1.head);
-                dst.put_u8(outfit.1.body);
-                dst.put_u8(outfit.1.legs);
-                dst.put_u8(outfit.1.feet);
+                encode_pool(&life, dst);
+                encode_pool(&mana, dst);
+                encode_outfit(outfit, dst);
                 dst.put_u16_le(speed);
                 dst.put_u32_le(capacity);
                 encode_optional_item(inventory_head, dst);
@@ -613,9 +605,7 @@ impl Encoder<ServerMessage> for GameMessageCodec {
             }
             ServerMessage::TextMessage { text, message_type } => {
                 dst.put_u8(SRV_TEXT_MESSAGE);
-                let text_bytes = text.as_bytes();
-                dst.put_u16_le(text_bytes.len() as u16);
-                dst.put_slice(text_bytes);
+                encode_string(&text, dst);
                 dst.put_u8(encode_text_message_type(message_type));
             }
             ServerMessage::OpenContainer {
@@ -629,9 +619,7 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u16_le(container_id.0);
                 dst.put_u8(capacity);
                 dst.put_u8(if has_parent { 1 } else { 0 });
-                let title_bytes = title.as_bytes();
-                dst.put_u8(title_bytes.len() as u8);
-                dst.put_slice(title_bytes);
+                encode_short_string(&title, dst);
                 encode_tile(&items, dst);
             }
             ServerMessage::UpdateContainer {
@@ -688,15 +676,9 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u16_le(agent_id.0);
                 encode_position(position, dst);
                 encode_facing(facing, dst);
-                let name_bytes = name.as_bytes();
-                dst.put_u16_le(name_bytes.len() as u16);
-                dst.put_slice(name_bytes);
+                encode_string(&name, dst);
                 dst.put_u32_le(life);
-                dst.put_u16_le(outfit.0.0);
-                dst.put_u8(outfit.1.head);
-                dst.put_u8(outfit.1.body);
-                dst.put_u8(outfit.1.legs);
-                dst.put_u8(outfit.1.feet);
+                encode_outfit(outfit, dst);
                 dst.put_u16_le(speed);
             }
             ServerMessage::TeleportAgent { agent_id, position } => {
@@ -712,9 +694,7 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 message,
             } => {
                 dst.put_u8(SRV_CHAT_MESSAGE);
-                let author_bytes = author.as_bytes();
-                dst.put_u16_le(author_bytes.len() as u16);
-                dst.put_slice(author_bytes);
+                encode_string(&author, dst);
                 dst.put_u8(encode_chat_message_type(message_type));
                 dst.put_u16_le(channel.0);
                 match position {
@@ -724,25 +704,19 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                     }
                     None => dst.put_u8(0x00),
                 }
-                let message_bytes = message.as_bytes();
-                dst.put_u16_le(message_bytes.len() as u16);
-                dst.put_slice(message_bytes);
+                encode_string(&message, dst);
             }
             ServerMessage::ChannelList { channels } => {
                 dst.put_u8(SRV_CHANNEL_LIST);
                 dst.put_u16_le(channels.len() as u16);
                 for (id, name) in channels.iter() {
                     dst.put_u16_le(id.0);
-                    let name_bytes = name.as_bytes();
-                    dst.put_u16_le(name_bytes.len() as u16);
-                    dst.put_slice(name_bytes);
+                    encode_string(name, dst);
                 }
             }
             ServerMessage::PrivateChatOpened { name } => {
                 dst.put_u8(SRV_PRIVATE_CHAT_OPENED);
-                let name_bytes = name.as_bytes();
-                dst.put_u16_le(name_bytes.len() as u16);
-                dst.put_slice(name_bytes);
+                encode_string(&name, dst);
             }
             ServerMessage::FloatingText {
                 text,
@@ -751,9 +725,7 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 color,
             } => {
                 dst.put_u8(SRV_FLOATING_TEXT);
-                let text_bytes = text.as_bytes();
-                dst.put_u16_le(text_bytes.len() as u16);
-                dst.put_slice(text_bytes);
+                encode_string(&text, dst);
                 encode_position(position, dst);
                 dst.put_u8(encode_floating_text_type(text_type));
                 match color {
@@ -879,6 +851,34 @@ fn encode_direction(d: &Direction, dst: &mut BytesMut) {
         Direction::SouthWest => 0x07,
     };
     dst.put_u8(value);
+}
+
+fn encode_string(s: &str, dst: &mut BytesMut) {
+    let bytes = s.as_bytes();
+    dst.put_u16_le(bytes.len() as u16);
+    dst.put_slice(bytes);
+}
+
+/// A container title is the one string the wire length-prefixes with a `u8`. The client reads
+/// the two widths differently, so this is the message's shape rather than a choice — merging it
+/// into `encode_string` desynchronises the reader.
+fn encode_short_string(s: &str, dst: &mut BytesMut) {
+    let bytes = s.as_bytes();
+    dst.put_u8(bytes.len() as u8);
+    dst.put_slice(bytes);
+}
+
+fn encode_outfit(outfit: (OutfitId, OutfitColors), dst: &mut BytesMut) {
+    dst.put_u16_le(outfit.0.0);
+    dst.put_u8(outfit.1.head);
+    dst.put_u8(outfit.1.body);
+    dst.put_u8(outfit.1.legs);
+    dst.put_u8(outfit.1.feet);
+}
+
+fn encode_pool(pool: &Pool, dst: &mut BytesMut) {
+    dst.put_u32_le(pool.current);
+    dst.put_u32_le(pool.maximum);
 }
 
 fn encode_tile(items: &[Option<(ItemId, u8)>], dst: &mut BytesMut) {
@@ -1733,6 +1733,107 @@ mod tests {
                 0, // level
                 0xE1,
                 0x10, // 43.21%
+            ]
+        );
+    }
+
+    /// The two pools and the four outfit colours are written as bare sequences of numbers, so a
+    /// transposed pair compiles and simply reports the wrong thing for ever: swapped pool halves
+    /// show a full life bar on a dying player, swapped colours redress every character. The
+    /// client reads this frame positionally and nothing links the two sides — see the vault's
+    /// `two-sided-agreements`.
+    #[test]
+    fn describe_player_encodes_its_pools_and_outfit_in_order() {
+        let mut dst = BytesMut::new();
+        let no_item = || None;
+        GameMessageCodec {}
+            .encode(
+                ServerMessage::DescribePlayer {
+                    agent_id: AgentId(7),
+                    position: Position::new(0x0102, 0x0304, 5),
+                    facing: Facing::North,
+                    name: "Ab".to_owned(),
+                    level: 9,
+                    life: Pool {
+                        current: 30,
+                        maximum: 40,
+                    },
+                    mana: Pool {
+                        current: 50,
+                        maximum: 60,
+                    },
+                    outfit: (OutfitId(0x0201), OutfitColors::new(11, 22, 33, 44)),
+                    speed: 120,
+                    capacity: 0,
+                    inventory_head: no_item(),
+                    inventory_amulet: no_item(),
+                    inventory_backpack: no_item(),
+                    inventory_chest: no_item(),
+                    inventory_right_hand: no_item(),
+                    inventory_left_hand: no_item(),
+                    inventory_legs: no_item(),
+                    inventory_feet: no_item(),
+                    inventory_ring: no_item(),
+                    inventory_trinket: no_item(),
+                },
+                &mut dst,
+            )
+            .unwrap();
+
+        // Past the length prefix, the opcode, the agent id, the position and the facing.
+        let after_facing = 2 + 1 + 2 + 5 + 1;
+        let name = &dst[after_facing..after_facing + 4];
+        assert_eq!(name, &[2, 0, b'A', b'b'], "name is u16-length-prefixed");
+
+        let rest = &dst[after_facing + 4..];
+        assert_eq!(
+            &rest[..2],
+            &[9, 0],
+            "level precedes the pools"
+        );
+        assert_eq!(
+            &rest[2..18],
+            &[30, 0, 0, 0, 40, 0, 0, 0, 50, 0, 0, 0, 60, 0, 0, 0],
+            "life current, life maximum, mana current, mana maximum"
+        );
+        assert_eq!(
+            &rest[18..24],
+            &[0x01, 0x02, 11, 22, 33, 44],
+            "outfit id, then head, body, legs, feet"
+        );
+    }
+
+    /// The one string the wire length-prefixes with a `u8` rather than a `u16`.
+    #[test]
+    fn a_container_title_is_length_prefixed_with_a_single_byte() {
+        let mut dst = BytesMut::new();
+        GameMessageCodec {}
+            .encode(
+                ServerMessage::OpenContainer {
+                    container_id: ContainerId(3),
+                    capacity: 8,
+                    has_parent: false,
+                    title: "bag".to_owned(),
+                    items: Box::new([]),
+                },
+                &mut dst,
+            )
+            .unwrap();
+
+        let payload_len = u16::from_le_bytes([dst[0], dst[1]]) as usize;
+        assert_eq!(payload_len, dst.len() - 2);
+        assert_eq!(
+            &dst[2..2 + 1 + 2 + 1 + 1 + 4],
+            &[
+                SRV_OPEN_CONTAINER,
+                3,
+                0, // container id
+                8, // capacity
+                0, // has_parent
+                3,
+                b'b',
+                b'a',
+                b'g', // one length byte, then the title
             ]
         );
     }

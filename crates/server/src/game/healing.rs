@@ -81,11 +81,10 @@ pub fn execute_healing(ctx: &mut TickCtx, plan: HealPlan) {
             return;
         };
         ctx.events.push(BroadcastMessage::AreaEffectAppeared {
-            area_effect: AreaEffect {
-                effect_id: GAME_CONFIG.effect_ids.healing_spell,
-                origin: caster_pos.clone(),
-                delta: vec![(0, 0)],
-            },
+            area_effect: AreaEffect::single(
+                GAME_CONFIG.effect_ids.healing_spell,
+                caster_pos.clone(),
+            ),
         });
     }
 }

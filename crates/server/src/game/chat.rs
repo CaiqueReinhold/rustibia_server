@@ -4,16 +4,19 @@ use crate::game::admin::parse_command;
 use crate::game::events::BroadcastMessage;
 
 pub fn say(ctx: &mut TickCtx, agent_key: AgentKey, message: String) {
-    if ctx.map.get_agent(agent_key).is_none() {
+    let Some(position) = ctx.map.agent_position(agent_key).cloned() else {
         return;
-    }
+    };
 
     if parse_command(ctx, &message, agent_key) {
         return;
     }
 
-    ctx.events
-        .push(BroadcastMessage::AgentSaid { agent_key, message });
+    ctx.events.push(BroadcastMessage::AgentSaid {
+        agent_key,
+        position,
+        message,
+    });
 }
 
 #[cfg(test)]
@@ -40,8 +43,13 @@ mod tests {
         let events = h.events;
         assert_eq!(events.len(), 1);
         match &events[0] {
-            BroadcastMessage::AgentSaid { agent_key, message } => {
+            BroadcastMessage::AgentSaid {
+                agent_key,
+                position,
+                message,
+            } => {
                 assert_eq!(*agent_key, key);
+                assert_eq!(*position, pos);
                 assert_eq!(message, "hello");
             }
             other => panic!("expected AgentSaid, got {other:?}"),

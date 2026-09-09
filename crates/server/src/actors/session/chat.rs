@@ -9,6 +9,7 @@ use crate::entities::agent::AgentKey;
 use crate::entities::chat::ChannelId;
 use crate::entities::chat::ChatMessageType;
 use crate::entities::chat::SayTarget;
+use crate::entities::position::Position;
 use crate::game::config::GAME_CONFIG;
 use crate::messages::FloatingTextType;
 use crate::messages::ServerMessage;
@@ -32,14 +33,12 @@ impl SessionActor {
         author: AgentKey,
         message_type: ChatMessageType,
         channel: ChannelId,
+        position: Option<Position>,
         message: String,
     ) -> Result<()> {
-        let (is_creature, position) = {
+        let is_creature = {
             let map = self.shared_map.load();
-            (
-                map.get_agent(author).is_some_and(|a| a.is_creature()),
-                map.agent_position(author).cloned(),
-            )
+            map.get_agent(author).is_some_and(|a| a.is_creature())
         };
 
         if matches!(message_type, ChatMessageType::Local) && is_creature {
@@ -80,7 +79,7 @@ impl SessionActor {
         author: AgentKey,
         message: String,
     ) -> Result<()> {
-        self.send_chat(author, ChatMessageType::Private, ChannelId(0), message)
+        self.send_chat(author, ChatMessageType::Private, ChannelId(0), None, message)
             .await
     }
 
@@ -90,7 +89,7 @@ impl SessionActor {
         channel: ChannelId,
         message: String,
     ) -> Result<()> {
-        self.send_chat(author, ChatMessageType::Channel, channel, message)
+        self.send_chat(author, ChatMessageType::Channel, channel, None, message)
             .await
     }
 
@@ -167,9 +166,20 @@ impl SessionActor {
         Ok(())
     }
 
-    pub(super) async fn agent_said(&mut self, agent_key: AgentKey, message: String) -> Result<()> {
-        self.send_chat(agent_key, ChatMessageType::Local, ChannelId(0), message)
-            .await
+    pub(super) async fn agent_said(
+        &mut self,
+        agent_key: AgentKey,
+        position: Position,
+        message: String,
+    ) -> Result<()> {
+        self.send_chat(
+            agent_key,
+            ChatMessageType::Local,
+            ChannelId(0),
+            Some(position),
+            message,
+        )
+        .await
     }
 }
 

@@ -11,14 +11,11 @@ use tracing::{info, warn};
 use crate::{
     actors::session::{SessionActorHandle, SessionCommand},
     config::CONFIG,
-    entities::{
-        agent::AgentKey,
-        chat::ChannelId,
-        healing::RestoreType,
-        map::GameMap,
-        position::{ItemPlacement, Rect},
+    entities::{agent::AgentKey, chat::ChannelId, map::GameMap, position::Rect},
+    game::{
+        events::{BroadcastMessage, Routing},
+        map_query::iter_visible_floors,
     },
-    game::{events::BroadcastMessage, map_query::iter_visible_floors},
 };
 
 #[derive(Debug)]
@@ -237,237 +234,42 @@ impl MessageRouterActor {
     }
 
     fn route_to_recipients(&mut self, message: &BroadcastMessage, map: &GameMap) {
-        match message {
-            BroadcastMessage::AgentChangedDirection { position, .. } => self.send_to_rect(
-                message,
-                map,
-                Rect::player_viewport(position),
-                position.z,
-                false,
-                None,
-            ),
-            BroadcastMessage::AgentMoved {
-                agent_key,
-                from_position,
-                to_position,
-                ..
-            } => {
-                let from_viewport = Rect::player_viewport(from_position);
-                let to_viewport = Rect::player_viewport(to_position);
+        match message.routing() {
+            Routing::Agent(agent_key) => self.send_to(message, &agent_key),
+            Routing::Viewport { at, same_floor } => {
+                self.send_to_rect(
+                    message,
+                    map,
+                    Rect::player_viewport(at),
+                    at.z,
+                    same_floor,
+                    None,
+                );
+            }
+            Routing::EitherViewport(positions) => {
+                let regions = positions.map(|at| (Rect::player_viewport(at), at.z));
+                self.send_to_rects(message, map, &regions);
+            }
+            Routing::ViewportAndAgent { at, agent } => {
+                self.send_to_rect(message, map, Rect::player_viewport(at), at.z, false, None);
+                self.send_to(message, &agent);
+            }
+            Routing::Move { from, to, mover } => {
+                let (a, b) = (Rect::player_viewport(from), Rect::player_viewport(to));
                 self.send_to_rect(
                     message,
                     map,
                     Rect::new(
-                        u16::min(from_viewport.min_x(), to_viewport.min_x()),
-                        u16::min(from_viewport.min_y(), to_viewport.min_y()),
-                        u16::max(from_viewport.max_x(), to_viewport.max_x()),
-                        u16::max(from_viewport.max_y(), to_viewport.max_y()),
+                        u16::min(a.min_x(), b.min_x()),
+                        u16::min(a.min_y(), b.min_y()),
+                        u16::max(a.max_x(), b.max_x()),
+                        u16::max(a.max_y(), b.max_y()),
                     ),
-                    to_position.z,
+                    to.z,
                     false,
-                    Some(*agent_key),
+                    Some(mover),
                 );
-
-                self.send_to(message, agent_key);
-            }
-            BroadcastMessage::AgentTeleported {
-                from_position,
-                to_position,
-                ..
-            } => {
-                // Origin and destination viewports can overlap, so dedup to
-                // avoid delivering the teleport twice to agents in the overlap.
-                self.send_to_rects(
-                    message,
-                    map,
-                    &[
-                        (Rect::player_viewport(from_position), from_position.z),
-                        (Rect::player_viewport(to_position), to_position.z),
-                    ],
-                );
-            }
-            BroadcastMessage::MoveItemDenied { agent_key, .. } => {
-                self.send_to(message, agent_key);
-            }
-            BroadcastMessage::OpenContainer { agent_key, .. } => {
-                self.send_to(message, agent_key);
-            }
-            BroadcastMessage::AgentDespawned {
-                agent_key,
-                position,
-                ..
-            } => {
-                self.send_to_rect(
-                    message,
-                    map,
-                    Rect::player_viewport(position),
-                    position.z,
-                    false,
-                    None,
-                );
-                self.send_to(message, agent_key); // player was already removed from the map, send using key.
-            }
-            BroadcastMessage::PlayerSpawned { position, .. } => {
-                self.send_to_rect(
-                    message,
-                    map,
-                    Rect::player_viewport(position),
-                    position.z,
-                    false,
-                    None,
-                );
-            }
-            BroadcastMessage::AgentWalkDenied { agent_key } => {
-                self.send_to(message, agent_key);
-            }
-            BroadcastMessage::AgentLostTarget { agent_key, .. } => {
-                self.send_to(message, agent_key);
-            }
-            BroadcastMessage::TileChanged { position } => {
-                self.send_to_rect(
-                    message,
-                    map,
-                    Rect::player_viewport(position),
-                    position.z,
-                    false,
-                    None,
-                );
-            }
-            BroadcastMessage::ContainerUpdated { item } => match &item.placement {
-                ItemPlacement::Inventory(_slot, agent_key) => {
-                    self.send_to(message, agent_key);
-                }
-                ItemPlacement::Map(pos) => {
-                    self.send_to_rect(message, map, Rect::player_viewport(pos), pos.z, true, None);
-                }
-            },
-            BroadcastMessage::UpdateInventorySlot { agent_key, .. } => {
-                self.send_to(message, agent_key);
-            }
-            BroadcastMessage::UseItemDenied { agent_key, .. } => {
-                self.send_to(message, agent_key);
-            }
-            BroadcastMessage::LogoutDenied { agent_key } => {
-                self.send_to(message, agent_key);
-            }
-            BroadcastMessage::AgentSaid { agent_key, .. } => {
-                if let Some(position) = map.agent_position(*agent_key) {
-                    self.send_to_rect(
-                        message,
-                        map,
-                        Rect::player_viewport(position),
-                        position.z,
-                        true,
-                        None,
-                    );
-                }
-            }
-            BroadcastMessage::DamageTaken { position, .. } => {
-                self.send_to_rect(
-                    message,
-                    map,
-                    Rect::player_viewport(position),
-                    position.z,
-                    false,
-                    None,
-                );
-            }
-            BroadcastMessage::MissileLaunched { missile } => {
-                self.send_to_rects(
-                    message,
-                    map,
-                    &[
-                        (Rect::player_viewport(&missile.from), missile.from.z),
-                        (Rect::player_viewport(&missile.to), missile.to.z),
-                    ],
-                );
-            }
-            BroadcastMessage::AttackMissed { position } => {
-                self.send_to_rect(
-                    message,
-                    map,
-                    Rect::player_viewport(position),
-                    position.z,
-                    false,
-                    None,
-                );
-            }
-            BroadcastMessage::SkillProgressUpdated { agent_key, .. } => {
-                self.send_to(message, agent_key);
-            }
-            BroadcastMessage::SkillUpgraded { agent_key, .. } => {
-                self.send_to(message, agent_key);
-            }
-            BroadcastMessage::PlayerManaUpdated { agent_key } => {
-                self.send_to(message, agent_key);
-            }
-            // BroadcastMessage::AgentLifeUpdated { agent_key } => {
-            //     if let Some(position) = map.agent_position(*agent_key) {
-            //         self.send_to_rect(
-            //             message,
-            //             map,
-            //             Rect::player_viewport(position),
-            //             position.z,
-            //             false,
-            //             None,
-            //         );
-            //     }
-            // }
-            BroadcastMessage::PotionDrunk { position, .. } => {
-                self.send_to_rect(
-                    message,
-                    map,
-                    Rect::player_viewport(position),
-                    position.z,
-                    true,
-                    None,
-                );
-            }
-            BroadcastMessage::SpellCast { position, .. } => {
-                self.send_to_rect(
-                    message,
-                    map,
-                    Rect::player_viewport(position),
-                    position.z,
-                    true,
-                    None,
-                );
-            }
-            BroadcastMessage::SpellDenied { position, .. } => {
-                self.send_to_rect(
-                    message,
-                    map,
-                    Rect::player_viewport(position),
-                    position.z,
-                    true,
-                    None,
-                );
-            }
-            BroadcastMessage::AgentHealed {
-                agent_key,
-                position,
-                restore_type,
-                ..
-            } => match restore_type {
-                RestoreType::Life => self.send_to_rect(
-                    message,
-                    map,
-                    Rect::player_viewport(position),
-                    position.z,
-                    false,
-                    None,
-                ),
-                RestoreType::Mana => self.send_to(message, agent_key),
-            },
-            BroadcastMessage::AreaEffectAppeared { area_effect } => {
-                self.send_to_rect(
-                    message,
-                    map,
-                    Rect::player_viewport(&area_effect.origin),
-                    area_effect.origin.z,
-                    false,
-                    None,
-                );
+                self.send_to(message, &mover);
             }
         }
     }
@@ -484,9 +286,9 @@ impl MessageRouterActor {
         iter_visible_floors(floor)
             .filter(|z| !same_floor || floor == *z)
             .flat_map(|floor| map.iter_agents_in_rect(&rect, floor))
-            .for_each(|agent_key| {
-                if Some(*agent_key) != originator {
-                    self.send_to(message, agent_key)
+            .for_each(|(agent_key, _)| {
+                if Some(agent_key) != originator {
+                    self.send_to(message, &agent_key)
                 }
             });
     }
@@ -499,9 +301,9 @@ impl MessageRouterActor {
         let mut seen: HashSet<AgentKey> = HashSet::new();
         for (rect, z) in regions {
             for floor in iter_visible_floors(*z) {
-                for agent_key in map.iter_agents_in_rect(rect, floor) {
-                    if seen.insert(*agent_key) {
-                        self.send_to(message, agent_key);
+                for (agent_key, _) in map.iter_agents_in_rect(rect, floor) {
+                    if seen.insert(agent_key) {
+                        self.send_to(message, &agent_key);
                     }
                 }
             }
@@ -614,6 +416,7 @@ mod tests {
 
         let message = BroadcastMessage::AgentSaid {
             agent_key: speaker,
+            position: pos.clone(),
             message: "hello".to_owned(),
         };
         router.route_to_recipients(&message, &map);
@@ -628,23 +431,29 @@ mod tests {
         );
     }
 
+    /// The speaker leaves the map in the same tick it spoke -- a logout right after a
+    /// goodbye. Until the tile rode on the message the fan-out asked the map where the
+    /// speaker was, found nothing, and dropped the line; the same shape as the reaped
+    /// target in `session/combat.rs`.
     #[test]
-    fn speech_from_a_departed_agent_is_dropped() {
+    fn speech_still_reaches_a_listener_when_the_speaker_has_left_the_map() {
+        let spoken_at = Position::new(100, 100, 7);
+        let listener_pos = Position::new(101, 100, 7);
+        let (mut map, listener) = map_with_player(&listener_pos);
+        map.insert_tile(spoken_at.clone(), MapTile::new());
+
         let mut router = a_router();
         let (handle, mut rx) = SessionActorHandle::for_test();
-        let ghost = AgentKey::default();
-        router.session_map.insert(ghost, handle);
+        router.session_map.insert(listener, handle);
 
         let message = BroadcastMessage::AgentSaid {
-            agent_key: ghost,
-            message: "hello".to_owned(),
+            agent_key: AgentKey::default(),
+            position: spoken_at,
+            message: "bye".to_owned(),
         };
-        router.route_to_recipients(&message, &GameMap::new());
+        router.route_to_recipients(&message, &map);
 
-        assert!(
-            rx.try_recv().is_err(),
-            "an agent with no position on the map has no viewport to fan out to"
-        );
+        assert!(rx.try_recv().is_ok());
     }
 
     #[test]

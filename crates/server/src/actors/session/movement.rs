@@ -3,7 +3,6 @@
 
 use anyhow::Result;
 
-use crate::actors::player_query::get_agent_desc;
 use crate::actors::session::{SessionActor, SessionError};
 use crate::actors::world::WorldCommand;
 use crate::entities::agent::AgentKey;
@@ -87,11 +86,8 @@ impl SessionActor {
         if self.player_key == agent_key {
             self.drop_unreachable_containers().await?;
 
-            for (key, agent, pos) in get_agents_in_expansion(&map, &to_position, &direction) {
-                let agent_id = self.agents.get_or_insert(key);
-                self.connection
-                    .send_message(get_agent_desc(agent, agent_id, pos))
-                    .await?;
+            for (key, pos) in get_agents_in_expansion(&map, &to_position, &direction) {
+                self.introduce_agent(key, pos, &map).await?;
             }
 
             let tiles = {
@@ -117,14 +113,7 @@ impl SessionActor {
                     })
                     .await?;
             } else {
-                let Some(agent) = map.get_agent(agent_key) else {
-                    return Ok(());
-                };
-                let agent_id = self.agents.get_or_insert(agent_key);
-
-                self.connection
-                    .send_message(get_agent_desc(agent, agent_id, to_position))
-                    .await?;
+                self.introduce_agent(agent_key, to_position, &map).await?;
             }
 
             Ok(())
@@ -178,13 +167,7 @@ impl SessionActor {
                         })
                         .await?;
                 } else {
-                    let Some(agent) = map.get_agent(agent_key) else {
-                        return Ok(());
-                    };
-                    let agent_id = self.agents.get_or_insert(agent_key);
-                    self.connection
-                        .send_message(get_agent_desc(agent, agent_id, to_position))
-                        .await?;
+                    self.introduce_agent(agent_key, to_position, &map).await?;
                 }
             }
 

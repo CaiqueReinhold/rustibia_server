@@ -156,41 +156,22 @@ pub fn get_map_expansion(
 pub fn get_agents_in_viewport<'a>(
     map: &'a GameMap,
     position: &'a Position,
-) -> impl Iterator<Item = (AgentKey, &'a Agent, Position)> + 'a {
+) -> impl Iterator<Item = (AgentKey, Position)> + 'a {
     iter_visible_floors(position.z)
-        .flat_map(|floor| map.iter_agents_in_rect(&floor_viewport_rect(position, floor), floor))
-        .flat_map(|key: &AgentKey| {
-            map.get_agent(*key).map(|agent| {
-                (
-                    *key,
-                    agent,
-                    map.agent_position(*key).cloned().unwrap_or_default(),
-                )
-            })
-        })
+        .flat_map(move |floor| map.iter_agents_in_rect(&floor_viewport_rect(position, floor), floor))
 }
 
 pub fn get_agents_in_expansion<'a>(
     map: &'a GameMap,
     position: &'a Position,
     direction: &'a Direction,
-) -> impl Iterator<Item = (AgentKey, &'a Agent, Position)> + 'a {
+) -> impl Iterator<Item = (AgentKey, Position)> + 'a {
     iter_visible_floors(position.z).flat_map(move |floor| {
         let (rect1, rect2) = expansion_rects(position, direction, floor);
         [Some(rect1), rect2]
             .into_iter()
             .flatten()
             .flat_map(move |rect| map.iter_agents_in_rect(&rect, floor))
-            .copied()
-            .flat_map(|key| {
-                map.get_agent(key).map(|agent| {
-                    (
-                        key,
-                        agent,
-                        map.agent_position(key).cloned().unwrap_or_default(),
-                    )
-                })
-            })
     })
 }
 
@@ -393,6 +374,32 @@ pub fn can_throw(map: &GameMap, from: &Position, to: &Position, same_floor: bool
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_viewport_pairs_each_agent_with_its_own_tile() {
+        use crate::entities::agent::Agent;
+        use crate::entities::map::MapTile;
+        use crate::persistence::test_fixtures::a_test_snapshot;
+
+        let centre = Position::new(100, 100, 7);
+        let neighbour = Position::new(103, 101, 7);
+        let outside = Position::new(140, 100, 7);
+
+        let mut map = GameMap::new();
+        let seat = |map: &mut GameMap, at: &Position, id: u32| {
+            map.insert_tile(at.clone(), MapTile::new());
+            map.insert_agent(Agent::from_player(a_test_snapshot(id, 1)), at)
+                .unwrap()
+        };
+        let me = seat(&mut map, &centre, 1);
+        let them = seat(&mut map, &neighbour, 2);
+        seat(&mut map, &outside, 3);
+
+        let mut found: Vec<(AgentKey, Position)> = get_agents_in_viewport(&map, &centre).collect();
+        found.sort_by_key(|(_, pos)| pos.x);
+
+        assert_eq!(found, vec![(me, centre), (them, neighbour)]);
+    }
 
     #[test]
     fn can_target_accepts_the_same_tile_and_the_viewport_edge() {
