@@ -16,8 +16,10 @@ use crate::entities::creature::CreatureVoices;
 use crate::entities::player::PlayerId;
 use crate::entities::vocation::Vocation;
 use crate::entities::{
+    Bounds,
     agent::{Agent, Facing, Pool},
-    creature::{BloodType, CreatureKind},
+    combat::CombatElement,
+    creature::{BloodType, CreatureAttackDamage, CreatureKind},
     inventory::InventorySlot,
     items::{Item, ItemAttribute, ItemConfig, ItemFlag, ItemId},
     position::Position,
@@ -235,7 +237,11 @@ pub fn a_creature_kind(name: &str) -> CreatureKind {
         },
         outfit: (OutfitId(21), OutfitColors::new(0, 0, 0, 0)),
         speed: 100,
-        auto_attack_damage: (1, 2),
+        melee: CreatureAttackDamage {
+            element: CombatElement::Physical,
+            value: Bounds { min: 1, max: 2 },
+        },
+        abilities: vec![],
         blood_type: BloodType::Blood,
         armor: 0,
         defense: 0,
@@ -266,7 +272,13 @@ fn a_creature(
                 current: life,
                 maximum: life,
             },
-            auto_attack_damage: damage,
+            melee: CreatureAttackDamage {
+                element: CombatElement::Physical,
+                value: Bounds {
+                    min: damage.0,
+                    max: damage.1,
+                },
+            },
             armor,
             defense,
             experience,

@@ -1,7 +1,7 @@
 use tracing::error;
 
-use crate::entities::agent::AgentKey;
-use crate::entities::creature::CreatureKind;
+use crate::entities::agent::{Agent, AgentKey};
+use crate::entities::creature::{CreatureAbility, CreatureAbilityId, CreatureKind};
 use crate::entities::map::GameMap;
 use crate::entities::position::{Direction, Position, Rect};
 use crate::game::Tick;
@@ -25,21 +25,40 @@ pub enum CreatureAction {
         agent_key: AgentKey,
         message: String,
     },
+    CastAbility {
+        agent_key: AgentKey,
+        ability_id: CreatureAbilityId,
+    },
 }
 
 #[derive(Debug, Default)]
 pub struct CreatureState {
     next_wander_tick: Tick,
     next_say_tick: Tick,
+    ability_cooldowns: Vec<(CreatureAbilityId, Tick)>,
 }
 
 impl CreatureState {
-    pub fn stamp_wander(&mut self, current_tick: Tick) {
+    fn stamp_wander(&mut self, current_tick: Tick) {
         self.next_wander_tick = current_tick + GAME_CONFIG.movement.wander_ticks
     }
 
-    pub fn stamp_say(&mut self, current_tick: Tick, kind: &CreatureKind) {
+    fn stamp_say(&mut self, current_tick: Tick, kind: &CreatureKind) {
         self.next_say_tick = current_tick + kind.say.cooldown;
+    }
+
+    fn stamp_ability(&mut self, current_tick: Tick, ability: &CreatureAbility) {
+        self.ability_cooldowns.retain(|(id, _)| *id != ability.id);
+        self.ability_cooldowns
+            .push((ability.id, current_tick + ability.cooldown));
+    }
+
+    fn next_ability_tick(&self, id: CreatureAbilityId) -> Tick {
+        self.ability_cooldowns
+            .iter()
+            .find(|(caid, _)| *caid == id)
+            .map(|(_, tick)| *tick)
+            .unwrap_or(Tick(0))
     }
 }
 
@@ -139,7 +158,7 @@ fn in_combat(mut ctx: CreatureBehaviourContext) -> Option<CreatureAction> {
     let target_position = ctx.map.agent_position(target_key)?;
 
     // TODO: ajust for ranged creatures
-    if !postion.is_within(target_position, 1) {
+    if !postion.is_within(target_position, 1) && agent.next_walk_tick <= ctx.world_tick {
         match pathfinding::next_step(
             ctx.map,
             ctx.creature,
@@ -176,7 +195,16 @@ fn in_combat(mut ctx: CreatureBehaviourContext) -> Option<CreatureAction> {
         }
     }
 
-    // TODO: roll spell chance
+    let ability = use_ability(
+        ctx.creature,
+        agent,
+        ctx.state,
+        ctx.world_tick,
+        &mut ctx.roll,
+    );
+    if ability.is_some() {
+        return ability;
+    }
 
     // TODO: roll change target
 
@@ -196,17 +224,21 @@ fn fleeing(mut ctx: CreatureBehaviourContext) -> Option<CreatureAction> {
     let from = map.agent_position(ctx.creature)?;
     let to = map.agent_position(agent.target()?)?;
 
-    // TODO: roll spell chance
-
-    if agent.next_walk_tick > ctx.world_tick {
-        return None;
+    if agent.next_walk_tick <= ctx.world_tick {
+        let direction = escape_step(map, ctx.creature, from, to, &mut ctx.roll)?;
+        return Some(CreatureAction::Walk {
+            agent_key: ctx.creature,
+            direction,
+        });
     }
 
-    let direction = escape_step(map, ctx.creature, from, to, &mut ctx.roll)?;
-    Some(CreatureAction::Walk {
-        agent_key: ctx.creature,
-        direction,
-    })
+    use_ability(
+        ctx.creature,
+        agent,
+        ctx.state,
+        ctx.world_tick,
+        &mut ctx.roll,
+    )
 }
 
 fn returning(ctx: CreatureBehaviourContext) -> Option<CreatureAction> {
@@ -244,7 +276,10 @@ fn returning(ctx: CreatureBehaviourContext) -> Option<CreatureAction> {
 
 fn wander(ctx: &mut CreatureBehaviourContext) -> Option<Direction> {
     let can_wander = ctx.state.next_wander_tick <= ctx.world_tick;
-    if can_wander && let Some(creature_pos) = ctx.map.agent_position(ctx.creature) {
+    if can_wander
+        && let Some(creature_pos) = ctx.map.agent_position(ctx.creature)
+        && ctx.roll.chance(GAME_CONFIG.movement.wander_chance)
+    {
         ctx.state.stamp_wander(ctx.world_tick);
         let available_directions = WANDER_DIRECTIONS
             .into_iter()
@@ -280,8 +315,6 @@ fn say(ctx: &mut CreatureBehaviourContext) -> Option<String> {
     None
 }
 
-/// The agent a creature should pick a fight with: the player it can hit and reach
-/// soonest, falling back to the nearest it can only hit.
 fn search_target(creature: AgentKey, map: &GameMap) -> Option<AgentKey> {
     let from = map.agent_position(creature)?;
     let viewport = Rect::player_viewport(from);
@@ -313,6 +346,32 @@ fn search_target(creature: AgentKey, map: &GameMap) -> Option<AgentKey> {
                 .min_by_key(|(_, pos)| from.distance(pos))
                 .map(|(key, _)| *key)
         })
+}
+
+fn use_ability(
+    creature: AgentKey,
+    agent: &Agent,
+    state: &mut CreatureState,
+    world_tick: Tick,
+    roll: &mut Rolls,
+) -> Option<CreatureAction> {
+    let kind = agent.get_creature_kind()?;
+    for ability in &kind.abilities {
+        if state.next_ability_tick(ability.id) > world_tick
+            || agent.next_spell_group_tick(ability.effect.cooldown_group()) > world_tick
+        {
+            continue;
+        }
+        state.stamp_ability(world_tick, ability);
+        if roll.chance(ability.chance) {
+            return Some(CreatureAction::CastAbility {
+                agent_key: creature,
+                ability_id: ability.id,
+            });
+        }
+    }
+
+    None
 }
 
 /// One rung of the escape ladder: up to four candidate steps as `(dx, dy)` offsets.
@@ -410,12 +469,19 @@ fn escape_ladder(offset_x: i32, offset_y: i32) -> [Rung; 5] {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::constants::items::MAX_DROP_CHANCE;
+    use crate::entities::Bounds;
     use crate::entities::agent::Agent;
+    use crate::entities::combat::CombatElement;
+    use crate::entities::creature::{AbilityEffect, CreatureAbility, CreatureAttack};
+    use crate::entities::creature::{CreatureAttackDamage, CreatureKind};
     use crate::entities::items::ItemId;
     use crate::entities::items::{Item, ItemAttribute, ItemConfig, ItemFlag};
     use crate::entities::map::MapTile;
+    use crate::entities::spells::{SpellGroup, SpellTargetMode};
+    use crate::game::TickDelta;
     use crate::persistence::test_fixtures::{
-        a_test_creature, a_test_creature_that_flees, a_test_snapshot,
+        a_creature_kind, a_test_creature, a_test_creature_that_flees, a_test_snapshot,
     };
     use std::collections::HashSet;
     use std::sync::Arc;
@@ -801,5 +867,121 @@ mod tests {
             ),
             "expected a step towards the player, got {action:?}"
         );
+    }
+
+    fn an_attack_ability(chance: u32) -> CreatureAbility {
+        CreatureAbility {
+            id: CreatureAbilityId(0),
+            cooldown: TickDelta(40),
+            chance,
+            effect: AbilityEffect::Attack(CreatureAttack {
+                damage: CreatureAttackDamage {
+                    element: CombatElement::Energy,
+                    value: Bounds { min: 1, max: 2 },
+                },
+                target: SpellTargetMode::Target { range: 1 },
+                effect_id: None,
+                missile_id: None,
+            }),
+        }
+    }
+
+    /// A caster adjacent to its target, so `in_combat` walks nowhere and falls straight
+    /// through to the ability roll.
+    fn a_caster_in_melee(map: &mut GameMap, ability: CreatureAbility) -> AgentKey {
+        let demon = map
+            .insert_agent(
+                Agent::from_creature_kind(
+                    Arc::new(CreatureKind {
+                        abilities: vec![ability],
+                        ..a_creature_kind("Demon")
+                    }),
+                    at(15, 10),
+                ),
+                &at(15, 10),
+            )
+            .unwrap();
+        let player = map
+            .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), &at(16, 10))
+            .unwrap();
+        map.get_agent_mut(demon)
+            .unwrap()
+            .set_target(Some(player), 1);
+        demon
+    }
+
+    #[test]
+    fn an_ability_that_wins_its_roll_is_cast() {
+        let mut map = a_field(5..=25, 5..=15);
+        let demon = a_caster_in_melee(&mut map, an_attack_ability(MAX_DROP_CHANCE));
+        let mut state = CreatureState::default();
+
+        let action = decide_action(CreatureBehaviourContext {
+            creature: demon,
+            map: &map,
+            roll: Rolls::new(7),
+            world_tick: Tick(100),
+            state: &mut state,
+        });
+
+        assert!(
+            matches!(action, Some(CreatureAction::CastAbility { ability_id, .. })
+                if ability_id == CreatureAbilityId(0)),
+            "expected a cast, got {action:?}"
+        );
+    }
+
+    /// The bug this pins: the roll used to be retried every decision, which turned a low
+    /// `chance` into a few hundred milliseconds of delay instead of a gate.
+    #[test]
+    fn a_lost_roll_puts_the_ability_back_on_cooldown() {
+        let mut map = a_field(5..=25, 5..=15);
+        let demon = a_caster_in_melee(&mut map, an_attack_ability(0));
+        let mut state = CreatureState::default();
+
+        let action = decide_action(CreatureBehaviourContext {
+            creature: demon,
+            map: &map,
+            roll: Rolls::new(7),
+            world_tick: Tick(100),
+            state: &mut state,
+        });
+
+        assert!(
+            !matches!(action, Some(CreatureAction::CastAbility { .. })),
+            "a zero chance must never cast, got {action:?}"
+        );
+        assert_eq!(
+            state.next_ability_tick(CreatureAbilityId(0)),
+            Tick(100) + TickDelta(40)
+        );
+    }
+
+    /// An ability the group cooldown blocks was never eligible, so it must keep its roll
+    /// rather than burn one the way a lost roll does.
+    #[test]
+    fn a_group_cooldown_blocks_the_cast_without_spending_the_roll() {
+        let mut map = a_field(5..=25, 5..=15);
+        let demon = a_caster_in_melee(&mut map, an_attack_ability(MAX_DROP_CHANCE));
+        map.get_agent_mut(demon).unwrap().stamp_spell_group(
+            Tick(100),
+            SpellGroup::Attack,
+            Some(TickDelta(40)),
+        );
+        let mut state = CreatureState::default();
+
+        let action = decide_action(CreatureBehaviourContext {
+            creature: demon,
+            map: &map,
+            roll: Rolls::new(7),
+            world_tick: Tick(120),
+            state: &mut state,
+        });
+
+        assert!(
+            !matches!(action, Some(CreatureAction::CastAbility { .. })),
+            "the attack group is still on cooldown, got {action:?}"
+        );
+        assert_eq!(state.next_ability_tick(CreatureAbilityId(0)), Tick(0));
     }
 }

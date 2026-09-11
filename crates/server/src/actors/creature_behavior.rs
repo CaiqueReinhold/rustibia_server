@@ -44,7 +44,9 @@ impl CreatureBehaviorActor {
         info!("CreatureBehaviorActor started");
         while self.tick_rx.changed().await.is_ok() {
             let tick = *self.tick_rx.borrow();
-            self.process_tick(tick).await;
+            if tick.0.is_multiple_of(5) {
+                self.process_tick(tick).await;
+            }
         }
     }
 
@@ -57,7 +59,8 @@ impl CreatureBehaviorActor {
             let Ok(mut states) = states.lock() else {
                 return Vec::new();
             };
-            map.iter_agents()
+            let actions = map
+                .iter_agents()
                 .filter(|(_, a)| a.is_creature())
                 .map(|(k, _)| k)
                 .flat_map(|agent_key| {
@@ -73,7 +76,9 @@ impl CreatureBehaviorActor {
                         state: creature_state,
                     })
                 })
-                .collect::<Vec<CreatureAction>>()
+                .collect::<Vec<CreatureAction>>();
+            states.retain(|agent_key, _| map.get_agent(*agent_key).is_some());
+            actions
         })
         .await;
         match actions {

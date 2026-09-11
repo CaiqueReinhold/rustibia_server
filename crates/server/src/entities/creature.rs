@@ -2,8 +2,12 @@ use serde::Deserialize;
 
 use crate::{
     entities::{
+        Bounds,
         agent::{OutfitColors, OutfitId, Pool},
+        combat::CombatElement,
+        effects::{EffectId, MissileId},
         items::{FluidType, ItemId},
+        spells::{SpellGroup, SpellTargetMode},
     },
     game::TickDelta,
 };
@@ -41,12 +45,54 @@ pub struct CreatureVoices {
 }
 
 #[derive(Clone, Debug)]
+pub struct CreatureAttackDamage {
+    pub element: CombatElement,
+    pub value: Bounds,
+}
+
+#[derive(Clone, Debug)]
+pub struct CreatureAttack {
+    pub damage: CreatureAttackDamage,
+    pub target: SpellTargetMode,
+    pub effect_id: Option<EffectId>,
+    pub missile_id: Option<MissileId>,
+}
+
+#[derive(Clone, Debug)]
+pub enum AbilityEffect {
+    Attack(CreatureAttack),
+    Heal(Bounds),
+}
+
+impl AbilityEffect {
+    pub fn cooldown_group(&self) -> SpellGroup {
+        match self {
+            AbilityEffect::Attack { .. } => SpellGroup::Attack,
+            AbilityEffect::Heal { .. } => SpellGroup::Healing,
+        }
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+#[repr(transparent)]
+pub struct CreatureAbilityId(pub u8);
+
+#[derive(Clone, Debug)]
+pub struct CreatureAbility {
+    pub id: CreatureAbilityId,
+    pub cooldown: TickDelta,
+    pub chance: u32,
+    pub effect: AbilityEffect,
+}
+
+#[derive(Clone, Debug)]
 pub struct CreatureKind {
     pub name: String,
     pub life: Pool,
     pub outfit: (OutfitId, OutfitColors),
     pub speed: u16,
-    pub auto_attack_damage: (u32, u32),
+    pub melee: CreatureAttackDamage,
+    pub abilities: Vec<CreatureAbility>,
     pub blood_type: BloodType,
     pub armor: u16,
     pub defense: u16,
@@ -55,4 +101,13 @@ pub struct CreatureKind {
     pub loot_table: Vec<LootEntry>,
     pub flee_threshold: Option<u32>,
     pub say: CreatureVoices,
+}
+
+impl CreatureKind {
+    pub fn get_ability_effect(&self, id: CreatureAbilityId) -> Option<&AbilityEffect> {
+        self.abilities
+            .iter()
+            .find(|a| a.id == id)
+            .map(|a| &a.effect)
+    }
 }

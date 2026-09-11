@@ -8,9 +8,23 @@ experience: 30
 outfit:
   id: 62
   colors: [0, 0, 0, 0]
-damage:
-  min: 0
-  max: 15
+melee:
+  damage:
+    min: 0
+    max: 15
+  element: physical
+abilities:
+  - cooldown: 40
+    chance: 15000
+    type: attack
+    element: physical
+    damage:
+      min: 5
+      max: 30
+    target:
+      type: target
+      range: 6
+    missile_id: 3
 corpse: 6003
 say:
   cooldown: 100

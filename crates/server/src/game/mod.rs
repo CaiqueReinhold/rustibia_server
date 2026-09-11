@@ -2,6 +2,7 @@ pub mod admin;
 pub mod chat;
 pub mod combat;
 pub mod config;
+pub mod creature_abilities;
 pub mod creature_behavior;
 pub mod damage;
 pub mod death;

@@ -85,7 +85,7 @@ pub enum SpellEffect {
     Healing(SpellHealing),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum SpellTargetMode {
     /// Accepts only CastTarget::None
     Caster,
@@ -100,7 +100,7 @@ pub enum SpellTargetMode {
     },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum AreaOrigin {
     Caster,
     Target,

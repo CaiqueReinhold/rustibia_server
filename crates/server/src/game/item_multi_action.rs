@@ -3,9 +3,10 @@ use tracing::{error, warn};
 
 use crate::{
     entities::{
+        Bounds,
         agent::AgentKey,
         healing::{HealPlan, Restore},
-        items::{Bounds, Item, ItemFlag, ItemId, ItemMultiAction, ItemRef},
+        items::{Item, ItemFlag, ItemId, ItemMultiAction, ItemRef},
         map::GameMap,
         position::{ItemPlacement, Position},
     },

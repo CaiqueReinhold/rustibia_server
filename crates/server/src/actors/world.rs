@@ -14,7 +14,7 @@ use crate::actors::message_router::{MessageRouterActorHandle, MessageRouterGuard
 use crate::actors::session::SessionActorHandle;
 use crate::config::CONFIG;
 use crate::entities::agent::{Agent, AgentKey, Facing};
-use crate::entities::creature::CreatureKind;
+use crate::entities::creature::{CreatureAbilityId, CreatureKind};
 use crate::entities::items::ItemRef;
 use crate::entities::map::GameMap;
 use crate::entities::position::{Direction, ItemPlacement, Position};
@@ -24,8 +24,8 @@ use crate::game::events::BroadcastMessage;
 use crate::game::item_multi_action::UseTarget;
 use crate::game::random::Rolls;
 use crate::game::{
-    Tick, TickCtx, TickDelta, chat, events, item_action, item_movement, item_multi_action,
-    movement, spells, systems, targeting,
+    Tick, TickCtx, TickDelta, chat, creature_abilities, events, item_action, item_movement,
+    item_multi_action, movement, spells, systems, targeting,
 };
 use crate::persistence::creatures::CREATURE_KINDS;
 use crate::persistence::spawns::SpawnPoint;
@@ -88,6 +88,10 @@ pub enum WorldCommand {
         spell: SpellId,
         target: CastTarget,
     },
+    CastAbility {
+        agent_key: AgentKey,
+        ability_id: CreatureAbilityId,
+    },
 }
 
 impl WorldCommand {
@@ -105,6 +109,13 @@ impl WorldCommand {
             } => WorldCommand::Walk {
                 agent_key,
                 direction,
+            },
+            CreatureAction::CastAbility {
+                agent_key,
+                ability_id,
+            } => WorldCommand::CastAbility {
+                agent_key,
+                ability_id,
             },
         }
     }
@@ -349,12 +360,16 @@ impl WorldActor {
         broadcast_messages: &mut Vec<BroadcastMessage>,
     ) {
         info!("Executing command: {}", command);
-        let result: Result<()> = match command {
+        match command {
             WorldCommand::SpawnPlayer {
                 player,
                 session,
                 tx,
-            } => self.spawn_player(*player, session, tx, broadcast_messages),
+            } => {
+                if let Err(e) = self.spawn_player(*player, session, tx, broadcast_messages) {
+                    error!("Error spawning player: {e}");
+                }
+            }
             WorldCommand::Walk {
                 direction,
                 agent_key,
@@ -362,7 +377,6 @@ impl WorldActor {
                 self.with_ctx(broadcast_messages, |ctx| {
                     movement::walk(ctx, direction, agent_key)
                 });
-                Ok(())
             }
             WorldCommand::MoveItem {
                 agent,
@@ -373,13 +387,11 @@ impl WorldActor {
                 self.with_ctx(broadcast_messages, |ctx| {
                     item_movement::move_item(ctx, agent, source, amount, to)
                 });
-                Ok(())
             }
             WorldCommand::UseItem { agent, item } => {
                 self.with_ctx(broadcast_messages, |ctx| {
                     item_action::use_item(ctx, agent, item)
                 });
-                Ok(())
             }
             WorldCommand::UseItemWith {
                 agent,
@@ -389,13 +401,11 @@ impl WorldActor {
                 self.with_ctx(broadcast_messages, |ctx| {
                     item_multi_action::use_item_with(ctx, agent, source, target)
                 });
-                Ok(())
             }
             WorldCommand::ChangeDirection { agent, facing } => {
                 self.with_ctx(broadcast_messages, |ctx| {
                     movement::change_direction(ctx, agent, facing)
                 });
-                Ok(())
             }
             WorldCommand::SetTarget {
                 agent_key,
@@ -405,7 +415,6 @@ impl WorldActor {
                 self.with_ctx(broadcast_messages, |ctx| {
                     targeting::set_target(ctx, agent_key, target, seq)
                 });
-                Ok(())
             }
             WorldCommand::DespawnPlayer { agent_key, .. } => {
                 if let Some((_, position)) = self.map.remove_agent(agent_key) {
@@ -416,7 +425,6 @@ impl WorldActor {
                         position,
                     });
                 }
-                Ok(())
             }
             WorldCommand::SpawnCreature {
                 kind,
@@ -433,25 +441,22 @@ impl WorldActor {
                             agent_key,
                             position: position.clone(),
                         });
-                        Ok(())
                     }
-                    Err(e) => Err(anyhow!(
-                        "Failed to spawn creature at {:?}: {:?}",
-                        position,
-                        e
-                    )),
-                }
+                    Err(e) => {
+                        error!("Failed to spawn creature at {:?}: {:?}", position, e);
+                    }
+                };
             }
             WorldCommand::RequestLogout { agent_key } => {
-                self.handle_request_logout(agent_key, broadcast_messages)
+                if let Err(e) = self.handle_request_logout(agent_key, broadcast_messages) {
+                    error!("Failed to logout player {agent_key:?}: {e}");
+                }
             }
             WorldCommand::DecayItem { item } => {
                 self.with_ctx(broadcast_messages, |ctx| item_action::decay_item(ctx, item));
-                Ok(())
             }
             WorldCommand::Say { agent_key, message } => {
                 self.with_ctx(broadcast_messages, |ctx| chat::say(ctx, agent_key, message));
-                Ok(())
             }
             WorldCommand::CastSpell {
                 agent_key,
@@ -461,12 +466,16 @@ impl WorldActor {
                 self.with_ctx(broadcast_messages, |ctx| {
                     spells::cast_spell(ctx, agent_key, spell, target)
                 });
-                Ok(())
+            }
+            WorldCommand::CastAbility {
+                agent_key,
+                ability_id,
+            } => {
+                self.with_ctx(broadcast_messages, |ctx| {
+                    creature_abilities::cast_ability(ctx, agent_key, ability_id)
+                });
             }
         };
-        if let Err(e) = result {
-            error!("Error on apply command: {e}");
-        }
     }
 
     fn handle_request_logout(

@@ -11,12 +11,12 @@ use crate::config::CONFIG;
 use crate::entities::combat::CombatElement;
 use crate::entities::effects::{AreaShape, AreaShapeId, EffectId, MissileId};
 use crate::entities::spells::{
-    AreaOrigin, PowerCurve, Spell, SpellAttack, SpellEffect, SpellGroup, SpellHealing, SpellId,
-    SpellTargetMode,
+    PowerCurve, Spell, SpellAttack, SpellEffect, SpellGroup, SpellHealing, SpellId, SpellTargetMode,
 };
 use crate::entities::vocation::Vocation;
 use crate::game::TickDelta;
 use crate::persistence::areas::AREA_SHAPES;
+use crate::persistence::target_mode::{TargetModeError, parse_target_mode};
 
 pub static SPELLS: Lazy<Arc<HashMap<SpellId, Arc<Spell>>>> = Lazy::new(|| {
     Arc::new(load_spells(&CONFIG.spells_file_path, &AREA_SHAPES).expect("failed to load spells"))
@@ -116,34 +116,6 @@ struct RawHealing {
     spread: f64,
 }
 
-/// `self` carries no fields of its own, and this is what refuses one written under it rather
-/// than dropping it.
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct RawCaster {}
-
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct RawTargeted {
-    range: u16,
-}
-
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct RawArea {
-    origin: RawOrigin,
-    #[serde(default)]
-    shape: AreaShapeId,
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "snake_case", deny_unknown_fields)]
-enum RawOrigin {
-    #[serde(rename = "self")]
-    Caster,
-    Target,
-}
-
 // ── Conversion ────────────────────────────────────────────────────────────────
 
 /// Read as an `f64` and narrowed here so the error can name the number as authored: a value
@@ -192,67 +164,25 @@ fn single_entry(value: serde_yaml::Value) -> Option<(String, serde_yaml::Value)>
     }
 }
 
-/// A target is a mapping tagged by `type:`. Taking the tag out leaves exactly the fields of
-/// the mode it names, so `deny_unknown_fields` still catches a typo among them. Hand-rolled
-/// rather than an internally tagged serde enum because a `serde_yaml` error raised off a
-/// `Value` carries no line, and this way the error names the spell.
-fn take_type(value: &mut serde_yaml::Value) -> Option<String> {
-    let tag = value.as_mapping_mut()?.remove("type")?;
-    Some(tag.as_str()?.to_string())
-}
-
-fn parse_origin(origin: RawOrigin) -> AreaOrigin {
-    match origin {
-        RawOrigin::Caster => AreaOrigin::Caster,
-        RawOrigin::Target => AreaOrigin::Target,
-    }
-}
-
 fn parse_target(
     id: SpellId,
     name: &str,
-    mut value: serde_yaml::Value,
+    value: serde_yaml::Value,
     shapes: &HashMap<AreaShapeId, Arc<AreaShape>>,
 ) -> Result<SpellTargetMode, SpellsLoadError> {
-    let unknown = |target: String| SpellsLoadError::UnknownTarget {
-        id,
-        name: name.to_string(),
-        target,
-    };
-
-    let kind =
-        take_type(&mut value).ok_or_else(|| unknown("a mapping without a `type`".to_string()))?;
-
-    match kind.as_str() {
-        "self" => {
-            let RawCaster {} = serde_yaml::from_value(value)?;
-            Ok(SpellTargetMode::Caster)
-        }
-        "target" => {
-            let targeted: RawTargeted = serde_yaml::from_value(value)?;
-            Ok(SpellTargetMode::Target {
-                range: targeted.range,
-            })
-        }
-        "area" => {
-            let area: RawArea = serde_yaml::from_value(value)?;
-            let shape =
-                shapes
-                    .get(&area.shape)
-                    .cloned()
-                    .ok_or_else(|| SpellsLoadError::UnknownShape {
-                        id,
-                        name: name.to_string(),
-                        shape: area.shape.clone(),
-                    })?;
-
-            Ok(SpellTargetMode::Area {
-                origin: parse_origin(area.origin),
-                shape,
-            })
-        }
-        other => Err(unknown(other.to_string())),
-    }
+    parse_target_mode(value, shapes).map_err(|error| match error {
+        TargetModeError::UnknownTarget { target } => SpellsLoadError::UnknownTarget {
+            id,
+            name: name.to_string(),
+            target,
+        },
+        TargetModeError::UnknownShape { shape } => SpellsLoadError::UnknownShape {
+            id,
+            name: name.to_string(),
+            shape,
+        },
+        TargetModeError::Malformed(source) => SpellsLoadError::ParseError(source),
+    })
 }
 
 fn parse_effect(
@@ -381,6 +311,7 @@ fn load_spells_from_str(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::entities::spells::AreaOrigin;
     use crate::persistence::areas::load_areas;
 
     fn shape(name: &str) -> HashMap<AreaShapeId, Arc<AreaShape>> {

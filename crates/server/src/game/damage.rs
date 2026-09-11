@@ -1,6 +1,6 @@
 use crate::entities::agent::AgentKey;
 use crate::entities::combat::{CombatDamage, CombatElement};
-use crate::entities::creature::CreatureKind;
+use crate::entities::creature::CreatureAttackDamage;
 use crate::entities::items::{Item, ItemFlag};
 use crate::entities::player::Player;
 use crate::entities::position::{ItemPlacement, Position};
@@ -89,10 +89,13 @@ pub fn get_player_base_damage(player: &Player, roll: &mut Rolls) -> (CombatEleme
     (player.weapon_element(), roll.damage_roll(min, max))
 }
 
-pub fn get_creature_base_damage(creature: &CreatureKind, roll: &mut Rolls) -> (CombatElement, u32) {
+pub fn get_creature_base_damage(
+    attk: &CreatureAttackDamage,
+    roll: &mut Rolls,
+) -> (CombatElement, u32) {
     (
-        CombatElement::Physical,
-        roll.damage_roll(creature.auto_attack_damage.0, creature.auto_attack_damage.1),
+        attk.element,
+        roll.damage_roll(attk.value.min, attk.value.max),
     )
 }
 

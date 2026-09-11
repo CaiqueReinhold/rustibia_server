@@ -8,16 +8,25 @@ use serde::Deserialize;
 use thiserror::Error;
 
 use crate::config::CONFIG;
+use crate::entities::Bounds;
 use crate::entities::agent::{OutfitColors, OutfitId, Pool};
+use crate::entities::combat::CombatElement;
 use crate::entities::creature::{
-    BloodType, CreatureKind, CreatureKindId, CreatureVoices, LootEntry,
+    AbilityEffect, BloodType, CreatureAbility, CreatureAbilityId, CreatureAttack,
+    CreatureAttackDamage, CreatureKind, CreatureKindId, CreatureVoices, LootEntry,
 };
+use crate::entities::effects::{AreaShape, AreaShapeId, EffectId, MissileId};
 use crate::entities::items::ItemId;
 use crate::game::TickDelta;
+use crate::persistence::areas::AREA_SHAPES;
+use crate::persistence::target_mode::{TargetModeError, parse_target_mode, take_type};
 
 pub static CREATURE_KINDS: Lazy<Arc<HashMap<CreatureKindId, Arc<CreatureKind>>>> =
     Lazy::new(|| {
-        Arc::new(load_creatures(&CONFIG.creatures_dir_path).expect("failed to load creatures"))
+        Arc::new(
+            load_creatures(&CONFIG.creatures_dir_path, &AREA_SHAPES)
+                .expect("failed to load creatures"),
+        )
     });
 
 #[derive(Error, Debug)]
@@ -34,6 +43,13 @@ pub enum CreaturesLoadError {
     },
     #[error("{path} has no file stem to take a creature kind id from")]
     UnnamedFile { path: PathBuf },
+    #[error("{path} has an ability that {source}")]
+    Ability {
+        path: PathBuf,
+        source: TargetModeError,
+    },
+    #[error("{path} has an ability of type `{kind}`, which this server cannot run")]
+    UnknownAbility { path: PathBuf, kind: String },
 }
 
 #[derive(Deserialize)]
@@ -43,9 +59,56 @@ struct RawOutfit {
 }
 
 #[derive(Deserialize)]
-struct RawDamage {
+struct RawBounds {
     min: u32,
     max: u32,
+}
+
+impl From<RawBounds> for Bounds {
+    fn from(raw: RawBounds) -> Self {
+        Bounds {
+            min: raw.min,
+            max: raw.max,
+        }
+    }
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawAttackDamage {
+    damage: RawBounds,
+    element: CombatElement,
+}
+
+impl From<RawAttackDamage> for CreatureAttackDamage {
+    fn from(raw: RawAttackDamage) -> Self {
+        CreatureAttackDamage {
+            element: raw.element,
+            value: raw.damage.into(),
+        }
+    }
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawAttackAbility {
+    cooldown: TickDelta,
+    chance: u32,
+    element: CombatElement,
+    damage: RawBounds,
+    target: serde_yaml::Value,
+    #[serde(default)]
+    effect_id: Option<EffectId>,
+    #[serde(default)]
+    missile_id: Option<MissileId>,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawHealAbility {
+    cooldown: TickDelta,
+    chance: u32,
+    life: RawBounds,
 }
 
 fn default_amount() -> u32 {
@@ -73,7 +136,9 @@ struct RawCreature {
     name: String,
     life: u32,
     outfit: RawOutfit,
-    damage: RawDamage,
+    melee: RawAttackDamage,
+    #[serde(default)]
+    abilities: Vec<serde_yaml::Value>,
     speed: u16,
     blood_type: BloodType,
     armor: u16,
@@ -87,15 +152,84 @@ struct RawCreature {
     say: RawCreatureVoices,
 }
 
+fn parse_ability(
+    index: usize,
+    path: &Path,
+    mut value: serde_yaml::Value,
+    shapes: &HashMap<AreaShapeId, Arc<AreaShape>>,
+) -> Result<CreatureAbility, CreaturesLoadError> {
+    let parse_error = |source| CreaturesLoadError::ParseError {
+        path: path.to_path_buf(),
+        source,
+    };
+    let unknown = |kind: String| CreaturesLoadError::UnknownAbility {
+        path: path.to_path_buf(),
+        kind,
+    };
+
+    let kind =
+        take_type(&mut value).ok_or_else(|| unknown("a mapping without a `type`".to_string()))?;
+
+    match kind.as_str() {
+        "attack" => {
+            let attack: RawAttackAbility = serde_yaml::from_value(value).map_err(parse_error)?;
+            let target = parse_target_mode(attack.target, shapes).map_err(|source| {
+                CreaturesLoadError::Ability {
+                    path: path.to_path_buf(),
+                    source,
+                }
+            })?;
+
+            Ok(CreatureAbility {
+                id: CreatureAbilityId(index as u8),
+                cooldown: attack.cooldown,
+                chance: attack.chance,
+                effect: AbilityEffect::Attack(CreatureAttack {
+                    damage: CreatureAttackDamage {
+                        element: attack.element,
+                        value: attack.damage.into(),
+                    },
+                    target,
+                    effect_id: attack.effect_id,
+                    missile_id: attack.missile_id,
+                }),
+            })
+        }
+        "heal" => {
+            let heal: RawHealAbility = serde_yaml::from_value(value).map_err(parse_error)?;
+
+            Ok(CreatureAbility {
+                id: CreatureAbilityId(index as u8),
+                cooldown: heal.cooldown,
+                chance: heal.chance,
+                effect: AbilityEffect::Heal(heal.life.into()),
+            })
+        }
+        other => Err(unknown(other.to_string())),
+    }
+}
+
 impl RawCreature {
-    fn into_kind(self) -> CreatureKind {
-        CreatureKind {
+    fn into_kind(
+        self,
+        path: &Path,
+        shapes: &HashMap<AreaShapeId, Arc<AreaShape>>,
+    ) -> Result<CreatureKind, CreaturesLoadError> {
+        let abilities = self
+            .abilities
+            .into_iter()
+            .enumerate()
+            .map(|(i, ability)| parse_ability(i, path, ability, shapes))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(CreatureKind {
             name: self.name,
             life: Pool {
                 current: self.life,
                 maximum: self.life,
             },
-            auto_attack_damage: (self.damage.min, self.damage.max),
+            melee: self.melee.into(),
+            abilities,
             outfit: (self.outfit.id, self.outfit.colors),
             speed: self.speed,
             blood_type: self.blood_type,
@@ -118,8 +252,23 @@ impl RawCreature {
                 chance: self.say.chance,
                 sentences: self.say.sentences,
             },
-        }
+        })
     }
+}
+
+/// Split out from `load_creatures` for the same reason `load_spells_from_str` is: the whole
+/// parse path over a document the caller owns. `path` names the file in an error only.
+fn parse_creature(
+    path: &Path,
+    contents: &str,
+    shapes: &HashMap<AreaShapeId, Arc<AreaShape>>,
+) -> Result<CreatureKind, CreaturesLoadError> {
+    let raw: RawCreature =
+        serde_yaml::from_str(contents).map_err(|source| CreaturesLoadError::ParseError {
+            path: path.to_path_buf(),
+            source,
+        })?;
+    raw.into_kind(path, shapes)
 }
 
 /// Each `.yaml` file in `dir` is one creature, and **its file stem is the
@@ -127,6 +276,7 @@ impl RawCreature {
 /// kind, which nothing but a spawn point's `kind:` will notice.
 pub fn load_creatures(
     dir: impl AsRef<Path>,
+    shapes: &HashMap<AreaShapeId, Arc<AreaShape>>,
 ) -> Result<HashMap<CreatureKindId, Arc<CreatureKind>>, CreaturesLoadError> {
     let dir = dir.as_ref();
     let mut paths: Vec<PathBuf> = fs::read_dir(dir)
@@ -167,13 +317,8 @@ pub fn load_creatures(
                     path: path.to_path_buf(),
                     source,
                 })?;
-            let raw: RawCreature = serde_yaml::from_str(&contents).map_err(|source| {
-                CreaturesLoadError::ParseError {
-                    path: path.to_path_buf(),
-                    source,
-                }
-            })?;
-            Ok((id, Arc::new(raw.into_kind())))
+            let kind = parse_creature(&path, &contents, shapes)?;
+            Ok((id, Arc::new(kind)))
         })
         .collect()
 }
@@ -184,11 +329,79 @@ mod tests {
     use crate::entities::agent::Agent;
     use crate::entities::items::ItemId;
     use crate::entities::position::Position;
+    use crate::entities::spells::{AreaOrigin, SpellTargetMode};
+    use crate::persistence::areas::load_areas;
     use crate::persistence::items::ITEM_CONFIGS;
+
+    const A_CREATURE: &str = r#"
+name: Test Dragon
+life: 1000
+speed: 86
+blood_type: blood
+armor: 25
+defense: 25
+experience: 700
+outfit:
+  id: 34
+  colors: [0, 0, 0, 0]
+melee:
+  damage:
+    min: 4
+    max: 120
+  element: physical
+abilities:
+  - cooldown: 80
+    chance: 10000
+    type: attack
+    element: fire
+    damage:
+      min: 100
+      max: 200
+    target:
+      type: area
+      origin: self
+      shape: probe
+    effect_id: 16
+  - cooldown: 40
+    chance: 15000
+    type: heal
+    life:
+      min: 50
+      max: 100
+corpse: 5973
+say:
+  cooldown: 100
+  chance: 10000
+  sentences:
+    - GROOAAARRR
+"#;
+
+    fn shape(name: &str) -> HashMap<AreaShapeId, Arc<AreaShape>> {
+        HashMap::from([(
+            name.to_string(),
+            Arc::new(AreaShape::new(vec![(0, 0)].into_boxed_slice())),
+        )])
+    }
+
+    fn a_creature(contents: &str) -> CreatureKind {
+        parse_creature(Path::new("test.yaml"), contents, &shape("probe")).unwrap()
+    }
+
+    fn shipped() -> HashMap<CreatureKindId, Arc<CreatureKind>> {
+        let areas = load_areas(&CONFIG.areas_file_path).unwrap();
+        load_creatures(&CONFIG.creatures_dir_path, &areas).unwrap()
+    }
+
+    fn attack(ability: &CreatureAbility) -> (&CreatureAttackDamage, &SpellTargetMode) {
+        match &ability.effect {
+            AbilityEffect::Attack(attk) => (&attk.damage, &attk.target),
+            AbilityEffect::Heal(..) => panic!("a heal"),
+        }
+    }
 
     #[test]
     fn every_shipped_creature_walks_at_its_tibia_speed() {
-        let creatures = load_creatures(&CONFIG.creatures_dir_path).unwrap();
+        let creatures = shipped();
 
         for (name, expected_ms) in [("Demon", 500), ("Dragon", 700), ("Elf", 650)] {
             let kind = creatures
@@ -207,7 +420,7 @@ mod tests {
 
     #[test]
     fn every_shipped_loot_and_corpse_id_resolves_to_an_item() {
-        let creatures = load_creatures(&CONFIG.creatures_dir_path).unwrap();
+        let creatures = shipped();
         assert!(
             !creatures.is_empty(),
             "loaded no creatures at all; the rest of this test would pass vacuously"
@@ -227,11 +440,131 @@ mod tests {
         );
     }
 
+    /// A melee element is authored per creature rather than assumed physical, and nothing
+    /// downstream of the loader would notice a swing that arrived as the wrong element —
+    /// it would mitigate, colour and splash as whatever it was given.
+    #[test]
+    fn a_melee_block_carries_its_element_and_bounds() {
+        let kind = a_creature(A_CREATURE);
+
+        assert_eq!(kind.melee.element, CombatElement::Physical);
+        assert_eq!(kind.melee.value, Bounds { min: 4, max: 120 });
+    }
+
+    #[test]
+    fn an_ability_carries_its_roll_and_resolves_its_shape() {
+        let kind = a_creature(A_CREATURE);
+
+        let [wave, heal] = &kind.abilities[..] else {
+            panic!("expected two abilities, got {}", kind.abilities.len());
+        };
+
+        assert_eq!((wave.cooldown, wave.chance), (TickDelta(80), 10000));
+        let (damage, target) = attack(wave);
+        assert_eq!(damage.element, CombatElement::Fire);
+        assert_eq!(damage.value, Bounds { min: 100, max: 200 });
+        match target {
+            SpellTargetMode::Area {
+                origin: AreaOrigin::Caster,
+                shape,
+            } => assert_eq!(
+                shape.get_delta(crate::entities::agent::Facing::North),
+                [(0, 0)]
+            ),
+            other => panic!("expected a caster-centred area, got {other:?}"),
+        }
+
+        match heal.effect {
+            AbilityEffect::Heal(life) => assert_eq!(life, Bounds { min: 50, max: 100 }),
+            AbilityEffect::Attack(..) => panic!("an attack"),
+        }
+    }
+
+    /// A creature with no `abilities:` is the common case, and it must load rather than
+    /// join the list of fields that fail to parse when unwritten.
+    #[test]
+    fn a_creature_without_abilities_loads_with_none() {
+        let contents = A_CREATURE.split("abilities:").next().unwrap().to_string()
+            + "corpse: 5973\nsay:\n  cooldown: 100\n  chance: 10000\n  sentences: []\n";
+
+        assert!(a_creature(&contents).abilities.is_empty());
+    }
+
+    /// The loader must refuse an ability it cannot run rather than drop it: a creature that
+    /// loads with its abilities missing is a creature that fights with its melee alone, and
+    /// nothing at runtime would say why.
+    #[test]
+    fn an_ability_type_the_server_cannot_run_is_refused() {
+        let contents = A_CREATURE.replace("type: heal", "type: summon");
+        let error = parse_creature(Path::new("test.yaml"), &contents, &shape("probe"))
+            .expect_err("an unknown ability type must not load as no ability");
+
+        assert!(
+            matches!(&error, CreaturesLoadError::UnknownAbility { kind, .. } if kind == "summon"),
+            "unexpected error: {error}"
+        );
+    }
+
+    /// `type:` picks which fields the rest of the mapping may carry, so a field belonging to
+    /// the other type is a typo rather than a variant this ability also has.
+    #[test]
+    fn a_field_of_the_other_ability_type_is_refused() {
+        let contents = A_CREATURE.replace(
+            "    type: attack\n",
+            "    type: attack\n    life:\n      min: 1\n      max: 2\n",
+        );
+        let error = parse_creature(Path::new("test.yaml"), &contents, &shape("probe"))
+            .expect_err("a heal field under an attack must not be dropped");
+
+        assert!(
+            matches!(error, CreaturesLoadError::ParseError { .. }),
+            "unexpected error: {error}"
+        );
+    }
+
+    #[test]
+    fn a_shape_no_area_file_defines_is_refused() {
+        let error = parse_creature(Path::new("test.yaml"), A_CREATURE, &shape("something_else"))
+            .expect_err("an ability pointing at nothing would hit nothing");
+
+        assert!(
+            matches!(
+                error,
+                CreaturesLoadError::Ability {
+                    source: TargetModeError::UnknownShape { .. },
+                    ..
+                }
+            ),
+            "unexpected error: {error}"
+        );
+    }
+
+    /// The catalogue is the real check: every shape an ability names must be a key in
+    /// `areas.yaml`, and no test of a fixture can tell you that.
+    #[test]
+    fn every_shipped_ability_resolves_its_shape() {
+        let creatures = shipped();
+
+        let dragon = creatures
+            .values()
+            .find(|kind| kind.name == "Dragon")
+            .expect("Dragon is not among the shipped creatures");
+
+        assert_eq!(dragon.abilities.len(), 3);
+        assert!(matches!(
+            attack(&dragon.abilities[1]).1,
+            SpellTargetMode::Area {
+                origin: AreaOrigin::Target,
+                ..
+            }
+        ));
+    }
+
     /// A creature's kind id is its file name, so a rename or a typo severs every spawn
     /// point naming it. The spawner logs and skips, which is quiet enough to ship.
     #[test]
     fn every_shipped_spawn_names_a_creature_that_exists() {
-        let creatures = load_creatures(&CONFIG.creatures_dir_path).unwrap();
+        let creatures = shipped();
         let spawns = crate::persistence::spawns::load_spawns(&CONFIG.spawns_file_path).unwrap();
 
         let unknown: Vec<&str> = spawns

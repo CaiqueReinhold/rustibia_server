@@ -8,12 +8,12 @@ use serde::Deserialize;
 use thiserror::Error;
 
 use crate::config::CONFIG;
+use crate::entities::Bounds;
 use crate::entities::combat::{AmmoType, CombatElement, WeaponType};
 use crate::entities::effects::MissileId;
 use crate::entities::inventory::InventorySlot;
 use crate::entities::items::{
-    Bounds, FloorChangeDirection, ItemAction, ItemAttribute, ItemConfig, ItemFlag, ItemId,
-    ItemMultiAction,
+    FloorChangeDirection, ItemAction, ItemAttribute, ItemConfig, ItemFlag, ItemId, ItemMultiAction,
 };
 use crate::game::TickDelta;
 

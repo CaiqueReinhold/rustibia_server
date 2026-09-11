@@ -12,3 +12,9 @@ pub mod position;
 pub mod skills;
 pub mod spells;
 pub mod vocation;
+
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+pub struct Bounds {
+    pub min: u32,
+    pub max: u32,
+}

@@ -11,7 +11,7 @@ spells:
       - heal:
           target:
             type: self
-          base_power: 25
+          base_power: 60
           level_factor: 0.2
           magic_factor: 1.4
           spread: 0.4

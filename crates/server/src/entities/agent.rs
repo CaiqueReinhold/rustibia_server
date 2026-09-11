@@ -5,7 +5,10 @@ use smallvec::SmallVec;
 use strum::{EnumCount, FromRepr};
 
 use crate::{
-    entities::spells::{Spell, SpellGroup, SpellId},
+    entities::{
+        combat::WeaponType,
+        spells::{Spell, SpellGroup, SpellId},
+    },
     local_id::LocalId,
 };
 
@@ -380,10 +383,19 @@ impl Agent {
         }
     }
 
-    pub fn defense(&self) -> u32 {
+    pub fn defense(&self) -> Option<u32> {
         match &self.inner {
-            AgentInner::Creature(c) => c.defense as u32,
+            AgentInner::Creature(c) => Some(c.defense as u32),
             AgentInner::Player(p) => {
+                let weapon_type = p.weapon_type();
+                if !(p.has_shield()
+                    || matches!(
+                        weapon_type,
+                        WeaponType::Axe | WeaponType::Club | WeaponType::Sword
+                    ))
+                {
+                    return None;
+                }
                 let def = p.defense() as f32;
                 let skill = if p.has_shield() {
                     p.skill(SkillType::Shielding)
@@ -395,7 +407,7 @@ impl Agent {
                         _ => 0,
                     }
                 } as f32;
-                ((skill / 4. + 2.23) * def * 0.15) as u32
+                Some(((skill / 4. + 2.23) * def * 0.15) as u32)
             }
         }
     }
@@ -424,8 +436,16 @@ impl Agent {
             .retain(|(id, tick)| current_tick < *tick && *id != spell.id);
         self.spell_cooldowns
             .push((spell.id, current_tick + spell.cooldown));
-        self.group_cooldowns[spell.group.index()] =
-            current_tick + spell.group_cooldown.unwrap_or(spell.group.cooldown());
+        self.stamp_spell_group(current_tick, spell.group, spell.group_cooldown);
+    }
+
+    pub fn stamp_spell_group(
+        &mut self,
+        current_tick: Tick,
+        group: SpellGroup,
+        cooldown: Option<TickDelta>,
+    ) {
+        self.group_cooldowns[group.index()] = current_tick + cooldown.unwrap_or(group.cooldown());
     }
 
     pub fn stamp_auto_attack(&mut self, current_tick: Tick) {

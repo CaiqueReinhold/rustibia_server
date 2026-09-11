@@ -17,3 +17,10 @@ areas:
     - "XXXXXXX"
     - " XXXXX "
     - "  XXX  "
+  beam:
+    - "X"
+    - "X"
+    - "X"
+    - "X"
+    - "X"
+    - "0"

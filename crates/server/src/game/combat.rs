@@ -47,7 +47,7 @@ pub fn plan_auto_attack(
     let to = map.agent_position(target)?.clone();
     let target_agent = map.get_agent(agent.target()?)?;
 
-    if agent.next_auto_attack_tick > current_tick {
+    if agent.next_auto_attack_tick > current_tick || agent.next_walk_tick > current_tick {
         return None;
     }
 
@@ -96,7 +96,7 @@ pub fn plan_auto_attack(
 
     if !missed {
         let (element, mut value) = if agent.is_creature() {
-            get_creature_base_damage(agent.get_creature_kind()?, roll)
+            get_creature_base_damage(&agent.get_creature_kind()?.melee, roll)
         } else {
             get_player_base_damage(agent.get_player()?, roll)
         };
@@ -470,7 +470,9 @@ fn can_land_missile(map: &GameMap, pos: &Position) -> bool {
 }
 
 fn apply_shield(base_attack_value: u32, target: &Agent, roll: &mut Rolls) -> u32 {
-    let defense_value = target.defense();
+    let Some(defense_value) = target.defense() else {
+        return base_attack_value;
+    };
     let defended = roll.uniform(defense_value / 2, defense_value);
     base_attack_value.saturating_sub(defended)
 }

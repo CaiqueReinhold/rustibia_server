@@ -4,6 +4,7 @@ use strum::{EnumCount, EnumIter};
 
 use crate::{
     entities::{
+        Bounds,
         combat::{AmmoType, CombatElement, WeaponType},
         effects::MissileId,
         inventory::InventorySlot,
@@ -390,13 +391,6 @@ pub struct ClientItemRef {
 #[derive(Clone, PartialEq, Eq, Hash, Debug, Copy)]
 pub enum ItemAction {
     Transform { into: ItemId },
-}
-
-/// An inclusive range rolled at the moment of use. `min == max` is a fixed amount.
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-pub struct Bounds {
-    pub min: u32,
-    pub max: u32,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
