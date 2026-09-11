@@ -34,7 +34,7 @@ effect_ids:
   fire_hit: 37
   holy_hit: 40
   death_hit: 39
-  energy_hit: 12
+  energy_hit: 48
   potion_use: 13
   miss: 3
   puff: 3

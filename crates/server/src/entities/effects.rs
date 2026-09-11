@@ -37,7 +37,7 @@ impl AreaEffect {
 
 pub type AreaShapeId = String;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub struct AreaShape {
     delta: [Box<[(i8, i8)]>; 4],
 }
@@ -56,7 +56,11 @@ impl AreaShape {
         }
     }
 
-    pub fn get_delta(&self, facing: Facing) -> &[(i8, i8)] {
+    pub fn get_delta(&self) -> &[(i8, i8)] {
+        &self.delta[0]
+    }
+
+    pub fn get_delta_facing(&self, facing: Facing) -> &[(i8, i8)] {
         &self.delta[match facing {
             Facing::North => 0,
             Facing::East => 1,

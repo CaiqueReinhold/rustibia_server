@@ -6,7 +6,7 @@ use crate::{
     entities::{
         Bounds,
         combat::{AmmoType, CombatElement, WeaponType},
-        effects::MissileId,
+        effects::{AreaShape, EffectId, MissileId},
         inventory::InventorySlot,
         position::{ItemPlacement, Position},
     },
@@ -158,6 +158,7 @@ pub enum ItemAttribute {
     WeaponElement(CombatElement),
     AmmoType(AmmoType),
     WeaponRange(u8),
+    WeaponArea(Arc<AreaShape>, EffectId),
     HitChance(i16),
     MaxHitChance(u8),
     ManaCost(u32),
@@ -241,11 +242,16 @@ impl ItemConfig {
         attr_speed -> Speed: i16,
     }
 
-    /// Written out rather than generated: `Decay` is the one attribute whose variant carries
-    /// two fields, and it answers with both.
     pub fn attr_decay(&self) -> Option<(TickDelta, ItemId)> {
         self.get_attributes().find_map(|attr| match attr {
             ItemAttribute::Decay { decay_to, duration } => Some((*duration, *decay_to)),
+            _ => None,
+        })
+    }
+
+    pub fn attr_weapon_area(&self) -> Option<(&AreaShape, EffectId)> {
+        self.get_attributes().find_map(|attr| match attr {
+            ItemAttribute::WeaponArea(shape, effect_id) => Some((shape.as_ref(), *effect_id)),
             _ => None,
         })
     }

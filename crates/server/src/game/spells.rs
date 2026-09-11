@@ -165,7 +165,7 @@ pub fn resolve_spell_targets(
         SpellTargetMode::Area { origin, shape } => {
             let origin = resolve_area_origin(map, origin, position, cast_target)
                 .ok_or(SpellCastingDenyReason::InvalidTarget)?;
-            let (keys, delta) = resolve_area(map, origin, shape.get_delta(agent.facing()));
+            let (keys, delta) = resolve_area(map, origin, shape.get_delta_facing(agent.facing()));
             Ok(SpellTargets {
                 keys,
                 aim: Some(origin.clone()),
@@ -204,7 +204,7 @@ fn resolve_area_origin<'a>(
     }
 }
 
-fn resolve_area(
+pub fn resolve_area(
     map: &GameMap,
     origin: &Position,
     shape: &[(i8, i8)],

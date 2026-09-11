@@ -25,7 +25,9 @@ use crate::{
         map_query::can_throw,
         random::Rolls,
         skills::tick_skill,
-        spells::{SpellCastingDenyReason, consume_mana, resolve_spell_targets, roll_power},
+        spells::{
+            SpellCastingDenyReason, consume_mana, resolve_area, resolve_spell_targets, roll_power,
+        },
     },
 };
 
@@ -45,7 +47,6 @@ pub fn plan_auto_attack(
     let from = map.agent_position(attacker)?.clone();
     let target = agent.target()?;
     let to = map.agent_position(target)?.clone();
-    let target_agent = map.get_agent(agent.target()?)?;
 
     if agent.next_auto_attack_tick > current_tick || agent.next_walk_tick > current_tick {
         return None;
@@ -92,6 +93,22 @@ pub fn plan_auto_attack(
         _ => false,
     };
 
+    let (targets, area_effect) = match agent.get_player().and_then(|p| p.weapon_area()) {
+        Some((shape, effect_id)) => {
+            let (mut targets, delta) = resolve_area(map, &to, shape.get_delta());
+            targets.retain(|key| *key != attacker);
+            (
+                targets,
+                Some(AreaEffect {
+                    effect_id,
+                    origin: to.clone(),
+                    delta,
+                }),
+            )
+        }
+        None => (Vec::from([target]), None),
+    };
+
     let mut damage = SmallVec::new();
 
     if !missed {
@@ -101,25 +118,30 @@ pub fn plan_auto_attack(
             get_player_base_damage(agent.get_player()?, roll)
         };
 
-        let is_blockable = matches!(element, CombatElement::Physical) && value > 0;
-        if is_blockable {
-            value = apply_shield(value, target_agent, roll);
-        }
-        let blocked_shield = is_blockable && value == 0;
-        if is_blockable && !blocked_shield {
-            value = apply_armor(value, target_agent, roll);
-        }
-        let blocked_armor = is_blockable && !blocked_shield && value == 0;
+        for target in targets {
+            let Some(target_agent) = map.get_agent(target) else {
+                continue;
+            };
+            let is_blockable = matches!(element, CombatElement::Physical) && value > 0;
+            if is_blockable {
+                value = apply_shield(value, target_agent, roll);
+            }
+            let blocked_shield = is_blockable && value == 0;
+            if is_blockable && !blocked_shield {
+                value = apply_armor(value, target_agent, roll);
+            }
+            let blocked_armor = is_blockable && !blocked_shield && value == 0;
 
-        damage.push((
-            target,
-            CombatDamage {
-                element,
-                value,
-                blocked_shield,
-                blocked_armor,
-            },
-        ));
+            damage.push((
+                target,
+                CombatDamage {
+                    element,
+                    value,
+                    blocked_shield,
+                    blocked_armor,
+                },
+            ));
+        }
     }
 
     let missile = if let Some(player) = agent.get_player()
@@ -151,7 +173,7 @@ pub fn plan_auto_attack(
         cost,
         trains,
         missile,
-        area_effect: None,
+        area_effect,
         missed,
     })
 }

@@ -24825,6 +24825,7 @@ items:
       max_hit_chance: 91
       ammo_type: arrow
       missile_id: 6
+      element: earth
   3449:
     name: burst arrow
     article: a
@@ -24837,6 +24838,10 @@ items:
       max_hit_chance: 100
       ammo_type: arrow
       missile_id: 7
+      element: fire
+      area: 
+        shape: boxed
+        effect_id: 295
   3450:
     name: power bolt
     article: a
@@ -159452,12 +159457,12 @@ items:
     - take
     attributes:
       weight: 80
-      decay:
-        duration: 3600
-        decay_to: 0
       attack: 37
       max_hit_chance: 100
       ammo_type: arrow
+      area:
+        shape: circle2
+        effect_id: 12
   25758:
     name: spectral bolt
     article: a

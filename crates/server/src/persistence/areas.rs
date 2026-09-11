@@ -177,7 +177,7 @@ mod tests {
     }
 
     fn sorted(shape: &AreaShape, facing: Facing) -> Vec<(i8, i8)> {
-        let mut delta = shape.get_delta(facing).to_vec();
+        let mut delta = shape.get_delta_facing(facing).to_vec();
         delta.sort_unstable();
         delta
     }
@@ -187,7 +187,7 @@ mod tests {
         let areas = load("areas:\n  probe:\n    - \" X \"\n    - \"X@X\"\n    - \" X \"\n");
 
         assert_eq!(
-            areas["probe"].get_delta(Facing::North),
+            areas["probe"].get_delta_facing(Facing::North),
             [(0, -1), (-1, 0), (0, 0), (1, 0), (0, 1)],
             "cells come out row-major, as (dx, dy) from the `@`"
         );
@@ -203,11 +203,11 @@ mod tests {
         let outside = load("areas:\n  point:\n    - \"X0X\"\n");
 
         assert_eq!(
-            inside["point"].get_delta(Facing::North),
+            inside["point"].get_delta_facing(Facing::North),
             [(-1, 0), (0, 0), (1, 0)]
         );
         assert_eq!(
-            outside["point"].get_delta(Facing::North),
+            outside["point"].get_delta_facing(Facing::North),
             [(-1, 0), (1, 0)],
             "`0` anchors the mask without joining it"
         );
@@ -231,7 +231,10 @@ mod tests {
     fn a_dot_is_empty_like_a_space() {
         let areas = load("areas:\n  dotted:\n    - \"..X..\"\n    - \"..@..\"\n");
 
-        assert_eq!(areas["dotted"].get_delta(Facing::North), [(0, -1), (0, 0)]);
+        assert_eq!(
+            areas["dotted"].get_delta_facing(Facing::North),
+            [(0, -1), (0, 0)]
+        );
     }
 
     #[test]
@@ -300,10 +303,13 @@ mod tests {
         let areas = load_areas(&CONFIG.areas_file_path).unwrap();
 
         assert_eq!(areas.len(), 3, "shapes loaded: {:?}", areas.keys());
-        assert_eq!(areas["burst_arrow"].get_delta(Facing::North).len(), 9);
-        assert_eq!(areas["circle3"].get_delta(Facing::North).len(), 37);
         assert_eq!(
-            areas["small_wave"].get_delta(Facing::North).len(),
+            areas["burst_arrow"].get_delta_facing(Facing::North).len(),
+            9
+        );
+        assert_eq!(areas["circle3"].get_delta_facing(Facing::North).len(), 37);
+        assert_eq!(
+            areas["small_wave"].get_delta_facing(Facing::North).len(),
             12,
             "the wave's `0` anchors it without being one of its tiles"
         );

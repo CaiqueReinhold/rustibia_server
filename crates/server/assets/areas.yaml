@@ -1,5 +1,5 @@
 areas:
-  burst_arrow:
+  boxed:
     - "XXX"
     - "X@X"
     - "XXX"
@@ -17,6 +17,12 @@ areas:
     - "XXXXXXX"
     - " XXXXX "
     - "  XXX  "
+  circle2:
+    - " XXX "
+    - "XXXXX"
+    - "XX@XX"
+    - "XXXXX"
+    - " XXX "
   beam:
     - "X"
     - "X"

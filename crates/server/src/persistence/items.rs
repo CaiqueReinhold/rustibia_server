@@ -10,12 +10,13 @@ use thiserror::Error;
 use crate::config::CONFIG;
 use crate::entities::Bounds;
 use crate::entities::combat::{AmmoType, CombatElement, WeaponType};
-use crate::entities::effects::MissileId;
+use crate::entities::effects::{EffectId, MissileId};
 use crate::entities::inventory::InventorySlot;
 use crate::entities::items::{
     FloorChangeDirection, ItemAction, ItemAttribute, ItemConfig, ItemFlag, ItemId, ItemMultiAction,
 };
 use crate::game::TickDelta;
+use crate::persistence::areas::AREA_SHAPES;
 
 /// The item catalogue, loaded once from `assets/items.yaml`. Immutable after load and
 /// read by every subsystem, so it is a global for the same reason `GAME_CONFIG` is.
@@ -177,6 +178,10 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
         "max_hit_chance" => Some(ItemAttribute::MaxHitChance(value.as_i64()? as u8)),
         "mana_cost" => Some(ItemAttribute::ManaCost(value.as_i64()? as u32)),
         "missile_id" => Some(ItemAttribute::MissileId(MissileId(value.as_i64()? as u16))),
+        "area" => Some(ItemAttribute::WeaponArea(
+            AREA_SHAPES.get(value.get("shape")?.as_str()?).cloned()?,
+            EffectId(value.get("effect_id")?.as_u64()? as u16),
+        )),
         _ => {
             let n = value.as_u64()? as u32;
             match key {

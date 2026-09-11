@@ -397,10 +397,7 @@ spells:
             SpellTargetMode::Area {
                 origin: AreaOrigin::Caster,
                 shape,
-            } => assert_eq!(
-                shape.get_delta(crate::entities::agent::Facing::North),
-                [(0, 0)]
-            ),
+            } => assert_eq!(shape.get_delta(), [(0, 0)]),
             other => panic!("expected a rotating caster-centred area, got {other:?}"),
         }
     }

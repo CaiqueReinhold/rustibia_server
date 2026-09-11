@@ -3,6 +3,7 @@ use std::sync::Arc;
 
 use crate::entities::{
     combat::{AmmoType, CombatElement, WeaponType},
+    effects::{AreaShape, EffectId},
     inventory::{Inventory, InventorySlot},
     items::{Item, ItemFlag},
     position::Position,
@@ -186,6 +187,12 @@ impl Player {
         self.weapon()
             .and_then(|it| it.config.attr_mana_cost())
             .unwrap_or(0)
+    }
+
+    pub fn weapon_area(&self) -> Option<(&AreaShape, EffectId)> {
+        let wp = self.weapon().and_then(|it| it.config.attr_weapon_area());
+        self.weapon_ammo()
+            .map_or(wp, |it| it.config.attr_weapon_area())
     }
 
     pub fn skill(&self, skill: SkillType) -> u16 {
