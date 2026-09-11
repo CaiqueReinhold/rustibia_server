@@ -1,0 +1,1321 @@
+- id: 811
+  name: terra mantle
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2250
+    slot: 4
+    armor: 11
+- id: 824
+  name: glacier robe
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2250
+    slot: 4
+    armor: 11
+- id: 825
+  name: lightning robe
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2250
+    slot: 4
+    armor: 11
+- id: 826
+  name: magma coat
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2250
+    slot: 4
+    armor: 11
+- id: 3357
+  name: plate armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 12000
+    slot: 4
+    armor: 10
+- id: 3358
+  name: chain armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 10000
+    slot: 4
+    armor: 6
+- id: 3359
+  name: brass armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 8000
+    slot: 4
+    armor: 8
+- id: 3360
+  name: golden armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 8000
+    slot: 4
+    armor: 14
+- id: 3361
+  name: leather armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6000
+    slot: 4
+    armor: 4
+- id: 3366
+  name: magic plate armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 8500
+    slot: 4
+    armor: 17
+- id: 3370
+  name: knight armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 12000
+    slot: 4
+    armor: 12
+- id: 3377
+  name: scale armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 10500
+    slot: 4
+    armor: 9
+- id: 3378
+  name: studded armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 7100
+    slot: 4
+    armor: 5
+- id: 3379
+  name: doublet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 4
+    armor: 2
+- id: 3380
+  name: noble armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 12000
+    slot: 4
+    armor: 11
+- id: 3381
+  name: crown armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 9900
+    slot: 4
+    armor: 13
+- id: 3383
+  name: dark armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 12000
+    slot: 4
+    armor: 10
+- id: 3386
+  name: dragon scale mail
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 11400
+    slot: 4
+    armor: 15
+- id: 3388
+  name: demon armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 8000
+    slot: 4
+    armor: 16
+- id: 3394
+  name: amazon armor
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 4500
+    slot: 4
+    armor: 13
+- id: 3397
+  name: dwarven armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 13000
+    slot: 4
+    armor: 10
+- id: 3399
+  name: elven mail
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 9000
+    slot: 4
+    armor: 9
+- id: 3402
+  name: native armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 8000
+    slot: 4
+    armor: 7
+- id: 3404
+  name: leopard armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 9500
+    slot: 4
+    armor: 9
+- id: 3561
+  name: jacket
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2400
+    slot: 4
+    armor: 1
+- id: 3562
+  name: coat
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2700
+    slot: 4
+    armor: 1
+- id: 3563
+  name: green tunic
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 930
+    slot: 4
+    armor: 1
+- id: 3564
+  name: red tunic
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1400
+    slot: 4
+    armor: 2
+- id: 3565
+  name: cape
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3200
+    slot: 4
+    armor: 1
+- id: 3566
+  name: red robe
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2600
+    slot: 4
+    armor: 1
+- id: 3567
+  name: blue robe
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2200
+    slot: 4
+    armor: 11
+- id: 3568
+  name: simple dress
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+    slot: 4
+- id: 3569
+  name: white dress
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2400
+    slot: 4
+- id: 3570
+  name: ball gown
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 4
+- id: 3571
+  name: ranger's cloak
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4800
+    slot: 4
+    armor: 7
+- id: 4836
+  name: spectral dress
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+    slot: 4
+- id: 6095
+  name: pirate shirt
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2000
+    slot: 4
+    armor: 3
+- id: 7463
+  name: mammoth fur cape
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2000
+    slot: 4
+    armor: 10
+- id: 7991
+  name: magician's robe
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 4
+    armor: 6
+- id: 7993
+  name: witchhunter's coat
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 4
+    armor: 11
+- id: 8037
+  name: dark lord's cape
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2900
+    slot: 4
+    armor: 11
+- id: 8038
+  name: robe of the ice queen
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2950
+    slot: 4
+    armor: 12
+- id: 8039
+  name: dragon robe
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2850
+    slot: 4
+    armor: 12
+- id: 8040
+  name: velvet mantle
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2850
+    slot: 4
+    armor: 12
+- id: 8041
+  name: greenwood coat
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2850
+    slot: 4
+    armor: 12
+- id: 8042
+  name: spirit cloak
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2650
+    slot: 4
+    armor: 8
+- id: 8043
+  name: focus cape
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2100
+    slot: 4
+    armor: 9
+- id: 8044
+  name: belted cape
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 4
+    armor: 10
+- id: 8045
+  name: hibiscus dress
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1900
+    slot: 4
+- id: 8046
+  name: summer dress
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+    slot: 4
+- id: 8047
+  name: tunic
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1500
+    slot: 4
+- id: 8048
+  name: girl's dress
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1300
+    slot: 4
+- id: 8049
+  name: lavos armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 8500
+    slot: 4
+    armor: 13
+- id: 8050
+  name: crystalline armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 8450
+    slot: 4
+    armor: 13
+- id: 8051
+  name: voltage armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 8450
+    slot: 4
+    armor: 13
+- id: 8052
+  name: swamplair armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 8450
+    slot: 4
+    armor: 13
+- id: 8053
+  name: fireborn giant armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 12000
+    slot: 4
+    armor: 15
+- id: 8054
+  name: earthborn titan armor
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 12000
+    slot: 4
+    armor: 15
+- id: 8055
+  name: windborn colossus armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 12000
+    slot: 4
+    armor: 15
+- id: 8056
+  name: oceanborn leviathan armor
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 10000
+    slot: 4
+    armor: 15
+- id: 8057
+  name: divine plate
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 7500
+    slot: 4
+    armor: 13
+- id: 8058
+  name: molten plate
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 7500
+    slot: 4
+    armor: 13
+- id: 8059
+  name: frozen plate
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 7500
+    slot: 4
+    armor: 13
+- id: 8060
+  name: master archer's armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6900
+    slot: 4
+    armor: 15
+- id: 8061
+  name: skullcracker armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 11000
+    slot: 4
+    armor: 14
+- id: 8062
+  name: robe of the underworld
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3100
+    slot: 4
+    armor: 12
+- id: 8063
+  name: paladin armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6500
+    slot: 4
+    armor: 12
+- id: 8064
+  name: ethno coat
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 2550
+    slot: 4
+    armor: 7
+- id: 8862
+  name: yalahari armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 7000
+    slot: 4
+    armor: 16
+- id: 9015
+  name: flower dress
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1900
+    slot: 4
+- id: 9379
+  name: heavy metal t-shirt
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 800
+    slot: 4
+    armor: 6
+- id: 9400
+  name: rain coat
+  article: the
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3200
+    slot: 4
+    armor: 1
+- id: 9446
+  name: rain coat
+  article: the
+  flags:
+  - take
+  attributes:
+    weight: 3200
+    slot: 4
+    decay:
+      duration: 300
+      decay_to: 9400
+    armor: 1
+- id: 10384
+  name: Zaoan armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 9550
+    slot: 4
+    armor: 13
+- id: 10438
+  name: spellweaver's robe
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2350
+    slot: 4
+    armor: 11
+- id: 10439
+  name: Zaoan robe
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2450
+    slot: 4
+    armor: 11
+- id: 11651
+  name: elite draken mail
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 12000
+    slot: 4
+    armor: 15
+- id: 11686
+  name: royal draken mail
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 13000
+    slot: 4
+    armor: 16
+- id: 11687
+  name: royal scale robe
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4500
+    slot: 4
+    armor: 12
+- id: 11701
+  name: old cape
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 4
+    armor: 1
+- id: 13993
+  name: ornate chestplate
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 15600
+    slot: 4
+    armor: 16
+- id: 13994
+  name: depth lorica
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 14500
+    slot: 4
+    armor: 16
+- id: 14086
+  name: calopteryx cape
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2000
+    slot: 4
+    armor: 12
+- id: 16105
+  name: gill coat
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1900
+    slot: 4
+    armor: 12
+- id: 16110
+  name: prismatic armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 7900
+    slot: 4
+    armor: 15
+- id: 17829
+  name: buckle
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 7500
+    slot: 4
+    armor: 12
+- id: 17846
+  name: leather harness
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2900
+    slot: 4
+    armor: 9
+- id: 19358
+  name: albino plate
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 8400
+    slot: 4
+    armor: 11
+- id: 19372
+  name: goo shell
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5800
+    slot: 4
+    armor: 12
+- id: 19391
+  name: furious frock
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3400
+    slot: 4
+    armor: 12
+- id: 21164
+  name: glooth cape
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2900
+    slot: 4
+    armor: 9
+- id: 21166
+  name: mooh'tah plate
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 12500
+    slot: 4
+    armor: 12
+- id: 21167
+  name: heat core
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5500
+    slot: 4
+    armor: 12
+- id: 22085
+  name: fur armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4900
+    slot: 4
+    armor: 11
+- id: 22518
+  name: Fireheart cuirass
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 14500
+    slot: 4
+    armor: 18
+- id: 22519
+  name: fireheart hauberk
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 14500
+    slot: 4
+    armor: 18
+- id: 22520
+  name: fireheart platemail
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 14500
+    slot: 4
+    armor: 18
+- id: 22521
+  name: earthheart cuirass
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 14500
+    slot: 4
+    armor: 18
+- id: 22522
+  name: earthheart hauberk
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 14500
+    slot: 4
+    armor: 18
+- id: 22523
+  name: earthheart platemail
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 14500
+    slot: 4
+    armor: 18
+- id: 22524
+  name: thunderheart cuirass
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 14500
+    slot: 4
+    armor: 18
+- id: 22525
+  name: thunderheart hauberk
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 14500
+    slot: 4
+    armor: 18
+- id: 22526
+  name: thunderheart platemail
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 14500
+    slot: 4
+    armor: 18
+- id: 22527
+  name: frostheart cuirass
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 14500
+    slot: 4
+    armor: 18
+- id: 22528
+  name: frostheart hauberk
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 14500
+    slot: 4
+    armor: 18
+- id: 22529
+  name: frostheart platemail
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 14500
+    slot: 4
+    armor: 18
+- id: 22530
+  name: firesoul tabard
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 14500
+    slot: 4
+    armor: 18
+- id: 22531
+  name: earthsoul tabard
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 14500
+    slot: 4
+    armor: 18
+- id: 22532
+  name: thundersoul tabard
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 14500
+    slot: 4
+    armor: 18
+- id: 22533
+  name: frostsoul tabard
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 14500
+    slot: 4
+    armor: 18
+- id: 22534
+  name: firemind raiment
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5500
+    slot: 4
+    armor: 15
+- id: 22535
+  name: earthmind raiment
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 5500
+    slot: 4
+    armor: 15
+- id: 22536
+  name: thundermind raiment
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5500
+    slot: 4
+    armor: 15
+- id: 22537
+  name: frostmind raiment
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5500
+    slot: 4
+    armor: 15
+- id: 24531
+  name: old tibia item
+  flags:
+  - unpass
+  - unmove
+  attributes:
+    slot: 4
+- id: 24636
+  name: old tibia item
+  flags:
+  - unpass
+  - unmove
+  attributes:
+    slot: 4
+- id: 24646
+  name: old tibia item
+  flags:
+  - unpass
+  - unmove
+  attributes:
+    slot: 4
+- id: 24695
+  name: old tibia item
+  flags:
+  - unpass
+  - unmove
+  attributes:
+    slot: 4
+- id: 24752
+  name: old tibia item
+  flags:
+  - unpass
+  - unmove
+  attributes:
+    slot: 4
+- id: 25779
+  name: swan feather cloak
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 400
+    slot: 4
+    armor: 12
+- id: 27648
+  name: gnome armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 12000
+    slot: 4
+    armor: 17
+- id: 28475
+  name: ornate testtplate
+  article: an
+  flags:
+  - take
+  attributes:
+    slot: 4
+- id: 28719
+  name: falcon plate
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 18800
+    slot: 4
+    armor: 18
+- id: 29418
+  name: living armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4800
+    slot: 4
+    armor: 13
+- id: 29423
+  name: dream shroud
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 4
+    armor: 12
+- id: 31578
+  name: bear skin
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4400
+    slot: 4
+    armor: 16
+- id: 31579
+  name: embrace of nature
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 2400
+    slot: 4
+    armor: 16
+- id: 31583
+  name: toga mortis
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5200
+    slot: 4
+    armor: 16
+- id: 32099
+  name: traditional shirt
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 400
+    slot: 4
+- id: 32585
+  name: burial shroud
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+    slot: 4
+- id: 32628
+  name: ghost chestplate
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 12300
+    slot: 4
+    armor: 17
+- id: 32705
+  name: pair of old bracers
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+    slot: 4
+    armor: 1
+- id: 34094
+  name: soulshell
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 12300
+    slot: 4
+    armor: 18
+- id: 34095
+  name: soulmantle
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2400
+    slot: 4
+    armor: 17
+- id: 34096
+  name: soulshroud
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2400
+    slot: 4
+    armor: 17
+- id: 34157
+  name: lion plate
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 15000
+    slot: 4
+    armor: 17
+- id: 36663
+  name: eldritch cuirass
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 11000
+    slot: 4
+    armor: 16
+- id: 37608
+  name: green demon armor
+  flags:
+  - take
+  attributes:
+    weight: 8000
+    slot: 4
+    armor: 16
+- id: 39147
+  name: spiritthorn armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 16000
+    slot: 4
+    armor: 20
+- id: 39164
+  name: dawnfire sherwani
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2800
+    slot: 4
+    armor: 16
+- id: 39165
+  name: midnight tunic
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2700
+    slot: 4
+    armor: 16
+- id: 40533
+  name: broken Iks cuirass
+  article: the
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1900
+    slot: 4
+    armor: 1
+- id: 40591
+  name: mutated skin armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6300
+    slot: 4
+    armor: 17
+- id: 44619
+  name: stoic iks cuirass
+  flags:
+  - take
+  attributes:
+    weight: 4400
+    slot: 4
+    armor: 15
+- id: 44620
+  name: stoic iks chestplate
+  flags:
+  - take
+  attributes:
+    weight: 14200
+    slot: 4
+    armor: 16
+- id: 44621
+  name: dauntless dragon scale armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 15200
+    slot: 4
+    armor: 18
+- id: 44622
+  name: unerring dragon scale armor
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 13500
+    slot: 4
+    armor: 17
+- id: 44623
+  name: arcane dragon robe
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 4300
+    slot: 4
+    armor: 15
+- id: 44624
+  name: mystical dragon robe
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 3800
+    slot: 4
+    armor: 15

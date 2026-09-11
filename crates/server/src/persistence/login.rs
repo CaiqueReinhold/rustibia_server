@@ -175,7 +175,7 @@ pub fn hash_token_for_tests(token: &str) -> String {
 }
 
 /// Rebuilds an `Item` tree, dropping anything whose id this build has no configuration
-/// for. Same tolerance the old load path had: an item removed from `items.yaml` should
+/// for. Same tolerance the old load path had: an item removed from `assets/items/` should
 /// cost the player that item, not their character.
 fn restore_item(
     items: &HashMap<ItemId, Arc<ItemConfig>>,

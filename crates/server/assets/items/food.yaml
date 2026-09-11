@@ -1,0 +1,1422 @@
+- id: 836
+  name: walnut
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 10
+- id: 841
+  name: peanut
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 10
+- id: 901
+  name: marlin
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1800
+- id: 3250
+  name: carrot of doom
+  article: the
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 160
+- id: 3577
+  name: meat
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1300
+- id: 3578
+  name: fish
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 520
+- id: 3579
+  name: salmon
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 320
+- id: 3580
+  name: northern pike
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 830
+- id: 3581
+  name: shrimp
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 50
+- id: 3582
+  name: ham
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 2000
+- id: 3583
+  name: dragon ham
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 3000
+- id: 3584
+  name: pear
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 140
+- id: 3585
+  name: red apple
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 150
+- id: 3586
+  name: orange
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 110
+- id: 3587
+  name: banana
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 180
+- id: 3588
+  name: blueberry
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 20
+- id: 3589
+  name: coconut
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 480
+- id: 3590
+  name: cherry
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 20
+- id: 3591
+  name: strawberry
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 20
+- id: 3592
+  name: grapes
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 250
+- id: 3593
+  name: melon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 950
+- id: 3594
+  name: pumpkin
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1350
+- id: 3595
+  name: carrot
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 160
+- id: 3596
+  name: tomato
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 100
+- id: 3597
+  name: corncob
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 350
+- id: 3598
+  name: cookie
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 10
+- id: 3599
+  name: candy cane
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 50
+- id: 3600
+  name: bread
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 3601
+  name: roll
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 100
+- id: 3602
+  name: brown bread
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 400
+- id: 3603
+  name: flour
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 3604
+  name: lump of dough
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 500
+- id: 3605
+  name: bunch of wheat
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1250
+- id: 3606
+  name: egg
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 30
+- id: 3607
+  name: cheese
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 400
+- id: 3723
+  name: white mushroom
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 40
+- id: 3724
+  name: red mushroom
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 50
+- id: 3725
+  name: brown mushroom
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 20
+- id: 3726
+  name: orange mushroom
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 30
+- id: 3727
+  name: wood mushroom
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 30
+- id: 3728
+  name: dark mushroom
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 10
+- id: 3729
+  name: some mushrooms
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 10
+- id: 3730
+  name: some mushrooms
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 10
+- id: 3731
+  name: fire mushroom
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 10
+- id: 3732
+  name: green mushroom
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 10
+- id: 5096
+  name: mango
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 180
+- id: 5466
+  name: bunch of sugar cane
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2250
+- id: 5678
+  name: tortoise egg
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 30
+- id: 6125
+  name: tortoise egg from Nargor
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 30
+- id: 6276
+  name: lump of cake dough
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 6277
+  name: cake
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 6278
+  name: cake
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 6279
+  name: party cake
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 700
+- id: 6392
+  name: valentine's cake
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 6393
+  name: cream cake
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 6500
+  name: gingerbreadman
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 6541
+  name: coloured egg
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 30
+- id: 6542
+  name: coloured egg
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 30
+- id: 6543
+  name: coloured egg
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 30
+- id: 6544
+  name: coloured egg
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 30
+- id: 6545
+  name: coloured egg
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 30
+- id: 6569
+  name: candy
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 5
+- id: 6574
+  name: bar of chocolate
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 10
+- id: 7158
+  name: rainbow trout
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1200
+- id: 7159
+  name: green perch
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 800
+- id: 7372
+  name: ice cream cone
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 100
+- id: 7373
+  name: ice cream cone
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 100
+- id: 7374
+  name: ice cream cone
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 100
+- id: 7375
+  name: ice cream cone
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 100
+- id: 7376
+  name: ice cream cone
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 100
+- id: 7377
+  name: ice cream cone
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 100
+- id: 8010
+  name: potato
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 170
+- id: 8011
+  name: plum
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 130
+- id: 8012
+  name: raspberry
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 20
+- id: 8013
+  name: lemon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 20
+- id: 8014
+  name: cucumber
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 200
+- id: 8015
+  name: onion
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 140
+- id: 8016
+  name: jalapeno pepper
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 30
+- id: 8017
+  name: beetroot
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 130
+- id: 8018
+  name: lump of chocolate dough
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 8019
+  name: chocolate cake
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 8020
+  name: baking tray
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1200
+- id: 8177
+  name: yummy gummy worm
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 20
+- id: 8197
+  name: bulb of garlic
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 140
+- id: 9079
+  name: rotworm stew
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1200
+- id: 9080
+  name: hydra tongue salad
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 550
+- id: 9081
+  name: roasted dragon wings
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 850
+- id: 9082
+  name: tropical fried terrorbird
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 780
+- id: 9083
+  name: banana chocolate shake
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 300
+- id: 9084
+  name: veggie casserole
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1100
+- id: 9085
+  name: filled jalapeno peppers
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 650
+- id: 9086
+  name: blessed steak
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 950
+- id: 9087
+  name: carrot cake
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 680
+- id: 9088
+  name: northern fishburger
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 459
+- id: 10219
+  name: crocodile steak
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 440
+- id: 10328
+  name: bunch of ripe rice
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 750
+- id: 10329
+  name: rice ball
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 30
+- id: 10453
+  name: terramite eggs
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 20
+- id: 11459
+  name: pineapple
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 750
+- id: 11460
+  name: aubergine
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 200
+- id: 11461
+  name: broccoli
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 300
+- id: 11462
+  name: cauliflower
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 680
+- id: 11584
+  name: coconut shrimp bake
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 2000
+- id: 11586
+  name: pot of blackjack
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1200
+- id: 11587
+  name: demonic candy ball
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 950
+- id: 11588
+  name: sweet mangonaise elixir
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 300
+- id: 11681
+  name: ectoplasmic sushi
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 400
+- id: 11682
+  name: dragonfruit
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 350
+- id: 11683
+  name: peas
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 80
+- id: 11685
+  name: cheese cookie
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 10
+- id: 12310
+  name: haunch of boar
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1400
+- id: 13992
+  name: sandfish
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 660
+- id: 14084
+  name: larvae
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 350
+- id: 14085
+  name: deepling filet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 640
+- id: 14681
+  name: anniversary cake
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 16103
+  name: mushroom pie
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 900
+- id: 17457
+  name: insectoid eggs
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 20
+- id: 17820
+  name: soft cheese
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 17821
+  name: rat cheese
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 300
+- id: 20310
+  name: christmas cookie tray
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 650
+- id: 21143
+  name: glooth sandwich
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 800
+- id: 21144
+  name: bowl of glooth soup
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 100
+- id: 21145
+  name: bottle of glooth wine
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 400
+- id: 21146
+  name: glooth steak
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1200
+- id: 22185
+  name: prickly pear
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 125
+- id: 22187
+  name: roasted meat
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 23535
+  name: energy bar
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 750
+- id: 23545
+  name: energy drink
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 900
+- id: 24382
+  name: bug meat
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1100
+- id: 24383
+  name: cave turnip
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 250
+- id: 24396
+  name: birthday cake
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 24439
+  name: shell
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 100
+- id: 24948
+  name: bottle of Tibian Wine
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 100
+- id: 25692
+  name: fresh fruit
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 150
+- id: 28484
+  name: blueberry cupcake
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 280
+- id: 28485
+  name: strawberry cupcake
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 280
+- id: 28486
+  name: lemon cupcake
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 280
+- id: 29995
+  name: sun fruit
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 210
+- id: 30198
+  name: meringue cake
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 30202
+  name: winterberry liquor
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 150
+- id: 31332
+  name: jar of honey
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 250
+- id: 31685
+  name: reed balls
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 30
+- id: 31686
+  name: ground reed
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 31914
+  name: lump of reed flour dough
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 31961
+  name: red gingerbread heart
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 32043
+  name: bass
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1250
+- id: 32044
+  name: small bass
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1000
+- id: 32045
+  name: tiny bass
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 32066
+  name: green gingerbread heart
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 32067
+  name: blue gingerbread heart
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 32068
+  name: leberkassemmel
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 400
+- id: 32069
+  name: candy floss
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 240
+- id: 32070
+  name: Stockfish
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 32073
+  name: unicorn weisswurst
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 32198
+  name: filled milk churn
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 3500
+- id: 33930
+  name: salt
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 37530
+  name: bottle of champagne
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 100
+- id: 37531
+  name: candy floss
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 40
+- id: 37532
+  name: ice cream cone
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 70
+- id: 37533
+  name: birthday layer cake
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500

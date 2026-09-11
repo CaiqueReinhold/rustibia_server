@@ -1,0 +1,441 @@
+- id: 236
+  name: strong health potion
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 290
+    potion:
+      health:
+        min: 250
+        max: 350
+      flask: 283
+- id: 237
+  name: strong mana potion
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 290
+    potion:
+      mana:
+        min: 115
+        max: 185
+      flask: 283
+- id: 238
+  name: great mana potion
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 310
+    potion:
+      mana:
+        min: 150
+        max: 250
+      flask: 284
+- id: 239
+  name: great health potion
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 310
+    potion:
+      health:
+        min: 425
+        max: 575
+      flask: 284
+- id: 266
+  name: health potion
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 270
+    potion:
+      health:
+        min: 125
+        max: 175
+      flask: 285
+- id: 268
+  name: mana potion
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 270
+    potion:
+      mana:
+        min: 75
+        max: 125
+      flask: 285
+- id: 283
+  name: empty potion flask
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 160
+- id: 284
+  name: empty potion flask
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 180
+- id: 285
+  name: empty potion flask
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 150
+- id: 7439
+  name: berserk potion
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 200
+- id: 7440
+  name: mastermind potion
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 290
+- id: 7443
+  name: bullseye potion
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 200
+- id: 7642
+  name: great spirit potion
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 310
+    potion:
+      health:
+        min: 250
+        max: 350
+      mana:
+        min: 100
+        max: 200
+      flask: 284
+- id: 7643
+  name: ultimate health potion
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 310
+    potion:
+      health:
+        min: 650
+        max: 850
+      flask: 284
+- id: 7644
+  name: antidote potion
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 265
+- id: 7876
+  name: small health potion
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 265
+    potion:
+      health:
+        min: 60
+        max: 90
+      flask: 285
+- id: 23373
+  name: ultimate mana potion
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 310
+    potion:
+      mana:
+        min: 425
+        max: 575
+      flask: 284
+- id: 23374
+  name: ultimate spirit potion
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 310
+    potion:
+      health:
+        min: 420
+        max: 580
+      mana:
+        min: 180
+        max: 220
+      flask: 284
+- id: 23375
+  name: supreme health potion
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 350
+    potion:
+      health:
+        min: 875
+        max: 1125
+      flask: 284
+- id: 35563
+  name: magic shield potion
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 320
+- id: 36723
+  name: kooldown-aid
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 210
+- id: 36724
+  name: strike enhancement
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 210
+- id: 36725
+  name: stamina extension
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 210
+- id: 36726
+  name: charm upgrade
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 210
+- id: 36727
+  name: wealth duplex
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 210
+- id: 36728
+  name: bestiary betterment
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 210
+- id: 36729
+  name: fire resilience
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 250
+- id: 36730
+  name: ice resilience
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 250
+- id: 36731
+  name: earth resilience
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 250
+- id: 36732
+  name: energy resilience
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 250
+- id: 36733
+  name: holy resilience
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 250
+- id: 36734
+  name: death resilience
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 250
+- id: 36735
+  name: physical resilience
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 250
+- id: 36736
+  name: fire amplification
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 229
+- id: 36737
+  name: ice amplification
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 229
+- id: 36738
+  name: earth amplification
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 229
+- id: 36739
+  name: energy amplification
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 229
+- id: 36740
+  name: holy amplification
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 229
+- id: 36741
+  name: death amplification
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 229
+- id: 36742
+  name: physical amplification
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 229

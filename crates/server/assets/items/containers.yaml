@@ -1,0 +1,4714 @@
+- id: 1983
+  name: stone coffin
+  article: a
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 10
+- id: 1985
+  name: stone coffin
+  article: a
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 10
+- id: 1986
+  name: stone coffin
+  article: a
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 10
+- id: 1987
+  name: stone coffin
+  article: a
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 10
+- id: 1988
+  name: buried coffin
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+- id: 1992
+  name: sarcophagus
+  article: a
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 10
+- id: 1994
+  name: sarcophagus
+  article: a
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 10
+- id: 2427
+  name: wardrobe
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 2428
+  name: wardrobe
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 2429
+  name: wardrobe
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 2430
+  name: wardrobe
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 2431
+  name: drawers
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 10
+- id: 2432
+  name: drawers
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 10
+- id: 2433
+  name: drawers
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 10
+- id: 2434
+  name: drawers
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 10
+- id: 2435
+  name: bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 2436
+  name: bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 2437
+  name: bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 2438
+  name: bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 2439
+  name: bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 2440
+  name: bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 2441
+  name: dresser
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 10
+- id: 2442
+  name: dresser
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 10
+- id: 2443
+  name: dresser
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 10
+- id: 2444
+  name: dresser
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 10
+- id: 2449
+  name: locker
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 6
+- id: 2450
+  name: locker
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 6
+- id: 2451
+  name: locker
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 6
+- id: 2452
+  name: locker
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 6
+- id: 2455
+  name: bamboo wardrobe
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 2456
+  name: bamboo wardrobe
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 2457
+  name: bamboo wardrobe
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 2458
+  name: bamboo wardrobe
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 2459
+  name: bamboo shelf
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 2460
+  name: bamboo shelf
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 2463
+  name: small bamboo shelf
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 2464
+  name: small bamboo shelf
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 2465
+  name: bamboo drawer
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 6
+- id: 2466
+  name: bamboo drawer
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 6
+- id: 2467
+  name: bamboo drawer
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 6
+- id: 2468
+  name: bamboo drawer
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 6
+- id: 2469
+  name: box
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 3500
+    capacity: 10
+- id: 2471
+  name: crate
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 8000
+    capacity: 15
+- id: 2472
+  name: chest
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 12000
+    capacity: 15
+- id: 2473
+  name: box
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 3500
+    capacity: 10
+- id: 2478
+  name: treasure chest
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 9500
+    capacity: 10
+- id: 2480
+  name: chest
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 12000
+    capacity: 15
+- id: 2481
+  name: chest
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 12000
+    capacity: 15
+- id: 2482
+  name: chest
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 12000
+    capacity: 15
+- id: 2483
+  name: large trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 2484
+  name: large trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 2485
+  name: large trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 2486
+  name: large trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 2519
+  name: barrel
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 25
+- id: 2523
+  name: barrel
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 25
+- id: 2853
+  name: bag
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 800
+    capacity: 8
+    slot: 3
+- id: 2854
+  name: backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 2855
+  name: basket
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 950
+    capacity: 5
+- id: 2856
+  name: present
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 600
+    capacity: 5
+- id: 2857
+  name: green bag
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 800
+    capacity: 8
+    slot: 3
+- id: 2858
+  name: yellow bag
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 800
+    capacity: 8
+    slot: 3
+- id: 2859
+  name: red bag
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 800
+    capacity: 8
+    slot: 3
+- id: 2860
+  name: purple bag
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 800
+    capacity: 8
+    slot: 3
+- id: 2861
+  name: blue bag
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 800
+    capacity: 8
+    slot: 3
+- id: 2862
+  name: grey bag
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 800
+    capacity: 8
+    slot: 3
+- id: 2863
+  name: golden bag
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 800
+    capacity: 8
+    slot: 3
+- id: 2864
+  name: camouflage bag
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 800
+    capacity: 8
+    slot: 3
+- id: 2865
+  name: green backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 2866
+  name: yellow backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 2867
+  name: red backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 2868
+  name: purple backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 2869
+  name: blue backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 2870
+  name: grey backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 2871
+  name: golden backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 2872
+  name: camouflage backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 2873
+  name: bucket
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 2000
+- id: 2874
+  name: vial
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 180
+- id: 2875
+  name: bottle
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 250
+- id: 2876
+  name: vase
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 940
+- id: 2877
+  name: green flask
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 300
+- id: 2879
+  name: elven vase
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 940
+- id: 2880
+  name: mug
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 250
+- id: 2881
+  name: cup
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 200
+- id: 2882
+  name: jug
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 750
+- id: 2883
+  name: cup
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 200
+- id: 2884
+  name: cup
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 200
+- id: 2885
+  name: brown flask
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 300
+- id: 2893
+  name: amphora
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 9700
+- id: 2901
+  name: waterskin
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 700
+- id: 2902
+  name: bowl
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 380
+- id: 2903
+  name: golden mug
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 470
+- id: 3217
+  name: letterbag
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 50000
+    slot: 3
+- id: 3244
+  name: old and used backpack
+  article: an
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 3253
+  name: backpack of holding
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1500
+    capacity: 24
+    slot: 3
+- id: 3465
+  name: pot
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 5250
+- id: 3477
+  name: ewer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 1750
+- id: 3478
+  name: ewer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 1750
+- id: 3479
+  name: ewer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 1750
+- id: 3480
+  name: ewer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 1750
+- id: 3497
+  name: locker
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 3498
+  name: locker
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 3499
+  name: locker
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 3500
+  name: locker
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 3502
+  name: depot chest
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 30
+- id: 3503
+  name: parcel
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 10
+- id: 3504
+  name: stamped parcel
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 10
+- id: 4023
+  name: unknown corpse
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    weight: 1000
+    decay:
+      duration: 600
+      decay_to: 0
+- id: 4073
+  name: treasure chest
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 20
+- id: 4077
+  name: treasure chest
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 20
+- id: 4249
+  name: dead troll
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 60000
+    capacity: 10
+    fluid_source: blood
+    decay:
+      duration: 300
+      decay_to: 3987
+- id: 4250
+  name: dead spider
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1000
+    capacity: 6
+    decay:
+      duration: 300
+      decay_to: 4003
+- id: 4251
+  name: dead cyclops
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 30
+    fluid_source: blood
+    decay:
+      duration: 300
+      decay_to: 3989
+- id: 4255
+  name: dead rat
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 6300
+    capacity: 10
+    fluid_source: blood
+    decay:
+      duration: 300
+      decay_to: 3994
+- id: 4262
+  name: dead orc
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 16740
+    capacity: 10
+    fluid_source: blood
+    decay:
+      duration: 300
+      decay_to: 4002
+- id: 4266
+  name: dead rotworm
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    weight: 8500
+    capacity: 10
+    fluid_source: blood
+    decay:
+      duration: 300
+      decay_to: 4267
+- id: 4268
+  name: dead wolf
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 11950
+    capacity: 6
+    fluid_source: blood
+    decay:
+      duration: 300
+      decay_to: 4269
+- id: 4269
+  name: dead wolf
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 11500
+    capacity: 6
+    decay:
+      duration: 300
+      decay_to: 4270
+- id: 4272
+  name: dead minotaur
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 130000
+    capacity: 10
+    decay:
+      duration: 300
+      decay_to: 4273
+- id: 4273
+  name: dead minotaur
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 105000
+    capacity: 10
+    decay:
+      duration: 300
+      decay_to: 4274
+- id: 4274
+  name: dead minotaur
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 85000
+    capacity: 10
+    decay:
+      duration: 60
+      decay_to: 0
+- id: 4277
+  name: dead deer
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 68000
+    capacity: 5
+    fluid_source: blood
+    decay:
+      duration: 300
+      decay_to: 4278
+- id: 4278
+  name: dead deer
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 58000
+    capacity: 5
+    decay:
+      duration: 300
+      decay_to: 4279
+- id: 4279
+  name: dead deer
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 18000
+    decay:
+      duration: 60
+      decay_to: 0
+- id: 4281
+  name: dead dog
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1000
+    capacity: 5
+    fluid_source: blood
+    decay:
+      duration: 300
+      decay_to: 4021
+- id: 4282
+  name: dead dog
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1000
+    capacity: 5
+- id: 4285
+  name: pile of bones
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    capacity: 5
+- id: 4286
+  name: dead dragon
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 52
+    fluid_source: blood
+    decay:
+      duration: 300
+      decay_to: 4287
+- id: 4287
+  name: dead dragon
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 52
+    decay:
+      duration: 300
+      decay_to: 4288
+- id: 4288
+  name: dead dragon
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    decay:
+      duration: 60
+      decay_to: 0
+- id: 4290
+  name: remains of a ghost
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1000
+    capacity: 10
+    decay:
+      duration: 300
+      decay_to: 4158
+- id: 4291
+  name: dead bear
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 20
+    fluid_source: blood
+    decay:
+      duration: 300
+      decay_to: 4292
+- id: 4295
+  name: slain ghoul
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 60000
+    capacity: 8
+    decay:
+      duration: 300
+      decay_to: 4296
+- id: 4301
+  name: dead rabbit
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1000
+    capacity: 5
+    decay:
+      duration: 300
+      decay_to: 4302
+- id: 4310
+  name: dead elephant
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 30
+- id: 5552
+  name: rum flask
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 280
+- id: 5762
+  name: dead quara constrictor
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 10
+- id: 5801
+  name: jewelled backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1700
+    capacity: 22
+    slot: 3
+- id: 5926
+  name: pirate backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 5927
+  name: pirate bag
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 800
+    capacity: 8
+    slot: 3
+- id: 5949
+  name: beach backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 5950
+  name: beach bag
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 800
+    capacity: 8
+    slot: 3
+- id: 6109
+  name: weapon rack
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 20
+- id: 6110
+  name: weapon rack
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 20
+- id: 6111
+  name: armor rack
+  article: an
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 20
+- id: 6112
+  name: armor rack
+  article: an
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 20
+- id: 6367
+  name: bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 6
+- id: 6368
+  name: bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 6
+- id: 6369
+  name: bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 6
+- id: 6370
+  name: bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 6
+- id: 6505
+  name: christmas present
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 600
+    capacity: 5
+- id: 6509
+  name: christmas present
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 600
+    capacity: 5
+- id: 6510
+  name: christmas present
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 600
+    capacity: 5
+- id: 7189
+  name: stone shelf
+  article: a
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 7254
+  name: stone shelf
+  article: a
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 7255
+  name: stone shelf
+  article: a
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 7259
+  name: stone shelf
+  article: a
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 10
+- id: 7342
+  name: fur backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 7343
+  name: fur bag
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 800
+    capacity: 8
+    slot: 3
+- id: 7757
+  name: sturdy chest
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 8
+- id: 8860
+  name: brocade backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 8861
+  name: brocade bag
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 800
+    capacity: 8
+    slot: 3
+- id: 9232
+  name: cocktail glass
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 200
+- id: 9253
+  name: core dispenser
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 9601
+  name: demon backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 9602
+  name: orange backpack
+  article: an
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 9603
+  name: orange bag
+  article: an
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 800
+    capacity: 8
+    slot: 3
+- id: 9604
+  name: moon backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 9605
+  name: crown backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1700
+    capacity: 20
+    slot: 3
+- id: 10112
+  name: mud sand grass
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+- id: 10202
+  name: heart backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 10210
+  name: lizard weapon rack
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 25
+- id: 10211
+  name: lizard weapon rack
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 25
+- id: 10324
+  name: expedition backpack
+  article: an
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 10325
+  name: expedition bag
+  article: an
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 800
+    capacity: 8
+    slot: 3
+- id: 10326
+  name: dragon backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1700
+    capacity: 20
+    slot: 3
+- id: 10327
+  name: minotaur backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1850
+    capacity: 20
+    slot: 3
+- id: 10346
+  name: santa backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1650
+    capacity: 20
+    slot: 3
+- id: 11392
+  name: unknown item
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 11393
+  name: unknown item
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 11540
+  name: marked crate
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    weight: 8000
+- id: 11591
+  name: unknown item
+  flags:
+  - container
+  - usable
+  - unmove
+- id: 11698
+  name: loot bag
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 0
+    capacity: 60
+    slot: 3
+- id: 11809
+  name: wooden trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 11810
+  name: wooden trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 11812
+  name: cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 11813
+  name: cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 12478
+  name: delicate vase
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  - liquidcontainer
+  attributes:
+    weight: 750
+- id: 12640
+  name: shelf
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 12641
+  name: shelf
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 12642
+  name: trunk
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 10
+- id: 12643
+  name: trunk
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 10
+- id: 12644
+  name: back basket
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 12645
+  name: leaf basket
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 3
+- id: 12763
+  name: crate
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 12764
+  name: crate
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 12902
+  name: your inbox
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 30
+- id: 12937
+  name: insectoid cell
+  article: an
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 12938
+  name: insectoid cell
+  article: an
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 14066
+  name: seashell bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 14067
+  name: seashell bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 14068
+  name: seashell bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 14069
+  name: seashell bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 14070
+  name: seashell bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 14071
+  name: seashell bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 14248
+  name: deepling backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 14249
+  name: buggy backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 14674
+  name: anniversary backpack
+  article: an
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1500
+    capacity: 15
+    slot: 3
+- id: 14750
+  name: surprise nest
+  article: a
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    weight: 2000
+- id: 14754
+  name: cake cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 10
+- id: 14755
+  name: cake cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 10
+- id: 16099
+  name: mushroom backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 16100
+  name: crystal backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 17353
+  name: cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 8
+- id: 17354
+  name: cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 8
+- id: 17355
+  name: wardrobe
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 10
+- id: 17356
+  name: wardrobe
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 10
+- id: 17357
+  name: drawer
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 8
+- id: 17358
+  name: drawer
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 8
+- id: 17870
+  name: bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 17871
+  name: bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 17872
+  name: bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 17873
+  name: bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 18015
+  name: cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 18016
+  name: cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 18017
+  name: wardrobe
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 10
+- id: 18018
+  name: wardrobe
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 10
+- id: 18019
+  name: drawer
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 18020
+  name: drawer
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 18339
+  name: Zaoan chess box
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 3800
+    capacity: 32
+- id: 18482
+  name: bookcase
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 18483
+  name: bookcase
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 18484
+  name: bookcase
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 18485
+  name: bookcase
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 19079
+  name: crate
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    weight: 8000
+    capacity: 15
+- id: 19159
+  name: pannier backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 19202
+  name: reward container
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 32
+- id: 19250
+  name: reward chest
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 32
+- id: 20347
+  name: cake backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 21292
+  name: feedbag
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 21295
+  name: glooth backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 21411
+  name: shopping bag
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 21412
+  name: dead explorer
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 21818
+  name: ashes
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 1
+- id: 21858
+  name: debris
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 8
+- id: 21874
+  name: bookcase
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 22084
+  name: wolf backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 22162
+  name: strange grave
+  article: a
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 22658
+  name: floating green flask
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 22763
+  name: shaggy ogre bag
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 800
+- id: 22797
+  name: depot box I
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 32
+- id: 22798
+  name: depot box II
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 32
+- id: 22799
+  name: depot box III
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 32
+- id: 22800
+  name: depot box IV
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 32
+- id: 22801
+  name: depot box V
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 32
+- id: 22802
+  name: depot box VI
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 32
+- id: 22803
+  name: depot box VII
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 32
+- id: 22804
+  name: depot box VIII
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 32
+- id: 22805
+  name: depot box IX
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 32
+- id: 22806
+  name: depot box X
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 32
+- id: 22807
+  name: depot box XI
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 32
+- id: 22808
+  name: depot box XII
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 32
+- id: 22809
+  name: depot box XIII
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 32
+- id: 22810
+  name: depot box XIV
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 32
+- id: 22811
+  name: depot box XV
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 32
+- id: 22812
+  name: depot box XVI
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 32
+- id: 22813
+  name: depot box XVII
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 32
+- id: 23396
+  name: your store inbox
+  article: your
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    capacity: 20
+    slot: 11
+- id: 23419
+  name: magnificent cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 23420
+  name: magnificent cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 23421
+  name: ferocious cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 23422
+  name: ferocious cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 23423
+  name: ferocious trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 23424
+  name: ferocious trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 23425
+  name: ferocious trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 23426
+  name: ferocious trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 23427
+  name: magnificent trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 23428
+  name: magnificent trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 23429
+  name: magnificent trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 23430
+  name: magnificent trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 23525
+  name: energetic backpack
+  article: an
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 2160
+    capacity: 24
+    slot: 3
+- id: 23700
+  name: rustic cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 23701
+  name: rustic cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 23702
+  name: rustic trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 23704
+  name: rustic trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 23705
+  name: rustic trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 23706
+  name: rustic trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 23721
+  name: gold pouch
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    capacity: 20
+- id: 23736
+  name: spider web
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 10
+- id: 23740
+  name: brass-shod chest
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 23741
+  name: brass-shod chest
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 24393
+  name: pillow backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1450
+    capacity: 24
+    slot: 3
+- id: 24395
+  name: birthday backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1500
+    capacity: 20
+    slot: 3
+- id: 24512
+  name: old tibia item
+  flags:
+  - container
+  - usable
+  - unmove
+- id: 24861
+  name: treasure chest
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 9500
+    capacity: 10
+- id: 24862
+  name: treasure chest
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 9500
+    capacity: 10
+- id: 24863
+  name: treasure chest
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    weight: 9500
+    capacity: 10
+- id: 24864
+  name: treasure chest
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    weight: 9500
+    capacity: 10
+- id: 25227
+  name: vengothic cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 25228
+  name: vengothic cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 25229
+  name: vengothic chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 25230
+  name: vengothic chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 25231
+  name: vengothic chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 25232
+  name: vengothic chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 25234
+  name: dead animated mummy
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 10
+    decay:
+      duration: 100
+      decay_to: 0
+- id: 25762
+  name: tree container
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 8
+- id: 25780
+  name: blossom bag
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 800
+    capacity: 24
+    slot: 3
+- id: 26105
+  name: verdant cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 26106
+  name: verdant cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 26107
+  name: verdant trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 26108
+  name: verdant trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 26109
+  name: verdant trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 26110
+  name: verdant trunk
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 26162
+  name: ornate cabinet
+  article: an
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 26163
+  name: ornate cabinet
+  article: an
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 26164
+  name: ornate chest
+  article: an
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 26165
+  name: ornate chest
+  article: an
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 26166
+  name: ornate chest
+  article: an
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 26167
+  name: ornate chest
+  article: an
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 27448
+  name: bookcase
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 6
+- id: 27503
+  name: large harvestable crystals
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27504
+  name: large harvestable crystals
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27505
+  name: harvestable crystals
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27506
+  name: harvestable crystals
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27507
+  name: small harvestable crystals
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27508
+  name: small harvestable crystals
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27663
+  name: alchemistic cabinet
+  article: an
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 27664
+  name: alchemistic cabinet
+  article: an
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 27876
+  name: writing desk
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27877
+  name: writing desk
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27878
+  name: writing desk
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27879
+  name: writing desk
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27880
+  name: writing desk
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27881
+  name: writing desk
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27894
+  name: unknown item
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27895
+  name: unknown item
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27900
+  name: pile of books
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27901
+  name: pile of books
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27902
+  name: pile of books
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27903
+  name: pile of books
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27904
+  name: pile of books
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27905
+  name: pile of books
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27906
+  name: pile of books
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 27907
+  name: pile of books
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 28185
+  name: unknown item
+  flags:
+  - container
+  - usable
+  - unpass
+- id: 28186
+  name: unknown item
+  flags:
+  - container
+  - usable
+  - unpass
+- id: 28268
+  name: writing desk
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 28269
+  name: writing desk
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 28270
+  name: writing desk
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 28271
+  name: writing desk
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 28272
+  name: writing desk
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 28273
+  name: writing desk
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 28274
+  name: strong wooden gable
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 28275
+  name: strong wooden gable
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 28276
+  name: strong wooden gable
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 28277
+  name: strong wooden gable
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 28462
+  name: unknown object
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 28481
+  name: writing desk
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    capacity: 5
+- id: 28482
+  name: writing desk
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 28517
+  name: skeleton
+  article: an
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 28522
+  name: unknown item
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 28571
+  name: book backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 22
+    slot: 3
+- id: 28651
+  name: seashell
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 28682
+  name: skeletal chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 28683
+  name: skeletal chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 28684
+  name: skeletal chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 28685
+  name: skeletal chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 28686
+  name: skeletal cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 28687
+  name: skeletal cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 28750
+  name: your supply stash
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 10
+- id: 28938
+  name: comfy chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 28939
+  name: comfy chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 28940
+  name: comfy chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 28941
+  name: comfy chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 28942
+  name: comfy cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 28943
+  name: comfy cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 28945
+  name: chest of abundance
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 18
+- id: 28946
+  name: chest of abundance
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 18
+- id: 29407
+  name: nothing special
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    slot: 12
+- id: 29433
+  name: chest
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    weight: 12000
+    capacity: 15
+- id: 29435
+  name: chest
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    weight: 12000
+    capacity: 15
+- id: 29436
+  name: chest
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    weight: 12000
+    capacity: 15
+- id: 30007
+  name: grave
+  article: an
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 30145
+  name: frozen chest
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 30197
+  name: festive backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1500
+    capacity: 22
+    slot: 3
+- id: 31100
+  name: ancient stone coffin
+  article: a
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 31102
+  name: ancient stone coffin
+  article: a
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 31104
+  name: ancient sacrophagus
+  article: an
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 31106
+  name: ancient sacrophagus
+  article: an
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 31110
+  name: ancient sacrophagus
+  article: an
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 31112
+  name: ancient sacrophagus
+  article: an
+  flags:
+  - bottom
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 31187
+  name: dwarven stone chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 31188
+  name: dwarven stone chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 31189
+  name: dwarven stone chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 31190
+  name: dwarven stone chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 31192
+  name: dwarven stone cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 31193
+  name: dwarven stone cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 31194
+  name: wooden bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 31195
+  name: wooden bookcase
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 31282
+  name: Zaoan chess box
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    weight: 3800
+    capacity: 32
+- id: 31625
+  name: winged backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1500
+    capacity: 24
+    slot: 3
+- id: 31630
+  name: gryphon nest
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 31687
+  name: hrodmiran chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 31688
+  name: hrodmiran chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 31689
+  name: hrodmiran chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 31690
+  name: hrodmiran chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 31705
+  name: hrodmiran cupboard
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 31706
+  name: hrodmiran cupboard
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 31721
+  name: unknown item
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 31722
+  name: unknown item
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 31908
+  name: Time Distort Almanac
+  article: the
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+- id: 31915
+  name: depot box XVIII
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 32
+- id: 31935
+  name: pirate treasure chest
+  article: a
+  flags:
+  - container
+  - usable
+- id: 31936
+  name: pirate treasure chest
+  article: a
+  flags:
+  - container
+  - usable
+- id: 32142
+  name: blue traditional rack
+  article: an
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 20
+- id: 32143
+  name: blue traditional rack
+  article: an
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 20
+- id: 32144
+  name: green traditional rack
+  article: an
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 20
+- id: 32145
+  name: green traditional rack
+  article: an
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 20
+- id: 32146
+  name: red traditional rack
+  article: an
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 20
+- id: 32147
+  name: red traditional rack
+  article: an
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 20
+- id: 32620
+  name: ghost backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 500
+    capacity: 26
+    slot: 3
+- id: 32775
+  name: ice cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 32776
+  name: ice cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 32780
+  name: ice chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 32781
+  name: ice chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 32782
+  name: ice chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 32783
+  name: ice chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 33032
+  name: heart cabinet
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 33033
+  name: heart cabinet
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 33043
+  name: heart chest
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 33044
+  name: heart chest
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 33045
+  name: heart chest
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 33046
+  name: heart chest
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 34040
+  name: artist chest
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 34041
+  name: artist chest
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 34042
+  name: artist chest
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 34043
+  name: artist chest
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 34054
+  name: sculptor chest
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 34055
+  name: sculptor chest
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 34056
+  name: sculptor chest
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 34057
+  name: sculptor chest
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 34276
+  name: cupboard
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 34278
+  name: cupboard
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 34296
+  name: kitchen chest
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 34297
+  name: kitchen chest
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 34298
+  name: kitchen chest
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 34299
+  name: kitchen chest
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 35171
+  name: toolbox
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 35172
+  name: toolbox
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 35173
+  name: toolbox
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 35174
+  name: toolbox
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 35175
+  name: wooden cabinet
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 35176
+  name: wooden cabinet
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 35577
+  name: raccoon backpack
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    capacity: 20
+    slot: 3
+- id: 35911
+  name: grandiose cupboard
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 35912
+  name: grandiose cupboard
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 35919
+  name: grandiose refined chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 35920
+  name: grandiose refined chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 35921
+  name: grandiose refined chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 35922
+  name: grandiose refined chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 35923
+  name: grandiose gilded chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 35924
+  name: grandiose gilded chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 35925
+  name: grandiose gilded chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 35926
+  name: grandiose gilded chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 36630
+  name: volcanic chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 36631
+  name: volcanic chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 36632
+  name: volcanic chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 36633
+  name: volcanic chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 36810
+  name: artefact box
+  article: an
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 5000
+    capacity: 32
+- id: 36813
+  name: Galthen's satchel
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1000
+    capacity: 32
+- id: 36980
+  name: chest
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    weight: 12000
+    capacity: 15
+- id: 37009
+  name: shroom cupboard
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 37010
+  name: shroom cupboard
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 37011
+  name: log chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 37012
+  name: log chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 37013
+  name: log chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 37014
+  name: log chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 37179
+  name: kraken cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 37180
+  name: kraken cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 37181
+  name: kraken chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 37182
+  name: kraken chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 37183
+  name: kraken chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 37184
+  name: kraken chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 37536
+  name: changing backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1500
+    capacity: 20
+    slot: 3
+- id: 37561
+  name: exaltation chest
+  article: an
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 2000
+    capacity: 2
+- id: 37782
+  name: Zaoan cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 37783
+  name: Zaoan cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 39441
+  name: knightly cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 39442
+  name: knightly cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 39504
+  name: knightly chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 39505
+  name: knightly chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 39506
+  name: knightly chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 39507
+  name: knightly chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 39693
+  name: 25 years backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1700
+    capacity: 25
+    slot: 3
+- id: 39723
+  name: depot box XIX
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 32
+- id: 39724
+  name: depot box XX
+  article: a
+  flags:
+  - container
+  - usable
+  - unmove
+  attributes:
+    capacity: 32
+- id: 39754
+  name: lilypad backpack
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 1500
+    capacity: 26
+    slot: 3
+- id: 39775
+  name: flower cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 39776
+  name: flower cabinet
+  article: a
+  flags:
+  - container
+  - usable
+  - unpass
+  attributes:
+    capacity: 8
+- id: 39777
+  name: flower chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 39778
+  name: flower chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 39779
+  name: flower chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 39780
+  name: flower chest
+  article: a
+  flags:
+  - container
+  - usable
+  attributes:
+    capacity: 18
+- id: 42273
+  name: seafarer cabinet
+  flags:
+  - container
+  - usable
+  - unpass
+- id: 42274
+  name: seafarer cabinet
+  flags:
+  - container
+  - usable
+  - unpass
+- id: 42275
+  name: seafarer chest
+  flags:
+  - container
+  - usable
+- id: 42276
+  name: seafarer chest
+  flags:
+  - container
+  - usable
+- id: 42277
+  name: seafarer chest
+  flags:
+  - container
+  - usable
+- id: 42278
+  name: seafarer chest
+  flags:
+  - container
+  - usable
+- id: 42328
+  name: opulent chest
+  flags:
+  - container
+  - usable
+- id: 42329
+  name: opulent chest
+  flags:
+  - container
+  - usable
+- id: 42330
+  name: opulent chest
+  flags:
+  - container
+  - usable
+- id: 42331
+  name: opulent chest
+  flags:
+  - container
+  - usable
+- id: 42332
+  name: opulent book case
+  flags:
+  - container
+  - usable
+  - unpass
+- id: 42333
+  name: opulent book case
+  flags:
+  - container
+  - usable
+  - unpass
+- id: 42334
+  name: opulent spice rack
+  flags:
+  - container
+  - usable
+  - unpass
+- id: 42335
+  name: opulent spice rack
+  flags:
+  - container
+  - usable
+  - unpass

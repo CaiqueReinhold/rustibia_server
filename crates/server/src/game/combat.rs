@@ -1247,7 +1247,7 @@ mod tests {
         assert!(!damage.blocked_armor);
     }
 
-    /// The bow in `items.yaml` carries no `attack` at all — the arrow does (25). Reading
+    /// The shipped bow carries no `attack` at all — the arrow does (25). Reading
     /// only the weapon slot dropped every distance shot to the unarmed fallback of 5, which
     /// against a creature with any armour at all is a permanent block.
     #[test]

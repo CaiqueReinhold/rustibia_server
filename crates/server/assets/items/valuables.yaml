@@ -1,0 +1,2859 @@
+- id: 281
+  name: giant shimmering pearl
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 282
+  name: giant shimmering pearl
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 653
+  name: costume bag
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 800
+- id: 654
+  name: costume bag
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 800
+- id: 655
+  name: costume bag
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 800
+- id: 675
+  name: small enchanted sapphire
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 10
+- id: 676
+  name: small enchanted ruby
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 10
+- id: 677
+  name: small enchanted emerald
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 10
+- id: 678
+  name: small enchanted amethyst
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 10
+- id: 768
+  name: document of the follower
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 200
+- id: 769
+  name: document of the officer
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 200
+- id: 770
+  name: document of the leader
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 200
+- id: 2848
+  name: purple tome
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1900
+- id: 2849
+  name: green tome
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1900
+- id: 2850
+  name: blue tome
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1900
+- id: 2851
+  name: grey tome
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1900
+- id: 2852
+  name: red tome
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1900
+- id: 3005
+  name: elven brooch
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 90
+- id: 3010
+  name: emerald bangle
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 179
+- id: 3017
+  name: silver brooch
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 115
+- id: 3020
+  name: some golden fruits
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1070
+- id: 3023
+  name: holy scarab
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 869
+- id: 3024
+  name: holy falcon
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 840
+- id: 3026
+  name: white pearl
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 20
+- id: 3027
+  name: black pearl
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 20
+- id: 3028
+  name: small diamond
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 3029
+  name: small sapphire
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 10
+- id: 3030
+  name: small ruby
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 10
+- id: 3032
+  name: small emerald
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 10
+- id: 3033
+  name: small amethyst
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 10
+- id: 3034
+  name: talon
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 20
+- id: 3036
+  name: violet gem
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 30
+- id: 3037
+  name: yellow gem
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 30
+- id: 3038
+  name: green gem
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 30
+- id: 3039
+  name: red gem
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 30
+- id: 3040
+  name: gold nugget
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 3041
+  name: blue gem
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 30
+- id: 3042
+  name: scarab coin
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 20
+- id: 3058
+  name: strange symbol
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 3060
+  name: orb
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 800
+- id: 3061
+  name: life crystal
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 263
+- id: 3062
+  name: mind stone
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 250
+- id: 3103
+  name: cornucopia
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1400
+- id: 4871
+  name: explorer brooch
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 90
+- id: 5014
+  name: mandrake
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 5021
+  name: orichalcum pearl
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 30
+- id: 5907
+  name: slingshot
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 5944
+  name: soul orb
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 20
+- id: 6104
+  name: jewel case
+  article: a
+  flags:
+  - container
+  - usable
+  - take
+  attributes:
+    weight: 170
+    capacity: 1
+- id: 6570
+  name: surprise bag
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1000
+- id: 6571
+  name: surprise bag
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1000
+- id: 8779
+  name: head of a jester doll
+  article: the
+  flags:
+  - take
+  attributes:
+    weight: 400
+- id: 8780
+  name: torso of a jester doll
+  article: the
+  flags:
+  - take
+  attributes:
+    weight: 400
+- id: 8781
+  name: part of a jester doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 100
+- id: 8782
+  name: part of a jester doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 100
+- id: 8783
+  name: part of a jester doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 100
+- id: 8784
+  name: part of a jester doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 100
+- id: 8853
+  name: suspicious surprise bag
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 800
+- id: 8894
+  name: heavily rusted armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 12000
+- id: 8895
+  name: rusted armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 12000
+- id: 8896
+  name: slightly rusted armor
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 12000
+- id: 8897
+  name: heavily rusted legs
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 7000
+- id: 8898
+  name: rusted legs
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 7000
+- id: 8899
+  name: slightly rusted legs
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 7000
+- id: 8900
+  name: heavily rusted shield
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6500
+    defense: 1
+- id: 8901
+  name: rusted shield
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6500
+    defense: 1
+- id: 8902
+  name: slightly rusted shield
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6500
+    defense: 1
+- id: 8906
+  name: heavily rusted helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5200
+    armor: 1
+- id: 8907
+  name: rusted helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5200
+    armor: 1
+- id: 8908
+  name: slightly rusted helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5200
+    armor: 1
+- id: 9041
+  name: vampiric crest
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 9057
+  name: small topaz
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 10
+- id: 9058
+  name: gold ingot
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1800
+- id: 9606
+  name: egg of The Many
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+- id: 9615
+  name: midnight shard
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 300
+- id: 10198
+  name: tribal crest
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 10199
+  name: serpent crest
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 10217
+  name: Tome of Knowledge
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1500
+- id: 10341
+  name: phoenix charm
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1000
+- id: 10342
+  name: unity charm
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1000
+- id: 10343
+  name: spiritual charm
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1000
+- id: 10344
+  name: twin sun charm
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1000
+- id: 10345
+  name: solitude charm
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1000
+- id: 11603
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11604
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11605
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11606
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11607
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 210
+- id: 11608
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11609
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11610
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11611
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11612
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11613
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11614
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11615
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11616
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11617
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11618
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11619
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11620
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11621
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11622
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11623
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11624
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11625
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11626
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11627
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11628
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11629
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11630
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11631
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11632
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11633
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11634
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11635
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11636
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11637
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11638
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11639
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11640
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11641
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11642
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11643
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11644
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11645
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11646
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11647
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11648
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11649
+  name: silver rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 11650
+  name: golden rune emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 120
+- id: 12260
+  name: hunting horn
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 12304
+  name: maxilla maximus
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 12305
+  name: tin key
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 12306
+  name: leather whip
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 12307
+  name: harness
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 12308
+  name: reins
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 12311
+  name: carrot on a stick
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 12318
+  name: giant shrimp
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 12320
+  name: sweet smelling bait
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 12509
+  name: scorpion sceptre
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 12517
+  name: medicine pouch
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1200
+- id: 12519
+  name: slug drug
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 12546
+  name: fist on a stick
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 12547
+  name: diapason
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 12548
+  name: bag of apple slices
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 12549
+  name: bamboo leaves
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 12550
+  name: golden fir cone
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 12551
+  name: ominous piece of cloth
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 12552
+  name: dubious piece of cloth
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 12553
+  name: voluminous piece of cloth
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 12554
+  name: obvious piece of cloth
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 12555
+  name: ludicrous piece of cloth
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 12556
+  name: luminous piece of cloth
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 12557
+  name: shimmer swimmer
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 999
+- id: 12736
+  name: babel swimmer
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 12786
+  name: plague mask
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 70
+- id: 12787
+  name: plague bell
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 120
+- id: 12801
+  name: golden can of oil
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 12802
+  name: sugar oat
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 14112
+  name: bar of gold
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 2100
+- id: 14142
+  name: foxtail
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 14143
+  name: four-leaf clover
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 14671
+  name: Delany's golden bug trophy
+  flags:
+  - take
+  attributes:
+    weight: 1250
+- id: 14672
+  name: Bolfrim's golden bug trophy
+  flags:
+  - take
+  attributes:
+    weight: 1250
+- id: 14673
+  name: Siramal's golden bug trophy
+  flags:
+  - take
+  attributes:
+    weight: 1250
+- id: 14682
+  name: Chayenne's magical key
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 14753
+  name: dung ball
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 190
+- id: 14759
+  name: surprise nest
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 2000
+- id: 16119
+  name: blue crystal shard
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 20
+- id: 16120
+  name: violet crystal shard
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 20
+- id: 16121
+  name: green crystal shard
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 20
+- id: 16122
+  name: green crystal splinter
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 10
+- id: 16123
+  name: brown crystal splinter
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 16124
+  name: blue crystal splinter
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 16125
+  name: cyan crystal fragment
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 15
+- id: 16126
+  name: red crystal fragment
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 15
+- id: 16127
+  name: green crystal fragment
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 15
+- id: 16153
+  name: iron loadstone
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 16154
+  name: glow wine
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 16155
+  name: decorative ribbon
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 16229
+  name: tail of Abyssador
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 800
+- id: 16230
+  name: torso of Abyssador
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 700
+- id: 16231
+  name: head of Abyssador
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 900
+- id: 16232
+  name: statue of Abyssador
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2400
+- id: 16233
+  name: legs of Deathstrike
+  article: the
+  flags:
+  - take
+  attributes:
+    weight: 800
+- id: 16234
+  name: torso of Deathstrike
+  article: the
+  flags:
+  - take
+  attributes:
+    weight: 900
+- id: 16235
+  name: head of Deathstrike
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 400
+- id: 16236
+  name: statue of Deathstrike
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2100
+- id: 16237
+  name: legs of Gnomevil
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 700
+- id: 16238
+  name: torso of Gnomevil
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 900
+- id: 16239
+  name: head of Gnomevil
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 600
+- id: 16240
+  name: statue of Gnomevil
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2200
+- id: 16244
+  name: music box
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 16251
+  name: golem wrench
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 17858
+  name: leech
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 19082
+  name: golden raid token
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 110
+- id: 19083
+  name: silver raid token
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 19136
+  name: nail case
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 19150
+  name: norseman doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 19151
+  name: abacus
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 1200
+- id: 19152
+  name: key of numerous locks
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 150
+- id: 19154
+  name: Mexcalibur
+  article: the
+  flags:
+  - take
+  attributes:
+    weight: 1200
+- id: 19155
+  name: orc's jaw shredder
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 2500
+- id: 19156
+  name: frozen heart
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2000
+- id: 20274
+  name: nightmare horn
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 20355
+  name: melting horn
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 21186
+  name: control unit
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 22026
+  name: phoenix statue
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2000
+- id: 22027
+  name: dragon eye
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2800
+- id: 22028
+  name: noble sword
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5000
+- id: 22118
+  name: Tibia coins
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 0
+- id: 22193
+  name: onyx chip
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 120
+- id: 22194
+  name: opal
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 22516
+  name: silver token
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1
+- id: 22721
+  name: gold token
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1
+- id: 22865
+  name: mysterious scroll
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 850
+- id: 23487
+  name: arena badge
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 23512
+  name: spying eye
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 400
+- id: 23538
+  name: vibrant egg
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 850
+- id: 23676
+  name: hand puppets
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 5
+- id: 23677
+  name: music box
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 200
+- id: 23678
+  name: encyclopedia
+  article: an
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1337
+- id: 23679
+  name: doll of Durin The Almighty
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 4000
+- id: 23680
+  name: medusa skull
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1000
+- id: 23681
+  name: golden newspaper
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2400
+- id: 23682
+  name: bag of oriental spices
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1508
+- id: 23683
+  name: imortus
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 4690
+- id: 23684
+  name: crackling egg
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 850
+- id: 23685
+  name: menacing egg
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 850
+- id: 24390
+  name: ancient coin
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 30
+- id: 24391
+  name: coral brooch
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 24392
+  name: gemmed figurine
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 650
+- id: 24929
+  name: lightsphere
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 100
+- id: 24939
+  name: scale of Gelidrazah
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 500
+- id: 24940
+  name: tooth of Tazhadur
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 350
+- id: 24941
+  name: horn of Kalyassa
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 650
+- id: 24942
+  name: bones of Zorvorax
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 800
+- id: 24949
+  name: costume bag
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 100
+- id: 24954
+  name: part of a rune
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 850
+- id: 24955
+  name: part of a rune
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 850
+- id: 24956
+  name: part of a rune
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 850
+- id: 24957
+  name: part of a rune
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 850
+- id: 24958
+  name: part of a rune
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 850
+- id: 24959
+  name: part of a rune
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 850
+- id: 24960
+  name: astral shaper rune
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 850
+- id: 24961
+  name: tiger eye
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 24962
+  name: prismatic quartz
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 25244
+  name: tattered swan feather
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 25360
+  name: heart of the mountain
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1000
+- id: 25361
+  name: blood of the mountain
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1000
+- id: 25689
+  name: golden brush
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1240
+- id: 25737
+  name: rainbow quartz
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 25979
+  name: draken doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1500
+- id: 25980
+  name: emblem
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 25981
+  name: crimson doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1500
+- id: 26074
+  name: blessed acorn
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 50
+- id: 26181
+  name: swan feather
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 27605
+  name: candle stump
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 850
+- id: 27654
+  name: surprise jar
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1000
+- id: 28791
+  name: library ticket
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 850
+- id: 28894
+  name: old radio
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 4015
+- id: 28895
+  name: bookworm doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1900
+- id: 28896
+  name: golden falcon
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2000
+- id: 28897
+  name: assassin doll
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 2504
+- id: 29345
+  name: blue glass plate
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 29346
+  name: green glass plate
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 29347
+  name: violet glass plate
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 30053
+  name: dragon figurine
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 30054
+  name: unicorn figurine
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 30055
+  name: crunor idol
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 30056
+  name: ornate locket
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 30059
+  name: giant ruby
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 30060
+  name: giant emerald
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 30061
+  name: giant sapphire
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 30170
+  name: turquoise tendril lantern
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 919
+- id: 30171
+  name: purple tendril lantern
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 919
+- id: 30180
+  name: hexagonal ruby
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 125
+- id: 30316
+  name: surprise bag
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1000
+- id: 31265
+  name: dragon goblet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1800
+- id: 31266
+  name: pigeon trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 400
+- id: 31267
+  name: loremaster doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 7700
+- id: 31323
+  name: sea horse figurine
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 31324
+  name: golden mask
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 31572
+  name: blue and golden cordon
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 850
+- id: 31573
+  name: sun medal
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 850
+- id: 31574
+  name: sunray emblem
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 850
+- id: 31575
+  name: golden bijou
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 850
+- id: 31576
+  name: Regalia of Suon
+  article: the
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 850
+- id: 32583
+  name: skull coin
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 25
+- id: 32589
+  name: angel figurine
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 32622
+  name: giant amethyst
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 170
+- id: 32623
+  name: giant topaz
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 170
+- id: 32624
+  name: amber with a bug
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 32625
+  name: amber with a dragonfly
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 32626
+  name: amber
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1250
+- id: 32629
+  name: spectral scrap of cloth
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 350
+- id: 32631
+  name: ghost claw
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 730
+- id: 32633
+  name: eye of the chasm
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 250
+- id: 32703
+  name: death toll
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 4
+- id: 32769
+  name: white gem
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 30
+- id: 32770
+  name: diamond
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 32771
+  name: moonstone
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 32772
+  name: silver hand mirror
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 650
+- id: 32773
+  name: ivory comb
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 650
+- id: 32774
+  name: cursed bone
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 650
+- id: 33778
+  name: raw watermelon tourmaline
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 33779
+  name: watermelon tourmaline
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 110
+- id: 33780
+  name: watermelon tourmaline
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 130
+- id: 33781
+  name: lion figurine
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 650
+- id: 34008
+  name: white silk flower
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 300
+- id: 34022
+  name: goblet of gloom
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 190
+- id: 34023
+  name: brooch of embracement
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 34024
+  name: gruesome fan
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 170
+- id: 34025
+  name: diabolic skull
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 210
+- id: 34072
+  name: spectral horseshoe
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 120
+- id: 34073
+  name: spectral saddle
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 270
+- id: 34074
+  name: spectral horse tack
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 80
+- id: 34075
+  name: the skull of a beast
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 230
+- id: 34076
+  name: bracelet of strengthening
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 150
+- id: 34170
+  name: morbid tapestry
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 290
+- id: 34210
+  name: Goromaphone
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6659
+- id: 34258
+  name: red silk flower
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 300
+- id: 35578
+  name: tiara
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 35579
+  name: golden dustbin
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 720
+- id: 35580
+  name: golden skull
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 430
+- id: 35581
+  name: golden cheese wedge
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 280
+- id: 35595
+  name: soap
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 180
+- id: 35695
+  name: scrubbing brush
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 350
+- id: 36835
+  name: eldritch crystal
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 175
+- id: 36836
+  name: eldritch casket
+  article: an
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1300
+- id: 36938
+  name: fiery horseshoe
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 120
+- id: 37002
+  name: tagralt-inlaid scabbard
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 37003
+  name: eye-embroidered veil
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 100
+- id: 37058
+  name: little adventurer doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2613
+- id: 37397
+  name: wind-up key
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 37398
+  name: wind-up loco
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 200
+- id: 37604
+  name: brass button
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1250
+- id: 37605
+  name: decorative plume
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 730
+- id: 39036
+  name: rainbow opal
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 175
+- id: 39037
+  name: cobalt ridge
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 175
+- id: 39038
+  name: royal almandine
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 175
+- id: 39039
+  name: cerulean abyss
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 175
+- id: 39040
+  name: fiery tear
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 175
+- id: 39544
+  name: firefighting axe
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1600
+- id: 39545
+  name: portable flame
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 39548
+  name: colourful water lily
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 43510
+  name: tibiora's box replica
+  flags:
+  - take
+  attributes:
+    weight: 4200
+- id: 43511
+  name: citizen doll replica
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2200
+- id: 44602
+  name: lesser guardian gem
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 20
+- id: 44603
+  name: guardian gem
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 20
+- id: 44604
+  name: greater guardian gem
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 44605
+  name: lesser marksman gem
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 20
+- id: 44606
+  name: marksman gem
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 20
+- id: 44607
+  name: greater marksman gem
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 44608
+  name: lesser sage gem
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 20
+- id: 44609
+  name: sage gem
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 44610
+  name: greater sage gem
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 44611
+  name: lesser mystic gem
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 20
+- id: 44612
+  name: mystic gem
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 44613
+  name: greater mystic gem
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120

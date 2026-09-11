@@ -533,7 +533,7 @@ mod tests {
     // ── Potions ───────────────────────────────────────────────────────────────
 
     /// Built here rather than looked up: these tests are about what `drink` does
-    /// with the bounds it is handed, not about the amounts `items.yaml` happens to
+    /// with the bounds it is handed, not about the amounts the catalogue happens to
     /// carry. Id 9999 is in no tool list in `game_conf.yaml` either, so reaching
     /// this at all proves the catalogue is a real second source for the lookup.
     fn a_potion(

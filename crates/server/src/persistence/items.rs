@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use once_cell::sync::Lazy;
@@ -17,25 +17,39 @@ use crate::entities::items::{
 };
 use crate::game::TickDelta;
 use crate::persistence::areas::AREA_SHAPES;
+use crate::persistence::yaml_files_in;
 
-/// The item catalogue, loaded once from `assets/items.yaml`. Immutable after load and
+/// The item catalogue, loaded once from `assets/items/`. Immutable after load and
 /// read by every subsystem, so it is a global for the same reason `GAME_CONFIG` is.
 pub static ITEM_CONFIGS: Lazy<Arc<HashMap<ItemId, Arc<ItemConfig>>>> = Lazy::new(|| {
-    Arc::new(load_items(&CONFIG.items_file_path).expect("failed to load item configs"))
+    Arc::new(load_items(&CONFIG.items_dir_path).expect("failed to load item configs"))
 });
 
 #[derive(Error, Debug)]
 pub enum ItemsLoadError {
-    #[error("I/O error: {0}")]
-    ReadError(#[from] std::io::Error),
-    #[error("YAML parse error: {0}")]
-    ParseError(#[from] serde_yaml::Error),
+    #[error("I/O error reading {path}: {source}")]
+    ReadError {
+        path: PathBuf,
+        source: std::io::Error,
+    },
+    #[error("YAML parse error in {path}: {source}")]
+    ParseError {
+        path: PathBuf,
+        source: serde_yaml::Error,
+    },
+    #[error("item {id} is defined in both {first} and {second}")]
+    DuplicateId {
+        id: ItemId,
+        first: PathBuf,
+        second: PathBuf,
+    },
 }
 
 // ── Raw YAML deserialization types ────────────────────────────────────────────
 
 #[derive(Deserialize)]
 struct RawItemConfig {
+    id: ItemId,
     name: String,
     #[serde(default)]
     description: Option<String>,
@@ -45,11 +59,6 @@ struct RawItemConfig {
     flags: Vec<String>,
     #[serde(default)]
     attributes: HashMap<String, serde_yaml::Value>,
-}
-
-#[derive(Deserialize)]
-struct ItemsFile {
-    items: HashMap<ItemId, RawItemConfig>,
 }
 
 // ── Conversion ────────────────────────────────────────────────────────────────
@@ -108,13 +117,13 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
             Some(ItemAttribute::FloorChange(dir))
         }
         "action" => {
-            let mut iter = value.as_str()?.split("(");
-            let action_name = iter.next()?;
-            let params = iter.next()?.trim_end_matches(')');
+            let action_name = value.get("type")?.as_str()?;
             let action = match action_name {
                 "transform" => {
-                    let item_id = params.parse::<u16>().map(ItemId).ok()?;
-                    ItemAction::Transform { into: item_id }
+                    let item_id = value.get("into")?.as_u64()? as u16;
+                    ItemAction::Transform {
+                        into: ItemId(item_id),
+                    }
                 }
                 _ => return None,
             };
@@ -196,7 +205,7 @@ fn parse_attribute(key: &str, value: &serde_yaml::Value) -> Option<ItemAttribute
     }
 }
 
-fn convert(id: ItemId, raw: RawItemConfig) -> ItemConfig {
+fn convert(raw: RawItemConfig) -> ItemConfig {
     let attributes = raw
         .attributes
         .iter()
@@ -204,7 +213,7 @@ fn convert(id: ItemId, raw: RawItemConfig) -> ItemConfig {
         .collect::<HashSet<_>>();
 
     ItemConfig::new(
-        id,
+        raw.id,
         raw.name,
         raw.description,
         raw.article,
@@ -215,22 +224,56 @@ fn convert(id: ItemId, raw: RawItemConfig) -> ItemConfig {
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
+/// Each `.yaml` file in `dir` is a list of items. Which file an item is in means
+/// nothing to the server.
 pub fn load_items(
-    path: impl AsRef<Path>,
+    dir: impl AsRef<Path>,
 ) -> Result<HashMap<ItemId, Arc<ItemConfig>>, ItemsLoadError> {
-    load_items_from_str(&fs::read_to_string(path)?)
+    let dir = dir.as_ref();
+    let paths = yaml_files_in(dir).map_err(|source| ItemsLoadError::ReadError {
+        path: dir.to_path_buf(),
+        source,
+    })?;
+    let files = paths
+        .into_iter()
+        .map(|path| match fs::read_to_string(&path) {
+            Ok(contents) => Ok((path, contents)),
+            Err(source) => Err(ItemsLoadError::ReadError { path, source }),
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    load_items_from_files(
+        files
+            .iter()
+            .map(|(path, contents)| (path.as_path(), contents.as_str())),
+    )
 }
 
 /// Split out from `load_items` so the whole read path -- deserialize, `convert`,
 /// `parse_attribute`, the `filter_map` that drops what it cannot read -- can be
-/// exercised over a document the caller owns rather than over the shipped file.
-fn load_items_from_str(contents: &str) -> Result<HashMap<ItemId, Arc<ItemConfig>>, ItemsLoadError> {
-    let file: ItemsFile = serde_yaml::from_str(contents)?;
-    Ok(file
-        .items
-        .into_iter()
-        .map(|(id, raw)| (id, Arc::new(convert(id, raw))))
-        .collect())
+/// exercised over documents the caller owns rather than over the shipped files.
+fn load_items_from_files<'a>(
+    files: impl IntoIterator<Item = (&'a Path, &'a str)>,
+) -> Result<HashMap<ItemId, Arc<ItemConfig>>, ItemsLoadError> {
+    let mut sources: HashMap<ItemId, &Path> = HashMap::new();
+    let mut items = HashMap::new();
+    for (path, contents) in files {
+        let raws: Vec<RawItemConfig> =
+            serde_yaml::from_str(contents).map_err(|source| ItemsLoadError::ParseError {
+                path: path.to_path_buf(),
+                source,
+            })?;
+        for raw in raws {
+            if let Some(first) = sources.insert(raw.id, path) {
+                return Err(ItemsLoadError::DuplicateId {
+                    id: raw.id,
+                    first: first.to_path_buf(),
+                    second: path.to_path_buf(),
+                });
+            }
+            items.insert(raw.id, Arc::new(convert(raw)));
+        }
+    }
+    Ok(items)
 }
 
 #[cfg(test)]
@@ -264,10 +307,10 @@ mod tests {
     }
 
     /// The catalogue is the real check: a key that parses in isolation but is spelled
-    /// differently in `items.yaml` reaches nothing.
+    /// differently in the shipped files reaches nothing.
     #[test]
     fn the_shipped_catalogue_carries_armour_and_defence() {
-        let items = load_items(&CONFIG.items_file_path).unwrap();
+        let items = load_items(&CONFIG.items_dir_path).unwrap();
         let armoured = items.values().filter(|c| c.attr_armor().is_some()).count();
         let defended = items
             .values()
@@ -298,12 +341,12 @@ mod tests {
         );
     }
 
-    /// Both keys were generated into `items.yaml` from the start and read by nothing until
-    /// the distance hit roll existed — exactly the shape `the-asset-generators-drop-fields-
-    /// silently` warns about, in the other direction.
+    /// Both keys were generated into the item assets from the start and read by nothing
+    /// until the distance hit roll existed — exactly the shape `the-asset-generators-drop-
+    /// fields-silently` warns about, in the other direction.
     #[test]
     fn the_shipped_catalogue_carries_both_hit_chances() {
-        let items = load_items(&CONFIG.items_file_path).unwrap();
+        let items = load_items(&CONFIG.items_dir_path).unwrap();
         let bonuses = items
             .values()
             .filter(|c| c.attr_hit_chance().is_some())
@@ -394,42 +437,49 @@ mod tests {
     /// The unit tests above prove `parse_attribute` alone. This proves the rest of
     /// the read path: that `convert`'s `filter_map` keeps the attribute rather than
     /// dropping it, and that `attr_multi_action` finds it again on the far side.
-    /// The document is the test's own -- what `items.yaml` happens to carry is
+    /// The documents are the test's own -- what the shipped files happen to carry is
     /// config, and pinning it here would make it a constant.
     #[test]
     fn a_potion_survives_the_whole_load_path() {
-        let items = load_items_from_str(
-            "
-items:
-  1:
-    name: a health potion
-    flags: [usable, multiuse]
-    attributes:
-      weight: 270
-      potion:
-        health:
-          min: 125
-          max: 175
-        flask: 284
-  2:
-    name: a spirit potion
-    attributes:
-      potion:
-        health:
-          min: 250
-          max: 350
-        mana:
-          min: 100
-          max: 200
-        flask: 284
-  3:
-    name: a broken potion
-    attributes:
-      potion:
-        health:
-          min: 125
+        let items = load_items_from_files([
+            (
+                Path::new("potions.yaml"),
+                "
+- id: 1
+  name: a health potion
+  flags: [usable, multiuse]
+  attributes:
+    weight: 270
+    potion:
+      health:
+        min: 125
+        max: 175
+      flask: 284
+- id: 2
+  name: a spirit potion
+  attributes:
+    potion:
+      health:
+        min: 250
+        max: 350
+      mana:
+        min: 100
+        max: 200
+      flask: 284
 ",
-        )
+            ),
+            (
+                Path::new("other.yaml"),
+                "
+- id: 3
+  name: a broken potion
+  attributes:
+    potion:
+      health:
+        min: 125
+",
+            ),
+        ])
         .unwrap();
 
         assert_eq!(
@@ -452,6 +502,20 @@ items:
         // a gate of its own: nothing here can tell you the potion went missing.
         assert_eq!(items[&ItemId(3)].attr_multi_action(), None);
         assert_eq!(items[&ItemId(3)].name, "a broken potion");
+    }
+
+    #[test]
+    fn an_id_defined_in_two_files_is_refused() {
+        let error = load_items_from_files([
+            (Path::new("weapons.yaml"), "- id: 7\n  name: a sword"),
+            (Path::new("other.yaml"), "- id: 7\n  name: a rusty sword"),
+        ])
+        .unwrap_err();
+
+        assert!(
+            matches!(error, ItemsLoadError::DuplicateId { id: ItemId(7), .. }),
+            "unexpected error: {error}"
+        );
     }
 
     #[test]

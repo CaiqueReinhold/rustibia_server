@@ -161,6 +161,7 @@ pub fn route_action(
 ) -> Result<(), ItemActionError> {
     match action {
         ItemAction::Transform { into } => transform(ctx, item, *into),
+        ItemAction::Door { new } => toggle_door(ctx, item, *new),
     }
 }
 
@@ -199,15 +200,50 @@ pub(super) fn transform(
         };
 
         if result.is_err() {
-            if let Err(e) = insert_item_at(ctx, old_item.clone(), &item.placement, source_index) {
+            let guid = old_item.guid.clone();
+            if let Err(e) = insert_item_at(ctx, old_item, &item.placement, source_index) {
                 error!(
                     "Failed to revert item move. Item {:?} at {:?}. Error: {}",
-                    old_item, item.placement, e
+                    guid, item.placement, e
                 );
             }
 
             return Err(ItemActionError::ActionFailed);
         }
+    }
+
+    Ok(())
+}
+
+fn toggle_door(ctx: &mut TickCtx, item: &ItemRef, new_door: ItemId) -> Result<(), ItemActionError> {
+    let Some(config) = ITEM_CONFIGS.get(&new_door) else {
+        error!(
+            "cannot transform {:?} into {new_door}: no such item config",
+            item.guid
+        );
+        return Err(ItemActionError::ActionFailed);
+    };
+
+    let ItemPlacement::Map(pos) = &item.placement else {
+        return Err(ItemActionError::InvalidState);
+    };
+
+    let Ok((old_item, source_index)) = remove_item_at(ctx, item, 1) else {
+        return Err(ItemActionError::ActionFailed);
+    };
+
+    let new_door = Item::new(config.clone(), 1);
+    if insert_item_at(ctx, new_door, &item.placement, source_index).is_err() {
+        insert_item_at(ctx, old_item, &item.placement, source_index)
+            .map_err(|_| ItemActionError::InvalidState)?;
+    }
+
+    for _agent_key in ctx
+        .map
+        .iter_agents_at(pos)
+        .map_err(|_| ItemActionError::InvalidState)?
+    {
+        // todo: move agents from closed door.
     }
 
     Ok(())

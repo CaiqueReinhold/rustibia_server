@@ -1,0 +1,8536 @@
+- id: 660
+  name: fiery spike sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 21
+    extra_defense: 2
+    attack: 20
+    weapon_type: sword
+    element_damage:
+      element: fire
+      damage: 4
+- id: 661
+  name: fiery relic sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4800
+    slot: 6
+    defense: 24
+    extra_defense: 1
+    attack: 34
+    weapon_type: sword
+    element_damage:
+      element: fire
+      damage: 8
+- id: 662
+  name: fiery mystic blade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    defense: 25
+    extra_defense: 2
+    attack: 36
+    weapon_type: sword
+    element_damage:
+      element: fire
+      damage: 8
+- id: 663
+  name: fiery blacksteel sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 0
+    defense: 22
+    attack: 35
+    weapon_type: sword
+    element_damage:
+      element: fire
+      damage: 7
+- id: 664
+  name: fiery dragon slayer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8200
+    slot: 0
+    defense: 28
+    attack: 35
+    weapon_type: sword
+    element_damage:
+      element: fire
+      damage: 9
+- id: 665
+  name: fiery barbarian axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5100
+    slot: 6
+    defense: 18
+    extra_defense: 1
+    attack: 23
+    weapon_type: axe
+    element_damage:
+      element: fire
+      damage: 5
+- id: 666
+  name: fiery knight axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 6
+    defense: 21
+    extra_defense: 1
+    attack: 27
+    weapon_type: axe
+    element_damage:
+      element: fire
+      damage: 6
+- id: 667
+  name: fiery heroic axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6100
+    slot: 6
+    defense: 24
+    extra_defense: 1
+    attack: 35
+    weapon_type: axe
+    element_damage:
+      element: fire
+      damage: 9
+- id: 668
+  name: fiery headchopper
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4500
+    slot: 0
+    defense: 20
+    attack: 34
+    weapon_type: axe
+    element_damage:
+      element: fire
+      damage: 8
+- id: 669
+  name: fiery war axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6150
+    slot: 0
+    defense: 10
+    attack: 39
+    weapon_type: axe
+    element_damage:
+      element: fire
+      damage: 9
+- id: 670
+  name: fiery clerical mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5800
+    slot: 6
+    defense: 15
+    extra_defense: 1
+    attack: 23
+    weapon_type: club
+    element_damage:
+      element: fire
+      damage: 5
+- id: 671
+  name: fiery crystal mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8000
+    slot: 6
+    defense: 16
+    extra_defense: 1
+    attack: 31
+    weapon_type: club
+    element_damage:
+      element: fire
+      damage: 7
+- id: 672
+  name: fiery cranial basher
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7800
+    slot: 6
+    defense: 20
+    extra_defense: -2
+    attack: 36
+    weapon_type: club
+    element_damage:
+      element: fire
+      damage: 8
+- id: 673
+  name: fiery orcish maul
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5400
+    slot: 0
+    defense: 18
+    attack: 35
+    weapon_type: club
+    element_damage:
+      element: fire
+      damage: 7
+- id: 674
+  name: fiery war hammer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8500
+    slot: 0
+    defense: 10
+    attack: 36
+    weapon_type: club
+    element_damage:
+      element: fire
+      damage: 9
+- id: 679
+  name: icy spike sword
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 21
+    extra_defense: 2
+    attack: 20
+    weapon_type: sword
+    element_damage:
+      element: ice
+      damage: 4
+- id: 680
+  name: icy relic sword
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4800
+    slot: 6
+    defense: 24
+    extra_defense: 1
+    attack: 34
+    weapon_type: sword
+    element_damage:
+      element: ice
+      damage: 8
+- id: 681
+  name: icy mystic blade
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    defense: 25
+    extra_defense: 2
+    attack: 36
+    weapon_type: sword
+    element_damage:
+      element: ice
+      damage: 8
+- id: 682
+  name: icy blacksteel sword
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 0
+    defense: 22
+    attack: 35
+    weapon_type: sword
+    element_damage:
+      element: ice
+      damage: 7
+- id: 683
+  name: icy dragon slayer
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8200
+    slot: 0
+    defense: 28
+    attack: 35
+    weapon_type: sword
+    element_damage:
+      element: ice
+      damage: 9
+- id: 684
+  name: icy barbarian axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5100
+    slot: 6
+    defense: 18
+    extra_defense: 1
+    attack: 23
+    weapon_type: axe
+    element_damage:
+      element: ice
+      damage: 5
+- id: 685
+  name: icy knight axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 6
+    defense: 21
+    extra_defense: 1
+    attack: 27
+    weapon_type: axe
+    element_damage:
+      element: ice
+      damage: 6
+- id: 686
+  name: icy heroic axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6100
+    slot: 6
+    defense: 24
+    extra_defense: 1
+    attack: 35
+    weapon_type: axe
+    element_damage:
+      element: ice
+      damage: 9
+- id: 687
+  name: icy headchopper
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4500
+    slot: 0
+    defense: 20
+    attack: 34
+    weapon_type: axe
+    element_damage:
+      element: ice
+      damage: 8
+- id: 688
+  name: icy war axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6150
+    slot: 0
+    defense: 10
+    attack: 39
+    weapon_type: axe
+    element_damage:
+      element: ice
+      damage: 9
+- id: 689
+  name: icy clerical mace
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5800
+    slot: 6
+    defense: 15
+    extra_defense: 1
+    attack: 23
+    weapon_type: club
+    element_damage:
+      element: ice
+      damage: 5
+- id: 690
+  name: icy crystal mace
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8000
+    slot: 6
+    defense: 16
+    extra_defense: 1
+    attack: 31
+    weapon_type: club
+    element_damage:
+      element: ice
+      damage: 7
+- id: 691
+  name: icy cranial basher
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7800
+    slot: 6
+    defense: 20
+    extra_defense: -2
+    attack: 36
+    weapon_type: club
+    element_damage:
+      element: ice
+      damage: 8
+- id: 692
+  name: icy orcish maul
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5400
+    slot: 0
+    defense: 18
+    attack: 35
+    weapon_type: club
+    element_damage:
+      element: ice
+      damage: 7
+- id: 693
+  name: icy war hammer
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8500
+    slot: 0
+    defense: 10
+    attack: 36
+    weapon_type: club
+    element_damage:
+      element: ice
+      damage: 9
+- id: 779
+  name: earth spike sword
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 21
+    extra_defense: 2
+    attack: 20
+    weapon_type: sword
+    element_damage:
+      element: earth
+      damage: 4
+- id: 780
+  name: earth relic sword
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4800
+    slot: 6
+    defense: 24
+    extra_defense: 1
+    attack: 34
+    weapon_type: sword
+    element_damage:
+      element: earth
+      damage: 8
+- id: 781
+  name: earth mystic blade
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    defense: 25
+    extra_defense: 2
+    attack: 36
+    weapon_type: sword
+    element_damage:
+      element: earth
+      damage: 8
+- id: 782
+  name: earth blacksteel sword
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 0
+    defense: 22
+    attack: 35
+    weapon_type: sword
+    element_damage:
+      element: earth
+      damage: 7
+- id: 783
+  name: earth dragon slayer
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8200
+    slot: 0
+    defense: 28
+    attack: 35
+    weapon_type: sword
+    element_damage:
+      element: earth
+      damage: 9
+- id: 784
+  name: earth barbarian axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5100
+    slot: 6
+    defense: 18
+    extra_defense: 1
+    attack: 23
+    weapon_type: axe
+    element_damage:
+      element: earth
+      damage: 5
+- id: 785
+  name: earth knight axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 6
+    defense: 21
+    extra_defense: 1
+    attack: 27
+    weapon_type: axe
+    element_damage:
+      element: earth
+      damage: 6
+- id: 786
+  name: earth heroic axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6100
+    slot: 6
+    defense: 24
+    extra_defense: 1
+    attack: 35
+    weapon_type: axe
+    element_damage:
+      element: earth
+      damage: 9
+- id: 787
+  name: earth headchopper
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4500
+    slot: 0
+    defense: 20
+    attack: 34
+    weapon_type: axe
+    element_damage:
+      element: earth
+      damage: 8
+- id: 788
+  name: earth war axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6150
+    slot: 0
+    defense: 10
+    attack: 39
+    weapon_type: axe
+    element_damage:
+      element: earth
+      damage: 9
+- id: 789
+  name: earth clerical mace
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5800
+    slot: 6
+    defense: 15
+    extra_defense: 1
+    attack: 23
+    weapon_type: club
+    element_damage:
+      element: earth
+      damage: 5
+- id: 790
+  name: earth crystal mace
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8000
+    slot: 6
+    defense: 16
+    extra_defense: 1
+    attack: 31
+    weapon_type: club
+    element_damage:
+      element: earth
+      damage: 7
+- id: 791
+  name: earth cranial basher
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7800
+    slot: 6
+    defense: 20
+    extra_defense: -2
+    attack: 36
+    weapon_type: club
+    element_damage:
+      element: earth
+      damage: 8
+- id: 792
+  name: earth orcish maul
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5400
+    slot: 0
+    defense: 18
+    attack: 35
+    weapon_type: club
+    element_damage:
+      element: earth
+      damage: 7
+- id: 793
+  name: earth war hammer
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8500
+    slot: 0
+    defense: 10
+    attack: 36
+    weapon_type: club
+    element_damage:
+      element: earth
+      damage: 9
+- id: 794
+  name: energy spike sword
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 21
+    extra_defense: 2
+    attack: 24
+    weapon_type: sword
+- id: 795
+  name: energy relic sword
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4800
+    slot: 6
+    defense: 24
+    extra_defense: 1
+    attack: 34
+    weapon_type: sword
+    element_damage:
+      element: energy
+      damage: 8
+- id: 796
+  name: energy mystic blade
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    defense: 25
+    extra_defense: 2
+    attack: 36
+    weapon_type: sword
+    element_damage:
+      element: energy
+      damage: 8
+- id: 797
+  name: energy blacksteel sword
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 0
+    defense: 22
+    attack: 35
+    weapon_type: sword
+    element_damage:
+      element: energy
+      damage: 7
+- id: 798
+  name: energy dragon slayer
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8200
+    slot: 0
+    defense: 28
+    attack: 35
+    weapon_type: sword
+    element_damage:
+      element: energy
+      damage: 9
+- id: 801
+  name: energy barbarian axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5100
+    slot: 6
+    defense: 18
+    extra_defense: 1
+    attack: 23
+    weapon_type: axe
+    element_damage:
+      element: energy
+      damage: 5
+- id: 802
+  name: energy knight axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 6
+    defense: 21
+    extra_defense: 1
+    attack: 27
+    weapon_type: axe
+    element_damage:
+      element: energy
+      damage: 6
+- id: 803
+  name: energy heroic axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6100
+    slot: 6
+    defense: 24
+    extra_defense: 1
+    attack: 35
+    weapon_type: axe
+    element_damage:
+      element: energy
+      damage: 9
+- id: 804
+  name: energy headchopper
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4500
+    slot: 0
+    defense: 20
+    attack: 34
+    weapon_type: axe
+    element_damage:
+      element: energy
+      damage: 8
+- id: 805
+  name: energy war axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6150
+    slot: 0
+    defense: 10
+    attack: 39
+    weapon_type: axe
+    element_damage:
+      element: energy
+      damage: 9
+- id: 806
+  name: energy clerical mace
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5800
+    slot: 6
+    defense: 15
+    extra_defense: 1
+    attack: 23
+    weapon_type: club
+    element_damage:
+      element: energy
+      damage: 5
+- id: 807
+  name: energy crystal mace
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8000
+    slot: 6
+    defense: 16
+    extra_defense: 1
+    attack: 31
+    weapon_type: club
+    element_damage:
+      element: energy
+      damage: 7
+- id: 808
+  name: energy cranial basher
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7800
+    slot: 6
+    defense: 20
+    extra_defense: -2
+    attack: 36
+    weapon_type: club
+    element_damage:
+      element: energy
+      damage: 8
+- id: 809
+  name: energy orcish maul
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5400
+    slot: 0
+    defense: 18
+    attack: 35
+    weapon_type: club
+    element_damage:
+      element: energy
+      damage: 7
+- id: 810
+  name: energy war hammer
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8500
+    slot: 0
+    defense: 10
+    attack: 36
+    weapon_type: club
+    element_damage:
+      element: energy
+      damage: 9
+- id: 860
+  name: crimson sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3600
+    slot: 6
+    defense: 10
+    attack: 18
+    weapon_type: sword
+- id: 904
+  name: throwing cake
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 80
+    slot: 6
+- id: 919
+  name: hallowed axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4000
+- id: 1781
+  name: small stone
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 360
+    slot: 6
+    attack: 5
+    range: 4
+    max_hit_chance: 76
+    break_chance: 3
+    weapon_type: distance
+    missile_id: 10
+- id: 2992
+  name: snowball
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 80
+    slot: 6
+    range: 6
+    weapon_type: distance
+    missile_id: 13
+- id: 3065
+  name: terra rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 6
+    range: 3
+    mana_cost: 8
+    weapon_type: rod
+    element: earth
+    missile_id: 39
+- id: 3066
+  name: snakebite rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1900
+    slot: 6
+    range: 3
+    mana_cost: 2
+    weapon_type: rod
+    element: earth
+    missile_id: 39
+- id: 3067
+  name: hailstorm rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2700
+    slot: 6
+    range: 3
+    mana_cost: 13
+    weapon_type: rod
+    element: ice
+    missile_id: 37
+- id: 3069
+  name: necrotic rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2300
+    slot: 6
+    range: 3
+    mana_cost: 5
+    weapon_type: wand
+    element: death
+    missile_id: 11
+- id: 3070
+  name: moonlight rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2100
+    slot: 6
+    range: 3
+    mana_cost: 3
+    weapon_type: rod
+    element: ice
+    missile_id: 37
+- id: 3071
+  name: wand of inferno
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2700
+    slot: 6
+    range: 3
+    mana_cost: 8
+    weapon_type: wand
+    element: fire
+    missile_id: 4
+- id: 3072
+  name: wand of decay
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2300
+    slot: 6
+    range: 3
+    mana_cost: 5
+    weapon_type: wand
+    element: death
+    missile_id: 11
+- id: 3073
+  name: wand of cosmic energy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 6
+    range: 3
+    mana_cost: 8
+    weapon_type: wand
+    element: energy
+    missile_id: 5
+- id: 3074
+  name: wand of vortex
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1900
+    slot: 6
+    range: 3
+    mana_cost: 1
+    weapon_type: wand
+    element: energy
+    missile_id: 5
+- id: 3075
+  name: wand of dragonbreath
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2300
+    slot: 6
+    range: 3
+    mana_cost: 3
+    weapon_type: wand
+    element: fire
+    missile_id: 4
+- id: 3208
+  name: giant smithhammer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6800
+    slot: 6
+    defense: 14
+    attack: 24
+    weapon_type: club
+- id: 3264
+  name: sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    defense: 12
+    extra_defense: 1
+    attack: 14
+    weapon_type: sword
+- id: 3265
+  name: two handed sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 25
+    attack: 30
+    weapon_type: sword
+- id: 3266
+  name: battle axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 0
+    defense: 10
+    attack: 25
+    weapon_type: axe
+- id: 3267
+  name: dagger
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 950
+    slot: 6
+    defense: 6
+    attack: 8
+    weapon_type: sword
+- id: 3268
+  name: hand axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1800
+    slot: 6
+    defense: 5
+    attack: 10
+    weapon_type: axe
+- id: 3269
+  name: halberd
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 9000
+    slot: 0
+    defense: 14
+    attack: 35
+    weapon_type: axe
+- id: 3270
+  name: club
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2500
+    slot: 6
+    defense: 7
+    attack: 7
+    weapon_type: club
+- id: 3271
+  name: spike sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 21
+    extra_defense: 2
+    attack: 24
+    weapon_type: sword
+- id: 3272
+  name: rapier
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1500
+    slot: 6
+    defense: 8
+    extra_defense: 1
+    attack: 10
+    weapon_type: sword
+- id: 3273
+  name: sabre
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2500
+    slot: 6
+    defense: 10
+    extra_defense: 1
+    attack: 12
+    weapon_type: sword
+- id: 3274
+  name: axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4000
+    slot: 6
+    defense: 6
+    attack: 12
+    weapon_type: axe
+- id: 3275
+  name: double axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 12
+    attack: 35
+    weapon_type: axe
+- id: 3276
+  name: hatchet
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    defense: 8
+    attack: 15
+    weapon_type: axe
+- id: 3277
+  name: spear
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 2000
+    slot: 6
+    attack: 25
+    range: 3
+    max_hit_chance: 76
+    break_chance: 3
+    weapon_type: distance
+    missile_id: 1
+- id: 3278
+  name: magic longsword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4300
+    slot: 0
+    defense: 40
+    attack: 55
+    weapon_type: sword
+- id: 3279
+  name: war hammer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8500
+    slot: 0
+    defense: 10
+    attack: 45
+    weapon_type: club
+- id: 3280
+  name: fire sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2300
+    slot: 6
+    defense: 20
+    extra_defense: 1
+    attack: 24
+    weapon_type: sword
+    element_damage:
+      element: fire
+      damage: 11
+- id: 3281
+  name: giant sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 18000
+    slot: 0
+    defense: 22
+    attack: 46
+    weapon_type: sword
+- id: 3282
+  name: morning star
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5400
+    slot: 6
+    defense: 11
+    attack: 25
+    weapon_type: club
+- id: 3283
+  name: carlin sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4000
+    slot: 6
+    defense: 13
+    extra_defense: 1
+    attack: 15
+    weapon_type: sword
+- id: 3284
+  name: ice rapier
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1500
+    slot: 6
+    defense: 1
+    attack: 42
+    weapon_type: sword
+    element_damage:
+      element: ice
+      damage: 18
+- id: 3285
+  name: longsword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4200
+    slot: 6
+    defense: 14
+    attack: 17
+    weapon_type: sword
+- id: 3286
+  name: mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3800
+    slot: 6
+    defense: 11
+    attack: 16
+    weapon_type: club
+- id: 3287
+  name: throwing star
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+    slot: 6
+    attack: 30
+    range: 4
+    max_hit_chance: 76
+    break_chance: 10
+    weapon_type: distance
+    missile_id: 8
+- id: 3288
+  name: magic sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4200
+    slot: 6
+    defense: 35
+    extra_defense: 3
+    attack: 48
+    weapon_type: sword
+- id: 3289
+  name: staff
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3800
+    slot: 0
+    defense: 25
+    attack: 10
+    weapon_type: club
+- id: 3290
+  name: silver dagger
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1020
+    slot: 6
+    defense: 7
+    attack: 9
+    weapon_type: sword
+- id: 3291
+  name: knife
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 420
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 3292
+  name: combat knife
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 870
+    slot: 6
+    defense: 6
+    attack: 8
+    weapon_type: sword
+- id: 3293
+  name: sickle
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1050
+    slot: 6
+    defense: 4
+    attack: 5
+    weapon_type: axe
+- id: 3294
+  name: short sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    defense: 11
+    attack: 11
+    weapon_type: sword
+- id: 3295
+  name: bright sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2900
+    slot: 6
+    defense: 30
+    extra_defense: 1
+    attack: 36
+    weapon_type: sword
+- id: 3296
+  name: warlord sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6400
+    slot: 0
+    defense: 38
+    attack: 53
+    weapon_type: sword
+- id: 3297
+  name: serpent sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4100
+    slot: 6
+    defense: 15
+    extra_defense: 1
+    attack: 18
+    weapon_type: sword
+    element_damage:
+      element: earth
+      damage: 8
+- id: 3298
+  name: throwing knife
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+    slot: 6
+    attack: 25
+    range: 4
+    max_hit_chance: 76
+    break_chance: 7
+    weapon_type: distance
+    missile_id: 9
+- id: 3299
+  name: poison dagger
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 880
+    slot: 6
+    defense: 8
+    attack: 16
+    weapon_type: sword
+    element_damage:
+      element: earth
+      damage: 2
+- id: 3300
+  name: katana
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3100
+    slot: 6
+    defense: 12
+    extra_defense: 1
+    attack: 16
+    weapon_type: sword
+- id: 3301
+  name: broadsword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5250
+    slot: 0
+    defense: 23
+    attack: 26
+    weapon_type: sword
+- id: 3302
+  name: dragon lance
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6700
+    slot: 0
+    defense: 16
+    attack: 47
+    weapon_type: axe
+- id: 3303
+  name: great axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 9000
+    slot: 0
+    defense: 22
+    attack: 52
+    weapon_type: axe
+- id: 3304
+  name: crowbar
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2100
+    slot: 6
+    defense: 6
+    attack: 5
+    weapon_type: club
+- id: 3305
+  name: battle hammer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6800
+    slot: 6
+    defense: 14
+    attack: 24
+    weapon_type: club
+- id: 3306
+  name: golden sickle
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1950
+    slot: 6
+    defense: 6
+    attack: 13
+    weapon_type: axe
+- id: 3307
+  name: scimitar
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2900
+    slot: 6
+    defense: 13
+    extra_defense: 1
+    attack: 19
+    weapon_type: sword
+- id: 3308
+  name: machete
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1650
+    slot: 6
+    defense: 9
+    attack: 12
+    weapon_type: sword
+- id: 3309
+  name: thunder hammer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 12500
+    slot: 6
+    defense: 35
+    extra_defense: 1
+    attack: 49
+    weapon_type: club
+- id: 3310
+  name: iron hammer
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6600
+    slot: 6
+    defense: 10
+    attack: 18
+    weapon_type: club
+- id: 3311
+  name: clerical mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5800
+    slot: 6
+    defense: 15
+    extra_defense: 1
+    attack: 28
+    weapon_type: club
+- id: 3312
+  name: silver mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6700
+    slot: 6
+    defense: 30
+    extra_defense: 2
+    attack: 41
+    weapon_type: club
+- id: 3313
+  name: obsidian lance
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8000
+    slot: 0
+    defense: 10
+    attack: 34
+    weapon_type: axe
+- id: 3314
+  name: naginata
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7800
+    slot: 0
+    defense: 25
+    attack: 39
+    weapon_type: axe
+- id: 3315
+  name: guardian halberd
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 11000
+    slot: 0
+    defense: 15
+    attack: 46
+    weapon_type: axe
+- id: 3316
+  name: orcish axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4500
+    slot: 6
+    defense: 12
+    attack: 23
+    weapon_type: axe
+- id: 3317
+  name: barbarian axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5100
+    slot: 6
+    defense: 18
+    extra_defense: 1
+    attack: 28
+    weapon_type: axe
+- id: 3318
+  name: knight axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 6
+    defense: 21
+    extra_defense: 1
+    attack: 33
+    weapon_type: axe
+- id: 3319
+  name: stonecutter axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 9900
+    slot: 6
+    defense: 30
+    extra_defense: 3
+    attack: 50
+    weapon_type: axe
+- id: 3320
+  name: fire axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4000
+    slot: 6
+    defense: 16
+    extra_defense: 1
+    attack: 27
+    weapon_type: axe
+    element_damage:
+      element: fire
+      damage: 11
+- id: 3321
+  name: enchanted staff
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3800
+    slot: 0
+    decay:
+      duration: 60
+      decay_to: 3289
+    defense: 45
+    attack: 39
+    weapon_type: club
+- id: 3322
+  name: dragon hammer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 9700
+    slot: 6
+    defense: 20
+    attack: 32
+    weapon_type: club
+- id: 3323
+  name: dwarven axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8200
+    slot: 6
+    defense: 19
+    extra_defense: 2
+    attack: 31
+    weapon_type: axe
+- id: 3324
+  name: skull staff
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1700
+    slot: 6
+    defense: 12
+    extra_defense: 1
+    attack: 36
+    weapon_type: club
+- id: 3325
+  name: light mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4100
+    slot: 6
+    defense: 9
+    attack: 14
+    weapon_type: club
+- id: 3326
+  name: epee
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1450
+    slot: 6
+    defense: 23
+    attack: 37
+    weapon_type: sword
+- id: 3327
+  name: daramian mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6800
+    slot: 6
+    defense: 12
+    attack: 21
+    weapon_type: club
+- id: 3328
+  name: daramian waraxe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5250
+    slot: 0
+    defense: 15
+    attack: 39
+    weapon_type: axe
+- id: 3329
+  name: daramian axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4100
+    slot: 6
+    defense: 8
+    attack: 17
+    weapon_type: axe
+- id: 3330
+  name: heavy machete
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1840
+    slot: 6
+    defense: 10
+    attack: 16
+    weapon_type: sword
+- id: 3331
+  name: ravager's axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5250
+    slot: 0
+    defense: 14
+    attack: 49
+    weapon_type: axe
+- id: 3332
+  name: hammer of wrath
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 12
+    attack: 48
+    weapon_type: club
+- id: 3333
+  name: crystal mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8000
+    slot: 6
+    defense: 16
+    extra_defense: 1
+    attack: 38
+    weapon_type: club
+- id: 3334
+  name: pharaoh sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5200
+    slot: 6
+    defense: 23
+    extra_defense: 2
+    attack: 41
+    weapon_type: sword
+- id: 3335
+  name: twin axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6400
+    slot: 0
+    defense: 24
+    attack: 45
+    weapon_type: axe
+- id: 3336
+  name: studded club
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    defense: 8
+    attack: 9
+    weapon_type: club
+- id: 3337
+  name: bone club
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3900
+    slot: 6
+    defense: 8
+    attack: 12
+    weapon_type: club
+- id: 3338
+  name: bone sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1900
+    slot: 6
+    defense: 10
+    attack: 13
+    weapon_type: sword
+- id: 3339
+  name: djinn blade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2450
+    slot: 6
+    defense: 22
+    extra_defense: 2
+    attack: 38
+    weapon_type: sword
+- id: 3340
+  name: heavy mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 11000
+    slot: 0
+    defense: 15
+    attack: 49
+    weapon_type: club
+- id: 3341
+  name: arcane staff
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4000
+    slot: 0
+    defense: 30
+    attack: 50
+    weapon_type: club
+- id: 3342
+  name: war axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6150
+    slot: 0
+    defense: 10
+    attack: 48
+    weapon_type: axe
+- id: 3343
+  name: lich staff
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4100
+    slot: 6
+    defense: 30
+    extra_defense: 2
+    attack: 40
+    weapon_type: club
+- id: 3344
+  name: beastslayer axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6150
+    slot: 6
+    defense: 12
+    extra_defense: 1
+    attack: 35
+    weapon_type: axe
+- id: 3345
+  name: templar scytheblade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2900
+    slot: 6
+    defense: 15
+    extra_defense: 1
+    attack: 23
+    weapon_type: sword
+- id: 3346
+  name: ripper lance
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8000
+    slot: 0
+    defense: 7
+    attack: 28
+    weapon_type: axe
+- id: 3347
+  name: hunting spear
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 2200
+    slot: 6
+    attack: 32
+    range: 3
+    max_hit_chance: 80
+    break_chance: 6
+    weapon_type: distance
+    missile_id: 17
+- id: 3348
+  name: banana staff
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 15
+    extra_defense: 2
+    attack: 25
+    weapon_type: club
+- id: 3349
+  name: crossbow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4000
+    slot: 0
+    range: 5
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 3350
+  name: bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3100
+    slot: 0
+    range: 6
+    weapon_type: bow
+    ammo_type: arrow
+- id: 3453
+  name: scythe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3000
+    slot: 0
+    defense: 3
+    attack: 8
+    weapon_type: club
+- id: 5803
+  name: arbalest
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 9500
+    slot: 0
+    attack: 2
+    range: 6
+    hit_chance: 2
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 6101
+  name: Ron the Ripper's sabre
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2500
+    slot: 6
+    defense: 10
+    attack: 12
+    weapon_type: sword
+- id: 6527
+  name: avenger
+  article: the
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6400
+    slot: 0
+    defense: 38
+    attack: 50
+    weapon_type: sword
+- id: 6553
+  name: ruthless axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5800
+    slot: 0
+    defense: 15
+    attack: 50
+    weapon_type: axe
+- id: 7366
+  name: viper star
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+    slot: 6
+    attack: 28
+    range: 4
+    hit_chance: 80
+    max_hit_chance: 76
+    weapon_type: distance
+    missile_id: 20
+- id: 7367
+  name: enchanted spear
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 2000
+    slot: 6
+    attack: 38
+    range: 4
+    max_hit_chance: 80
+    break_chance: 1
+    weapon_type: distance
+    missile_id: 18
+- id: 7368
+  name: assassin star
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+    slot: 6
+    attack: 65
+    range: 4
+    max_hit_chance: 96
+    break_chance: 33
+    weapon_type: distance
+    missile_id: 19
+- id: 7378
+  name: royal spear
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 2500
+    slot: 6
+    attack: 35
+    range: 3
+    max_hit_chance: 80
+    break_chance: 3
+    weapon_type: distance
+    missile_id: 21
+- id: 7379
+  name: brutetamer's staff
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3800
+    slot: 0
+    defense: 15
+    attack: 35
+    weapon_type: club
+- id: 7380
+  name: headchopper
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4500
+    slot: 0
+    defense: 20
+    attack: 42
+    weapon_type: axe
+- id: 7381
+  name: mammoth whopper
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4500
+    slot: 6
+    defense: 15
+    attack: 30
+    weapon_type: club
+- id: 7382
+  name: demonrage sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 15000
+    slot: 0
+    defense: 22
+    attack: 47
+    weapon_type: sword
+- id: 7383
+  name: relic sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4800
+    slot: 6
+    defense: 24
+    extra_defense: 1
+    attack: 42
+    weapon_type: sword
+- id: 7384
+  name: mystic blade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    defense: 25
+    extra_defense: 2
+    attack: 44
+    weapon_type: sword
+- id: 7385
+  name: crimson sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3600
+    slot: 6
+    defense: 20
+    extra_defense: 1
+    attack: 28
+    weapon_type: sword
+- id: 7386
+  name: mercenary sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6800
+    slot: 0
+    defense: 27
+    attack: 43
+    weapon_type: sword
+- id: 7387
+  name: diamond sceptre
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1500
+    slot: 6
+    defense: 18
+    attack: 34
+    weapon_type: club
+- id: 7388
+  name: vile axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5200
+    slot: 6
+    defense: 19
+    extra_defense: 3
+    attack: 43
+    weapon_type: axe
+- id: 7389
+  name: heroic axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6100
+    slot: 6
+    defense: 24
+    extra_defense: 1
+    attack: 44
+    weapon_type: axe
+- id: 7390
+  name: justice seeker
+  article: the
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 24
+    extra_defense: 3
+    attack: 47
+    weapon_type: sword
+- id: 7391
+  name: thaian sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6100
+    slot: 0
+    defense: 29
+    attack: 45
+    weapon_type: sword
+- id: 7392
+  name: orcish maul
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5400
+    slot: 0
+    defense: 18
+    attack: 42
+    weapon_type: club
+- id: 7402
+  name: dragon slayer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8200
+    slot: 0
+    defense: 28
+    attack: 44
+    weapon_type: sword
+- id: 7403
+  name: berserker
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 13000
+    slot: 0
+    defense: 21
+    attack: 48
+    weapon_type: sword
+- id: 7404
+  name: assassin dagger
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1700
+    slot: 6
+    defense: 12
+    extra_defense: -2
+    attack: 40
+    weapon_type: sword
+- id: 7405
+  name: havoc blade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7200
+    slot: 0
+    defense: 34
+    attack: 49
+    weapon_type: sword
+- id: 7406
+  name: blacksteel sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 0
+    defense: 22
+    attack: 42
+    weapon_type: sword
+- id: 7407
+  name: haunted blade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3100
+    slot: 0
+    defense: 12
+    attack: 40
+    weapon_type: sword
+- id: 7408
+  name: wyvern fang
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2000
+    slot: 6
+    defense: 19
+    extra_defense: 1
+    attack: 32
+    weapon_type: sword
+- id: 7409
+  name: northern star
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4200
+    slot: 6
+    defense: 15
+    extra_defense: 1
+    attack: 42
+    weapon_type: club
+- id: 7410
+  name: queen's sceptre
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2300
+    slot: 6
+    defense: 19
+    attack: 43
+    weapon_type: club
+- id: 7411
+  name: ornamented axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6150
+    slot: 6
+    defense: 22
+    extra_defense: 2
+    attack: 42
+    weapon_type: axe
+- id: 7412
+  name: butcher's axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6300
+    slot: 6
+    defense: 24
+    extra_defense: -2
+    attack: 41
+    weapon_type: axe
+- id: 7413
+  name: titan axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8100
+    slot: 0
+    defense: 30
+    attack: 43
+    weapon_type: axe
+- id: 7414
+  name: abyss hammer
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5500
+    slot: 0
+    defense: 21
+    attack: 47
+    weapon_type: club
+- id: 7415
+  name: cranial basher
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7800
+    slot: 6
+    defense: 20
+    extra_defense: -2
+    attack: 44
+    weapon_type: club
+- id: 7416
+  name: bloody edge
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5200
+    slot: 6
+    defense: 21
+    extra_defense: -3
+    attack: 43
+    weapon_type: sword
+- id: 7417
+  name: runed sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4600
+    slot: 6
+    defense: 32
+    extra_defense: 2
+    attack: 45
+    weapon_type: sword
+- id: 7418
+  name: nightmare blade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4600
+    slot: 6
+    defense: 23
+    extra_defense: -3
+    attack: 46
+    weapon_type: sword
+- id: 7419
+  name: dreaded cleaver
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3800
+    slot: 6
+    defense: 19
+    extra_defense: -3
+    attack: 40
+    weapon_type: axe
+- id: 7420
+  name: reaper's axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 6
+    defense: 25
+    extra_defense: 2
+    attack: 46
+    weapon_type: axe
+- id: 7421
+  name: onyx flail
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2600
+    slot: 6
+    defense: 18
+    attack: 45
+    weapon_type: club
+- id: 7422
+  name: jade hammer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3200
+    slot: 6
+    defense: 20
+    extra_defense: 1
+    attack: 46
+    weapon_type: club
+- id: 7423
+  name: skullcrusher
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 12000
+    slot: 0
+    defense: 20
+    attack: 51
+    weapon_type: club
+- id: 7424
+  name: lunar staff
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3800
+    slot: 0
+    defense: 25
+    attack: 40
+    weapon_type: club
+- id: 7425
+  name: taurus mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5100
+    slot: 0
+    defense: 18
+    attack: 30
+    weapon_type: club
+- id: 7426
+  name: amber staff
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3500
+    slot: 0
+    defense: 25
+    attack: 43
+    weapon_type: club
+- id: 7427
+  name: chaos mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6300
+    slot: 0
+    defense: 21
+    attack: 44
+    weapon_type: club
+- id: 7428
+  name: bonebreaker
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 12000
+    slot: 0
+    defense: 15
+    attack: 46
+    weapon_type: club
+- id: 7429
+  name: blessed sceptre
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3900
+    slot: 6
+    defense: 21
+    extra_defense: 3
+    attack: 47
+    weapon_type: club
+- id: 7430
+  name: dragonbone staff
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1800
+    slot: 6
+    defense: 18
+    attack: 35
+    weapon_type: club
+- id: 7431
+  name: demonbone
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 18000
+    slot: 6
+    defense: 38
+    extra_defense: -2
+    attack: 48
+    weapon_type: club
+- id: 7432
+  name: furry club
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4200
+    slot: 6
+    defense: 19
+    extra_defense: 1
+    attack: 31
+    weapon_type: club
+- id: 7433
+  name: ravenwing
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5500
+    slot: 6
+    defense: 22
+    extra_defense: 1
+    attack: 45
+    weapon_type: axe
+- id: 7434
+  name: royal axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 9200
+    slot: 6
+    defense: 25
+    extra_defense: 3
+    attack: 47
+    weapon_type: axe
+- id: 7435
+  name: impaler
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8200
+    slot: 6
+    defense: 25
+    extra_defense: -2
+    attack: 49
+    weapon_type: axe
+- id: 7436
+  name: angelic axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5600
+    slot: 0
+    defense: 24
+    attack: 44
+    weapon_type: axe
+- id: 7437
+  name: sapphire hammer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2100
+    slot: 6
+    defense: 18
+    attack: 37
+    weapon_type: club
+- id: 7438
+  name: elvish bow
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 3900
+    slot: 0
+    range: 6
+    hit_chance: 5
+    weapon_type: bow
+    ammo_type: arrow
+- id: 7449
+  name: crystal sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6900
+    slot: 0
+    defense: 26
+    attack: 35
+    weapon_type: sword
+- id: 7450
+  name: hammer of prophecy
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 11000
+    slot: 0
+    defense: 35
+    attack: 52
+    weapon_type: club
+- id: 7451
+  name: shadow sceptre
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4100
+    slot: 6
+    defense: 17
+    attack: 39
+    weapon_type: club
+- id: 7452
+  name: spiked squelcher
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6800
+    slot: 0
+    defense: 21
+    attack: 41
+    weapon_type: club
+- id: 7453
+  name: executioner
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 9900
+    slot: 0
+    defense: 20
+    attack: 51
+    weapon_type: axe
+- id: 7454
+  name: glorious axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 9500
+    slot: 0
+    defense: 23
+    attack: 40
+    weapon_type: axe
+- id: 7455
+  name: mythril axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5500
+    slot: 6
+    defense: 28
+    extra_defense: 2
+    attack: 48
+    weapon_type: axe
+- id: 7456
+  name: noble axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3800
+    slot: 6
+    defense: 22
+    attack: 39
+    weapon_type: axe
+- id: 7773
+  name: steel axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4100
+    slot: 6
+    defense: 10
+    attack: 21
+    weapon_type: axe
+- id: 7774
+  name: jagged sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2900
+    slot: 6
+    defense: 14
+    extra_defense: 1
+    attack: 21
+    weapon_type: sword
+- id: 8021
+  name: modified crossbow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 0
+    range: 5
+    hit_chance: 1
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 8022
+  name: chain bolter
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5500
+    slot: 0
+    attack: 4
+    range: 3
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 8023
+  name: royal crossbow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 12000
+    slot: 0
+    attack: 5
+    range: 6
+    hit_chance: 3
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 8024
+  name: devileye
+  article: the
+  flags:
+  - take
+  attributes:
+    weight: 5500
+    slot: 0
+    attack: 20
+    range: 6
+    hit_chance: -20
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 8025
+  name: ironworker
+  article: the
+  flags:
+  - take
+  attributes:
+    weight: 15000
+    slot: 0
+    attack: 4
+    range: 5
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 8026
+  name: warsinger bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4500
+    slot: 0
+    attack: 3
+    range: 7
+    hit_chance: 5
+    weapon_type: bow
+    ammo_type: arrow
+- id: 8027
+  name: composite hornbow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5200
+    slot: 0
+    attack: 3
+    range: 6
+    hit_chance: 2
+    weapon_type: bow
+    ammo_type: arrow
+- id: 8028
+  name: Yol's bow
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 0
+    range: 7
+    hit_chance: 7
+    weapon_type: bow
+    ammo_type: arrow
+- id: 8029
+  name: silkweaver bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 0
+    range: 6
+    hit_chance: 3
+    weapon_type: bow
+    ammo_type: arrow
+- id: 8030
+  name: Elethriel's elemental bow
+  flags:
+  - take
+  attributes:
+    weight: 4400
+    slot: 0
+    attack: 7
+    range: 4
+    weapon_type: bow
+    ammo_type: arrow
+- id: 8082
+  name: underworld rod
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 2900
+    slot: 6
+    range: 3
+    mana_cost: 13
+    weapon_type: wand
+    element: death
+    missile_id: 11
+- id: 8083
+  name: northwind rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2900
+    slot: 6
+    range: 3
+    mana_cost: 5
+    weapon_type: rod
+    element: ice
+    missile_id: 37
+- id: 8084
+  name: springsprout rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2700
+    slot: 6
+    range: 3
+    mana_cost: 13
+    weapon_type: rod
+    element: earth
+    missile_id: 39
+- id: 8092
+  name: wand of starstorm
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2550
+    slot: 6
+    range: 3
+    mana_cost: 13
+    weapon_type: wand
+    element: energy
+    missile_id: 5
+- id: 8093
+  name: wand of draconia
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2700
+    slot: 6
+    range: 3
+    mana_cost: 5
+    weapon_type: wand
+    element: fire
+    missile_id: 4
+- id: 8094
+  name: wand of voodoo
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2850
+    slot: 6
+    range: 3
+    mana_cost: 13
+    weapon_type: wand
+    element: death
+    missile_id: 11
+- id: 8096
+  name: hellforged axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8800
+    slot: 6
+    defense: 28
+    extra_defense: 2
+    attack: 51
+    weapon_type: axe
+- id: 8097
+  name: solar axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 11000
+    slot: 6
+    defense: 29
+    extra_defense: 3
+    attack: 52
+    weapon_type: axe
+- id: 8098
+  name: demonwing axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 12000
+    slot: 0
+    defense: 20
+    attack: 53
+    weapon_type: axe
+- id: 8099
+  name: dark trinity mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 9900
+    slot: 6
+    defense: 32
+    extra_defense: -1
+    attack: 51
+    weapon_type: club
+- id: 8100
+  name: obsidian truncheon
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6500
+    slot: 6
+    defense: 30
+    extra_defense: 2
+    attack: 50
+    weapon_type: club
+- id: 8101
+  name: stomper
+  article: the
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 11500
+    slot: 0
+    defense: 20
+    attack: 51
+    weapon_type: club
+- id: 8102
+  name: emerald sword
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4100
+    slot: 6
+    defense: 33
+    extra_defense: 3
+    attack: 49
+    weapon_type: sword
+- id: 8103
+  name: epiphany
+  article: the
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4500
+    slot: 6
+    defense: 35
+    extra_defense: 3
+    attack: 50
+    weapon_type: sword
+- id: 8104
+  name: calamity
+  article: the
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6800
+    slot: 0
+    defense: 35
+    attack: 51
+    weapon_type: sword
+- id: 9373
+  name: glutton's mace
+  flags:
+  - take
+  attributes:
+    weight: 1300
+    slot: 6
+    defense: 10
+    attack: 16
+    weapon_type: club
+- id: 9375
+  name: pointed rabbitslayer
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 160
+    slot: 6
+    defense: 8
+    attack: 16
+    weapon_type: sword
+- id: 9376
+  name: stale bread of ancientness
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+    slot: 6
+    defense: 8
+    attack: 18
+    weapon_type: club
+- id: 9378
+  name: musician's bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1250
+    slot: 0
+    range: 4
+    weapon_type: bow
+    ammo_type: arrow
+- id: 9384
+  name: scythe of the reaper
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3000
+    slot: 0
+    defense: 6
+    attack: 16
+    weapon_type: axe
+- id: 9385
+  name: club of the fury
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+    slot: 6
+    defense: 8
+    attack: 16
+    weapon_type: club
+- id: 9386
+  name: farmer's avenger
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 0
+    defense: 7
+    attack: 17
+    weapon_type: axe
+- id: 9387
+  name: poet's fencing quill
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 200
+    slot: 6
+    defense: 8
+    attack: 10
+    weapon_type: sword
+- id: 9396
+  name: incredible mumpiz slayer
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4200
+    slot: 6
+    defense: 14
+    attack: 17
+    weapon_type: sword
+- id: 10388
+  name: drakinata
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5400
+    slot: 0
+    defense: 20
+    attack: 47
+    weapon_type: axe
+- id: 10389
+  name: sai
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 0
+    defense: 27
+    attack: 45
+    weapon_type: sword
+- id: 10390
+  name: Zaoan sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4900
+    slot: 6
+    defense: 18
+    extra_defense: 2
+    attack: 43
+    weapon_type: sword
+- id: 10391
+  name: drachaku
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6000
+    slot: 0
+    defense: 25
+    attack: 46
+    weapon_type: club
+- id: 10392
+  name: twin hooks
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 0
+    defense: 22
+    attack: 32
+    weapon_type: sword
+- id: 10406
+  name: Zaoan halberd
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8700
+    slot: 0
+    defense: 15
+    attack: 37
+    weapon_type: axe
+- id: 11657
+  name: twiceslicer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 18000
+    slot: 0
+    defense: 30
+    attack: 47
+    weapon_type: sword
+- id: 11692
+  name: snake god's sceptre
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 12000
+    slot: 6
+    defense: 29
+    extra_defense: 3
+    attack: 48
+    weapon_type: club
+- id: 11693
+  name: blade of corruption
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6400
+    slot: 6
+    defense: 29
+    extra_defense: 2
+    attack: 48
+    weapon_type: sword
+- id: 12510
+  name: hammer of mighty cheating
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6800
+    defense: 14
+    attack: 24
+    weapon_type: club
+- id: 12603
+  name: wand of dimensions
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2800
+    slot: 6
+    range: 3
+    mana_cost: 9
+    weapon_type: wand
+    element: death
+    missile_id: 5
+- id: 12673
+  name: wooden sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2000
+    slot: 6
+    defense: 7
+    attack: 7
+    weapon_type: sword
+- id: 12683
+  name: heavy trident
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 9000
+    slot: 0
+    defense: 17
+    attack: 35
+    weapon_type: axe
+- id: 12731
+  name: shimmer sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5200
+    slot: 6
+    decay:
+      duration: 604800
+      decay_to: 0
+    defense: 20
+    attack: 42
+    weapon_type: sword
+- id: 12732
+  name: shimmer rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3100
+    slot: 6
+    decay:
+      duration: 604800
+      decay_to: 0
+    range: 4
+    mana_cost: 13
+    weapon_type: rod
+    element: ice
+    missile_id: 37
+- id: 12733
+  name: shimmer bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4800
+    slot: 0
+    decay:
+      duration: 604800
+      decay_to: 0
+    attack: 1
+    range: 6
+    hit_chance: 7
+    weapon_type: bow
+    ammo_type: arrow
+- id: 12741
+  name: shimmer wand
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3100
+    slot: 6
+    decay:
+      duration: 604800
+      decay_to: 0
+    range: 4
+    mana_cost: 13
+    weapon_type: wand
+    element: energy
+    missile_id: 5
+- id: 13987
+  name: deepling staff
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8800
+    slot: 0
+    defense: 23
+    attack: 43
+    weapon_type: club
+- id: 13991
+  name: deepling axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 9100
+    slot: 6
+    defense: 29
+    attack: 49
+    weapon_type: axe
+- id: 14001
+  name: ornate mace
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 14900
+    slot: 6
+    defense: 24
+    attack: 49
+    weapon_type: club
+- id: 14040
+  name: warrior's axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8800
+    slot: 6
+    defense: 21
+    attack: 42
+    weapon_type: axe
+- id: 14043
+  name: guardian axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 11000
+    slot: 0
+    defense: 11
+    attack: 46
+    weapon_type: axe
+- id: 14089
+  name: hive scythe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7500
+    slot: 6
+    defense: 24
+    attack: 46
+    weapon_type: axe
+- id: 14246
+  name: hive bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4600
+    slot: 0
+    attack: 2
+    range: 6
+    hit_chance: 5
+    weapon_type: bow
+    ammo_type: arrow
+- id: 14247
+  name: ornate crossbow
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 9100
+    slot: 0
+    attack: 1
+    range: 6
+    hit_chance: 2
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 14250
+  name: deepling squelcher
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8900
+    slot: 6
+    defense: 28
+    attack: 44
+    weapon_type: club
+- id: 14768
+  name: thorn spitter
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 12600
+    slot: 0
+    attack: 9
+    range: 6
+    hit_chance: 1
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 16096
+  name: wand of defiance
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3700
+    slot: 6
+    range: 4
+    mana_cost: 17
+    weapon_type: wand
+    element: energy
+    missile_id: 5
+- id: 16115
+  name: wand of everblazing
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3700
+    slot: 6
+    range: 4
+    mana_cost: 17
+    weapon_type: wand
+    element: fire
+    missile_id: 4
+- id: 16117
+  name: muck rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3700
+    slot: 6
+    range: 4
+    mana_cost: 17
+    weapon_type: rod
+    element: earth
+    missile_id: 39
+- id: 16118
+  name: glacial rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3700
+    slot: 6
+    range: 4
+    mana_cost: 17
+    weapon_type: rod
+    element: ice
+    missile_id: 37
+- id: 16160
+  name: crystalline sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4800
+    slot: 6
+    defense: 34
+    extra_defense: 1
+    attack: 47
+    weapon_type: sword
+- id: 16161
+  name: crystalline axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7600
+    slot: 6
+    defense: 29
+    extra_defense: 3
+    attack: 51
+    weapon_type: axe
+- id: 16162
+  name: mycological mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 6
+    defense: 31
+    extra_defense: 3
+    attack: 50
+    weapon_type: club
+- id: 16163
+  name: crystal crossbow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 8400
+    slot: 0
+    attack: 4
+    range: 6
+    hit_chance: 3
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 16164
+  name: mycological bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4900
+    slot: 0
+    attack: 4
+    range: 6
+    hit_chance: 4
+    weapon_type: bow
+    ammo_type: arrow
+- id: 16175
+  name: shiny blade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4500
+    slot: 6
+    defense: 35
+    extra_defense: 2
+    attack: 49
+    weapon_type: sword
+- id: 17109
+  name: mean knight sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2000
+    slot: 6
+    defense: 7
+    attack: 14
+    weapon_type: sword
+- id: 17110
+  name: mean paladin spear
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1000
+    slot: 6
+    attack: 15
+    range: 3
+    max_hit_chance: 76
+    break_chance: 3
+    weapon_type: distance
+    missile_id: 1
+- id: 17111
+  name: sorcerer and druid staff
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1900
+    slot: 6
+    range: 3
+    mana_cost: 2
+    weapon_type: wand
+    element: energy
+    missile_id: 5
+- id: 17812
+  name: ratana
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3300
+    slot: 6
+    defense: 19
+    extra_defense: 1
+    attack: 27
+    weapon_type: sword
+- id: 17813
+  name: life preserver
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4600
+    slot: 6
+    defense: 19
+    extra_defense: 2
+    attack: 27
+    weapon_type: club
+- id: 17824
+  name: swampling club
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3100
+    slot: 6
+    defense: 12
+    attack: 17
+    weapon_type: club
+- id: 17828
+  name: pair of iron fists
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4500
+    slot: 0
+    defense: 17
+    attack: 45
+    weapon_type: club
+- id: 17859
+  name: spiky club
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3900
+    slot: 6
+    defense: 14
+    attack: 31
+    weapon_type: club
+- id: 19356
+  name: triple bolt crossbow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6200
+    slot: 0
+    attack: 3
+    range: 5
+    hit_chance: 2
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 19362
+  name: icicle bow
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 4200
+    slot: 0
+    attack: 1
+    range: 6
+    hit_chance: 4
+    weapon_type: bow
+    ammo_type: arrow
+- id: 19400
+  name: arcane staff
+  flags:
+  - take
+  attributes:
+    weight: 4000
+    defense: 30
+    attack: 50
+    weapon_type: club
+- id: 20064
+  name: crude umbral blade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6300
+    slot: 6
+    defense: 26
+    extra_defense: 1
+    attack: 48
+    weapon_type: sword
+- id: 20065
+  name: umbral blade
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 6
+    defense: 29
+    extra_defense: 2
+    attack: 50
+    weapon_type: sword
+- id: 20066
+  name: umbral masterblade
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5500
+    slot: 6
+    defense: 31
+    extra_defense: 3
+    attack: 52
+    weapon_type: sword
+- id: 20067
+  name: crude umbral slayer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 10000
+    slot: 0
+    defense: 29
+    attack: 51
+    weapon_type: sword
+- id: 20068
+  name: umbral slayer
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 9500
+    slot: 0
+    defense: 31
+    attack: 52
+    weapon_type: sword
+- id: 20069
+  name: umbral master slayer
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 9000
+    slot: 0
+    defense: 35
+    attack: 54
+    weapon_type: sword
+- id: 20070
+  name: crude umbral axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 9000
+    slot: 6
+    defense: 24
+    extra_defense: 1
+    attack: 49
+    weapon_type: axe
+- id: 20071
+  name: umbral axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8500
+    slot: 6
+    defense: 27
+    extra_defense: 2
+    attack: 51
+    weapon_type: axe
+- id: 20072
+  name: umbral master axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8000
+    slot: 6
+    defense: 30
+    extra_defense: 3
+    attack: 53
+    weapon_type: axe
+- id: 20073
+  name: crude umbral chopper
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 12000
+    slot: 0
+    defense: 27
+    attack: 51
+    weapon_type: axe
+- id: 20074
+  name: umbral chopper
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 11500
+    slot: 0
+    defense: 30
+    attack: 52
+    weapon_type: axe
+- id: 20075
+  name: umbral master chopper
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 11000
+    slot: 0
+    defense: 34
+    attack: 54
+    weapon_type: axe
+- id: 20076
+  name: crude umbral mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 9000
+    slot: 6
+    defense: 22
+    extra_defense: 1
+    attack: 48
+    weapon_type: club
+- id: 20077
+  name: umbral mace
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8500
+    slot: 6
+    defense: 26
+    extra_defense: 2
+    attack: 50
+    weapon_type: club
+- id: 20078
+  name: umbral master mace
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8000
+    slot: 6
+    defense: 30
+    extra_defense: 3
+    attack: 52
+    weapon_type: club
+- id: 20079
+  name: crude umbral hammer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 17000
+    slot: 0
+    defense: 27
+    attack: 51
+    weapon_type: club
+- id: 20080
+  name: umbral hammer
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 16500
+    slot: 0
+    defense: 30
+    attack: 53
+    weapon_type: club
+- id: 20081
+  name: umbral master hammer
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 16000
+    slot: 0
+    defense: 34
+    attack: 55
+    weapon_type: club
+- id: 20082
+  name: crude umbral bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5000
+    slot: 0
+    attack: 2
+    range: 7
+    hit_chance: 5
+    weapon_type: bow
+    ammo_type: arrow
+- id: 20083
+  name: umbral bow
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 4500
+    slot: 0
+    attack: 4
+    range: 7
+    hit_chance: 5
+    weapon_type: bow
+    ammo_type: arrow
+- id: 20084
+  name: umbral master bow
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 4000
+    slot: 0
+    attack: 6
+    range: 7
+    hit_chance: 5
+    weapon_type: bow
+    ammo_type: arrow
+- id: 20085
+  name: crude umbral crossbow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 13000
+    slot: 0
+    attack: 3
+    range: 5
+    hit_chance: 1
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 20086
+  name: umbral crossbow
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 12500
+    slot: 0
+    attack: 6
+    range: 5
+    hit_chance: 2
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 20087
+  name: umbral master crossbow
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 12000
+    slot: 0
+    attack: 9
+    range: 5
+    hit_chance: 4
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 21158
+  name: glooth spear
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 2600
+    slot: 6
+    attack: 55
+    range: 3
+    break_chance: 2
+    weapon_type: distance
+- id: 21171
+  name: metal bat
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5100
+    slot: 6
+    defense: 20
+    attack: 44
+    weapon_type: club
+- id: 21172
+  name: glooth whip
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3200
+    slot: 6
+    defense: 19
+    attack: 33
+    weapon_type: club
+- id: 21173
+  name: moohtant cudgel
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8500
+    slot: 0
+    defense: 21
+    attack: 47
+    weapon_type: club
+- id: 21174
+  name: mino lance
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6500
+    slot: 6
+    defense: 23
+    attack: 40
+    weapon_type: axe
+- id: 21176
+  name: execowtioner axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8200
+    slot: 0
+    defense: 18
+    attack: 46
+    weapon_type: axe
+- id: 21177
+  name: cowtana
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2800
+    slot: 6
+    defense: 19
+    extra_defense: 1
+    attack: 34
+    weapon_type: sword
+- id: 21178
+  name: glooth club
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1900
+    slot: 0
+    defense: 1
+    attack: 39
+    weapon_type: club
+    element_damage:
+      element: earth
+      damage: 26
+- id: 21179
+  name: glooth blade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1900
+    slot: 0
+    defense: 1
+    attack: 39
+    weapon_type: sword
+    element_damage:
+      element: earth
+      damage: 26
+- id: 21180
+  name: glooth axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1900
+    slot: 0
+    defense: 1
+    attack: 39
+    weapon_type: axe
+    element_damage:
+      element: earth
+      damage: 26
+- id: 21219
+  name: one hit wonder
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 9600
+    slot: 0
+    defense: 22
+    attack: 49
+    weapon_type: club
+- id: 21348
+  name: scorcher
+  article: the
+  flags:
+  - take
+  attributes:
+    weight: 1500
+    slot: 6
+    range: 3
+    mana_cost: 1
+    weapon_type: wand
+    element: fire
+    missile_id: 4
+- id: 21350
+  name: chiller
+  article: the
+  flags:
+  - take
+  attributes:
+    weight: 1500
+    slot: 6
+    range: 3
+    mana_cost: 1
+    weapon_type: rod
+    element: ice
+    missile_id: 37
+- id: 22171
+  name: ogre klubba
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7900
+    slot: 0
+    defense: 25
+    attack: 45
+    weapon_type: club
+- id: 22172
+  name: ogre choppa
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7500
+    slot: 0
+    defense: 23
+    attack: 39
+    weapon_type: axe
+- id: 22183
+  name: ogre scepta
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 2900
+    slot: 6
+    range: 3
+    mana_cost: 13
+    weapon_type: rod
+    element: earth
+    missile_id: 39
+- id: 22727
+  name: rift lance
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6600
+    slot: 0
+    defense: 28
+    attack: 48
+    weapon_type: axe
+- id: 22759
+  name: plague bite
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 9900
+    slot: 6
+    defense: 31
+    extra_defense: 3
+    attack: 26
+    weapon_type: axe
+    element_damage:
+      element: earth
+      damage: 26
+- id: 22760
+  name: impaler of the igniter
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 6
+    defense: 31
+    extra_defense: 3
+    attack: 25
+    weapon_type: sword
+    element_damage:
+      element: fire
+      damage: 26
+- id: 22762
+  name: maimer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7700
+    slot: 6
+    defense: 32
+    attack: 51
+    weapon_type: club
+- id: 22764
+  name: Ferumbras' staff
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2900
+    slot: 6
+    defense: 30
+    attack: 20
+    weapon_type: club
+- id: 22765
+  name: Ferumbras' staff
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2900
+    slot: 6
+    decay:
+      duration: 86400
+      decay_to: 22764
+    range: 3
+    mana_cost: 17
+    weapon_type: wand
+    element: energy
+    missile_id: 5
+- id: 22766
+  name: Ferumbras' staff
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2250
+    slot: 6
+    decay:
+      duration: 86400
+      decay_to: 22764
+    range: 4
+    mana_cost: 19
+    weapon_type: wand
+    element: energy
+    missile_id: 5
+- id: 22866
+  name: rift bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4100
+    slot: 0
+    attack: 5
+    range: 7
+    hit_chance: 3
+    weapon_type: bow
+    ammo_type: arrow
+- id: 22867
+  name: rift crossbow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 13000
+    slot: 0
+    attack: 5
+    range: 5
+    hit_chance: 4
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 22870
+  name: throwing star of Sula
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+    slot: 6
+    attack: 250
+    range: 4
+    max_hit_chance: 100
+    weapon_type: distance
+    missile_id: 31
+- id: 25700
+  name: dream blossom staff
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3200
+    slot: 6
+    range: 5
+    mana_cost: 18
+    weapon_type: wand
+    element: energy
+    missile_id: 5
+- id: 25735
+  name: leaf star
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+    slot: 6
+    attack: 48
+    range: 5
+    hit_chance: 90
+    max_hit_chance: 86
+    break_chance: 40
+    weapon_type: distance
+    element_damage:
+      element: earth
+      damage: 2
+- id: 25759
+  name: royal star
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 220
+    slot: 6
+    attack: 64
+    range: 5
+    max_hit_chance: 100
+    break_chance: 30
+    weapon_type: distance
+    element_damage:
+      element: fire
+      damage: 2
+- id: 25760
+  name: wand of darkness
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3200
+    slot: 6
+    decay:
+      duration: 900
+      decay_to: 0
+    range: 4
+    mana_cost: 15
+    weapon_type: wand
+    element: death
+    missile_id: 11
+- id: 25915
+  name: fiery spike sword replica
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25916
+  name: fiery relic sword replica
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4800
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25917
+  name: fiery mystic blade replica
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25918
+  name: fire blacksteel replica
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25919
+  name: fiery dragon slayer replica
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8200
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25920
+  name: fiery barbarian axe replica
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5100
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25921
+  name: fiery knight axe replica
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25922
+  name: fiery heroic axe replica
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6100
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25923
+  name: fiery headchopper replica
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4500
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25924
+  name: fiery war axe replica
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6150
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25925
+  name: fiery clerical mace replica
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5800
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25926
+  name: fiery crystal mace replica
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25927
+  name: fiery basher replica
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7800
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25928
+  name: fiery orcish maul replica
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5400
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25929
+  name: fiery war hammer replica
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8500
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25930
+  name: icy spike sword replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25931
+  name: icy relic sword replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4800
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25932
+  name: icy mystic blade replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25933
+  name: icy blacksteel replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25934
+  name: icy dragon slayer replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8200
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25935
+  name: icy barbarian axe replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5100
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25936
+  name: icy knight axe replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25937
+  name: icy heroic axe replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6100
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25938
+  name: icy headchopper replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4500
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25939
+  name: icy war axe replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6150
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25940
+  name: icy clerical mace replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5800
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25941
+  name: icy crystal mace replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25942
+  name: icy cranial basher replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7800
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25943
+  name: icy orcish maul replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5400
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25944
+  name: icy war hammer replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8500
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25945
+  name: earth spike sword replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25946
+  name: earth relic sword replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4800
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25947
+  name: earth mystic blade replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25948
+  name: earth blacksteel replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25949
+  name: earth slayer replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8200
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25950
+  name: earth barbaric axe replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5100
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25951
+  name: earth knight axe replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25952
+  name: earth heroic axe replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6100
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25953
+  name: earth headchopper replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4500
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25954
+  name: earth war axe replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6150
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25955
+  name: earth cleric mace replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5800
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25956
+  name: earth crystal mace replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25957
+  name: earth basher replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7800
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25958
+  name: earth orcish maul replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5400
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25959
+  name: earth war hammer replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8500
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25960
+  name: energy spike sword replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25961
+  name: energy relic sword replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4800
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25962
+  name: energy blade replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25963
+  name: energy blacksteel replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25964
+  name: energy slayer replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8200
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25965
+  name: energy axe replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5100
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25966
+  name: energy knight axe replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5900
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25967
+  name: energy heroic axe replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6100
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25968
+  name: energy headchopper replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4500
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25969
+  name: energy war axe replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6150
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25970
+  name: energy cleric mace replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5800
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25971
+  name: energy mace replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25972
+  name: energy basher replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7800
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25973
+  name: energy orcish maul replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5400
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25974
+  name: energy war hammer replica
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8500
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25983
+  name: plain mayhem blade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25984
+  name: valuable mayhem blade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25985
+  name: ornate mayhem blade
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25986
+  name: plain mayhem slayer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25987
+  name: valuable mayhem slayer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25988
+  name: ornate mayhem slayer
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 25989
+  name: plain mayhem axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25990
+  name: valuable mayhem axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25991
+  name: ornate mayhem axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25992
+  name: plain mayhem chopper
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25993
+  name: valuable mayhem chopper
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25994
+  name: ornate mayhem chopper
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 25995
+  name: plain mayhem mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25996
+  name: valuable mayhem mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25997
+  name: ornate mayhem mace
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25998
+  name: plain mayhem hammer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 25999
+  name: valuable mayhem hammer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 26000
+  name: ornate mayhem hammer
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 26001
+  name: plain mayhem bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5500
+    slot: 0
+    range: 6
+- id: 26002
+  name: valuable mayhem bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5500
+    slot: 0
+    range: 6
+- id: 26003
+  name: ornate mayhem bow
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 5500
+    slot: 0
+    range: 6
+- id: 26004
+  name: plain mayhem crossbow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6500
+    slot: 0
+    range: 5
+- id: 26005
+  name: valuable mayhem crossbow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6500
+    slot: 0
+    range: 5
+- id: 26006
+  name: ornate mayhem crossbow
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 6500
+    slot: 0
+    range: 5
+- id: 26007
+  name: plain mayhem wand
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 3
+- id: 26008
+  name: valuable mayhem wand
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 3
+- id: 26009
+  name: ornate mayhem wand
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 3
+- id: 26010
+  name: plain mayhem rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 3
+- id: 26011
+  name: valuable mayhem rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 3
+- id: 26012
+  name: ornate mayhem rod
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 3
+- id: 26014
+  name: plain remedy blade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 26015
+  name: valuable remedy blade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 26016
+  name: ornate remedy blade
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 26017
+  name: plain remedy slayer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 26018
+  name: valuable remedy slayer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 26019
+  name: ornate remedy slayer
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 26020
+  name: plain remedy axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 26021
+  name: valuable remedy axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 26022
+  name: ornate remedy axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 26023
+  name: plain remedy chopper
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 26024
+  name: valuable remedy chopper
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 26025
+  name: ornate remedy chopper
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 26026
+  name: plain remedy mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 26027
+  name: valuable remedy mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 26028
+  name: ornate remedy mace
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 26029
+  name: plain remedy hammer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 26030
+  name: valuable remedy hammer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 26031
+  name: ornate remedy hammer
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 26032
+  name: plain remedy bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5500
+    slot: 0
+    range: 6
+- id: 26033
+  name: valuable remedy bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5500
+    slot: 0
+    range: 6
+- id: 26034
+  name: ornate remedy bow
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 5500
+    slot: 0
+    range: 6
+- id: 26035
+  name: plain remedy crossbow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6500
+    slot: 0
+    range: 5
+- id: 26036
+  name: valuable remedy crossbow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6500
+    slot: 0
+    range: 5
+- id: 26037
+  name: ornate remedy crossbow
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 6500
+    slot: 0
+    range: 5
+- id: 26038
+  name: plain remedy wand
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 3
+- id: 26039
+  name: valuable remedy wand
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 3
+- id: 26040
+  name: ornate remedy wand
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 3
+- id: 26041
+  name: plain remedy rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 3
+- id: 26042
+  name: valuable remedy rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 3
+- id: 26043
+  name: ornate remedy rod
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 3
+- id: 26044
+  name: plain carving blade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 26045
+  name: valuable carving blade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 26046
+  name: ornate carving blade
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 26047
+  name: plain carving slayer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 26048
+  name: valuable carving slayer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 26049
+  name: ornate carving slayer
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: sword
+- id: 26050
+  name: plain carving axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 26051
+  name: valuable carving axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 26052
+  name: ornate carving axe
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 26053
+  name: plain carving chopper
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 26054
+  name: valuable carving chopper
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 26055
+  name: ornate carving chopper
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: axe
+- id: 26056
+  name: plain carving mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 26057
+  name: valuable carving mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 26058
+  name: ornate carving mace
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 26059
+  name: plain carving hammer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 26060
+  name: valuable carving hammer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 26061
+  name: ornate carving hammer
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 5
+    attack: 5
+    weapon_type: club
+- id: 26062
+  name: plain carving bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5500
+    slot: 0
+    range: 6
+- id: 26063
+  name: valuable carving bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5500
+    slot: 0
+    range: 6
+- id: 26064
+  name: ornate carving bow
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 5500
+    slot: 0
+    range: 6
+- id: 26065
+  name: plain carving crossbow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6500
+    slot: 0
+    range: 5
+- id: 26066
+  name: valuable carving crossbow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6500
+    slot: 0
+    range: 5
+- id: 26067
+  name: ornate carving crossbow
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 6500
+    slot: 0
+    range: 5
+- id: 26068
+  name: plain carving wand
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 3
+- id: 26069
+  name: valuable carving wand
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 3
+- id: 26070
+  name: ornate carving wand
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 3
+- id: 26071
+  name: plain carving rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 3
+- id: 26072
+  name: valuable carving rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 3
+- id: 26073
+  name: ornate carving rod
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 3
+- id: 27449
+  name: blade of destruction
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 33
+    attack: 50
+    weapon_type: sword
+- id: 27450
+  name: slayer of destruction
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 30
+    attack: 52
+    weapon_type: sword
+- id: 27451
+  name: axe of destruction
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 31
+    attack: 51
+    weapon_type: axe
+- id: 27452
+  name: chopper of destruction
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 30
+    attack: 52
+    weapon_type: axe
+- id: 27453
+  name: mace of destruction
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5000
+    slot: 6
+    defense: 32
+    attack: 50
+    weapon_type: club
+- id: 27454
+  name: hammer of destruction
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+    slot: 0
+    defense: 29
+    attack: 53
+    weapon_type: club
+- id: 27455
+  name: bow of destruction
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5500
+    slot: 0
+    attack: 5
+    range: 6
+    hit_chance: 5
+    weapon_type: bow
+    ammo_type: arrow
+- id: 27456
+  name: crossbow of destruction
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6500
+    slot: 0
+    attack: 6
+    range: 5
+    hit_chance: 5
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 27457
+  name: wand of destruction
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 4
+    mana_cost: 20
+    weapon_type: wand
+    element: energy
+    missile_id: 5
+- id: 27458
+  name: rod of destruction
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 4
+    mana_cost: 20
+    weapon_type: rod
+    element: ice
+    missile_id: 37
+- id: 27523
+  name: strange mallet
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4500
+    slot: 6
+    defense: 9
+    attack: 18
+    weapon_type: club
+- id: 27524
+  name: mallet head
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2500
+- id: 27525
+  name: mallet handle
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1500
+    slot: 6
+    defense: 14
+    attack: 24
+    weapon_type: club
+- id: 27526
+  name: mallet pommel
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 27651
+  name: gnome sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8500
+    slot: 6
+    defense: 29
+    extra_defense: 3
+    attack: 10
+    weapon_type: sword
+    element_damage:
+      element: energy
+      damage: 42
+- id: 28464
+  name: 'test weapon for knights '
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    slot: 6
+    weapon_type: sword
+- id: 28465
+  name: bow of destruction test
+  article: a
+  flags:
+  - take
+  attributes:
+    slot: 0
+    weapon_type: distance
+- id: 28466
+  name: sorcerer test weapon TEST
+  article: a
+  flags:
+  - take
+  attributes:
+    slot: 6
+    weapon_type: wand
+- id: 28478
+  name: umbral master bow TEST
+  article: an
+  flags:
+  - take
+  attributes:
+    slot: 0
+    weapon_type: distance
+- id: 28716
+  name: falcon rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3700
+    slot: 6
+    range: 5
+    mana_cost: 20
+    weapon_type: rod
+    element: earth
+    missile_id: 30
+- id: 28717
+  name: falcon wand
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3300
+    slot: 6
+    range: 5
+    mana_cost: 21
+    weapon_type: wand
+    element: energy
+    missile_id: 5
+- id: 28718
+  name: falcon bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 0
+    attack: 7
+    range: 6
+    hit_chance: 5
+    weapon_type: bow
+    ammo_type: arrow
+- id: 28723
+  name: falcon longsword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8200
+    slot: 0
+    defense: 34
+    attack: 56
+    weapon_type: sword
+- id: 28724
+  name: falcon battleaxe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 9500
+    slot: 0
+    defense: 33
+    attack: 10
+    weapon_type: axe
+    element_damage:
+      element: energy
+      damage: 47
+- id: 28725
+  name: falcon mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6800
+    slot: 6
+    defense: 33
+    extra_defense: 3
+    attack: 11
+    weapon_type: club
+    element_damage:
+      element: energy
+      damage: 41
+- id: 28746
+  name: zathroth' redeemer
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    slot: 0
+    weapon_type: club
+- id: 28747
+  name: zathroth' redeemer
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    slot: 0
+    weapon_type: club
+- id: 28748
+  name: zathroth' redeemer
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    slot: 0
+    weapon_type: club
+- id: 28749
+  name: zathroth' redeemer
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    slot: 0
+    weapon_type: club
+- id: 28825
+  name: deepling ceremonial dagger
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3200
+    slot: 6
+    range: 6
+    mana_cost: 23
+    weapon_type: rod
+    element: ice
+    missile_id: 37
+- id: 28826
+  name: deepling fork
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3300
+    slot: 6
+    range: 5
+    mana_cost: 23
+    weapon_type: rod
+    element: ice
+    missile_id: 37
+- id: 28829
+  name: rotten demonbone
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 18000
+    slot: 6
+    armor: 1
+    defense: 40
+    extra_defense: -1
+    attack: 46
+    weapon_type: club
+- id: 28830
+  name: energized demonbone
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 18000
+    slot: 6
+    armor: 1
+    defense: 40
+    extra_defense: -1
+    attack: 46
+    weapon_type: club
+- id: 28831
+  name: unliving demonbone
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 18000
+    slot: 6
+    armor: 1
+    defense: 40
+    extra_defense: -1
+    attack: 46
+    weapon_type: club
+- id: 28832
+  name: sulphurous demonbone
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 18000
+    slot: 6
+    armor: 1
+    defense: 40
+    extra_defense: -1
+    attack: 46
+    weapon_type: club
+- id: 29286
+  name: golden axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1989
+    slot: 0
+    defense: 5
+    attack: 10
+    weapon_type: axe
+- id: 29417
+  name: living vine bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3800
+    slot: 0
+    attack: 6
+    range: 6
+    hit_chance: 4
+    weapon_type: bow
+    ammo_type: arrow
+- id: 29419
+  name: resizer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8900
+    slot: 0
+    defense: 33
+    attack: 11
+    weapon_type: club
+    element_damage:
+      element: ice
+      damage: 46
+- id: 29421
+  name: summerblade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4300
+    slot: 6
+    defense: 20
+    extra_defense: 3
+    attack: 10
+    weapon_type: sword
+    element_damage:
+      element: fire
+      damage: 41
+- id: 29422
+  name: winterblade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4300
+    slot: 6
+    defense: 22
+    extra_defense: 3
+    attack: 10
+    weapon_type: sword
+    element_damage:
+      element: ice
+      damage: 40
+- id: 29425
+  name: energized limb
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 2700
+    slot: 6
+    range: 5
+    mana_cost: 24
+    weapon_type: wand
+    element: fire
+    missile_id: 4
+- id: 30194
+  name: soft hammer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 420
+    slot: 6
+- id: 30283
+  name: ice hatchet
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    defense: 8
+    attack: 4
+    weapon_type: axe
+    element_damage:
+      element: ice
+      damage: 11
+- id: 30393
+  name: cobra crossbow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4000
+    slot: 0
+    attack: 7
+    range: 6
+    hit_chance: 6
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 30395
+  name: cobra club
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2500
+    slot: 6
+    defense: 29
+    extra_defense: 2
+    attack: 8
+    weapon_type: club
+    element_damage:
+      element: fire
+      damage: 44
+- id: 30396
+  name: cobra axe
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4000
+    slot: 6
+    defense: 29
+    extra_defense: 2
+    attack: 8
+    weapon_type: axe
+    element_damage:
+      element: ice
+      damage: 44
+- id: 30398
+  name: cobra sword
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6300
+    slot: 6
+    defense: 31
+    extra_defense: 2
+    attack: 52
+    weapon_type: sword
+- id: 30399
+  name: cobra wand
+  flags:
+  - take
+  attributes:
+    weight: 1900
+    slot: 6
+    range: 4
+    mana_cost: 22
+    weapon_type: wand
+    element: energy
+    missile_id: 5
+- id: 30400
+  name: cobra rod
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 6
+    range: 5
+    mana_cost: 21
+    weapon_type: rod
+    element: earth
+    missile_id: 39
+- id: 31580
+  name: mortal mace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4100
+    slot: 6
+    defense: 27
+    extra_defense: 2
+    attack: 8
+    weapon_type: club
+    element_damage:
+      element: death
+      damage: 44
+- id: 31581
+  name: bow of cataclysm
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4700
+    slot: 0
+    attack: 6
+    range: 6
+    hit_chance: 4
+    weapon_type: bow
+    ammo_type: arrow
+- id: 31614
+  name: tagralt blade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8100
+    slot: 0
+    defense: 32
+    attack: 7
+    weapon_type: sword
+    element_damage:
+      element: earth
+      damage: 49
+- id: 32093
+  name: schnitzel meat grinder
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 343
+    slot: 6
+    attack: 10
+    weapon_type: club
+- id: 32616
+  name: phantasmal axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7200
+    slot: 0
+    defense: 32
+    attack: 5
+    weapon_type: axe
+    element_damage:
+      element: fire
+      damage: 49
+- id: 34082
+  name: soulcutter
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6300
+    slot: 6
+    defense: 32
+    extra_defense: 3
+    attack: 7
+    weapon_type: sword
+    element_damage:
+      element: death
+      damage: 45
+- id: 34083
+  name: soulshredder
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8100
+    slot: 0
+    defense: 35
+    attack: 10
+    weapon_type: sword
+    element_damage:
+      element: ice
+      damage: 47
+- id: 34084
+  name: soulbiter
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4000
+    slot: 6
+    defense: 32
+    extra_defense: 3
+    attack: 7
+    weapon_type: axe
+    element_damage:
+      element: death
+      damage: 45
+- id: 34085
+  name: souleater
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7200
+    slot: 0
+    defense: 34
+    attack: 10
+    weapon_type: axe
+    element_damage:
+      element: ice
+      damage: 47
+- id: 34086
+  name: soulcrusher
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4100
+    slot: 6
+    defense: 33
+    extra_defense: 3
+    attack: 6
+    weapon_type: club
+    element_damage:
+      element: ice
+      damage: 46
+- id: 34087
+  name: soulmaimer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8900
+    slot: 0
+    defense: 35
+    attack: 10
+    weapon_type: club
+    element_damage:
+      element: energy
+      damage: 47
+- id: 34088
+  name: soulbleeder
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4700
+    slot: 0
+    attack: 8
+    range: 6
+    hit_chance: 5
+    weapon_type: bow
+    ammo_type: arrow
+- id: 34089
+  name: soulpiercer
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4000
+    slot: 0
+    attack: 9
+    range: 6
+    hit_chance: 6
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 34090
+  name: soultainter
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1900
+    slot: 6
+    range: 6
+    mana_cost: 21
+    weapon_type: wand
+    element: death
+    missile_id: 32
+- id: 34091
+  name: soulhexer
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 6
+    range: 6
+    mana_cost: 21
+    weapon_type: rod
+    element: ice
+    missile_id: 37
+- id: 34150
+  name: lion longbow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4800
+    slot: 0
+    attack: 6
+    range: 6
+    hit_chance: 6
+    weapon_type: bow
+    ammo_type: arrow
+- id: 34151
+  name: lion rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2600
+    slot: 6
+    range: 5
+    mana_cost: 20
+    weapon_type: rod
+    element: ice
+    missile_id: 37
+- id: 34152
+  name: lion wand
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2100
+    slot: 6
+    range: 5
+    mana_cost: 21
+    weapon_type: rod
+    element: ice
+    missile_id: 37
+- id: 34155
+  name: lion longsword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7500
+    slot: 6
+    defense: 31
+    extra_defense: 2
+    attack: 8
+    weapon_type: sword
+    element_damage:
+      element: earth
+      damage: 44
+- id: 34253
+  name: lion axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7900
+    slot: 6
+    defense: 31
+    extra_defense: 2
+    attack: 8
+    weapon_type: axe
+    element_damage:
+      element: earth
+      damage: 44
+- id: 34254
+  name: lion hammer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6500
+    slot: 6
+    defense: 31
+    extra_defense: 2
+    attack: 8
+    weapon_type: club
+    element_damage:
+      element: earth
+      damage: 44
+- id: 34331
+  name: golden magic longsword
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4300
+    slot: 6
+- id: 35514
+  name: jungle flail
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8900
+    slot: 0
+    defense: 31
+    attack: 52
+    weapon_type: club
+- id: 35515
+  name: throwing axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4700
+    slot: 6
+    defense: 30
+    extra_defense: 2
+    attack: 51
+    weapon_type: axe
+- id: 35518
+  name: jungle bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4700
+    slot: 0
+    attack: 6
+    range: 6
+    hit_chance: 5
+    weapon_type: bow
+    ammo_type: arrow
+- id: 35521
+  name: jungle rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3700
+    slot: 6
+    range: 4
+    mana_cost: 19
+    weapon_type: rod
+    element: ice
+    missile_id: 37
+- id: 35522
+  name: jungle wand
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3200
+    slot: 6
+    range: 4
+    mana_cost: 19
+    weapon_type: rod
+    element: earth
+    missile_id: 39
+- id: 36657
+  name: eldritch claymore
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8500
+    slot: 0
+    defense: 33
+    attack: 6
+    weapon_type: sword
+    element_damage:
+      element: fire
+      damage: 50
+- id: 36658
+  name: gilded eldritch claymore
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8600
+    slot: 0
+    defense: 33
+    attack: 6
+    weapon_type: sword
+    element_damage:
+      element: fire
+      damage: 50
+- id: 36659
+  name: eldritch warmace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8200
+    slot: 0
+    defense: 33
+    attack: 6
+    weapon_type: club
+    element_damage:
+      element: fire
+      damage: 50
+- id: 36660
+  name: gilded eldritch warmace
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8300
+    slot: 0
+    defense: 33
+    attack: 6
+    weapon_type: club
+    element_damage:
+      element: fire
+      damage: 50
+- id: 36661
+  name: eldritch greataxe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6500
+    slot: 0
+    defense: 33
+    attack: 56
+    weapon_type: axe
+- id: 36662
+  name: gilded eldritch greataxe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6600
+    slot: 0
+    defense: 33
+    attack: 56
+    weapon_type: axe
+- id: 36664
+  name: eldritch bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5800
+    slot: 0
+    attack: 6
+    range: 6
+    hit_chance: 6
+    weapon_type: bow
+    ammo_type: arrow
+- id: 36665
+  name: gilded eldritch bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5900
+    slot: 0
+    attack: 6
+    range: 6
+    hit_chance: 6
+    weapon_type: bow
+    ammo_type: arrow
+- id: 36668
+  name: eldritch wand
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3600
+    slot: 6
+    mana_cost: 22
+    weapon_type: wand
+    element: fire
+    missile_id: 4
+- id: 36669
+  name: gilded eldritch wand
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3700
+    slot: 6
+    mana_cost: 22
+    weapon_type: wand
+    element: fire
+    missile_id: 4
+- id: 36674
+  name: eldritch rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 6
+    range: 4
+    mana_cost: 22
+    weapon_type: rod
+    element: ice
+    missile_id: 29
+- id: 36675
+  name: gilded eldritch rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3600
+    slot: 6
+    range: 4
+    mana_cost: 22
+    weapon_type: rod
+    element: ice
+    missile_id: 29
+- id: 38642
+  name: golden warlord sword
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6400
+    slot: 6
+- id: 39155
+  name: naga sword
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5200
+    slot: 6
+    defense: 31
+    extra_defense: 3
+    attack: 8
+    weapon_type: sword
+    element_damage:
+      element: ice
+      damage: 44
+- id: 39156
+  name: naga axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5500
+    slot: 6
+    defense: 31
+    extra_defense: 3
+    attack: 8
+    weapon_type: axe
+    element_damage:
+      element: energy
+      damage: 44
+- id: 39157
+  name: naga club
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6000
+    slot: 6
+    defense: 31
+    extra_defense: 3
+    attack: 52
+    weapon_type: club
+- id: 39159
+  name: naga crossbow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 10200
+    slot: 0
+    attack: 8
+    range: 6
+    hit_chance: 6
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 39162
+  name: naga wand
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2800
+    slot: 6
+    range: 6
+    mana_cost: 21
+    weapon_type: wand
+    element: energy
+    missile_id: 5
+- id: 39163
+  name: naga rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2900
+    slot: 6
+    range: 5
+    mana_cost: 22
+    weapon_type: rod
+    element: ice
+    missile_id: 37
+- id: 40530
+  name: broken macuahuitl
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 2400
+    slot: 6
+    defense: 1
+    attack: 1
+    weapon_type: sword
+- id: 40535
+  name: broken Iks spear
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1300
+    slot: 0
+    defense: 1
+    attack: 1
+    range: 3
+    weapon_type: distance
+    missile_id: 1
+- id: 43864
+  name: sanguine blade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6100
+    slot: 6
+    defense: 32
+    extra_defense: 3
+    attack: 8
+    weapon_type: sword
+    element_damage:
+      element: fire
+      damage: 46
+- id: 43865
+  name: grand sanguine blade
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6000
+    slot: 6
+    defense: 32
+    extra_defense: 3
+    attack: 8
+    weapon_type: sword
+    element_damage:
+      element: fire
+      damage: 46
+- id: 43866
+  name: sanguine cudgel
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6900
+    slot: 6
+    defense: 32
+    extra_defense: 3
+    attack: 8
+    weapon_type: club
+    element_damage:
+      element: death
+      damage: 46
+- id: 43867
+  name: grand sanguine cudgel
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6800
+    slot: 6
+    defense: 32
+    extra_defense: 3
+    attack: 8
+    weapon_type: club
+    element_damage:
+      element: death
+      damage: 46
+- id: 43868
+  name: sanguine hatchet
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7200
+    slot: 6
+    defense: 32
+    extra_defense: 3
+    attack: 8
+    weapon_type: axe
+    element_damage:
+      element: fire
+      damage: 46
+- id: 43869
+  name: grand sanguine hatchet
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7200
+    slot: 6
+    defense: 32
+    extra_defense: 3
+    attack: 8
+    weapon_type: axe
+    element_damage:
+      element: fire
+      damage: 46
+- id: 43870
+  name: sanguine razor
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8100
+    slot: 0
+    defense: 35
+    attack: 8
+    weapon_type: sword
+    element_damage:
+      element: energy
+      damage: 50
+- id: 43871
+  name: grand sanguine razor
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7900
+    slot: 0
+    defense: 35
+    attack: 8
+    weapon_type: sword
+    element_damage:
+      element: energy
+      damage: 50
+- id: 43872
+  name: sanguine bludgeon
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 9300
+    slot: 0
+    defense: 35
+    attack: 8
+    weapon_type: club
+    element_damage:
+      element: earth
+      damage: 50
+- id: 43873
+  name: grand sanguine bludgeon
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 9100
+    slot: 0
+    defense: 35
+    attack: 8
+    weapon_type: club
+    element_damage:
+      element: earth
+      damage: 50
+- id: 43874
+  name: sanguine battleaxe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8500
+    slot: 0
+    defense: 35
+    attack: 8
+    weapon_type: axe
+    element_damage:
+      element: death
+      damage: 50
+- id: 43875
+  name: grand sanguine battleaxe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 8300
+    slot: 0
+    defense: 35
+    attack: 8
+    weapon_type: axe
+    element_damage:
+      element: death
+      damage: 50
+- id: 43877
+  name: sanguine bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4700
+    slot: 0
+    attack: 9
+    range: 6
+    hit_chance: 6
+    weapon_type: bow
+    ammo_type: arrow
+- id: 43878
+  name: grand sanguine bow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4700
+    slot: 0
+    attack: 9
+    range: 6
+    hit_chance: 6
+    weapon_type: bow
+    ammo_type: arrow
+- id: 43879
+  name: sanguine crossbow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4700
+    slot: 0
+    attack: 10
+    range: 6
+    hit_chance: 7
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 43880
+  name: grand sanguine crossbow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4700
+    slot: 0
+    attack: 10
+    range: 6
+    hit_chance: 7
+    weapon_type: crossbow
+    ammo_type: bolt
+- id: 43882
+  name: sanguine coil
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2200
+    slot: 6
+    range: 6
+    mana_cost: 21
+    weapon_type: wand
+    element: fire
+    missile_id: 5
+- id: 43883
+  name: grand sanguine coil
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2100
+    slot: 6
+    range: 6
+    mana_cost: 21
+    weapon_type: wand
+    element: energy
+    missile_id: 5
+- id: 43885
+  name: sanguine rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 6
+    range: 6
+    mana_cost: 20
+    weapon_type: rod
+    element: earth
+    missile_id: 30
+- id: 43886
+  name: grand sanguine rod
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2400
+    slot: 6
+    range: 6
+    mana_cost: 20
+    weapon_type: rod
+    element: earth
+    missile_id: 30

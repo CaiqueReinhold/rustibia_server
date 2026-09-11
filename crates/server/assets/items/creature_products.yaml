@@ -1,0 +1,5924 @@
+- id: 647
+  name: seeds
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 940
+  name: natural soil
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 250
+- id: 941
+  name: glimmering soil
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 250
+- id: 942
+  name: flawless ice crystal
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 250
+- id: 944
+  name: iced soil
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 250
+- id: 945
+  name: energy soil
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 250
+- id: 946
+  name: eternal flames
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 250
+- id: 947
+  name: mother soil
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 250
+- id: 948
+  name: pure energy
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 250
+- id: 954
+  name: neutral matter
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 250
+- id: 3044
+  name: tusk
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1000
+- id: 3492
+  name: worm
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 5
+- id: 4831
+  name: old parchment
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+- id: 4839
+  name: hydra egg
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2000
+- id: 5479
+  name: cat's paw
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1000
+- id: 5804
+  name: nose ring
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 5808
+  name: Orshabaal's brain
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 3500
+- id: 5809
+  name: soul stone
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 30
+- id: 5875
+  name: sniper gloves
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 400
+- id: 5876
+  name: lizard leather
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 5877
+  name: green dragon leather
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 60
+- id: 5878
+  name: minotaur leather
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 40
+- id: 5879
+  name: spider silk
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 5880
+  name: iron ore
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+- id: 5881
+  name: lizard scale
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 5882
+  name: red dragon scale
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 90
+- id: 5883
+  name: ape fur
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 5884
+  name: spirit container
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 600
+- id: 5885
+  name: flask of warrior's sweat
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 300
+- id: 5886
+  name: spool of yarn
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 5887
+  name: piece of royal steel
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 5888
+  name: piece of hell steel
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 5889
+  name: piece of draconian steel
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 5890
+  name: chicken feather
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 5891
+  name: enchanted chicken wing
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1000
+- id: 5892
+  name: huge chunk of crude iron
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 5000
+- id: 5893
+  name: perfect behemoth fang
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 5894
+  name: bat wing
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 5895
+  name: fish fin
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 5896
+  name: bear paw
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 5897
+  name: wolf paw
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 5898
+  name: bonelord eye
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 5899
+  name: turtle shell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 5900
+  name: dwarven beard
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 5901
+  name: wood
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 5902
+  name: honeycomb
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 80
+- id: 5904
+  name: magic sulphur
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 5905
+  name: vampire dust
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 5906
+  name: demon dust
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 5909
+  name: white piece of cloth
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 5910
+  name: green piece of cloth
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 5911
+  name: red piece of cloth
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 5912
+  name: blue piece of cloth
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 5913
+  name: brown piece of cloth
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 5914
+  name: yellow piece of cloth
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 5919
+  name: dragon claw
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1250
+- id: 5920
+  name: green dragon scale
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 5921
+  name: heaven blossom
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 210
+- id: 5922
+  name: holy orchid
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 5925
+  name: hardened bone
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 600
+- id: 5930
+  name: behemoth claw
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1250
+- id: 5943
+  name: Morgaroth's heart
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 3500
+- id: 5948
+  name: red dragon leather
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 60
+- id: 5954
+  name: demon horn
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1000
+- id: 6097
+  name: hook
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 6098
+  name: eye patch
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 6099
+  name: Brutus Bloodbeard's hat
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1250
+- id: 6100
+  name: Lethal Lissy's shirt
+  article: the
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 2000
+- id: 6102
+  name: Deadeye Devious' eye patch
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 6126
+  name: peg leg
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 6496
+  name: christmas present bag
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 8000
+- id: 6499
+  name: demonic essence
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 6526
+  name: christmas token
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 5
+- id: 6534
+  name: Imperor's trident
+  article: the
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 8000
+- id: 6535
+  name: Plasmother's remains
+  article: the
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 3000
+- id: 6536
+  name: Countess Sorrow's frozen tear
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1000
+- id: 6537
+  name: Mr. Punish's handcuffs
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 2500
+- id: 6539
+  name: Handmaiden's protector
+  article: the
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 3500
+- id: 6540
+  name: piece of Massacre's shell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 6500
+- id: 6546
+  name: Dracola's eye
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1500
+- id: 6558
+  name: flask of demonic blood
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 200
+- id: 7250
+  name: hydra tongue
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 7290
+  name: shard
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1900
+- id: 7786
+  name: orc tusk
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1000
+- id: 8031
+  name: spider fangs
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 8143
+  name: gland
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 8192
+  name: vampire lord token
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 5
+- id: 8775
+  name: gear wheel
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 5
+- id: 9053
+  name: glob of mercury
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 9054
+  name: glob of acid slime
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 9055
+  name: glob of tar
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 9613
+  name: sea serpent trophy
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 9631
+  name: scarab pincers
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 230
+- id: 9632
+  name: ancient stone
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 160
+- id: 9633
+  name: bloody pincers
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 9634
+  name: cobra tongue
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 75
+- id: 9635
+  name: elvish talisman
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 110
+- id: 9636
+  name: fiery heart
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 114
+- id: 9637
+  name: hellhound slobber
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 75
+- id: 9638
+  name: cultish mask
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 165
+- id: 9639
+  name: cultish robe
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+- id: 9640
+  name: poisonous slime
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 9641
+  name: piece of scarab shell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 142
+- id: 9642
+  name: spooky blue eye
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 86
+- id: 9643
+  name: thorn
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 9644
+  name: wyvern talisman
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 225
+- id: 9645
+  name: black hood
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 175
+- id: 9646
+  name: book of prayers
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 9647
+  name: demonic skeletal hand
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 132
+- id: 9648
+  name: frosty ear of a troll
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 9649
+  name: gauze bandage
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 97
+- id: 9650
+  name: polar bear paw
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 9651
+  name: scorpion tail
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 9652
+  name: witch broom
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 333
+- id: 9654
+  name: war crystal
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 145
+- id: 9655
+  name: gear crystal
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 95
+- id: 9656
+  name: broken gladiator shield
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 640
+- id: 9657
+  name: cyclops toe
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 111
+- id: 9658
+  name: frost giant pelt
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 248
+- id: 9659
+  name: half-eaten brain
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 64
+- id: 9660
+  name: mystical hourglass
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 96
+- id: 9661
+  name: frosty heart
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 186
+- id: 9662
+  name: mutated bat ear
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 175
+- id: 9663
+  name: piece of dead brain
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 132
+- id: 9664
+  name: piece of hellfire armor
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 9665
+  name: wyrm scale
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 9666
+  name: sea serpent scale
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 146
+- id: 9667
+  name: boggy dreads
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 169
+- id: 9668
+  name: mutated rat tail
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 143
+- id: 9683
+  name: haunted piece of wood
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 226
+- id: 9684
+  name: tattered piece of robe
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+- id: 9685
+  name: vampire teeth
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 50
+- id: 9686
+  name: swamp grass
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 94
+- id: 9688
+  name: bundle of cursed straw
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 227
+- id: 9689
+  name: bunch of troll hair
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 85
+- id: 9690
+  name: ghostly tissue
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 9691
+  name: lion's mane
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 9692
+  name: lump of dirt
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 68
+- id: 9693
+  name: pig foot
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 98
+- id: 9694
+  name: snake skin
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 10196
+  name: orc tooth
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 10272
+  name: crab pincers
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 175
+- id: 10273
+  name: terrorbird beak
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 117
+- id: 10274
+  name: skunk tail
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 105
+- id: 10275
+  name: carrion worm fang
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 88
+- id: 10276
+  name: elder bonelord tentacle
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 75
+- id: 10277
+  name: bony tail
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 92
+- id: 10278
+  name: stone wing
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 153
+- id: 10279
+  name: piece of crocodile leather
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 104
+- id: 10280
+  name: giant eye
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 10281
+  name: tarantula egg
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 40
+- id: 10282
+  name: hydra head
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1300
+- id: 10283
+  name: half-digested piece of meat
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 124
+- id: 10289
+  name: red lantern
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 300
+- id: 10291
+  name: rotten piece of cloth
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 60
+- id: 10292
+  name: silky fur
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 114
+- id: 10293
+  name: striped fur
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 10295
+  name: winter wolf fur
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 110
+- id: 10296
+  name: acorn
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 10297
+  name: antlers
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 90
+- id: 10298
+  name: metal spike
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 10299
+  name: badger fur
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 65
+- id: 10300
+  name: carniphila seeds
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 35
+- id: 10301
+  name: centipede leg
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 69
+- id: 10302
+  name: compass
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 10303
+  name: dark rosary
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 90
+- id: 10304
+  name: hellspawn tail
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 125
+- id: 10305
+  name: lump of earth
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 116
+- id: 10306
+  name: essence of a bad dream
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 95
+- id: 10307
+  name: thick fur
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 125
+- id: 10308
+  name: mutated flesh
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 10309
+  name: strand of medusa hair
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 230
+- id: 10310
+  name: shiny stone
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 156
+- id: 10311
+  name: sabretooth
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 128
+- id: 10312
+  name: scythe leg
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 10313
+  name: winged tail
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 450
+- id: 10314
+  name: nettle blossom
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 88
+- id: 10315
+  name: sulphurous stone
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 142
+- id: 10316
+  name: unholy bone
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 125
+- id: 10317
+  name: werewolf fur
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 112
+- id: 10318
+  name: warwolf fur
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 105
+- id: 10319
+  name: wool
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 118
+- id: 10320
+  name: book of necromantic rituals
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 358
+- id: 10321
+  name: mammoth tusk
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 600
+- id: 10397
+  name: weaver's wandtip
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 170
+- id: 10404
+  name: bone shoulderplate
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 220
+- id: 10405
+  name: warmaster's wristguards
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 10407
+  name: shaggy tail
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 112
+- id: 10408
+  name: spiked iron ball
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 125
+- id: 10409
+  name: corrupted flag
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 112
+- id: 10410
+  name: cursed shoulder spikes
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 97
+- id: 10411
+  name: widow's mandibles
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 105
+- id: 10413
+  name: zaogun flag
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 98
+- id: 10414
+  name: zaogun shoulderplates
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 103
+- id: 10415
+  name: high guard flag
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 112
+- id: 10416
+  name: high guard shoulderplates
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 103
+- id: 10417
+  name: legionnaire flags
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 110
+- id: 10418
+  name: broken halberd
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 210
+- id: 10420
+  name: petrified scream
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 10444
+  name: dragon priest's wandtip
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 155
+- id: 10449
+  name: ghastly dragon head
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1200
+- id: 10450
+  name: undead heart
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 10452
+  name: terramite shell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 10454
+  name: terramite legs
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 114
+- id: 10455
+  name: lancer beetle shell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 107
+- id: 10456
+  name: sandcrawler shell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 75
+- id: 11443
+  name: girlish hair decoration
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 11444
+  name: protective charm
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 11445
+  name: bamboo stick
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 112
+- id: 11446
+  name: hair of a banshee
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 46
+- id: 11447
+  name: battle stone
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 11448
+  name: black wool
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 118
+- id: 11449
+  name: blood preservation
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 11450
+  name: small notebook
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 11451
+  name: broken crossbow
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 130
+- id: 11452
+  name: broken shamanic staff
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 128
+- id: 11453
+  name: broken helmet
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 156
+- id: 11454
+  name: luminous orb
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 94
+- id: 11455
+  name: cultish symbol
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 82
+- id: 11456
+  name: dirty turban
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 134
+- id: 11457
+  name: dragon's tail
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 11458
+  name: geomancer's robe
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 130
+- id: 11463
+  name: geomancer's staff
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 122
+- id: 11464
+  name: elven scouting glass
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 11465
+  name: elven astral observer
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 112
+- id: 11466
+  name: flask of embalming fluid
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 75
+- id: 11467
+  name: ghoul snack
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 140
+- id: 11469
+  name: hunter's quiver
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 132
+- id: 11470
+  name: jewelled belt
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 124
+- id: 11471
+  name: kongra's shoulderpad
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 140
+- id: 11472
+  name: minotaur horn
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 111
+- id: 11473
+  name: purple robe
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 229
+- id: 11474
+  name: miraculum
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 140
+- id: 11475
+  name: necromantic robe
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 220
+- id: 11476
+  name: nettle spit
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 90
+- id: 11477
+  name: orcish gear
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 11478
+  name: shamanic hood
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 90
+- id: 11479
+  name: orc leather
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 11480
+  name: skull belt
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 115
+- id: 11481
+  name: pelvis bone
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 130
+- id: 11482
+  name: piece of warrior armor
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 110
+- id: 11483
+  name: piece of archer armor
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 110
+- id: 11484
+  name: pile of grave earth
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 98
+- id: 11485
+  name: poison spider shell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 130
+- id: 11486
+  name: noble turban
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 144
+- id: 11487
+  name: quara tentacle
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 107
+- id: 11488
+  name: quara eye
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 11489
+  name: mantassin tail
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 114
+- id: 11490
+  name: quara pincers
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 11491
+  name: quara bone
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 144
+- id: 11492
+  name: rope belt
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 97
+- id: 11493
+  name: safety pin
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 11510
+  name: scroll of heroic deeds
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 79
+- id: 11511
+  name: banana sash
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 68
+- id: 11512
+  name: small flask of eyedrops
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 11513
+  name: small pitchfork
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 110
+- id: 11514
+  name: colourful feather
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 36
+- id: 11515
+  name: trollroot
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 140
+- id: 11539
+  name: goblin ear
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 75
+- id: 11652
+  name: broken key ring
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 11658
+  name: draken sulphur
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 68
+- id: 11659
+  name: draken wristbands
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 78
+- id: 11660
+  name: broken draken mail
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+- id: 11661
+  name: broken slicer
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 140
+- id: 11666
+  name: tentacle piece
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 300
+- id: 11671
+  name: eye of corruption
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 93
+- id: 11672
+  name: tail of corruption
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 93
+- id: 11673
+  name: scale of corruption
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 93
+- id: 11680
+  name: lizard essence
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 11684
+  name: downy feather
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 32
+- id: 11702
+  name: brimstone fangs
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 112
+- id: 11703
+  name: brimstone shell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 112
+- id: 12039
+  name: panther head
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 12040
+  name: panther paw
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 12172
+  name: rabbit's foot
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 98
+- id: 12309
+  name: draptor scales
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+- id: 12312
+  name: stampor horn
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 12313
+  name: stampor talons
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 170
+- id: 12314
+  name: hollow stampor hoof
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 12315
+  name: maxilla
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 210
+- id: 12316
+  name: cavebear skull
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 130
+- id: 12317
+  name: giant crab pincer
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 112
+- id: 12541
+  name: demonic finger
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 300
+- id: 12544
+  name: white deer antlers
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 300
+- id: 12545
+  name: white deer skin
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 300
+- id: 12600
+  name: coal
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 500
+- id: 12601
+  name: slime mould
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 300
+- id: 12730
+  name: eye of a deepling
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 240
+- id: 12742
+  name: yielowax
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 475
+- id: 12805
+  name: yielocks
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 295
+- id: 12806
+  name: flintstone
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 375
+- id: 13844
+  name: ice flower seeds
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 50
+- id: 14008
+  name: spellsinger's seal
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 190
+- id: 14009
+  name: key to the Drowned Library
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 120
+- id: 14010
+  name: deepling guard belt buckle
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 260
+- id: 14011
+  name: deepling breaktime snack
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 240
+- id: 14012
+  name: deepling warts
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 240
+- id: 14013
+  name: deeptags
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 240
+- id: 14017
+  name: deepling scales
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 480
+- id: 14021
+  name: Jaul's Pearl
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 310
+- id: 14022
+  name: Tanjis' Sight
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 220
+- id: 14023
+  name: Obujos' Shell
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 280
+- id: 14041
+  name: deepling ridge
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 14044
+  name: deepling claw
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 14076
+  name: swarmer antenna
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 14077
+  name: kollos shell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 459
+- id: 14078
+  name: spitter nose
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 190
+- id: 14079
+  name: crawler head plating
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 265
+- id: 14080
+  name: waspoid claw
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 215
+- id: 14081
+  name: waspoid wing
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 99
+- id: 14082
+  name: spidris mandible
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 238
+- id: 14083
+  name: compound eye
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 165
+- id: 14225
+  name: dung ball
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 190
+- id: 16130
+  name: magma clump
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 310
+- id: 16131
+  name: blazing bone
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 220
+- id: 16132
+  name: eye of a weeper
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 90
+- id: 16133
+  name: pulverized ore
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 170
+- id: 16134
+  name: cliff strider claw
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 220
+- id: 16135
+  name: vein of ore
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 360
+- id: 16136
+  name: Deathstrike's snippet
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 380
+- id: 16137
+  name: stone nose
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 260
+- id: 16138
+  name: crystalline spikes
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 340
+- id: 16139
+  name: humongous chunk
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 190
+- id: 16140
+  name: hideous chunk
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 160
+- id: 16205
+  name: Gnomevil's hat
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 210
+- id: 16206
+  name: Abyssador's lash
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 190
+- id: 17458
+  name: damselfly wing
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 17461
+  name: marsh stalker beak
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 110
+- id: 17462
+  name: marsh stalker feather
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 30
+- id: 17463
+  name: damselfly eye
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 17809
+  name: bola
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 17817
+  name: cheese cutter
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 45
+- id: 17818
+  name: cheesy figurine
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 75
+- id: 17819
+  name: earflap
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 75
+- id: 17822
+  name: swampling moss
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 270
+- id: 17823
+  name: piece of swampling wood
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 350
+- id: 17826
+  name: lost basher's spike
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 220
+- id: 17827
+  name: bloody dwarven beard
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+- id: 17830
+  name: bonecarving knife
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 17831
+  name: bone fetish
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 160
+- id: 17847
+  name: wimp tooth chain
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 240
+- id: 17848
+  name: lost husher's staff
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 800
+- id: 17849
+  name: skull shatterer
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 380
+- id: 17850
+  name: holy ash
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 190
+- id: 17851
+  name: broken throwing axe
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1100
+- id: 17853
+  name: lost bracers
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 290
+- id: 17854
+  name: mad froth
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 160
+- id: 17855
+  name: red hair dye
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 210
+- id: 17856
+  name: basalt fetish
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 210
+- id: 17857
+  name: basalt figurine
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 210
+- id: 18924
+  name: tooth file
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 509
+- id: 18925
+  name: lancet
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 490
+- id: 18926
+  name: horoscope
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 280
+- id: 18927
+  name: vampire's cape chain
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 620
+- id: 18928
+  name: blood tincture in a vial
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 630
+- id: 18929
+  name: incantation notes
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 440
+- id: 18930
+  name: pieces of magic chalk
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 680
+- id: 18993
+  name: rorc feather
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 18994
+  name: elven hoof
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 229
+- id: 18995
+  name: venison
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 380
+- id: 18996
+  name: rorc egg
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 18997
+  name: hatched rorc egg
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 19110
+  name: dowser
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 360
+- id: 19111
+  name: fir cone
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 190
+- id: 20062
+  name: cluster of solace
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 280
+- id: 20063
+  name: dream matter
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 390
+- id: 20183
+  name: sight of surrender's eye
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 550
+- id: 20198
+  name: frazzle tongue
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 680
+- id: 20199
+  name: frazzle skin
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 190
+- id: 20200
+  name: silencer claws
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 420
+- id: 20201
+  name: silencer resonating chamber
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 350
+- id: 20202
+  name: dead weight
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 750
+- id: 20203
+  name: trapped bad dream monster
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1200
+- id: 20204
+  name: bowl of terror sweat
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 360
+- id: 20205
+  name: goosebump leather
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 280
+- id: 20206
+  name: hemp rope
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 190
+- id: 20207
+  name: pool of chitinous glue
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 270
+- id: 20275
+  name: dream warden claw
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3100
+- id: 20276
+  name: dream warden mask
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 3400
+- id: 21103
+  name: glooth injection tube
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1400
+- id: 21182
+  name: glob of glooth
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 21193
+  name: metal jaw
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 140
+- id: 21194
+  name: slime heart
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 21195
+  name: poisoned fang
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 21196
+  name: necromantic rust
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 21197
+  name: slimy leaf tentacle
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 300
+- id: 21198
+  name: metal toe
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 21199
+  name: giant pacifier
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 900
+- id: 21200
+  name: moohtant horn
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 350
+- id: 21201
+  name: execowtioner mask
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 320
+- id: 21202
+  name: mooh'tah shell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 21204
+  name: cowbell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 400
+- id: 21800
+  name: seacrest scale
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 21801
+  name: seacrest hair
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 21974
+  name: golden lotus brooch
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 21975
+  name: peacock feather fan
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+- id: 22007
+  name: gloom wolf fur
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 22051
+  name: werebadger claws
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 110
+- id: 22052
+  name: werewolf fangs
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 160
+- id: 22053
+  name: wereboar hooves
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 22054
+  name: wereboar tusks
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 190
+- id: 22055
+  name: werebadger skull
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 300
+- id: 22056
+  name: werebear skull
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 22057
+  name: werebear fur
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 22184
+  name: shamanic talisman
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 128
+- id: 22186
+  name: raw meat
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2800
+- id: 22188
+  name: ogre ear stud
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1600
+- id: 22189
+  name: ogre nose ring
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 2100
+- id: 22191
+  name: skull fetish
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 440
+- id: 22728
+  name: vexclaw talon
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 900
+- id: 22729
+  name: pair of hellflayer horns
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1200
+- id: 22730
+  name: some grimeleech wings
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 850
+- id: 22769
+  name: Ferumbras' mana keg
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1400
+- id: 23501
+  name: condensed energy
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+- id: 23502
+  name: sparkion claw
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 800
+- id: 23503
+  name: sparkion tail
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 750
+- id: 23504
+  name: sparkion legs
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 750
+- id: 23505
+  name: sparkion stings
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 350
+- id: 23506
+  name: plasma pearls
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 350
+- id: 23507
+  name: crystallized anger
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1200
+- id: 23508
+  name: energy vein
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+- id: 23509
+  name: mysterious remains
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 12000
+- id: 23510
+  name: odd organ
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 450
+- id: 23511
+  name: curious matter
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 450
+- id: 23513
+  name: strange proto matter
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 600
+- id: 23514
+  name: volatile proto matter
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 600
+- id: 23515
+  name: dangerous proto matter
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 600
+- id: 23516
+  name: instable proto matter
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 600
+- id: 23517
+  name: solid rage
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 300
+- id: 23518
+  name: spark sphere
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 23519
+  name: frozen lightning
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 700
+- id: 23520
+  name: plasmatic lightning
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 700
+- id: 23521
+  name: crystal bone
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1200
+- id: 23522
+  name: glistening bone
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1200
+- id: 23523
+  name: energy ball
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 350
+- id: 23524
+  name: small energy ball
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 23686
+  name: devourer core
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 560
+- id: 23687
+  name: burnt out devourer core
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 560
+- id: 24380
+  name: bone toothpick
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 2000
+- id: 24381
+  name: beetle carapace
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 3500
+- id: 24384
+  name: ancient belt buckle
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 24385
+  name: cracked alabaster vase
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 450
+- id: 24386
+  name: rhino horn carving
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 600
+- id: 24387
+  name: tarnished rhino figurine
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 750
+- id: 24388
+  name: rhino hide
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 800
+- id: 24389
+  name: rhino horn
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 650
+- id: 24937
+  name: dragon blood
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 350
+- id: 24938
+  name: dragon tongue
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 550
+- id: 24965
+  name: thorn seed
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 650
+- id: 24966
+  name: forbidden fruit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 650
+- id: 24967
+  name: dragon crown
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 24968
+  name: golden talon
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 24969
+  name: ancient watch
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 24970
+  name: frozen time
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 650
+- id: 24971
+  name: forbidden tome
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 24972
+  name: key to knowledge
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 650
+- id: 24973
+  name: shadow mask
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 24974
+  name: shadow paint
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 650
+- id: 24975
+  name: astral source
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 24976
+  name: astral glyph
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 650
+- id: 24977
+  name: glowing carrot
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 650
+- id: 24978
+  name: coal eyes
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 650
+- id: 25089
+  name: colourful feathers
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 450
+- id: 25691
+  name: wild flowers
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 25693
+  name: shimmering beetles
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 170
+- id: 25694
+  name: fairy wings
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+- id: 25695
+  name: dandelion seeds
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 130
+- id: 25696
+  name: colourful snail shell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 170
+- id: 25697
+  name: green bandage
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 60
+- id: 25701
+  name: single human eye
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 60
+- id: 25702
+  name: little bowl of myrrh
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+- id: 25742
+  name: fig leaf
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 60
+- id: 25743
+  name: bed of nails
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 400
+- id: 25744
+  name: torn shirt
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 25745
+  name: guidebook
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 150
+- id: 27301
+  name: rare earth
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 27369
+  name: half-digested stones
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+- id: 27462
+  name: fox paw
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 27463
+  name: werefox tail
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 140
+- id: 27592
+  name: deepworm spikes
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 27593
+  name: deepworm spike roots
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+- id: 27594
+  name: deepworm jaws
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 27595
+  name: tunnel tyrant head
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 27596
+  name: tunnel tyrant shell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 27597
+  name: diremaw brainpan
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 27598
+  name: diremaw legs
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 229
+- id: 27599
+  name: cave devourer eyes
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 27600
+  name: cave devourer maw
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 190
+- id: 27601
+  name: cave devourer legs
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 240
+- id: 27602
+  name: chasm spawn head
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 160
+- id: 27603
+  name: chasm spawn abdomen
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 270
+- id: 27604
+  name: chasm spawn tail
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 160
+- id: 27606
+  name: stonerefiner's skull
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 300
+- id: 27607
+  name: withered pauldrons
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 140
+- id: 27608
+  name: withered scalp
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 170
+- id: 27618
+  name: pristine worm head
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 190
+- id: 27619
+  name: giant tentacle
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 210
+- id: 27620
+  name: damaged worm head
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 160
+- id: 27621
+  name: huge shell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 320
+- id: 27622
+  name: chitinous mouth
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 240
+- id: 27623
+  name: slimy leg
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 160
+- id: 27624
+  name: longing eyes
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 27625
+  name: harpoon of a giant snail
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 27626
+  name: chitinous mouth
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 27627
+  name: huge spiky snail shell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 380
+- id: 28566
+  name: silken bookmark
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 28567
+  name: quill
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 90
+- id: 28568
+  name: inkwell
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+- id: 28569
+  name: book page
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 28570
+  name: glowing rune
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 28821
+  name: patch of fine cloth
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 28822
+  name: damaged armor plates
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+- id: 28823
+  name: falcon crest
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 28824
+  name: grant of arms
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 29291
+  name: chargeable compass
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 120
+- id: 29348
+  name: poison gland
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 33
+- id: 29942
+  name: Maxxenius head
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 210
+- id: 29943
+  name: Alptramun's toothbrush
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+- id: 29944
+  name: Izcandar's snow globe
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+- id: 29945
+  name: Izcandar's sundial
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+- id: 29946
+  name: beast's nightmare-cushion
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+- id: 30005
+  name: dream essence egg
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 280
+- id: 30058
+  name: ice flower
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 30087
+  name: Plagueroot offshoot
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+- id: 30088
+  name: Malofur's lunchbox
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+- id: 30187
+  name: versicolour fireworks powder
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 30188
+  name: red fireworks powder
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 30189
+  name: yellow fireworks powder
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 30190
+  name: green fireworks powder
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 30191
+  name: blue fireworks powder
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 30192
+  name: percht skull
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 869
+- id: 30208
+  name: fireworks capsule
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 2000
+- id: 30268
+  name: orange fireworks powder
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 30269
+  name: purple fireworks powder
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 30270
+  name: turquoise fireworks powder
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 30271
+  name: grainy fireworks powder
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 30277
+  name: icicle
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1900
+- id: 30278
+  name: flames of the percht queen
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 250
+- id: 30280
+  name: percht queen's frozen heart
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1700
+- id: 30281
+  name: frozen chain
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 225
+- id: 30282
+  name: percht broom
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 850
+- id: 30284
+  name: percht handkerchief
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 30285
+  name: golden cotton reel
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 220
+- id: 30324
+  name: bright bell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 220
+- id: 30325
+  name: dark bell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 220
+- id: 31331
+  name: empty honey glass
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 150
+- id: 31340
+  name: lizard heart
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 350
+- id: 31437
+  name: sphinx feather
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 31438
+  name: sphinx tiara
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 350
+- id: 31439
+  name: manticore tail
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 750
+- id: 31440
+  name: manticore ear
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 90
+- id: 31441
+  name: lamassu hoof
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 110
+- id: 31442
+  name: lamassu horn
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 31443
+  name: Fafnar symbol
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 170
+- id: 31558
+  name: red goanna scale
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 90
+- id: 31559
+  name: blue goanna scale
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 90
+- id: 31560
+  name: goanna meat
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 90
+- id: 31561
+  name: goanna claw
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 90
+- id: 31588
+  name: ancient liche bone
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 31589
+  name: rotten heart
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 110
+- id: 31590
+  name: young lich worm
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 30
+- id: 31591
+  name: medal of valiance
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 55
+- id: 31592
+  name: signet ring
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+- id: 31593
+  name: noble cape
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 130
+- id: 31594
+  name: token of love
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 130
+- id: 31595
+  name: noble amulet
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 65
+- id: 31622
+  name: Urmahlullu's tail
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 76
+- id: 31623
+  name: Urmahlullu's mane
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 76
+- id: 31624
+  name: urmahlullu's paw
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 76
+- id: 31678
+  name: cobra crest
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 170
+- id: 32009
+  name: veal
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 32010
+  name: meat hammer
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 370
+- id: 32011
+  name: milk churn
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2000
+- id: 32012
+  name: cow bell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 720
+- id: 32227
+  name: lost soul
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 20
+- id: 32228
+  name: purified soul
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 250
+- id: 32578
+  name: brain head's giant neuron
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 24
+- id: 32579
+  name: brain head's left hemisphere
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 35
+- id: 32580
+  name: brain head's right hemisphere
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 35
+- id: 32581
+  name: brain head's brain
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 70
+- id: 32593
+  name: grimace
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 60
+- id: 32594
+  name: bloody tears
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 20
+- id: 32595
+  name: jagged sickle
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 32596
+  name: dark bell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 220
+- id: 32597
+  name: ravenous circlet
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 40
+- id: 32598
+  name: pale worm's scalp
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 75
+- id: 32599
+  name: writhing heart
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 60
+- id: 32600
+  name: writhing brain
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 60
+- id: 32698
+  name: ensouled essence
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 135
+- id: 32704
+  name: phantasmal hair
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 32711
+  name: luminescent crystal pickaxe
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 135
+- id: 32724
+  name: spectral gold nugget
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 135
+- id: 32725
+  name: spectral silver nugget
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 135
+- id: 33920
+  name: Malice's horn
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 33921
+  name: Malice's spine
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 229
+- id: 33922
+  name: Cruelty's claw
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 140
+- id: 33923
+  name: Cruelty's chest
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 140
+- id: 33924
+  name: Greed's arm
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 125
+- id: 33925
+  name: Megalomania's skull
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 33926
+  name: Spite's spirit
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 110
+- id: 33927
+  name: vial of Hatred
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 110
+- id: 33928
+  name: Megalomania's essence
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 110
+- id: 33929
+  name: rod
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 90
+- id: 33932
+  name: head
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 60
+- id: 33933
+  name: apron
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 60
+- id: 33934
+  name: telescope eye
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 30
+- id: 33935
+  name: crown
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1900
+- id: 33936
+  name: hand
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 90
+- id: 33937
+  name: head
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 90
+- id: 33938
+  name: roots
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 90
+- id: 33943
+  name: werehyaena nose
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 33944
+  name: werehyaena talisman
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 33945
+  name: ivory carving
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 140
+- id: 33947
+  name: hard-boiled hydra egg
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 2000
+- id: 33952
+  name: figurine of spite
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 101
+- id: 33953
+  name: figurine of megalomania
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 33982
+  name: crawler's essence
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 45
+- id: 34014
+  name: jaws
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 170
+- id: 34018
+  name: figurine of malice
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 42
+- id: 34019
+  name: figurine of cruelty
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 44
+- id: 34020
+  name: figurine of hatred
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 44
+- id: 34021
+  name: figurine of Greed
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 44
+- id: 34100
+  name: Katex' blood
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+- id: 34101
+  name: Utua's poison
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 34102
+  name: Yirkas' egg
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 34103
+  name: Srezz' eye
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 34138
+  name: capricious heart
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 75
+- id: 34139
+  name: infernal heart
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 75
+- id: 34140
+  name: hazardous heart
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 75
+- id: 34141
+  name: mould heart
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 75
+- id: 34142
+  name: distorted heart
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 75
+- id: 34143
+  name: vibrant heart
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 75
+- id: 34144
+  name: vibrant robe
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 34145
+  name: capricious robe
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 34146
+  name: infernal robe
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 34147
+  name: hazardous robe
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 34148
+  name: mould robe
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 34149
+  name: distorted robe
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 34160
+  name: lion crest
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+- id: 34161
+  name: broken longbow
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 34162
+  name: lion cloak patch
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 34163
+  name: lion seal
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 34164
+  name: fur shred
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 500
+- id: 35571
+  name: small treasure chest
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 800
+- id: 35572
+  name: pirate coin
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 40
+- id: 35573
+  name: pirat's tail
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 190
+- id: 35574
+  name: shark fins
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 620
+- id: 35588
+  name: grappling hook
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 620
+- id: 35596
+  name: mouldy powder
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 170
+- id: 35610
+  name: Tentugly's eye
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 35611
+  name: tentacle of Tentugly
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 480
+- id: 35612
+  name: Tentugly's jaws
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 320
+- id: 35613
+  name: Ratmiral's hat
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 270
+- id: 35614
+  name: cheesy membership card
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 270
+- id: 36769
+  name: lavaworm spike roots
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+- id: 36770
+  name: lavaworm spikes
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 36771
+  name: lavaworm jaws
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 36772
+  name: streaked devourer eyes
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 36773
+  name: streaked devourer maw
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 190
+- id: 36774
+  name: streaked devourer legs
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 240
+- id: 36775
+  name: eyeless devourer maw
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 190
+- id: 36776
+  name: eyeless devourer legs
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 240
+- id: 36777
+  name: eyeless devourer tongue
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 60
+- id: 36778
+  name: blemished spawn head
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 160
+- id: 36779
+  name: blemished spawn abdomen
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 270
+- id: 36780
+  name: blemished spawn tail
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 160
+- id: 36781
+  name: varnished diremaw brainpan
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 36782
+  name: varnished diremaw legs
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 229
+- id: 36783
+  name: tremendous tyrant head
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 36784
+  name: tremendous tyrant shell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 36785
+  name: lavafungus head
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 180
+- id: 36786
+  name: lavafungus ring
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 40
+- id: 36787
+  name: cave chimera head
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 190
+- id: 36788
+  name: cave chimera leg
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 110
+- id: 36789
+  name: afflicted strider head
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 170
+- id: 36790
+  name: afflicted strider worms
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 170
+- id: 36791
+  name: Abomination's tail
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 36792
+  name: Abomination's eye
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 36793
+  name: Abomination's tongue
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 130
+- id: 36794
+  name: Brainstealer's tissue
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 130
+- id: 36795
+  name: Brainstealer's brain
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+- id: 36796
+  name: Brainstealer's brainwave
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 200
+- id: 36805
+  name: carnisylvan finger
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 36806
+  name: carnisylvan bark
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 36807
+  name: human teeth
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 36808
+  name: old royal diary
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 130
+- id: 36809
+  name: curl of hair
+  article: a
+  flags:
+  - cumulative
+  - take
+- id: 36820
+  name: bashmu fang
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 36821
+  name: bashmu tongue
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 36822
+  name: scorpion charm
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 36823
+  name: bashmu feather
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 36971
+  name: girtablilu warrior carapace
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 36972
+  name: old girtablilu carapace
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 37613
+  name: Morshabaal's brain
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 3300
+- id: 39375
+  name: sulphider shell
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 150
+- id: 39376
+  name: sulphur powder
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 39377
+  name: gore horn
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 260
+- id: 39378
+  name: sabretooth fur
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 135
+- id: 39379
+  name: emerald tortoise shell
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 600
+- id: 39380
+  name: undertaker fangs
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 75
+- id: 39381
+  name: nighthunter wing
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 140
+- id: 39382
+  name: prehemoth horns
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1100
+- id: 39383
+  name: prehemoth claw
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 850
+- id: 39384
+  name: stalking seeds
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 40
+- id: 39385
+  name: fungal blister
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 240
+- id: 39386
+  name: mantosaurus jaw
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 420
+- id: 39387
+  name: headpecker beak
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 390
+- id: 39388
+  name: headpecker feather
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+- id: 39389
+  name: ripptor claw
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 280
+- id: 39391
+  name: ripptor scales
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 30
+- id: 39392
+  name: gorerilla mane
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 240
+- id: 39393
+  name: gorerilla tail
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 280
+- id: 39394
+  name: cry-stal
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 970
+- id: 39395
+  name: mercurial wing
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 39399
+  name: one of Timira's many heads
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 3150
+- id: 39400
+  name: piece of Timira's sensors
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 3150
+- id: 39401
+  name: makara fin
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 250
+- id: 39402
+  name: makara tongue
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 39403
+  name: jungle moa feather
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 39404
+  name: jungle moa claw
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 170
+- id: 39405
+  name: jungle moa egg
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 840
+- id: 39406
+  name: coral branch
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 110
+- id: 39407
+  name: flotsam
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 290
+- id: 39408
+  name: small tropical fish
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 220
+- id: 39409
+  name: two-headed turtle heads
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 760
+- id: 39410
+  name: hydrophytes
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 45
+- id: 39411
+  name: naga armring
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 350
+- id: 39412
+  name: naga earring
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 280
+- id: 39413
+  name: naga archer scales
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 30
+- id: 39414
+  name: naga warrior scales
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 30
+- id: 39415
+  name: corrupt naga scales
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 30
+- id: 39416
+  name: rogue naga scales
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 30
+- id: 39417
+  name: parder tooth
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+- id: 39418
+  name: parder fur
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 290
+- id: 39543
+  name: smoldering eye
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 3150
+- id: 40582
+  name: crab man claws
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 230
+- id: 40583
+  name: liodile fang
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 170
+- id: 40584
+  name: boar man hoof
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 210
+- id: 40585
+  name: harpy feathers
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 390
+- id: 40586
+  name: carnivostrich feather
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 40587
+  name: rhindeer antlers
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 570
+- id: 43729
+  name: werecrocodile tongue
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 280
+- id: 43730
+  name: weretiger tooth
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 280
+- id: 43731
+  name: werepanther claw
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 280
+- id: 43732
+  name: silver moon coin
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 280
+- id: 43733
+  name: silver foxmouse coin
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 280
+- id: 43734
+  name: golden sun coin
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 280
+- id: 43735
+  name: golden tiger coin
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 280
+- id: 43736
+  name: moon pin
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 280
+- id: 43737
+  name: sun brooch
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 280

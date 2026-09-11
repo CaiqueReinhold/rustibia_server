@@ -1,0 +1,505 @@
+- id: 813
+  name: terra boots
+  flags:
+  - take
+  attributes:
+    weight: 750
+    slot: 8
+    armor: 2
+- id: 818
+  name: magma boots
+  flags:
+  - take
+  attributes:
+    weight: 750
+    slot: 8
+    armor: 2
+- id: 819
+  name: glacier shoes
+  flags:
+  - take
+  attributes:
+    weight: 750
+    slot: 8
+    armor: 2
+- id: 820
+  name: lightning boots
+  flags:
+  - take
+  attributes:
+    weight: 750
+    slot: 8
+    armor: 2
+- id: 3079
+  name: boots of haste
+  flags:
+  - take
+  attributes:
+    weight: 750
+    slot: 8
+- id: 3246
+  name: boots of waterwalking
+  flags:
+  - take
+  attributes:
+    weight: 770
+    slot: 8
+- id: 3549
+  name: pair of soft boots
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 800
+    slot: 8
+    decay:
+      duration: 14400
+      decay_to: 6530
+- id: 3550
+  name: patched boots
+  flags:
+  - take
+  attributes:
+    weight: 1000
+    slot: 8
+    armor: 2
+- id: 3551
+  name: sandals
+  flags:
+  - take
+  attributes:
+    weight: 600
+    slot: 8
+- id: 3552
+  name: leather boots
+  flags:
+  - take
+  attributes:
+    weight: 900
+    slot: 8
+    armor: 1
+- id: 3553
+  name: bunnyslippers
+  flags:
+  - take
+  attributes:
+    weight: 600
+    slot: 8
+- id: 3554
+  name: steel boots
+  flags:
+  - take
+  attributes:
+    weight: 2900
+    slot: 8
+    armor: 3
+- id: 3555
+  name: golden boots
+  flags:
+  - take
+  attributes:
+    weight: 3100
+    slot: 8
+    armor: 4
+- id: 3556
+  name: crocodile boots
+  flags:
+  - take
+  attributes:
+    weight: 900
+    slot: 8
+    armor: 1
+- id: 4033
+  name: draken boots
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 8
+    armor: 3
+- id: 5461
+  name: pirate boots
+  flags:
+  - take
+  attributes:
+    weight: 800
+    slot: 8
+    armor: 2
+- id: 6529
+  name: pair of soft boots
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 800
+    slot: 8
+- id: 6530
+  name: worn soft boots
+  flags:
+  - take
+  attributes:
+    weight: 800
+    slot: 8
+- id: 7457
+  name: fur boots
+  flags:
+  - take
+  attributes:
+    weight: 1200
+    slot: 8
+    armor: 2
+- id: 9017
+  name: coconut shoes
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 600
+    slot: 8
+- id: 9018
+  name: firewalker boots
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 950
+    slot: 8
+    decay:
+      duration: 3600
+      decay_to: 9020
+    armor: 2
+- id: 9019
+  name: firewalker boots
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 950
+    slot: 8
+    armor: 2
+- id: 9020
+  name: worn firewalker boots
+  flags:
+  - take
+  attributes:
+    weight: 950
+    slot: 8
+- id: 10200
+  name: crystal boots
+  flags:
+  - take
+  attributes:
+    weight: 1850
+    slot: 8
+    armor: 3
+- id: 10201
+  name: dragon scale boots
+  flags:
+  - take
+  attributes:
+    weight: 1850
+    slot: 8
+    armor: 3
+- id: 10323
+  name: guardian boots
+  flags:
+  - take
+  attributes:
+    weight: 2250
+    slot: 8
+    armor: 3
+- id: 10386
+  name: Zaoan shoes
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 700
+    slot: 8
+    armor: 1
+- id: 11542
+  name: fish tail
+  flags:
+  - take
+  attributes:
+    weight: 250
+    slot: 8
+- id: 11543
+  name: fish tail
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 250
+    slot: 8
+- id: 13997
+  name: depth calcei
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3700
+    slot: 8
+    armor: 3
+- id: 16112
+  name: prismatic boots
+  flags:
+  - take
+  attributes:
+    weight: 1800
+    slot: 8
+    armor: 3
+- id: 19374
+  name: vampire silk slippers
+  flags:
+  - take
+  attributes:
+    weight: 1150
+    slot: 8
+- id: 21169
+  name: metal spats
+  flags:
+  - take
+  attributes:
+    weight: 1800
+    slot: 8
+    armor: 1
+- id: 21981
+  name: oriental shoes
+  flags:
+  - take
+  attributes:
+    weight: 500
+    slot: 8
+    armor: 2
+- id: 22086
+  name: badger boots
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1200
+    slot: 8
+    armor: 2
+- id: 22756
+  name: treader of torment
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3600
+    slot: 8
+    armor: 4
+- id: 22773
+  name: boots of homecoming
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1600
+    slot: 8
+    armor: 2
+- id: 22774
+  name: boots of homecoming
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1600
+    slot: 8
+    armor: 2
+- id: 23476
+  name: void boots
+  flags:
+  - take
+  attributes:
+    weight: 1500
+    slot: 8
+    decay:
+      duration: 3600
+      decay_to: 0
+    armor: 2
+- id: 23477
+  name: void boots
+  flags:
+  - take
+  attributes:
+    weight: 1500
+    slot: 8
+    armor: 2
+- id: 24409
+  name: filthy bunnyslippers
+  flags:
+  - take
+  attributes:
+    weight: 600
+    slot: 8
+- id: 29424
+  name: pair of dreamwalkers
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 800
+    slot: 8
+    armor: 2
+- id: 30196
+  name: yetislippers
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 740
+    slot: 8
+- id: 30394
+  name: cobra boots
+  flags:
+  - take
+  attributes:
+    weight: 900
+    slot: 8
+    armor: 3
+- id: 31617
+  name: winged boots
+  flags:
+  - take
+  attributes:
+    weight: 1200
+    slot: 8
+    armor: 2
+- id: 32098
+  name: traditional leather shoes
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+    slot: 8
+- id: 32619
+  name: pair of nightmare boots
+  flags:
+  - take
+  attributes:
+    weight: 1300
+    slot: 8
+    armor: 2
+- id: 34097
+  name: pair of soulwalkers
+  flags:
+  - take
+  attributes:
+    weight: 1300
+    slot: 8
+    armor: 4
+- id: 34098
+  name: pair of soulstalkers
+  flags:
+  - take
+  attributes:
+    weight: 1300
+    slot: 8
+    armor: 3
+- id: 35519
+  name: makeshift boots
+  flags:
+  - take
+  attributes:
+    weight: 1450
+    slot: 8
+    armor: 2
+- id: 35520
+  name: make-do boots
+  flags:
+  - take
+  attributes:
+    weight: 1450
+    slot: 8
+    armor: 2
+- id: 37610
+  name: green demon slippers
+  flags:
+  - take
+  attributes:
+    weight: 600
+    slot: 8
+- id: 39158
+  name: frostflower boots
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1100
+    slot: 8
+    armor: 3
+- id: 39161
+  name: feverbloom boots
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 980
+    slot: 8
+    armor: 2
+- id: 40534
+  name: broken Iks sandals
+  article: the
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 380
+    slot: 8
+    armor: 1
+- id: 40592
+  name: alchemist's boots
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1600
+    slot: 8
+    armor: 2
+- id: 40593
+  name: mutant bone boots
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1100
+    slot: 8
+    armor: 2
+- id: 43884
+  name: sanguine boots
+  flags:
+  - take
+  attributes:
+    weight: 1900
+    slot: 8
+    armor: 3
+- id: 43887
+  name: sanguine galoshes
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1700
+    slot: 8
+    armor: 3
+- id: 44648
+  name: stoic iks boots
+  flags:
+  - take
+  attributes:
+    weight: 1500
+    slot: 8
+    armor: 2
+- id: 44649
+  name: stoic iks sandals
+  flags:
+  - take
+  attributes:
+    weight: 900
+    slot: 8
+    armor: 2

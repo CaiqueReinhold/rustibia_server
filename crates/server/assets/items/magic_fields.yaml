@@ -1,0 +1,287 @@
+- id: 105
+  name: poison field
+  article: a
+  flags:
+    - unmove
+  attributes:
+    decay:
+      duration: 248
+      decay_to: 0
+- id: 1998
+  name: campfire
+  article: a
+  flags:
+    - unmove
+- id: 1999
+  name: campfire
+  article: a
+  flags:
+    - unmove
+- id: 2000
+  name: campfire
+  article: a
+  flags:
+    - unmove
+- id: 2118
+  name: fire field
+  article: a
+  flags:
+    - unmove
+  attributes:
+    decay:
+      duration: 200
+      decay_to: 2119
+- id: 2119
+  name: fire field
+  article: a
+  flags:
+    - unmove
+  attributes:
+    decay:
+      duration: 148
+      decay_to: 2120
+- id: 2120
+  name: fire field
+  article: a
+  flags:
+    - unmove
+  attributes:
+    decay:
+      duration: 98
+      decay_to: 0
+- id: 2121
+  name: poison field
+  article: a
+  flags:
+    - unmove
+- id: 2122
+  name: energy field
+  article: an
+  flags:
+    - unmove
+  attributes:
+    decay:
+      duration: 98
+      decay_to: 0
+- id: 2123
+  name: fire field
+  article: a
+  flags:
+    - unmove
+- id: 2124
+  name: fire field
+  article: a
+  flags:
+    - unmove
+- id: 2125
+  name: fire field
+  article: a
+  flags:
+    - unmove
+- id: 2126
+  name: energy field
+  article: an
+  flags:
+    - unmove
+- id: 2128
+  name: magic wall
+  article: a
+  flags:
+    - unmove
+  attributes:
+    decay:
+      duration: 20
+      decay_to: 0
+- id: 2129
+  name: magic wall
+  article: a
+  flags:
+    - unpass
+    - unmove
+- id: 2130
+  name: rush wood
+  article: a
+  flags:
+    - unmove
+  attributes:
+    decay:
+      duration: 20
+      decay_to: 0
+- id: 2131
+  name: fire field
+  article: a
+  flags:
+    - unmove
+  attributes:
+    decay:
+      duration: 120
+      decay_to: 2132
+- id: 2132
+  name: fire field
+  article: a
+  flags:
+    - unmove
+  attributes:
+    decay:
+      duration: 120
+      decay_to: 2133
+- id: 2133
+  name: fire field
+  article: a
+  flags:
+    - unmove
+  attributes:
+    decay:
+      duration: 120
+      decay_to: 0
+- id: 2134
+  name: poison gas
+  article: a
+  flags:
+    - unmove
+  attributes:
+    decay:
+      duration: 120
+      decay_to: 0
+- id: 2135
+  name: energy field
+  article: an
+  flags:
+    - unmove
+  attributes:
+    decay:
+      duration: 120
+      decay_to: 0
+- id: 2136
+  name: smoke
+  flags:
+    - unmove
+- id: 2137
+  name: searing fire
+  article: a
+  flags:
+    - unmove
+  attributes:
+    decay:
+      duration: 10
+      decay_to: 2138
+- id: 2138
+  name: searing fire
+  article: a
+  flags:
+    - unmove
+  attributes:
+    decay:
+      duration: 10
+      decay_to: 2140
+- id: 2140
+  name: ashes
+  flags:
+    - unmove
+  attributes:
+    decay:
+      duration: 5
+      decay_to: 2137
+- id: 7465
+  name: searing fire
+  article: a
+  flags: []
+- id: 7466
+  name: searing fire
+  article: a
+  flags: []
+- id: 7467
+  name: searing fire
+  article: a
+  flags: []
+- id: 7468
+  name: searing fire
+  article: a
+  flags: []
+- id: 7469
+  name: searing fire
+  article: a
+  flags: []
+- id: 7470
+  name: searing fire
+  article: a
+  flags: []
+- id: 7471
+  name: searing fire
+  article: a
+  flags: []
+- id: 7472
+  name: searing fire
+  article: a
+  flags: []
+- id: 7473
+  name: searing fire
+  article: a
+  flags: []
+- id: 10069
+  name: fire field
+  article: a
+  flags:
+    - unmove
+- id: 10070
+  name: fire field
+  article: a
+  flags:
+    - unmove
+- id: 10071
+  name: fire field
+  article: a
+  flags:
+    - unmove
+- id: 10181
+  name: magic wall
+  article: a
+  flags:
+    - unmove
+  attributes:
+    decay:
+      duration: 20
+      decay_to: 0
+- id: 10182
+  name: rush wood
+  article: a
+  flags:
+    - unmove
+  attributes:
+    decay:
+      duration: 45
+      decay_to: 0
+- id: 21465
+  name: fire field
+  article: a
+  flags:
+    - unmove
+  attributes:
+    decay:
+      duration: 120
+      decay_to: 2132
+- id: 23365
+  name: fire trap
+  article: an
+  flags:
+    - unmove
+- id: 23366
+  name: energy trap
+  article: an
+  flags:
+    - unmove
+- id: 23367
+  name: toxic trap
+  article: a
+  flags:
+    - unmove
+- id: 23368
+  name: poison trap
+  article: a
+  flags:
+    - unmove
+- id: 31380
+  name: energy field
+  article: an
+  flags:
+    - unmove

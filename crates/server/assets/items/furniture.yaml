@@ -1,0 +1,11311 @@
+- id: 306
+  name: empty flower pot
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 150
+- id: 649
+  name: flower bouquet
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 651
+  name: spellwand
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 694
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 695
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 696
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 697
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 698
+  name: cot
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 699
+  name: cot
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 700
+  name: cot
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 701
+  name: cot
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 702
+  name: hammock
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 703
+  name: hammock
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 704
+  name: hammock
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 705
+  name: hammock
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 706
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 707
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 708
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 709
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 710
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 711
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 712
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 713
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 714
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 715
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 716
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 717
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 718
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 719
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 720
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 721
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 722
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 723
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 724
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 725
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 726
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 731
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 732
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 733
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 734
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 735
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 736
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 737
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 738
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 739
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 740
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 741
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 742
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 743
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 744
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 745
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 764
+  name: straw mat
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 765
+  name: straw mat
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 766
+  name: straw mat
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 767
+  name: straw mat
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 872
+  name: trophy stand
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 969
+- id: 893
+  name: waterball
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 200
+- id: 895
+  name: jester staff
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 725
+- id: 896
+  name: Firlefanz
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 900
+  name: yellow pillow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1600
+- id: 902
+  name: marlin trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 903
+  name: badger fur
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 65
+- id: 2025
+  name: statue
+  article: a
+  flags:
+  - unpass
+- id: 2029
+  name: minotaur statue
+  article: a
+  flags:
+  - unpass
+- id: 2030
+  name: goblin statue
+  article: a
+  flags:
+  - unpass
+- id: 2043
+  name: minotaur statue
+  article: a
+  flags:
+  - unpass
+- id: 2044
+  name: minotaur statue
+  article: a
+  flags:
+  - unpass
+- id: 2045
+  name: minotaur statue
+  article: a
+  flags:
+  - unpass
+- id: 2046
+  name: goblin statue
+  article: a
+  flags:
+  - unpass
+- id: 2047
+  name: goblin statue
+  article: a
+  flags:
+  - unpass
+- id: 2048
+  name: goblin statue
+  article: a
+  flags:
+  - unpass
+- id: 2059
+  name: statue
+  article: a
+  flags:
+  - unpass
+- id: 2060
+  name: statue
+  article: a
+  flags:
+  - unpass
+- id: 2061
+  name: statue
+  article: a
+  flags:
+  - unpass
+- id: 2314
+  name: big table
+  article: a
+  flags: []
+- id: 2315
+  name: square table
+  article: a
+  flags: []
+- id: 2316
+  name: small round table
+  article: a
+  flags: []
+- id: 2319
+  name: small table
+  article: a
+  flags: []
+- id: 2346
+  name: carved stone table
+  article: a
+  flags: []
+- id: 2347
+  name: stone table
+  article: a
+  flags: []
+- id: 2348
+  name: tusk table
+  article: a
+  flags: []
+- id: 2349
+  name: tusk table
+  article: a
+  flags: []
+- id: 2350
+  name: bamboo table
+  article: a
+  flags: []
+- id: 2351
+  name: bamboo table
+  article: a
+  flags: []
+- id: 2352
+  name: thick trunk
+  article: a
+  flags: []
+- id: 2358
+  name: wooden chair
+  article: a
+  flags: []
+- id: 2359
+  name: wooden chair
+  article: a
+  flags: []
+- id: 2360
+  name: wooden chair
+  article: a
+  flags: []
+- id: 2361
+  name: wooden chair
+  article: a
+  flags: []
+- id: 2366
+  name: sofa chair
+  article: a
+  flags: []
+- id: 2367
+  name: sofa chair
+  article: a
+  flags: []
+- id: 2368
+  name: sofa chair
+  article: a
+  flags: []
+- id: 2369
+  name: sofa chair
+  article: a
+  flags: []
+- id: 2374
+  name: red cushioned chair
+  article: a
+  flags: []
+- id: 2375
+  name: red cushioned chair
+  article: a
+  flags: []
+- id: 2376
+  name: red cushioned chair
+  article: a
+  flags: []
+- id: 2377
+  name: red cushioned chair
+  article: a
+  flags: []
+- id: 2378
+  name: green cushioned chair
+  article: a
+  flags: []
+- id: 2379
+  name: green cushioned chair
+  article: a
+  flags: []
+- id: 2380
+  name: green cushioned chair
+  article: a
+  flags: []
+- id: 2381
+  name: green cushioned chair
+  article: a
+  flags: []
+- id: 2382
+  name: rocking chair
+  article: a
+  flags: []
+- id: 2383
+  name: rocking chair
+  article: a
+  flags: []
+- id: 2384
+  name: rocking chair
+  article: a
+  flags: []
+- id: 2385
+  name: rocking chair
+  article: a
+  flags: []
+- id: 2386
+  name: small purple pillow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1500
+- id: 2387
+  name: small green pillow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1500
+- id: 2388
+  name: small red pillow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1500
+- id: 2389
+  name: small blue pillow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1500
+- id: 2390
+  name: small orange pillow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1500
+- id: 2391
+  name: small turquoise pillow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1500
+- id: 2392
+  name: small white pillow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1500
+- id: 2393
+  name: heart pillow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1700
+- id: 2394
+  name: blue pillow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1600
+- id: 2395
+  name: red pillow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1600
+- id: 2396
+  name: green pillow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1600
+- id: 2397
+  name: yellow pillow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1600
+- id: 2398
+  name: round blue pillow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1550
+- id: 2399
+  name: round red pillow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1550
+- id: 2400
+  name: round purple pillow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1550
+- id: 2401
+  name: round turquoise pillow
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1550
+- id: 2418
+  name: tusk chair
+  article: a
+  flags: []
+- id: 2419
+  name: tusk chair
+  article: a
+  flags: []
+- id: 2420
+  name: tusk chair
+  article: a
+  flags: []
+- id: 2421
+  name: tusk chair
+  article: a
+  flags: []
+- id: 2422
+  name: ivory chair
+  article: an
+  flags: []
+- id: 2423
+  name: ivory chair
+  article: an
+  flags: []
+- id: 2424
+  name: ivory chair
+  article: an
+  flags: []
+- id: 2425
+  name: ivory chair
+  article: an
+  flags: []
+- id: 2426
+  name: small trunk
+  article: a
+  flags: []
+- id: 2445
+  name: pendulum clock
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 2446
+  name: pendulum clock
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 2447
+  name: pendulum clock
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 2448
+  name: pendulum clock
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 2487
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 2488
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 2489
+  name: cot
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 2490
+  name: cot
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 2491
+  name: cot
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 2492
+  name: cot
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 2493
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 2494
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 2495
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 2496
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 2497
+  name: bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 2498
+  name: bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 2499
+  name: cot
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 2500
+  name: cot
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 2501
+  name: cot
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 2502
+  name: cot
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 2503
+  name: hammock
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 2504
+  name: hammock
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 2505
+  name: hammock
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 2506
+  name: hammock
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 2507
+  name: hammock
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 2508
+  name: hammock
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 2509
+  name: hammock
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 2510
+  name: hammock
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 2632
+  name: wall mirror
+  article: a
+  flags:
+  - usable
+  - take
+- id: 2635
+  name: wall mirror
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1000
+- id: 2638
+  name: wall mirror
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1000
+- id: 2639
+  name: picture
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 2640
+  name: picture
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 2641
+  name: picture
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 2644
+  name: purple tapestry
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 2647
+  name: green tapestry
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 2650
+  name: yellow tapestry
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 2653
+  name: orange tapestry
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 2656
+  name: red tapestry
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 2659
+  name: blue tapestry
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 2664
+  name: cuckoo clock
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 800
+- id: 2667
+  name: white tapestry
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 2668
+  name: cuckoo clock
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 800
+- id: 2775
+  name: red cushioned chair kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 2776
+  name: green cushioned chair kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 2777
+  name: wooden chair kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 2778
+  name: rocking chair kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 2779
+  name: sofa chair kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 2780
+  name: tusk chair kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 2781
+  name: ivory chair kit
+  article: an
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 2782
+  name: small table kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 2783
+  name: round table kit
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3500
+- id: 2784
+  name: square table kit
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3500
+- id: 2785
+  name: big table kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3500
+- id: 2786
+  name: stone table kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3500
+- id: 2787
+  name: tusk table kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3500
+- id: 2788
+  name: bamboo table kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3500
+- id: 2789
+  name: drawer kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 2790
+  name: dresser kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 2791
+  name: locker kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3000
+- id: 2792
+  name: trough kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3000
+- id: 2793
+  name: barrel kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3500
+- id: 2794
+  name: trunk kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3500
+- id: 2795
+  name: bamboo drawer kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3500
+- id: 2796
+  name: birdcage kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2000
+- id: 2797
+  name: globe kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2000
+- id: 2798
+  name: table lamp kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2000
+- id: 2799
+  name: telescope kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 2800
+  name: rocking horse kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3500
+- id: 2801
+  name: pendulum clock kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3000
+- id: 2802
+  name: knight statue kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3000
+- id: 2803
+  name: minotaur statue kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3000
+- id: 2804
+  name: goblin statue kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 2805
+  name: large amphora kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3000
+- id: 2806
+  name: coal basin kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3500
+- id: 2807
+  name: piano kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3500
+- id: 2808
+  name: harp kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3500
+- id: 2809
+  name: trunk chair kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3500
+- id: 2810
+  name: trunk table kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3500
+- id: 2811
+  name: indoor plant kit
+  article: an
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3000
+- id: 2905
+  name: plate
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 150
+- id: 2934
+  name: table lamp
+  article: a
+  flags:
+  - usable
+- id: 2935
+  name: lit table lamp
+  article: a
+  flags:
+  - usable
+- id: 2948
+  name: wooden flute
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 200
+- id: 2949
+  name: lyre
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1250
+- id: 2950
+  name: lute
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3400
+- id: 2951
+  name: bongo drum
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2900
+- id: 2952
+  name: drum
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3200
+- id: 2953
+  name: panpipes
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 819
+- id: 2954
+  name: simple fanfare
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2200
+- id: 2955
+  name: fanfare
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2300
+- id: 2956
+  name: royal fanfare
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 2957
+  name: post horn
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1500
+- id: 2958
+  name: war horn
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1500
+- id: 2959
+  name: piano
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 2960
+  name: piano
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 2961
+  name: piano
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 2962
+  name: piano
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 2963
+  name: harp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 2964
+  name: harp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 2965
+  name: didgeridoo
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 4200
+- id: 2966
+  name: war drum
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3000
+- id: 2974
+  name: water pipe
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 6500
+- id: 2975
+  name: birdcage
+  article: a
+  flags:
+  - unpass
+  attributes:
+    weight: 9200
+- id: 2976
+  name: birdcage
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    weight: 9200
+- id: 2979
+  name: globe
+  article: a
+  flags:
+  - unpass
+- id: 2980
+  name: water pipe
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6500
+- id: 2981
+  name: god flowers
+  flags:
+  - take
+  attributes:
+    weight: 1100
+- id: 2982
+  name: indoor plant
+  article: an
+  flags:
+  - unpass
+- id: 2983
+  name: flower bowl
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1100
+- id: 2984
+  name: honey flower
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 2985
+  name: potted flower
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2300
+- id: 2988
+  name: exotic flowers
+  flags:
+  - take
+  attributes:
+    weight: 1100
+- id: 2989
+  name: wooden doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 860
+- id: 2991
+  name: doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 2993
+  name: teddy bear
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 590
+- id: 2994
+  name: model ship
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1300
+- id: 2995
+  name: piggy bank
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 750
+- id: 2997
+  name: rocking horse
+  article: a
+  flags:
+  - unpass
+- id: 2998
+  name: rocking horse
+  article: a
+  flags:
+  - unpass
+- id: 2999
+  name: rocking horse
+  article: a
+  flags:
+  - unpass
+- id: 3000
+  name: rocking horse
+  article: a
+  flags:
+  - unpass
+- id: 3001
+  name: bear doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 590
+- id: 3002
+  name: voodoo doll
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 650
+- id: 3068
+  name: crystal wand
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 2800
+- id: 3076
+  name: crystal ball
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 3400
+- id: 3077
+  name: ankh
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 420
+- id: 3078
+  name: mysterious fetish
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 490
+- id: 3209
+  name: voodoo doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 3213
+  name: annihilation bear
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 4300
+- id: 3215
+  name: phoenix egg
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 30
+- id: 3242
+  name: stuffed bunny
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 350
+- id: 3484
+  name: telescope
+  article: a
+  flags:
+  - unpass
+- id: 3485
+  name: telescope
+  article: a
+  flags:
+  - unpass
+- id: 3486
+  name: telescope
+  article: a
+  flags:
+  - unpass
+- id: 3487
+  name: telescope
+  article: a
+  flags:
+  - unpass
+- id: 3510
+  name: coal basin
+  article: a
+  flags:
+  - unpass
+- id: 3655
+  name: moon flower
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 10
+- id: 3658
+  name: red rose
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 3659
+  name: blue rose
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 3660
+  name: yellow rose
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 3661
+  name: grave flower
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 60
+- id: 3668
+  name: tulip
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 3673
+  name: orange star
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+- id: 3674
+  name: goat grass
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 3734
+  name: blood herb
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 120
+- id: 3735
+  name: stone herb
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 20
+- id: 3736
+  name: star herb
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 30
+- id: 3737
+  name: fern
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 30
+- id: 3738
+  name: sling herb
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 90
+- id: 3739
+  name: powder herb
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 50
+- id: 3740
+  name: shadow herb
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 20
+- id: 3741
+  name: troll green
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 5046
+  name: monkey statue
+  article: a
+  flags:
+  - unpass
+- id: 5055
+  name: monkey statue
+  article: a
+  flags:
+  - unpass
+- id: 5056
+  name: monkey statue
+  article: a
+  flags:
+  - unpass
+- id: 5080
+  name: panda teddy
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 600
+- id: 5086
+  name: monkey statue 'see' kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 5087
+  name: monkey statue 'hear' kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 5088
+  name: monkey statue 'speak' kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 5495
+  name: straw mat
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5496
+  name: straw mat
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 5497
+  name: straw mat
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5498
+  name: straw mat
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 5499
+  name: straw mat
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5500
+  name: straw mat
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 5501
+  name: straw mat
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5502
+  name: straw mat
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 5615
+  name: pirate tapestry
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 5668
+  name: mysterious voodoo skull
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1400
+- id: 5791
+  name: stuffed dragon
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 850
+- id: 5810
+  name: pirate voodoo doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 5928
+  name: empty goldfish bowl
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3200
+- id: 5929
+  name: goldfish bowl
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3200
+- id: 5953
+  name: raven herb
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 100
+- id: 6114
+  name: armor rack kit
+  article: an
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3500
+- id: 6115
+  name: weapon rack kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 3500
+- id: 6355
+  name: oven
+  article: an
+  flags:
+  - usable
+- id: 6356
+  name: oven
+  article: an
+  flags:
+  - usable
+- id: 6357
+  name: oven
+  article: an
+  flags:
+  - usable
+- id: 6358
+  name: oven
+  article: an
+  flags:
+  - usable
+- id: 6359
+  name: oven
+  article: an
+  flags:
+  - usable
+- id: 6360
+  name: oven
+  article: an
+  flags:
+  - usable
+- id: 6361
+  name: oven
+  article: an
+  flags:
+  - usable
+- id: 6362
+  name: oven
+  article: an
+  flags:
+  - usable
+- id: 6371
+  name: oven kit
+  article: an
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 6372
+  name: bookcase kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 6387
+  name: christmas card
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 100
+- id: 6491
+  name: bat decoration
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 200
+- id: 6498
+  name: certificate
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 150
+- id: 6511
+  name: santa doll
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 750
+- id: 6525
+  name: skeleton decoration
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 6566
+  name: stuffed dragon
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 850
+    decay:
+      duration: 3
+      decay_to: 5791
+- id: 6567
+  name: santa doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 750
+    decay:
+      duration: 3
+      decay_to: 6511
+- id: 6568
+  name: panda teddy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 600
+    decay:
+      duration: 3
+      decay_to: 5080
+- id: 6572
+  name: party trumpet
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 50
+- id: 6573
+  name: party trumpet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 50
+    decay:
+      duration: 4
+      decay_to: 6572
+- id: 6575
+  name: red balloons
+  flags:
+  - take
+  attributes:
+    weight: 10
+- id: 6576
+  name: fireworks rocket
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 100
+- id: 6577
+  name: green balloons
+  flags:
+  - take
+  attributes:
+    weight: 10
+- id: 7183
+  name: baby seal doll
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 850
+- id: 7184
+  name: baby seal doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 850
+- id: 7393
+  name: demon trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 7394
+  name: wolf trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 7395
+  name: orc trophy
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 7396
+  name: behemoth trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 7397
+  name: deer trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 7398
+  name: cyclops trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 7399
+  name: dragon lord trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 7400
+  name: lion trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 7401
+  name: minotaur trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 7447
+  name: small ice statue
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 7448
+  name: small ice statue
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 7860
+  name: chimney
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 7861
+  name: chimney
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 7862
+  name: chimney
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 7863
+  name: chimney
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 7864
+  name: chimney kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 8000
+- id: 8032
+  name: spiderwebs
+  flags:
+  - take
+  attributes:
+    weight: 5
+- id: 8146
+  name: oracle figurine
+  article: an
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 800
+- id: 8147
+  name: oracle figurine
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 800
+    decay:
+      duration: 3
+      decay_to: 8146
+- id: 8178
+  name: toy spider
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 20
+- id: 8179
+  name: toy spider
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 20
+    decay:
+      duration: 3
+      decay_to: 8178
+- id: 8191
+  name: vampire doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 940
+- id: 8531
+  name: blood goblet
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 490
+- id: 8532
+  name: blood skull
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 490
+- id: 8778
+  name: jester doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1200
+- id: 8923
+  name: velvet tapestry
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 9027
+  name: crystal of focus
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 800
+- id: 9028
+  name: crystal of balance
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 850
+- id: 9045
+  name: royal tapestry
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 9046
+  name: silky tapestry
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 9061
+  name: crystal table kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 9062
+  name: crystal table
+  article: a
+  flags: []
+  attributes:
+    weight: 2500
+- id: 9063
+  name: crystal pedestal
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 4000
+- id: 9064
+  name: crystal pedestal
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 4000
+- id: 9065
+  name: crystal pedestal
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 4000
+- id: 9066
+  name: crystal pedestal
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 4000
+- id: 9067
+  name: crystal of power
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 850
+- id: 9068
+  name: yalahari figurine
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 800
+- id: 9241
+  name: bloodkiss flower
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 95
+- id: 9389
+  name: fan doll of King Tibianus
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 10208
+  name: snowman
+  article: a
+  flags:
+  - unpass
+- id: 10209
+  name: lizard weapon rack kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 5500
+- id: 10212
+  name: dragon statue
+  article: a
+  flags:
+  - unpass
+- id: 10213
+  name: dragon statue
+  article: a
+  flags:
+  - unpass
+- id: 10214
+  name: dragon statue
+  article: a
+  flags:
+  - unpass
+- id: 10215
+  name: dragon statue
+  article: a
+  flags:
+  - unpass
+- id: 10216
+  name: dragon statue kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 6500
+- id: 10244
+  name: bonebeast trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 10286
+  name: dragon throne
+  article: a
+  flags:
+  - usable
+- id: 10287
+  name: dragon throne
+  article: a
+  flags:
+  - usable
+- id: 10288
+  name: dragon throne kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 7500
+- id: 10290
+  name: mini mummy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 450
+- id: 10294
+  name: stuffed toad
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 450
+- id: 10338
+  name: santa teddy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 550
+- id: 10339
+  name: snowman doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 620
+- id: 10347
+  name: dragon tapestry
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 10398
+  name: draken trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 600
+- id: 10419
+  name: lizard trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 550
+- id: 10421
+  name: disgusting trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 700
+- id: 11679
+  name: souleater trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 11694
+  name: snake god trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 11695
+  name: black jade cobra
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 12482
+  name: hieroglyph banner
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 12483
+  name: pharaoh banner
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 12570
+  name: fan doll of Queen Eloise
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1560
+- id: 12571
+  name: fan doll of Queen Eloise
+  flags:
+  - take
+  attributes:
+    weight: 1560
+- id: 12575
+  name: Whinona
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 600
+- id: 12576
+  name: Meandi
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 600
+- id: 12577
+  name: Impward
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 600
+- id: 12578
+  name: Evilina
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 600
+- id: 12579
+  name: Whinona
+  flags:
+  - take
+  attributes:
+    weight: 600
+- id: 12580
+  name: Meandi
+  flags:
+  - take
+  attributes:
+    weight: 600
+- id: 12581
+  name: Impward
+  flags:
+  - take
+  attributes:
+    weight: 600
+- id: 12582
+  name: Evilina
+  flags:
+  - take
+  attributes:
+    weight: 600
+- id: 12617
+  name: torn teddy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 100
+- id: 12807
+  name: shimmer ball
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 200
+- id: 14025
+  name: party lampions
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 14026
+  name: party lampions
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 14029
+  name: flower pot
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 150
+- id: 14033
+  name: flower pot
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 150
+- id: 14034
+  name: flower pot
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 150
+- id: 14035
+  name: flower pot
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 150
+- id: 14036
+  name: flower pot
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 150
+- id: 14037
+  name: flower pot
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 150
+- id: 14038
+  name: flower pot
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 150
+- id: 14153
+  name: basket
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 950
+    capacity: 5
+- id: 14222
+  name: trophy of Obujos
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 14223
+  name: trophy of Tanjis
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 14224
+  name: trophy of Jaul
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 14241
+  name: true heart of the sea
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 970
+- id: 14242
+  name: true heart of the sea
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 970
+- id: 14683
+  name: artist's brush
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 14684
+  name: artist's palette
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 550
+- id: 14685
+  name: artist's canvas
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1000
+- id: 14686
+  name: artist's brush
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 14741
+  name: easel kit
+  article: an
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 7500
+- id: 14756
+  name: cake cabinet kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 7500
+- id: 15506
+  name: simple bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 15507
+  name: simple bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 15508
+  name: simple bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 15509
+  name: simple bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 15510
+  name: simple bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 15511
+  name: simple bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 15512
+  name: simple bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 15513
+  name: simple bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 15514
+  name: simple bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 15515
+  name: simple bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 15516
+  name: simple bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 15517
+  name: simple bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 16165
+  name: pet pig
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 600
+- id: 16166
+  name: pet pig
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 600
+    decay:
+      duration: 3
+      decay_to: 0
+- id: 17825
+  name: rat god doll
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 750
+- id: 17917
+  name: canopy bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17918
+  name: canopy bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 17919
+  name: canopy bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17920
+  name: canopy bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 17921
+  name: canopy bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17922
+  name: canopy bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 17923
+  name: canopy bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17924
+  name: canopy bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 17925
+  name: canopy bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17926
+  name: canopy bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 17927
+  name: canopy bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17928
+  name: canopy bed
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 17974
+  name: venorean cabinet kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 8000
+- id: 17975
+  name: venorean wardrobe kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 17977
+  name: venorean drawer kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2000
+- id: 20277
+  name: psychedelic tapestry
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 20278
+  name: demonic tapestry
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 20279
+  name: eye pod
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 20280
+  name: nightmare beacon
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 20281
+  name: nightmare beacon
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 20282
+  name: nightmare hook
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 20308
+  name: frazzlemaw santa
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 600
+- id: 20309
+  name: leaf golem santa
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 20315
+  name: snow flake tapestry
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 20350
+  name: cake tapestry
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 21218
+  name: Lisa's doll
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 21853
+  name: dinky moss floret
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 20
+- id: 21856
+  name: dinky moss floret garland
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 60
+- id: 21857
+  name: interwoven moss florets
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 40
+- id: 21952
+  name: maxxen santa
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 21953
+  name: truelove teddy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 590
+- id: 21954
+  name: crimson rose
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+- id: 21982
+  name: nightmare teddy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 590
+- id: 22101
+  name: werebadger trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 22102
+  name: wereboar trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 22103
+  name: werebear trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 22104
+  name: trophy of Feroxa
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 22731
+  name: rift tapestry
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+- id: 22736
+  name: rift carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 22737
+  name: folded rift carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1000
+- id: 22775
+  name: Ferumbras' teddy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 390
+- id: 22879
+  name: ferumbras' teddy santa
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 23399
+  name: mailbox
+  article: a
+  flags:
+  - unpass
+- id: 23400
+  name: mailbox
+  article: a
+  flags:
+  - unpass
+- id: 23401
+  name: ornate mailbox
+  article: an
+  flags:
+  - unpass
+- id: 23402
+  name: ornate mailbox
+  article: an
+  flags:
+  - unpass
+- id: 23403
+  name: magnificent chair
+  article: a
+  flags: []
+- id: 23404
+  name: magnificent chair
+  article: a
+  flags: []
+- id: 23405
+  name: magnificent chair
+  article: a
+  flags: []
+- id: 23406
+  name: magnificent chair
+  article: a
+  flags: []
+- id: 23407
+  name: ferocious chair
+  article: a
+  flags: []
+- id: 23408
+  name: ferocious chair
+  article: a
+  flags: []
+- id: 23409
+  name: ferocious chair
+  article: a
+  flags: []
+- id: 23410
+  name: ferocious chair
+  article: a
+  flags: []
+- id: 23411
+  name: ferocious table
+  article: a
+  flags: []
+- id: 23414
+  name: ferocious table
+  article: a
+  flags: []
+- id: 23417
+  name: magnificent table
+  article: a
+  flags: []
+- id: 23418
+  name: magnificent table
+  article: a
+  flags: []
+- id: 23431
+  name: rolled-up yalaharian carpet
+  article: a
+  flags:
+  - usable
+- id: 23432
+  name: rolled-up white fur carpet
+  article: a
+  flags:
+  - usable
+- id: 23433
+  name: rolled-up bamboo mat
+  article: a
+  flags:
+  - usable
+- id: 23434
+  name: predator lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 23435
+  name: predator lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 23436
+  name: lit predator lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 23437
+  name: lit predator lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 23438
+  name: protectress lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 23439
+  name: protectress lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 23440
+  name: lit protectress lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 23441
+  name: lit protectress lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 23442
+  name: baby dragon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 23443
+  name: baby dragon
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 8
+      decay_to: 23442
+- id: 23444
+  name: hamster in a wheel
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 23445
+  name: hamster in a wheel
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 23448
+  name: lordly tapestry
+  article: a
+  flags: []
+- id: 23449
+  name: menacing tapestry
+  article: a
+  flags: []
+- id: 23450
+  name: all-seeing tapestry
+  article: an
+  flags: []
+- id: 23451
+  name: cat in a basket
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 23452
+  name: cat in a basket
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 23453
+  name: Yalaharian carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 23454
+  name: white fur carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 23455
+  name: bamboo mat
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 23536
+  name: folded void carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1000
+- id: 23537
+  name: void carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+  attributes:
+    weight: 1000
+- id: 23691
+  name: fish in a tank
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 23693
+  name: rustic chair
+  article: a
+  flags: []
+- id: 23694
+  name: rustic chair
+  article: a
+  flags: []
+- id: 23695
+  name: rustic chair
+  article: a
+  flags: []
+- id: 23696
+  name: rustic chair
+  article: a
+  flags: []
+- id: 23697
+  name: dog house
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 4
+      decay_to: 23703
+- id: 23698
+  name: rustic table
+  article: a
+  flags: []
+- id: 23699
+  name: rustic table
+  article: a
+  flags: []
+- id: 23703
+  name: dog house
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 23708
+- id: 23707
+  name: rolled-up crimson carpet
+  article: a
+  flags:
+  - usable
+- id: 23708
+  name: dog house
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 23709
+  name: dog house
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 23697
+- id: 23710
+  name: rolled-up azure carpet
+  article: an
+  flags:
+  - usable
+- id: 23711
+  name: rolled-up emerald carpet
+  article: an
+  flags:
+  - usable
+- id: 23712
+  name: light parquet planks
+  article: a
+  flags:
+  - usable
+- id: 23713
+  name: dark parquet planks
+  article: a
+  flags:
+  - usable
+- id: 23714
+  name: marble tiles
+  article: a
+  flags:
+  - usable
+- id: 23715
+  name: crimson carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 23716
+  name: azure carpet
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 23717
+  name: emerald carpet
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 23718
+  name: light parquet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 23719
+  name: dark parquet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 23720
+  name: marble floor
+  article: a
+  flags:
+  - usable
+  - unmove
+  attributes:
+    weight: 850
+- id: 23723
+  name: golden dragon tapestry
+  article: a
+  flags: []
+- id: 23724
+  name: sword tapestry
+  article: a
+  flags: []
+- id: 23725
+  name: brocade tapestry
+  article: a
+  flags: []
+- id: 24394
+  name: orclops santa
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 24416
+  name: rolled-up colourful carpet
+  article: a
+  flags:
+  - usable
+- id: 24417
+  name: rolled-up flowery carpet
+  article: a
+  flags:
+  - usable
+- id: 24418
+  name: rolled-up striped carpet
+  article: a
+  flags:
+  - usable
+- id: 24419
+  name: rolled-up fur carpet
+  article: a
+  flags:
+  - usable
+- id: 24420
+  name: rolled-up diamond carpet
+  article: a
+  flags:
+  - usable
+- id: 24421
+  name: rolled-up patterned carpet
+  article: a
+  flags:
+  - usable
+- id: 24422
+  name: rolled-up night sky carpet
+  article: a
+  flags:
+  - usable
+- id: 24423
+  name: rolled-up star carpet
+  article: a
+  flags:
+  - usable
+- id: 24424
+  name: colourful carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 24425
+  name: flowery carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 24426
+  name: striped carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 24427
+  name: fur carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 24428
+  name: diamond carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 24429
+  name: patterned carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 24430
+  name: night sky carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 24431
+  name: star carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 24432
+  name: parrot
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 24433
+  name: parrot
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 24434
+  name: skull lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 24435
+  name: lit skull lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 24436
+  name: lit skull lamp
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 1
+      decay_to: 24435
+- id: 24525
+  name: old tibia item
+  flags: []
+- id: 24526
+  name: old tibia item
+  flags: []
+- id: 24527
+  name: old tibia item
+  flags: []
+- id: 24528
+  name: old tibia item
+  flags: []
+- id: 24950
+  name: framed birthday card
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3800
+- id: 24951
+  name: gilded birthday cup
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3800
+- id: 25174
+  name: imbuing shrine
+  article: an
+  flags:
+  - usable
+  - unpass
+- id: 25175
+  name: imbuing shrine
+  article: an
+  flags:
+  - usable
+  - unpass
+- id: 25182
+  name: gilded imbuing shrine
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 25183
+  name: gilded imbuing shrine
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 25210
+  name: vengothic lamp
+  article: a
+  flags:
+  - unpass
+- id: 25211
+  name: vengothic lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 25212
+  name: vengothic lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 25213
+  name: chameleon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 25214
+  name: chameleon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 25215
+  name: chameleon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 25216
+  name: blooming cactus
+  article: a
+  flags:
+  - unpass
+- id: 25217
+  name: bitter-smack leaf
+  article: a
+  flags:
+  - unpass
+- id: 25218
+  name: pink roses
+  article: a
+  flags:
+  - unpass
+- id: 25219
+  name: red roses
+  article: a
+  flags:
+  - unpass
+- id: 25220
+  name: yellow roses
+  article: a
+  flags:
+  - unpass
+- id: 25221
+  name: vengothic chair
+  article: a
+  flags: []
+- id: 25222
+  name: vengothic chair
+  article: a
+  flags: []
+- id: 25223
+  name: vengothic chair
+  article: a
+  flags: []
+- id: 25224
+  name: vengothic chair
+  article: a
+  flags: []
+- id: 25225
+  name: vengothic table
+  article: a
+  flags: []
+- id: 25226
+  name: vengothic table
+  article: a
+  flags: []
+- id: 25233
+  name: lit vengothic lamp
+  article: a
+  flags:
+  - unpass
+- id: 25720
+  name: reward shrine
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 25721
+  name: reward shrine
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 25722
+  name: shiny reward shrine
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 25723
+  name: shiny reward shrine
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 25879
+  name: health cask
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    weight: 200000
+- id: 25880
+  name: strong health cask
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    weight: 200000
+- id: 25881
+  name: great health cask
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    weight: 200000
+- id: 25882
+  name: ultimate health cask
+  article: an
+  flags:
+  - usable
+  - unpass
+  attributes:
+    weight: 200000
+- id: 25883
+  name: supreme health cask
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    weight: 200000
+- id: 25889
+  name: mana cask
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    weight: 200000
+- id: 25890
+  name: strong mana cask
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    weight: 200000
+- id: 25891
+  name: great mana cask
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    weight: 200000
+- id: 25892
+  name: ultimate mana cask
+  article: an
+  flags:
+  - usable
+  - unpass
+  attributes:
+    weight: 200000
+- id: 25893
+  name: supreme mana cask
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    weight: 200000
+- id: 25899
+  name: great spirit cask
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    weight: 200000
+- id: 25900
+  name: ultimate spirit cask
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    weight: 200000
+- id: 26076
+  name: bath tub
+  article: a
+  flags:
+  - unpass
+- id: 26077
+  name: bath tub
+  article: a
+  flags:
+  - usable
+- id: 26078
+  name: spider in a terrarium
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 26079
+  name: spider in a terrarium
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 26080
+- id: 26080
+  name: spider in a terrarium
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 26078
+- id: 26081
+  name: hrodmiran weapons rack
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 26082
+  name: hrodmiran weapons rack
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 26083
+  name: hrodmiran weapons rack
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 26084
+  name: hrodmiran weapons rack
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 26088
+  name: verdant bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 26089
+  name: verdant bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 26090
+  name: verdant bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 26091
+  name: verdant bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 26092
+  name: verdant bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 26093
+  name: verdant bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 26094
+  name: verdant bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 26095
+  name: verdant bed
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 26096
+  name: verdant bed
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 26097
+  name: verdant bed
+  article: a
+  flags:
+  - unpass
+- id: 26098
+  name: verdant bed
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 26099
+  name: verdant bed
+  article: a
+  flags:
+  - unpass
+- id: 26100
+  name: bath tub
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 26101
+  name: verdant chair
+  article: a
+  flags: []
+- id: 26102
+  name: verdant chair
+  article: a
+  flags: []
+- id: 26103
+  name: verdant chair
+  article: a
+  flags: []
+- id: 26104
+  name: verdant chair
+  article: a
+  flags: []
+- id: 26111
+  name: verdant table
+  article: a
+  flags: []
+- id: 26112
+  name: venorean table clock
+  article: a
+  flags:
+  - usable
+- id: 26113
+  name: venorean table clock
+  article: a
+  flags:
+  - usable
+- id: 26114
+  name: rolled-up verdant carpet
+  article: a
+  flags:
+  - usable
+- id: 26115
+  name: verdant carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 26116
+  name: rolled-up shaggy carpet
+  article: a
+  flags:
+  - usable
+- id: 26117
+  name: shaggy carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 26118
+  name: rolled-up mystic carpet
+  article: a
+  flags:
+  - usable
+- id: 26119
+  name: mystic carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 26120
+  name: pile of stone tiles
+  article: a
+  flags:
+  - usable
+- id: 26121
+  name: stone tiles
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 26122
+  name: pile of wooden planks
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 26123
+  name: wooden planks
+  article: a
+  flags:
+  - usable
+- id: 26150
+  name: wheat carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 26151
+  name: rolled-up wheat carpet
+  flags:
+  - usable
+- id: 26152
+  name: crested carpet
+  article: a
+  flags:
+  - usable
+- id: 26153
+  name: crested carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 26154
+  name: decorated carpet
+  article: a
+  flags:
+  - usable
+- id: 26155
+  name: decorated carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 26156
+  name: ornate chair
+  article: an
+  flags: []
+- id: 26157
+  name: ornate chair
+  article: an
+  flags: []
+- id: 26158
+  name: ornate chair
+  article: an
+  flags: []
+- id: 26159
+  name: ornate chair
+  article: an
+  flags: []
+- id: 26160
+  name: ornate table
+  article: an
+  flags: []
+- id: 26161
+  name: ornate table
+  article: an
+  flags: []
+- id: 26169
+  name: terrarium
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 26172
+- id: 26170
+  name: terrarium
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 26171
+- id: 26171
+  name: terrarium
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 26172
+  name: terrarium
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 26173
+  name: demon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 26174
+  name: demon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 26175
+  name: demon
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 26179
+- id: 26176
+  name: demon
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 26180
+- id: 26179
+  name: demon
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 26173
+- id: 26180
+  name: demon
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 26174
+- id: 26191
+  name: your magical tree
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 26192
+  name: your magical tree
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 26193
+  name: your magical tree
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 26194
+  name: your magical tree
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 27591
+  name: santa fox
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 27661
+  name: alchemistic chair
+  article: an
+  flags: []
+- id: 27662
+  name: alchemistic chair
+  article: an
+  flags: []
+- id: 27665
+  name: alchemistic table
+  article: an
+  flags: []
+- id: 27666
+  name: alchemistic table
+  article: an
+  flags: []
+- id: 27667
+  name: light of change
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 27668
+  name: light of change
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 27669
+  name: light of change
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 27670
+  name: light of change
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 27671
+  name: torch of change
+  article: a
+  flags:
+  - usable
+- id: 27673
+  name: torch of change
+  article: a
+  flags:
+  - usable
+- id: 27674
+  name: torch of change
+  article: a
+  flags:
+  - usable
+- id: 27675
+  name: torch of change
+  article: a
+  flags:
+  - usable
+- id: 27679
+  name: alchemistic bookstand
+  article: an
+  flags:
+  - usable
+  - unpass
+- id: 27680
+  name: alchemistic bookstand
+  article: an
+  flags:
+  - usable
+  - unpass
+- id: 27681
+  name: alchemistic bookstand
+  article: an
+  flags:
+  - unpass
+- id: 27682
+  name: alchemistic bookstand
+  article: an
+  flags:
+  - unpass
+- id: 27683
+  name: alchemistic scales
+  flags:
+  - usable
+  - unpass
+- id: 27684
+  name: alchemistic scales
+  flags:
+  - usable
+  - unpass
+- id: 27685
+  name: alchemistic scales
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 27684
+- id: 27686
+  name: alchemistic scales
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 27683
+- id: 27687
+  name: pile of alchemistic books
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 27688
+  name: pile of alchemistic books
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 27689
+  name: alchemistic cupboard
+  flags: []
+- id: 27691
+  name: ferumbras bust
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 27692
+  name: ferumbras bust
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 27693
+  name: ferumbras bust
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 27694
+  name: ferumbras bust
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 27695
+  name: Queen Eloise bust
+  article: a
+  flags:
+  - unpass
+- id: 27696
+  name: Queen Eloise bust
+  article: a
+  flags:
+  - unpass
+- id: 27697
+  name: gloomy dungeon scene
+  article: a
+  flags: []
+- id: 27698
+  name: arrival at Thais
+  article: an
+  flags: []
+- id: 27699
+  name: the streets of Tibia
+  article: a
+  flags: []
+- id: 27700
+  name: Ferumbras Portrait
+  article: a
+  flags: []
+- id: 27702
+  name: King Tibianus bust
+  article: a
+  flags:
+  - unpass
+- id: 27703
+  name: King Tibianus bust
+  article: a
+  flags:
+  - unpass
+- id: 27706
+  name: werefox trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 28559
+  name: ferumbras exercise dummy
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 28560
+  name: ferumbras exercise dummy
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 28561
+  name: demon exercise dummy
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 28562
+  name: demon exercise dummy
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 28563
+  name: monk exercise dummy
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 28564
+  name: monk exercise dummy
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 28674
+  name: anglerfish lamp
+  article: an
+  flags:
+  - usable
+  - unpass
+- id: 28675
+  name: anglerfish lamp
+  article: an
+  flags:
+  - usable
+  - unpass
+- id: 28676
+  name: skeletal chair
+  article: a
+  flags: []
+- id: 28677
+  name: skeletal chair
+  article: a
+  flags: []
+- id: 28678
+  name: skeletal chair
+  article: a
+  flags: []
+- id: 28679
+  name: skeletal chair
+  article: a
+  flags: []
+- id: 28680
+  name: skeletal table
+  article: a
+  flags: []
+- id: 28681
+  name: skeletal table
+  article: a
+  flags: []
+- id: 28688
+  name: carnivorous plant
+  article: a
+  flags:
+  - unpass
+- id: 28689
+  name: carnivorous plant
+  article: a
+  flags:
+  - unpass
+- id: 28690
+  name: baby rotworm
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    weight: 45
+- id: 28691
+  name: baby rotworm
+  article: a
+  flags:
+  - unpass
+  attributes:
+    weight: 45
+    decay:
+      duration: 1
+      decay_to: 28692
+- id: 28692
+  name: baby rotworm
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    weight: 45
+- id: 28693
+  name: baby rotworm
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    weight: 45
+    decay:
+      duration: 1
+      decay_to: 28690
+- id: 28694
+  name: fennec
+  article: a
+  flags:
+  - unpass
+- id: 28695
+  name: fennec
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 4
+      decay_to: 28694
+- id: 28697
+  name: bellflower
+  article: a
+  flags:
+  - unpass
+- id: 28698
+  name: forget-me-not
+  article: a
+  flags:
+  - unpass
+- id: 28699
+  name: red geranium
+  article: a
+  flags:
+  - unpass
+- id: 28701
+  name: fennec
+  article: a
+  flags:
+  - unpass
+- id: 28913
+  name: fennec
+  article: a
+  flags:
+  - unpass
+- id: 28914
+  name: fennec
+  article: a
+  flags:
+  - unpass
+- id: 28920
+  name: luminescent fungi
+  flags:
+  - usable
+  - unpass
+- id: 28921
+  name: luminescent fungi
+  flags:
+  - usable
+  - unpass
+- id: 28922
+  name: luminescent fungi
+  flags:
+  - usable
+  - unpass
+- id: 28923
+  name: luminescent fungi
+  flags:
+  - usable
+  - unpass
+- id: 28924
+  name: gloomy poisonous fungi
+  flags:
+  - usable
+  - unpass
+- id: 28925
+  name: gloomy poisonous fungi
+  flags:
+  - usable
+  - unpass
+- id: 28926
+  name: gloomy poisonous fungi
+  flags:
+  - usable
+  - unpass
+- id: 28927
+  name: gloomy poisonous fungi
+  flags:
+  - usable
+  - unpass
+- id: 28928
+  name: stuffed bear display
+  article: a
+  flags:
+  - unpass
+- id: 28929
+  name: stuffed bear display
+  article: a
+  flags:
+  - unpass
+- id: 28930
+  name: stuffed teddy display
+  article: a
+  flags:
+  - unpass
+- id: 28931
+  name: stuffed teddy display
+  article: a
+  flags:
+  - unpass
+- id: 28932
+  name: comfy chair
+  article: a
+  flags: []
+- id: 28933
+  name: comfy chair
+  article: a
+  flags: []
+- id: 28934
+  name: comfy chair
+  article: a
+  flags: []
+- id: 28935
+  name: comfy chair
+  article: a
+  flags: []
+- id: 28936
+  name: comfy table
+  article: a
+  flags: []
+- id: 28937
+  name: comfy table
+  article: a
+  flags: []
+- id: 28944
+  name: incomprehensible riches
+  flags: []
+- id: 28947
+  name: painting of Tibiasula
+  article: a
+  flags: []
+- id: 28948
+  name: painting of Tibiasula
+  article: a
+  flags: []
+- id: 29947
+  name: nightmare beast santa
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 30201
+  name: birthday cup
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3800
+- id: 30227
+  name: festive filled shoes
+  article: a
+  flags: []
+- id: 30228
+  name: festive filled shoes
+  article: a
+  flags: []
+- id: 30229
+  name: festive table
+  article: a
+  flags:
+  - usable
+- id: 30230
+  name: festive table
+  article: a
+  flags:
+  - usable
+- id: 30231
+  name: festive table
+  article: a
+  flags:
+  - usable
+- id: 30232
+  name: festive table
+  article: a
+  flags: []
+- id: 30233
+  name: festive fireplace
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 30234
+  name: festive fireplace
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 30235
+  name: festive fireplace
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 30236
+  name: festive fireplace
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 30237
+  name: festive tree
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 30238
+  name: festive tree
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 30239
+  name: festive rocking chair
+  article: a
+  flags: []
+- id: 30240
+  name: festive rocking chair
+  article: a
+  flags: []
+- id: 30241
+  name: festive rocking chair
+  article: a
+  flags: []
+- id: 30242
+  name: festive rocking chair
+  article: a
+  flags: []
+- id: 30243
+  name: festive sleigh
+  article: a
+  flags: []
+- id: 30244
+  name: festive sleigh
+  article: a
+  flags: []
+- id: 30245
+  name: festive pile of presents
+  article: a
+  flags:
+  - unpass
+- id: 30246
+  name: festive pile of presents
+  article: a
+  flags:
+  - unpass
+- id: 30247
+  name: festive sack of presents
+  article: a
+  flags:
+  - unpass
+- id: 30248
+  name: festive pyramide
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 30249
+  name: festive pyramide
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 30315
+  name: pinata
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3000
+- id: 30317
+  name: Ferumbras puppet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 550
+- id: 30362
+  name: Badbara
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 600
+- id: 30363
+  name: Tearesa
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 600
+- id: 30364
+  name: Cryana
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 600
+- id: 30365
+  name: Badbara
+  flags:
+  - take
+  attributes:
+    weight: 600
+    decay:
+      duration: 3600
+      decay_to: 30362
+- id: 30366
+  name: Tearesa
+  flags:
+  - take
+  attributes:
+    weight: 600
+    decay:
+      duration: 3600
+      decay_to: 30363
+- id: 30367
+  name: Cryana
+  flags:
+  - take
+  attributes:
+    weight: 600
+    decay:
+      duration: 3600
+      decay_to: 30364
+- id: 30368
+  name: black raven
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 30369
+  name: grey raven
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 30370
+  name: white raven
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 30371
+  name: black raven kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 8000
+- id: 30372
+  name: grey raven kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 8000
+- id: 30373
+  name: white raven kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 8000
+- id: 31183
+  name: dwarven stone chair
+  article: a
+  flags: []
+- id: 31184
+  name: dwarven stone chair
+  article: a
+  flags: []
+- id: 31185
+  name: dwarven stone chair
+  article: a
+  flags: []
+- id: 31186
+  name: dwarven stone chair
+  article: a
+  flags: []
+- id: 31191
+  name: dwarven stone table
+  article: a
+  flags: []
+- id: 31196
+  name: crystal lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    weight: 1000
+- id: 31197
+  name: crystal lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    weight: 1000
+- id: 31207
+  name: square side table
+  article: a
+  flags: []
+- id: 31208
+  name: round side table
+  article: a
+  flags: []
+- id: 31209
+  name: golden minotaur skull
+  article: a
+  flags: []
+- id: 31210
+  name: minotaur skull
+  article: a
+  flags: []
+  attributes:
+    weight: 2500
+- id: 31211
+  name: golden demon skull
+  article: a
+  flags:
+  - unpass
+- id: 31212
+  name: demon skull
+  article: a
+  flags:
+  - unpass
+- id: 31213
+  name: idol lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 31214
+  name: idol lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 31215
+  name: idol lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 31216
+  name: idol lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 31217
+  name: violet square cushion
+  article: a
+  flags:
+  - usable
+- id: 31218
+  name: green square cushion
+  article: a
+  flags:
+  - usable
+- id: 31219
+  name: blue square cushion
+  article: a
+  flags:
+  - usable
+- id: 31220
+  name: violet round cushion
+  article: a
+  flags:
+  - usable
+- id: 31221
+  name: green round cushion
+  article: a
+  flags:
+  - usable
+- id: 31222
+  name: blue round cushion
+  article: a
+  flags:
+  - usable
+- id: 31223
+  name: golden minotaur skull
+  article: a
+  flags: []
+- id: 31224
+  name: minotaur skull
+  article: a
+  flags: []
+  attributes:
+    weight: 2500
+- id: 31225
+  name: golden demon skull
+  article: a
+  flags:
+  - unpass
+- id: 31226
+  name: demon skull
+  article: a
+  flags:
+  - unpass
+- id: 31351
+  name: black raven
+  article: a
+  flags:
+  - unpass
+- id: 31352
+  name: grey raven
+  article: a
+  flags:
+  - unpass
+- id: 31353
+  name: white raven
+  article: a
+  flags:
+  - unpass
+- id: 31462
+  name: jousting eagle baby
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 31463
+  name: jousting eagle baby
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 200
+      decay_to: 31462
+- id: 31464
+  name: cerberus champion puppy
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 31465
+  name: cerberus champion puppy
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 200
+      decay_to: 31464
+- id: 31466
+  name: rolled-up tournament carpet
+  article: a
+  flags:
+  - usable
+- id: 31467
+  name: rolled-up sublime tournament carpet
+  article: a
+  flags:
+  - usable
+- id: 31468
+  name: tournament carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 31469
+  name: sublime tournament carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 31470
+  name: tournament accolade
+  article: a
+  flags: []
+- id: 31471
+  name: tournament accolade
+  article: a
+  flags: []
+- id: 31472
+  name: sublime tournament accolade
+  article: a
+  flags: []
+- id: 31473
+  name: sublime tournament accolade
+  article: a
+  flags: []
+- id: 31500
+  name: golden outfit display
+  article: the
+  flags:
+  - usable
+  - unpass
+- id: 31502
+  name: golden outfit display
+  article: the
+  flags:
+  - usable
+  - unpass
+- id: 31503
+  name: golden outfit display
+  article: the
+  flags:
+  - usable
+  - unpass
+- id: 31504
+  name: golden outfit display
+  article: the
+  flags:
+  - usable
+  - unpass
+- id: 31505
+  name: golden outfit display
+  article: the
+  flags:
+  - usable
+  - unpass
+- id: 31506
+  name: golden outfit display
+  article: the
+  flags:
+  - usable
+  - unpass
+- id: 31507
+  name: golden outfit display
+  article: the
+  flags:
+  - usable
+  - unpass
+- id: 31508
+  name: golden outfit display
+  article: the
+  flags:
+  - usable
+  - unpass
+- id: 31509
+  name: golden outfit display
+  article: the
+  flags:
+  - usable
+  - unpass
+- id: 31510
+  name: golden outfit display
+  article: the
+  flags:
+  - usable
+  - unpass
+- id: 31511
+  name: golden outfit display
+  article: the
+  flags:
+  - usable
+  - unpass
+- id: 31512
+  name: golden outfit display
+  article: the
+  flags:
+  - usable
+  - unpass
+- id: 31513
+  name: golden outfit display
+  article: the
+  flags:
+  - usable
+  - unpass
+- id: 31514
+  name: golden outfit display
+  article: the
+  flags:
+  - usable
+  - unpass
+- id: 31515
+  name: golden outfit display
+  article: the
+  flags:
+  - usable
+  - unpass
+- id: 31516
+  name: golden outfit display
+  article: the
+  flags:
+  - usable
+  - unpass
+- id: 31679
+  name: hrodmiran table
+  article: a
+  flags: []
+- id: 31680
+  name: baby hedgehog
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 4
+      decay_to: 31681
+- id: 31681
+  name: baby hedgehog
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 31682
+  name: baby hedgehog
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 6
+      decay_to: 31680
+- id: 31683
+  name: exalted sarcophagus
+  article: an
+  flags:
+  - usable
+  - unpass
+- id: 31684
+  name: exalted sarcophagus
+  article: an
+  flags:
+  - usable
+  - unpass
+- id: 31691
+  name: hrodmiran chair
+  article: a
+  flags: []
+- id: 31692
+  name: hrodmiran chair
+  article: a
+  flags: []
+- id: 31693
+  name: hrodmiran chair
+  article: a
+  flags: []
+- id: 31694
+  name: hrodmiran chair
+  article: a
+  flags: []
+- id: 31695
+  name: curly hortensis lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 31696
+  name: curly hortensis lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 31697
+  name: little big flower lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 31698
+  name: little big flower lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 31703
+  name: baby unicorn
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 31704
+  name: baby unicorn
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 31703
+- id: 31723
+  name: sulphur blossom lamp
+  flags:
+  - usable
+- id: 31724
+  name: sulphur blossom lamp
+  flags:
+  - usable
+- id: 31931
+  name: pirate ship ballista
+  article: a
+  flags:
+  - unpass
+- id: 31932
+  name: pirate ship ballista
+  article: a
+  flags:
+  - unpass
+- id: 31933
+  name: pirate ship ballista
+  article: a
+  flags:
+  - unpass
+- id: 31934
+  name: pirate ship ballista
+  article: a
+  flags:
+  - unpass
+- id: 31937
+  name: barrel and anchor lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 31938
+  name: barrel and anchor lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 31939
+  name: barrel and anchor lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 31940
+  name: barrel and anchor lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 31941
+  name: model ship lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 31942
+  name: model ship lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 31943
+  name: model ship lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 31944
+  name: model ship lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 31945
+  name: pirate flag
+  article: a
+  flags: []
+- id: 31946
+  name: treasure map
+  article: a
+  flags: []
+  attributes:
+    weight: 830
+- id: 31947
+  name: skeleton in a cage
+  article: a
+  flags:
+  - unpass
+- id: 31948
+  name: ship's wheel
+  article: a
+  flags: []
+- id: 31949
+  name: mermaid figure head
+  article: a
+  flags: []
+- id: 31950
+  name: mermaid figure head
+  article: a
+  flags: []
+- id: 31951
+  name: white shark trophy
+  article: a
+  flags: []
+- id: 31955
+  name: monkey
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+- id: 31956
+  name: monkey
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32074
+  name: plushie of gaz'Haragoth
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 32075
+  name: plushie of devovorga
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 32076
+  name: plushie of king tibianus
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 32077
+  name: sight of surrender's plushie
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 32123
+  name: blue traditional chair
+  article: a
+  flags: []
+- id: 32128
+  name: blue traditional chair
+  article: a
+  flags: []
+- id: 32129
+  name: blue traditional chair
+  article: a
+  flags: []
+- id: 32130
+  name: blue traditional chair
+  article: a
+  flags: []
+- id: 32131
+  name: green traditional chair
+  article: a
+  flags: []
+- id: 32132
+  name: green traditional chair
+  article: a
+  flags: []
+- id: 32133
+  name: green traditional chair
+  article: a
+  flags: []
+- id: 32134
+  name: green traditional chair
+  article: a
+  flags: []
+- id: 32135
+  name: red traditional chair
+  article: a
+  flags: []
+- id: 32136
+  name: red traditional chair
+  article: a
+  flags: []
+- id: 32137
+  name: red traditional chair
+  article: a
+  flags: []
+- id: 32138
+  name: red traditional chair
+  article: a
+  flags: []
+- id: 32139
+  name: blue traditional table
+  article: a
+  flags:
+  - unpass
+- id: 32140
+  name: green traditional table
+  article: a
+  flags:
+  - unpass
+- id: 32141
+  name: red traditional table
+  article: a
+  flags:
+  - unpass
+- id: 32148
+  name: beer barrel
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32149
+  name: beer barrel
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32150
+  name: beer barrel
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32151
+  name: beer barrel
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32152
+  name: blue wooden candelabra
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32153
+  name: blue wooden candelabra
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32154
+  name: red wooden candelabra
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32155
+  name: red wooden candelabra
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32156
+  name: green wooden candelabra
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32157
+  name: green wooden candelabra
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32158
+  name: red wooden candelabra
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32159
+  name: red wooden candelabra
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32160
+  name: green wooden candelabra
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32161
+  name: blue wooden candelabra
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32162
+  name: blue wooden candelabra
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32163
+  name: green wooden candelabra
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32164
+  name: blue wall hangings
+  article: a
+  flags: []
+- id: 32165
+  name: green wall hangings
+  article: a
+  flags: []
+- id: 32166
+  name: red wall hangings
+  article: a
+  flags: []
+- id: 32473
+  name: blue headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32474
+  name: green headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32475
+  name: red headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32476
+  name: yellow headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32477
+  name: cot headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32478
+  name: hammock head section
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32479
+  name: simple headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32480
+  name: straw mat head section
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32481
+  name: canopy headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32482
+  name: blue footboard
+  article: a
+  flags:
+  - unpass
+- id: 32483
+  name: green footboard
+  article: a
+  flags:
+  - unpass
+- id: 32484
+  name: red footboard
+  article: a
+  flags:
+  - unpass
+- id: 32485
+  name: yellow footboard
+  article: a
+  flags:
+  - unpass
+- id: 32486
+  name: cot footboard
+  article: a
+  flags:
+  - unpass
+- id: 32487
+  name: hammock foot section
+  article: a
+  flags:
+  - unpass
+- id: 32488
+  name: simple footboard
+  article: a
+  flags:
+  - unpass
+- id: 32489
+  name: straw bed foot section
+  article: a
+  flags:
+  - unpass
+- id: 32490
+  name: canopy footboard
+  article: a
+  flags:
+  - unpass
+- id: 32491
+  name: blue headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32492
+  name: green headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32493
+  name: red headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32494
+  name: yellow headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32495
+  name: cot headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32496
+  name: hammock head section
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32497
+  name: simple headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32498
+  name: straw mat head section
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32499
+  name: canopy headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32500
+  name: blue footboard
+  article: a
+  flags:
+  - unpass
+- id: 32501
+  name: green footboard
+  article: a
+  flags:
+  - unpass
+- id: 32502
+  name: red footboard
+  article: a
+  flags:
+  - unpass
+- id: 32503
+  name: yellow footboard
+  article: a
+  flags:
+  - unpass
+- id: 32504
+  name: cot footboard
+  article: a
+  flags:
+  - unpass
+- id: 32505
+  name: hammock foot section
+  article: a
+  flags:
+  - unpass
+- id: 32506
+  name: simple footboard
+  article: a
+  flags:
+  - unpass
+- id: 32507
+  name: straw bed foot section
+  article: a
+  flags:
+  - unpass
+- id: 32508
+  name: canopy footboard
+  article: a
+  flags:
+  - unpass
+- id: 32509
+  name: blue headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32510
+  name: green headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32511
+  name: red headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32512
+  name: yellow headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32513
+  name: cot headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32514
+  name: hammock head section
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32515
+  name: simple headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32516
+  name: straw mat head section
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32517
+  name: canopy headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32518
+  name: blue headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32519
+  name: green headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32520
+  name: red headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32521
+  name: yellow headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32522
+  name: cot headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32523
+  name: hammock head section
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32524
+  name: simple headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32525
+  name: straw mat head section
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32526
+  name: canopy headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32527
+  name: blue footboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32528
+  name: green footboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32529
+  name: red footboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32530
+  name: yellow footboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32531
+  name: cot footboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32532
+  name: hammock foot section
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32533
+  name: simple footboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32534
+  name: straw bed foot section
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32535
+  name: canopy footboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32536
+  name: blue headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32541
+  name: green headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32542
+  name: red headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32543
+  name: yellow headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32544
+  name: cot headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32545
+  name: hammock head section
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32546
+  name: simple headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32547
+  name: straw bed head section
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32548
+  name: canopy headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32549
+  name: blue headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32550
+  name: green headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32551
+  name: red headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32552
+  name: yellow headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32553
+  name: cot headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32554
+  name: hammock head section
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32555
+  name: simple headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32556
+  name: straw bed head section
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32557
+  name: canopy headboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32558
+  name: blue footboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32559
+  name: green footboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32560
+  name: red footboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32561
+  name: yellow footboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32562
+  name: cot footboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32563
+  name: hammock foot section
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32564
+  name: simple footboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32565
+  name: straw bed foot section
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32566
+  name: canopy footboard
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32746
+  name: santa leech
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 720
+- id: 32751
+  name: gozzler trophy
+  article: a
+  flags:
+  - usable
+- id: 32752
+  name: sea serpent trophy
+  article: a
+  flags:
+  - usable
+- id: 32753
+  name: hellflayer trophy
+  article: a
+  flags:
+  - usable
+- id: 32754
+  name: bronze hunter trophy
+  article: a
+  flags:
+  - usable
+- id: 32755
+  name: silver hunter trophy
+  article: a
+  flags:
+  - usable
+- id: 32756
+  name: gold hunter trophy
+  article: a
+  flags:
+  - usable
+- id: 32764
+  name: plushie of a deepling
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 32765
+  name: plushie of a hydra
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 32777
+  name: ice table
+  article: a
+  flags: []
+- id: 32778
+  name: ice stool
+  article: a
+  flags: []
+- id: 32779
+  name: ice stool
+  article: a
+  flags: []
+- id: 32784
+  name: ice chandelier
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32785
+  name: ice chandelier
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32786
+  name: Ferumbras' snowman
+  article: a
+  flags:
+  - unpass
+- id: 32787
+  name: Ferumbras' snowman
+  article: a
+  flags:
+  - unpass
+- id: 32788
+  name: baby seal
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32789
+  name: baby seal
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 5
+      decay_to: 32788
+- id: 32790
+  name: baby polar bear
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32791
+  name: baby polar bear
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 1
+      decay_to: 32792
+- id: 32792
+  name: baby polar bear
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32793
+  name: baby polar bear
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 1
+      decay_to: 32790
+- id: 32795
+  name: bone headboard
+  flags:
+  - usable
+  - unpass
+- id: 32796
+  name: bone footboard
+  flags:
+  - unpass
+- id: 32797
+  name: bone headboard
+  flags:
+  - usable
+  - unpass
+- id: 32798
+  name: bone footboard
+  flags:
+  - unpass
+- id: 32799
+  name: bone bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32800
+  name: bone bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32801
+  name: bone bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32802
+  name: bone bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32803
+  name: bone bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32804
+  name: bone bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 32897
+  name: wall lamp
+  flags:
+  - usable
+- id: 32899
+  name: wall lamp
+  flags:
+  - usable
+- id: 32900
+  name: torch bearer
+  flags:
+  - usable
+- id: 32901
+  name: torch bearer
+  flags:
+  - usable
+- id: 32902
+  name: bamboo wall lamp
+  flags:
+  - usable
+- id: 32903
+  name: bamboo wall lamp
+  flags:
+  - usable
+- id: 32904
+  name: wall candle
+  flags:
+  - usable
+- id: 32905
+  name: wall candle
+  flags:
+  - usable
+- id: 32907
+  name: Guzzlemaw Grub
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32908
+  name: Baby Vulcongra
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32909
+  name: Baby Brain Squid
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 32910
+  name: Guzzlemaw Grub
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 6
+      decay_to: 32907
+- id: 32911
+  name: Baby Vulcongra
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 32908
+- id: 32912
+  name: Baby Brain Squid
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 32909
+- id: 32914
+  name: papyrus deed
+  flags:
+  - usable
+- id: 32915
+  name: bronze deed
+  flags:
+  - usable
+- id: 32916
+  name: silver deed
+  flags:
+  - usable
+- id: 32917
+  name: gold deed
+  flags:
+  - usable
+- id: 32918
+  name: Demon Doll
+  article: a
+  flags:
+  - usable
+- id: 32919
+  name: bronze cup
+  flags:
+  - usable
+- id: 32920
+  name: silver cup
+  flags:
+  - usable
+- id: 32921
+  name: gold cup
+  flags:
+  - usable
+- id: 32943
+  name: Vexclaw Doll
+  article: a
+  flags:
+  - usable
+- id: 32944
+  name: Ogre Rowdy Doll
+  article: a
+  flags:
+  - usable
+- id: 32945
+  name: Retching Horror Doll
+  article: a
+  flags:
+  - usable
+- id: 32946
+  name: cozy couch
+  article: a
+  flags: []
+- id: 32947
+  name: cozy couch
+  article: a
+  flags: []
+- id: 32948
+  name: cozy couch
+  article: a
+  flags: []
+- id: 32949
+  name: cozy couch
+  article: a
+  flags: []
+- id: 32950
+  name: cozy couch
+  article: a
+  flags: []
+- id: 32951
+  name: cozy couch
+  article: a
+  flags: []
+- id: 32952
+  name: cozy couch
+  article: a
+  flags: []
+- id: 32953
+  name: cozy couch
+  article: a
+  flags: []
+- id: 32954
+  name: cozy couch
+  article: a
+  flags: []
+- id: 32955
+  name: cozy couch
+  article: a
+  flags: []
+- id: 32956
+  name: cozy couch
+  article: a
+  flags: []
+- id: 32957
+  name: cozy couch
+  article: a
+  flags: []
+- id: 32958
+  name: cozy couch
+  article: a
+  flags: []
+- id: 32959
+  name: cozy couch
+  article: a
+  flags: []
+- id: 32960
+  name: cozy couch
+  article: a
+  flags: []
+- id: 32961
+  name: cozy couch
+  article: a
+  flags: []
+- id: 32962
+  name: cozy couch
+  article: a
+  flags: []
+- id: 32963
+  name: cozy couch
+  article: a
+  flags: []
+- id: 32964
+  name: cozy couch
+  article: a
+  flags: []
+- id: 32965
+  name: cozy couch
+  article: a
+  flags: []
+- id: 32966
+  name: carved table
+  article: a
+  flags: []
+- id: 32967
+  name: carved table
+  article: a
+  flags: []
+- id: 32968
+  name: carved table
+  article: a
+  flags: []
+- id: 32969
+  name: carved table
+  article: a
+  flags: []
+- id: 32970
+  name: carved table
+  article: a
+  flags: []
+- id: 32971
+  name: carved table
+  article: a
+  flags: []
+- id: 32972
+  name: carved table
+  article: a
+  flags: []
+- id: 32973
+  name: carved table
+  article: a
+  flags: []
+- id: 32974
+  name: carved table
+  article: a
+  flags: []
+- id: 33026
+  name: heart lamp
+  flags:
+  - usable
+  - unpass
+- id: 33027
+  name: heart lamp
+  flags:
+  - usable
+  - unpass
+- id: 33028
+  name: heart lamp
+  flags:
+  - usable
+  - unpass
+- id: 33029
+  name: heart lamp
+  flags:
+  - usable
+  - unpass
+- id: 33030
+  name: heart lamp
+  flags:
+  - usable
+  - unpass
+- id: 33031
+  name: heart lamp
+  flags:
+  - usable
+  - unpass
+- id: 33034
+  name: heart table
+  flags: []
+- id: 33035
+  name: heart table
+  flags: []
+- id: 33036
+  name: heart chair
+  flags: []
+- id: 33037
+  name: heart chair
+  flags: []
+- id: 33038
+  name: heart chair
+  flags: []
+- id: 33039
+  name: heart chair
+  flags: []
+- id: 33040
+  name: bat
+  flags:
+  - usable
+  - unpass
+- id: 33041
+  name: bat
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 10
+      decay_to: 33040
+- id: 33042
+  name: bat
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 5
+      decay_to: 33041
+- id: 33047
+  name: heart lamp
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 33027
+- id: 33048
+  name: heart lamp
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 33029
+- id: 33049
+  name: heart lamp
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 33031
+- id: 33319
+  name: old lute
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3400
+- id: 33320
+  name: old fanfare
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2300
+- id: 33330
+  name: monolith of the planes kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 750
+- id: 34026
+  name: baby bonelord
+  flags:
+  - usable
+  - unpass
+- id: 34027
+  name: baby bonelord
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 34028
+- id: 34028
+  name: baby bonelord
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 34029
+- id: 34029
+  name: baby bonelord
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 3
+      decay_to: 34026
+- id: 34030
+  name: artist shelf
+  flags:
+  - usable
+  - unpass
+- id: 34031
+  name: artist shelf
+  flags:
+  - usable
+  - unpass
+- id: 34032
+  name: artist shelf
+  flags:
+  - usable
+  - unpass
+- id: 34033
+  name: artist shelf
+  flags:
+  - usable
+  - unpass
+- id: 34034
+  name: artist table
+  flags:
+  - usable
+- id: 34035
+  name: artist table
+  flags:
+  - usable
+- id: 34036
+  name: artist chair
+  flags: []
+- id: 34037
+  name: artist chair
+  flags: []
+- id: 34038
+  name: artist chair
+  flags: []
+- id: 34039
+  name: artist chair
+  flags: []
+- id: 34044
+  name: sculptor shelf
+  flags:
+  - usable
+  - unpass
+- id: 34045
+  name: sculptor shelf
+  flags:
+  - usable
+  - unpass
+- id: 34046
+  name: sculptor shelf
+  flags:
+  - usable
+  - unpass
+- id: 34047
+  name: sculptor shelf
+  flags:
+  - usable
+  - unpass
+- id: 34048
+  name: sculptor table
+  flags:
+  - usable
+- id: 34049
+  name: sculptor table
+  flags:
+  - usable
+- id: 34050
+  name: sculptor chair
+  flags: []
+- id: 34051
+  name: sculptor chair
+  flags: []
+- id: 34052
+  name: sculptor chair
+  flags: []
+- id: 34053
+  name: sculptor chair
+  flags: []
+- id: 34058
+  name: demon statue
+  flags:
+  - unpass
+- id: 34059
+  name: demon statue
+  flags:
+  - unpass
+- id: 34060
+  name: sabretooth skull
+  flags:
+  - unpass
+- id: 34061
+  name: sabretooth skull
+  flags:
+  - unpass
+- id: 34062
+  name: drawing board
+  flags:
+  - unpass
+- id: 34063
+  name: drawing board
+  flags:
+  - unpass
+- id: 34064
+  name: sculpture of a noblewoman
+  flags:
+  - usable
+  - unpass
+- id: 34065
+  name: sculpture of a noblewoman
+  flags:
+  - usable
+  - unpass
+- id: 34066
+  name: sculpture of a noblewoman
+  flags:
+  - usable
+  - unpass
+- id: 34067
+  name: sculpture of a noblewoman
+  flags:
+  - usable
+  - unpass
+- id: 34068
+  name: sculpture of a noblewoman
+  flags:
+  - usable
+  - unpass
+- id: 34069
+  name: sculpture of a noblewoman
+  flags:
+  - usable
+  - unpass
+- id: 34070
+  name: sculpture of a noblewoman
+  flags:
+  - usable
+  - unpass
+- id: 34071
+  name: sculpture of a noblewoman
+  flags:
+  - usable
+  - unpass
+- id: 34219
+  name: werehyaena trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 34270
+  name: glowworms
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 34271
+  name: glowworms
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 34272
+  name: oven
+  flags:
+  - usable
+  - unpass
+- id: 34273
+  name: oven
+  flags:
+  - usable
+  - unpass
+- id: 34274
+  name: oven
+  flags:
+  - usable
+  - unpass
+- id: 34275
+  name: oven
+  flags:
+  - usable
+  - unpass
+- id: 34280
+  name: wallcupboard
+  flags: []
+- id: 34282
+  name: kitchen shelf
+  flags: []
+- id: 34284
+  name: kitchen table
+  flags:
+  - usable
+- id: 34285
+  name: kitchen table
+  flags:
+  - usable
+- id: 34286
+  name: kitchen table
+  flags:
+  - usable
+- id: 34287
+  name: kitchen table
+  flags:
+  - usable
+- id: 34288
+  name: kitchen table
+  flags:
+  - usable
+- id: 34289
+  name: kitchen table
+  flags:
+  - usable
+- id: 34290
+  name: kitchen table
+  flags:
+  - usable
+- id: 34291
+  name: kitchen table
+  flags:
+  - usable
+- id: 34292
+  name: kitchen chair
+  flags: []
+- id: 34293
+  name: kitchen chair
+  flags: []
+- id: 34294
+  name: kitchen chair
+  flags: []
+- id: 34295
+  name: kitchen chair
+  flags: []
+- id: 34300
+  name: barrel
+  flags:
+  - usable
+  - unpass
+- id: 34301
+  name: barrel
+  flags:
+  - usable
+  - unpass
+- id: 34302
+  name: vegetable basket
+  flags:
+  - unpass
+- id: 34303
+  name: vegetable basket
+  flags:
+  - unpass
+- id: 34304
+  name: kitchen lamp
+  flags:
+  - usable
+- id: 34305
+  name: kitchen lamp
+  flags:
+  - usable
+- id: 34309
+  name: kitchen clock
+  flags:
+  - usable
+- id: 34312
+  name: homely bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 34313
+  name: homely bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 34314
+  name: homely bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 34315
+  name: homely bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 34316
+  name: homely bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 34317
+  name: homely bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 34318
+  name: homely bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 34319
+  name: homely bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 34320
+  name: homely bed
+  flags:
+  - usable
+  - unpass
+- id: 34321
+  name: homely bed
+  flags:
+  - unpass
+- id: 34322
+  name: homely bed
+  flags:
+  - usable
+  - unpass
+- id: 34323
+  name: homely bed
+  flags:
+  - unpass
+- id: 34324
+  name: oven
+  flags:
+  - usable
+  - unpass
+- id: 34325
+  name: oven
+  flags:
+  - usable
+  - unpass
+- id: 34328
+  name: bronze cup
+  flags:
+  - usable
+- id: 34329
+  name: silver cup
+  flags:
+  - usable
+- id: 34330
+  name: gold cup
+  flags:
+  - usable
+- id: 34332
+  name: gilded crown
+  article: a
+  flags: []
+- id: 35153
+  name: baby elephant
+  flags:
+  - usable
+  - unpass
+- id: 35154
+  name: baby elephant
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 35153
+- id: 35155
+  name: forge
+  flags:
+  - usable
+  - unpass
+- id: 35156
+  name: forge
+  flags:
+  - usable
+  - unpass
+- id: 35157
+  name: forge
+  flags:
+  - usable
+  - unpass
+- id: 35158
+  name: forge
+  flags:
+  - usable
+  - unpass
+- id: 35159
+  name: forge
+  flags:
+  - usable
+  - unpass
+- id: 35160
+  name: forge
+  flags:
+  - usable
+  - unpass
+- id: 35161
+  name: metal wall lamp
+  flags:
+  - usable
+- id: 35162
+  name: metal wall lamp
+  flags:
+  - usable
+- id: 35163
+  name: workbench
+  flags:
+  - usable
+- id: 35164
+  name: workbench
+  flags:
+  - usable
+- id: 35165
+  name: workbench
+  flags:
+  - usable
+- id: 35166
+  name: workbench
+  flags:
+  - usable
+- id: 35167
+  name: wooden stool
+  flags: []
+- id: 35168
+  name: wooden stool
+  flags: []
+- id: 35169
+  name: wooden stool
+  flags: []
+- id: 35170
+  name: wooden stool
+  flags: []
+- id: 35177
+  name: grinding wheel
+  flags:
+  - usable
+  - unpass
+- id: 35178
+  name: grinding wheel
+  flags:
+  - usable
+  - unpass
+- id: 35179
+  name: grinding wheel
+  flags:
+  - usable
+  - unpass
+- id: 35180
+  name: grinding wheel
+  flags:
+  - usable
+  - unpass
+- id: 35181
+  name: pair of bellows
+  flags:
+  - usable
+  - unpass
+- id: 35182
+  name: pair of bellows
+  flags:
+  - usable
+  - unpass
+- id: 35183
+  name: pair of bellows
+  flags:
+  - usable
+  - unpass
+- id: 35184
+  name: pair of bellows
+  flags:
+  - usable
+  - unpass
+- id: 35185
+  name: anvil
+  flags:
+  - usable
+  - unpass
+- id: 35186
+  name: anvil
+  flags:
+  - usable
+  - unpass
+- id: 35187
+  name: water bucket
+  flags:
+  - usable
+  - unpass
+- id: 35188
+  name: water bucket
+  flags:
+  - usable
+  - unpass
+- id: 35189
+  name: wrought-iron bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35190
+  name: wrought-iron bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35191
+  name: wrought-iron bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35192
+  name: wrought-iron bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35193
+  name: wrought-iron bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35203
+  name: wrought-iron bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35204
+  name: wrought-iron bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35205
+  name: wrought-iron bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35206
+  name: wrought-iron bed
+  flags:
+  - usable
+  - unpass
+- id: 35207
+  name: wrought-iron bed
+  flags:
+  - unpass
+- id: 35208
+  name: wrought-iron bed
+  flags:
+  - usable
+  - unpass
+- id: 35209
+  name: wrought-iron bed
+  flags:
+  - unpass
+- id: 35582
+  name: blue shark trophy
+  flags: []
+- id: 35584
+  name: striped shark trophy
+  flags: []
+- id: 35585
+  name: brown shark trophy
+  flags: []
+- id: 35586
+  name: golden shark trophy
+  flags: []
+- id: 35587
+  name: shark jaws
+  flags: []
+- id: 35589
+  name: snowbash figurine
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 650
+- id: 35590
+  name: sandscourge figurine
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 650
+- id: 35591
+  name: mossmasher figurine
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 650
+- id: 35592
+  name: bladespark figurine
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 650
+- id: 35599
+  name: hammerhead trophy
+  flags: []
+- id: 35692
+  name: raccoon santa
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 650
+- id: 35851
+  name: magnificent bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35852
+  name: magnificent bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35853
+  name: magnificent bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35854
+  name: magnificent bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35855
+  name: magnificent bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35856
+  name: magnificent bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35857
+  name: magnificent bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35858
+  name: magnificent bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35859
+  name: magnificent bed
+  flags:
+  - usable
+  - unpass
+- id: 35860
+  name: magnificent bed
+  flags:
+  - unpass
+- id: 35861
+  name: magnificent bed
+  flags:
+  - usable
+  - unpass
+- id: 35862
+  name: magnificent bed
+  flags:
+  - unpass
+- id: 35863
+  name: ornate bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35864
+  name: ornate bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35865
+  name: ornate bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35866
+  name: ornate bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35867
+  name: ornate bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35868
+  name: ornate bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35869
+  name: ornate bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35870
+  name: ornate bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35871
+  name: ornate bed
+  flags:
+  - usable
+  - unpass
+- id: 35872
+  name: ornate bed
+  flags:
+  - unpass
+- id: 35873
+  name: ornate bed
+  flags:
+  - usable
+  - unpass
+- id: 35874
+  name: ornate bed
+  flags:
+  - unpass
+- id: 35875
+  name: vengothic bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35876
+  name: vengothic bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35877
+  name: vengothic bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35878
+  name: vengothic bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35879
+  name: vengothic bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35880
+  name: vengothic bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35881
+  name: vengothic bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35882
+  name: vengothic bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35883
+  name: vengothic bed
+  flags:
+  - usable
+  - unpass
+- id: 35884
+  name: vengothic bed
+  flags:
+  - unpass
+- id: 35885
+  name: vengothic bed
+  flags:
+  - usable
+  - unpass
+- id: 35886
+  name: vengothic bed
+  flags:
+  - unpass
+- id: 35887
+  name: lilac carpet
+  article: a
+  flags:
+  - usable
+- id: 35888
+  name: lilac carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 35889
+  name: colourful pom-pom carpet
+  article: a
+  flags:
+  - usable
+- id: 35890
+  name: colourful pom-pom carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 35891
+  name: natural pom-pom carpet
+  article: a
+  flags:
+  - usable
+- id: 35892
+  name: natural pom-pom carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 35893
+  name: owin rug
+  article: a
+  flags:
+  - usable
+- id: 35894
+  name: owin rug
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 35895
+  name: midnight panther rug
+  article: a
+  flags:
+  - usable
+- id: 35896
+  name: midnight panther rug
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 35897
+  name: moon carpet
+  article: a
+  flags:
+  - usable
+- id: 35898
+  name: moon carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 35899
+  name: romantic carpet
+  article: a
+  flags:
+  - usable
+- id: 35900
+  name: romantic carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 35913
+  name: grandiose table
+  article: a
+  flags: []
+  attributes:
+    capacity: 8
+- id: 35914
+  name: grandiose table
+  article: a
+  flags: []
+  attributes:
+    capacity: 8
+- id: 35915
+  name: grandiose chair
+  article: a
+  flags: []
+- id: 35916
+  name: grandiose chair
+  article: a
+  flags: []
+- id: 35917
+  name: grandiose chair
+  article: a
+  flags: []
+- id: 35918
+  name: grandiose chair
+  article: a
+  flags: []
+- id: 35927
+  name: grandiose couch
+  article: a
+  flags: []
+- id: 35928
+  name: grandiose bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35929
+  name: grandiose bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35930
+  name: grandiose bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35931
+  name: grandiose bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35932
+  name: grandiose bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35933
+  name: grandiose bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35934
+  name: grandiose bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35935
+  name: grandiose bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 35936
+  name: grandiose bed
+  flags:
+  - usable
+  - unpass
+- id: 35937
+  name: grandiose bed
+  flags:
+  - unpass
+- id: 35938
+  name: grandiose bed
+  flags:
+  - usable
+  - unpass
+- id: 35939
+  name: grandiose bed
+  flags:
+  - unpass
+- id: 35940
+  name: grandiose painting
+  flags: []
+- id: 35941
+  name: grandiose carpet
+  article: a
+  flags:
+  - usable
+- id: 35942
+  name: grandiose carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 35943
+  name: grandiose lamp
+  flags:
+  - usable
+- id: 35944
+  name: grandiose lamp
+  flags:
+  - usable
+- id: 35949
+  name: portable aqueduct
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 200
+      decay_to: 35950
+- id: 35950
+  name: portable aqueduct
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 1
+      decay_to: 35951
+- id: 35951
+  name: portable aqueduct
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 200
+      decay_to: 35952
+- id: 35952
+  name: portable aqueduct
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 1
+      decay_to: 35949
+- id: 35954
+  name: grandiose couch
+  article: a
+  flags: []
+- id: 35955
+  name: grandiose couch
+  article: a
+  flags: []
+- id: 35956
+  name: grandiose couch
+  article: a
+  flags: []
+- id: 35957
+  name: grandiose couch
+  article: a
+  flags: []
+- id: 35958
+  name: grandiose couch
+  article: a
+  flags: []
+- id: 35959
+  name: grandiose couch
+  article: a
+  flags: []
+- id: 35960
+  name: grandiose couch
+  article: a
+  flags: []
+- id: 35961
+  name: grandiose couch
+  article: a
+  flags: []
+- id: 35962
+  name: grandiose couch
+  article: a
+  flags: []
+- id: 35963
+  name: grandiose couch
+  article: a
+  flags: []
+- id: 35964
+  name: grandiose couch
+  article: a
+  flags: []
+- id: 35969
+  name: portable aqueduct
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 200
+      decay_to: 35970
+- id: 35970
+  name: portable aqueduct
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 1
+      decay_to: 35971
+- id: 35971
+  name: portable aqueduct
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 200
+      decay_to: 35972
+- id: 35972
+  name: portable aqueduct
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 1
+      decay_to: 35969
+- id: 35973
+  name: podium of renown
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 35974
+  name: podium of renown
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36496
+  name: eldritch carpet
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 36618
+  name: volcanic basin
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36619
+  name: volcanic basin
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36620
+  name: volcanic sphere
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36621
+  name: volcanic sphere
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36622
+  name: volcanic spire
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36623
+  name: volcanic spire
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36624
+  name: volcanic bulb
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36625
+  name: volcanic bulb
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36626
+  name: volcanic mirror
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36627
+  name: volcanic mirror
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36628
+  name: volcanic mirror
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36629
+  name: volcanic mirror
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36634
+  name: volcanic chair
+  article: a
+  flags: []
+- id: 36635
+  name: volcanic chair
+  article: a
+  flags: []
+- id: 36636
+  name: volcanic chair
+  article: a
+  flags: []
+- id: 36637
+  name: volcanic chair
+  article: a
+  flags: []
+- id: 36638
+  name: volcanic table
+  article: a
+  flags:
+  - usable
+- id: 36639
+  name: volcanic table
+  article: a
+  flags:
+  - usable
+- id: 36640
+  name: volcanic shelf
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36641
+  name: volcanic shelf
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36642
+  name: volcanic shelf
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36643
+  name: volcanic shelf
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36644
+  name: volcanic shelf
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36645
+  name: volcanic shelf
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36646
+  name: demon baller
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36647
+  name: demon baller
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36648
+  name: demon baller
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36649
+  name: demon baller
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 36647
+- id: 36650
+  name: demon baller
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 36648
+- id: 36651
+  name: demon baller
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 36653
+- id: 36652
+  name: demon baller
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 36654
+- id: 36653
+  name: demon baller
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36654
+  name: demon baller
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36748
+  name: brachiodemon trophy
+  article: a
+  flags:
+  - usable
+- id: 36749
+  name: many faces trophy
+  article: a
+  flags: []
+- id: 36750
+  name: falcon pet
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36751
+  name: falcon pet
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 4
+      decay_to: 36756
+- id: 36752
+  name: falcon pet
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 4
+      decay_to: 36750
+- id: 36753
+  name: falcon pet
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 4
+      decay_to: 36754
+- id: 36754
+  name: falcon pet
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36756
+  name: falcon pet
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36833
+  name: arena badge replica
+  article: an
+  flags: []
+- id: 36838
+  name: folded eldritch carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1100
+- id: 36865
+  name: plushie of a murmillion
+  article: a
+  flags: []
+- id: 36866
+  name: plushie of a scissorion
+  article: a
+  flags: []
+- id: 36867
+  name: plushie of a hoodinion
+  article: a
+  flags: []
+- id: 36868
+  name: plushie of a mearidion
+  article: a
+  flags: []
+- id: 36869
+  name: plushie of a domestikion
+  article: a
+  flags: []
+- id: 36939
+  name: cloth fragment
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unmove
+- id: 36940
+  name: the sylvan sapling carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 36941
+  name: cloth fragment
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unmove
+- id: 36942
+  name: the spatial almanach carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 36943
+  name: cloth fragment
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unmove
+- id: 36944
+  name: the book of death carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 36945
+  name: cloth fragment
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unmove
+- id: 36946
+  name: the supreme cube carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 36947
+  name: cloth fragment
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unmove
+- id: 36948
+  name: the ring of ending carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 36949
+  name: cloth fragment
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unmove
+- id: 36950
+  name: the cobra amulet carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 36951
+  name: folded artefact carpet I
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 10
+- id: 36952
+  name: folded artefact carpet II
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 10
+- id: 36953
+  name: folded artefact carpet III
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 10
+- id: 36954
+  name: folded artefact carpet IV
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 10
+- id: 36955
+  name: folded artefact carpet V
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 10
+- id: 36956
+  name: folded artefact carpet VI
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 10
+- id: 36958
+  name: megasylvan plant
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+- id: 36959
+  name: megasylvan plant
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 36960
+  name: megasylvan plant
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 4
+      decay_to: 36958
+- id: 36991
+  name: bronze cup
+  article: a
+  flags:
+  - usable
+  attributes:
+    weight: 100
+- id: 36992
+  name: silver cup
+  article: a
+  flags:
+  - usable
+  attributes:
+    weight: 150
+- id: 36993
+  name: gold cup
+  article: a
+  flags:
+  - usable
+  attributes:
+    weight: 200
+- id: 36995
+  name: gilded magic longsword
+  article: a
+  flags: []
+  attributes:
+    weight: 200
+- id: 37004
+  name: leaf chair
+  article: a
+  flags: []
+- id: 37005
+  name: leaf chair
+  article: a
+  flags: []
+- id: 37006
+  name: leaf chair
+  article: a
+  flags: []
+- id: 37007
+  name: leaf chair
+  article: a
+  flags: []
+- id: 37008
+  name: stump table
+  article: a
+  flags: []
+- id: 37015
+  name: yellow shroom lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37016
+  name: yellow shroom lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37017
+  name: pink shroom lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37018
+  name: pink shroom lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37019
+  name: grass
+  article: a
+  flags:
+  - usable
+- id: 37020
+  name: grass
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 37021
+  name: dragon plant
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+- id: 37022
+  name: dragon plant
+  article: a
+  flags:
+  - usable
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 37021
+- id: 37023
+  name: log bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37024
+  name: log bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37025
+  name: log bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37026
+  name: log bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37027
+  name: log bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37028
+  name: log bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37029
+  name: log bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37030
+  name: log bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37031
+  name: log bed
+  flags:
+  - usable
+  - unpass
+- id: 37032
+  name: log bed
+  flags:
+  - unpass
+- id: 37033
+  name: log bed
+  flags:
+  - usable
+  - unpass
+- id: 37034
+  name: log bed
+  flags:
+  - unpass
+- id: 37161
+  name: bronze cup
+  article: a
+  flags:
+  - usable
+- id: 37162
+  name: silver cup
+  article: a
+  flags:
+  - usable
+- id: 37163
+  name: gold cup
+  article: a
+  flags:
+  - usable
+- id: 37165
+  name: gilded blessed shield
+  article: a
+  flags: []
+- id: 37174
+  name: kraken chair
+  article: a
+  flags: []
+- id: 37175
+  name: kraken chair
+  article: a
+  flags: []
+- id: 37176
+  name: kraken chair
+  article: a
+  flags: []
+- id: 37177
+  name: kraken chair
+  article: a
+  flags: []
+- id: 37178
+  name: kraken table
+  article: a
+  flags: []
+- id: 37185
+  name: kraken watcher lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37186
+  name: kraken watcher lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37187
+  name: kraken buoy lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37188
+  name: kraken tentacle lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37189
+  name: empty kraken shelf
+  article: an
+  flags:
+  - usable
+  - unpass
+- id: 37190
+  name: empty kraken shelf
+  article: an
+  flags:
+  - usable
+  - unpass
+- id: 37191
+  name: filled kraken shelf
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37192
+  name: filled kraken shelf
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37193
+  name: kraken bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37194
+  name: kraken bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37195
+  name: kraken bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37196
+  name: kraken bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37197
+  name: kraken bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37198
+  name: kraken bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37199
+  name: kraken bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37200
+  name: kraken bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37201
+  name: kraken bed
+  flags:
+  - usable
+  - unpass
+- id: 37202
+  name: kraken bed
+  flags:
+  - unpass
+- id: 37203
+  name: kraken bed
+  flags:
+  - usable
+  - unpass
+- id: 37204
+  name: kraken bed
+  flags:
+  - unpass
+- id: 37205
+  name: sculpture of an octoputz
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37206
+  name: sculpture of an octoputz
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37207
+  name: sculpture of an octoputz
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37208
+  name: sculpture of an octoputz
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37209
+  name: sculpture of an octoputz
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37210
+  name: sculpture of an octoputz
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37211
+  name: octoputz
+  article: an
+  flags:
+  - usable
+  - unpass
+- id: 37212
+  name: octoputz
+  article: an
+  flags:
+  - usable
+  - unpass
+- id: 37353
+  name: dragon lord carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 37354
+  name: folded dragon lord carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37355
+  name: dragon carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 37356
+  name: elemental carpet
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 37357
+  name: folded dragon carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37358
+  name: folded elemental carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37359
+  name: Morgaroth carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 37360
+  name: folded Morgaroth carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37361
+  name: Ghazbaran carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 37362
+  name: folded Ghazbaran carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37363
+  name: Orshabaal carpet
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 37364
+  name: folded Orshabaal carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37365
+  name: red cake carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 37366
+  name: folded red cake carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37367
+  name: orange cake carpet
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 37368
+  name: yellow cake carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 37369
+  name: green cake carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 37370
+  name: sky cake carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 37371
+  name: blue cake carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 37372
+  name: purple cake carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 37373
+  name: pink cake carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 37374
+  name: folded orange cake carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37375
+  name: folded yellow cake carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37376
+  name: folded green cake carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37377
+  name: folded sky cake carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37378
+  name: folded blue cake carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37379
+  name: folded purple cake carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37380
+  name: folded pink cake carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37381
+  name: red Tibia carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 37382
+  name: folded red Tibia carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37383
+  name: orange Tibia carpet
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 37384
+  name: yellow Tibia carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 37385
+  name: green Tibia carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 37386
+  name: sky Tibia carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 37387
+  name: blue Tibia carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 37388
+  name: purple Tibia carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 37389
+  name: pink Tibia carpet
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 37390
+  name: folded orange Tibia carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37391
+  name: folded yellow Tibia carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37392
+  name: folded green Tibia carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37393
+  name: folded sky Tibia carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37394
+  name: folded blue Tibia carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37395
+  name: folded purple Tibia carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37396
+  name: folded pink Tibia carpet
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+- id: 37414
+  name: blue balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37416
+  name: green balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37417
+  name: orange balloon
+  article: an
+  flags:
+  - usable
+  - unpass
+- id: 37418
+  name: pink balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37419
+  name: purple balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37420
+  name: red balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37421
+  name: teal balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37422
+  name: yellow balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37423
+  name: colourful balloons
+  flags:
+  - usable
+  - unpass
+- id: 37424
+  name: bonelord balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37425
+  name: cyclops balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37426
+  name: cyclops head balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37427
+  name: dwarf balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37428
+  name: hydra balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37429
+  name: orc balloon
+  article: an
+  flags:
+  - usable
+  - unpass
+- id: 37430
+  name: orc head balloon
+  article: an
+  flags:
+  - usable
+  - unpass
+- id: 37431
+  name: Tibianus balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37432
+  name: Eloise balloon
+  article: an
+  flags:
+  - usable
+  - unpass
+- id: 37433
+  name: rotworm balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37434
+  name: rotworm head balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37435
+  name: yellow 25 years balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37436
+  name: red 25 years balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37437
+  name: teal 25 years balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37438
+  name: green 25 years balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37439
+  name: orange 25 years balloon
+  article: an
+  flags:
+  - usable
+  - unpass
+- id: 37440
+  name: pink 25 years balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37457
+  name: supernatural box
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1000
+- id: 37461
+  name: balloon box
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 20
+- id: 37462
+  name: special carpet box
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 910
+- id: 37463
+  name: luminous box
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 1250
+- id: 37465
+  name: box full of presents
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 2550
+- id: 37466
+  name: embroidered box
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 820
+- id: 37467
+  name: carpet box
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 910
+- id: 37468
+  name: special fx box
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 200
+- id: 37469
+  name: special balloon box
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 20
+- id: 37471
+  name: blue balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37472
+  name: green balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37491
+  name: orange balloon
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37496
+  name: pink balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37497
+  name: purple balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37498
+  name: red balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37499
+  name: teal balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37500
+  name: yellow balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37501
+  name: colourful balloons
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37502
+  name: bonelord balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37503
+  name: cyclops balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37504
+  name: cyclops head balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37505
+  name: dwarf balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37506
+  name: hydra balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37507
+  name: orc balloon
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37508
+  name: orc head balloon
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37509
+  name: Tibianus balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37510
+  name: Eloise balloon
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37511
+  name: rotworm balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37512
+  name: rotworm head balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37513
+  name: yellow 25 years balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37514
+  name: red 25 years balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37515
+  name: teal 25 years balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37516
+  name: green 25 years balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37517
+  name: orange 25 years balloon
+  article: an
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37518
+  name: pink 25 years balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 37519
+  name: kraken buoy lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37520
+  name: kraken tentacle lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37539
+  name: portrait with Ferumbras
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3800
+- id: 37540
+  name: blue wallpaper
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 800
+- id: 37541
+  name: green wallpaper
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 800
+- id: 37542
+  name: golden wallpaper
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 800
+- id: 37543
+  name: string of fairy lights
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1200
+- id: 37544
+  name: string of fairy lights
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1200
+- id: 37545
+  name: string of fairy lights
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1200
+- id: 37547
+  name: presents
+  flags: []
+- id: 37548
+  name: presents
+  flags: []
+- id: 37549
+  name: presents
+  flags: []
+- id: 37550
+  name: presents
+  flags: []
+- id: 37551
+  name: presents
+  flags: []
+- id: 37552
+  name: presents
+  flags: []
+- id: 37553
+  name: presents
+  flags: []
+- id: 37554
+  name: presents
+  flags: []
+- id: 37555
+  name: presents
+  flags: []
+- id: 37556
+  name: presents
+  flags: []
+- id: 37557
+  name: dragon pinata
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37559
+  name: dragon pinata
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37562
+  name: pile of presents kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 37563
+  name: pile of three presents kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 37564
+  name: green and blue presents kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 37565
+  name: green and red presents kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 37566
+  name: blue and red presents kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 37567
+  name: blue present kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 37568
+  name: red present kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 37569
+  name: small blue present kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 37570
+  name: yellow present kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 37571
+  name: another yellow present kit
+  article: an
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 37572
+  name: vessel of Gaz'haragoth
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 900
+- id: 37573
+  name: vessel of Ferumbras
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 900
+- id: 37574
+  name: vessel of the Mad Mage
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 900
+- id: 37575
+  name: vessel of Horestis
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 900
+- id: 37576
+  name: vessel of Devovorga
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 900
+- id: 37614
+  name: box full of decoration
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 2600
+- id: 37700
+  name: kraken watcher lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37717
+  name: dragon pinata kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 37763
+  name: Zaoan bamboo tiles
+  flags:
+  - usable
+- id: 37764
+  name: Zaoan bamboo tiles
+  flags:
+  - usable
+  - unmove
+- id: 37765
+  name: Zaoan bamboo tiles
+  flags:
+  - usable
+- id: 37766
+  name: Zaoan bamboo tiles
+  flags:
+  - usable
+  - unmove
+- id: 37767
+  name: Zaoan bamboo tiles
+  flags:
+  - usable
+- id: 37768
+  name: Zaoan bamboo tiles
+  flags:
+  - usable
+  - unmove
+- id: 37769
+  name: Zaoan bamboo tiles
+  flags:
+  - usable
+- id: 37770
+  name: Zaoan bamboo tiles
+  flags:
+  - usable
+  - unmove
+- id: 37771
+  name: Zaoan bamboo tiles
+  flags:
+  - usable
+- id: 37772
+  name: Zaoan bamboo tiles
+  flags:
+  - usable
+  - unmove
+- id: 37773
+  name: Zaoan bamboo tiles
+  flags:
+  - usable
+- id: 37774
+  name: Zaoan bamboo tiles
+  flags:
+  - usable
+  - unmove
+- id: 37775
+  name: Zaoan panel base
+  article: a
+  flags: []
+- id: 37776
+  name: Zaoan panel
+  article: a
+  flags: []
+- id: 37777
+  name: blank Zaoan panel
+  article: a
+  flags: []
+- id: 37778
+  name: Zaoan hassock
+  article: a
+  flags: []
+- id: 37779
+  name: Zaoan hassock
+  article: a
+  flags: []
+- id: 37780
+  name: Zaoan hassock
+  article: a
+  flags: []
+- id: 37781
+  name: Zaoan hassock
+  article: a
+  flags: []
+- id: 37784
+  name: Zaoan paravent
+  article: a
+  flags: []
+- id: 37785
+  name: Zaoan paravent
+  article: a
+  flags: []
+- id: 37786
+  name: sleeping mat
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37787
+  name: sleeping mat
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37788
+  name: sleeping mat
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37789
+  name: sleeping mat
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37790
+  name: sleeping mat
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37791
+  name: sleeping mat
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37792
+  name: sleeping mat
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37793
+  name: sleeping mat
+  flags:
+  - usable
+  - unpass
+- id: 37794
+  name: sleeping mat
+  flags:
+  - unpass
+- id: 37795
+  name: sleeping mat
+  flags:
+  - usable
+  - unpass
+- id: 37796
+  name: sleeping mat
+  flags:
+  - unpass
+- id: 37797
+  name: sleeping mat
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37798
+  name: Zaoan bonsai
+  article: a
+  flags:
+  - unpass
+- id: 37799
+  name: Zaoan pot bamboo
+  article: a
+  flags:
+  - unpass
+- id: 37800
+  name: Zaoan drawing
+  article: a
+  flags: []
+- id: 37801
+  name: wooden sandals
+  flags: []
+- id: 37802
+  name: wooden sandals
+  flags: []
+- id: 37803
+  name: Zaoan side table
+  article: a
+  flags: []
+- id: 37804
+  name: katana display
+  article: a
+  flags: []
+- id: 37805
+  name: katana display
+  article: a
+  flags: []
+- id: 37806
+  name: Zaoan wall lamp
+  article: a
+  flags:
+  - usable
+- id: 37807
+  name: Zaoan wall lamp
+  article: a
+  flags:
+  - usable
+- id: 37808
+  name: Zaoan wall lamps
+  flags:
+  - usable
+- id: 37809
+  name: Zaoan wall lamps
+  flags:
+  - usable
+- id: 37811
+  name: sculpture of a fox
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37812
+  name: sculpture of a fox
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 37813
+  name: sculpture of a fox
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 4
+      decay_to: 37812
+- id: 37814
+  name: sculpture of a fox
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 37811
+- id: 37815
+  name: Zaoan divider
+  article: a
+  flags: []
+- id: 37816
+  name: Zaoan divider
+  article: a
+  flags: []
+- id: 38637
+  name: bronze cup
+  article: a
+  flags:
+  - usable
+- id: 38638
+  name: silver cup
+  article: a
+  flags:
+  - usable
+- id: 38639
+  name: gold cup
+  article: a
+  flags:
+  - usable
+- id: 38640
+  name: gilded horned helmet
+  article: a
+  flags: []
+- id: 38706
+  name: observer tapestry
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 800
+- id: 38707
+  name: podium of vigour
+  article: a
+  flags:
+  - unpass
+- id: 39419
+  name: knightly chair
+  article: a
+  flags: []
+- id: 39420
+  name: knightly chair
+  article: a
+  flags: []
+- id: 39421
+  name: knightly chair
+  article: a
+  flags: []
+- id: 39422
+  name: knightly chair
+  article: a
+  flags: []
+- id: 39423
+  name: knightly table
+  article: a
+  flags:
+  - usable
+- id: 39424
+  name: knightly table
+  article: a
+  flags:
+  - usable
+- id: 39425
+  name: well-laid knightly table
+  article: a
+  flags:
+  - usable
+- id: 39426
+  name: well-laid knightly table
+  article: a
+  flags:
+  - usable
+- id: 39427
+  name: knightly chess table
+  article: a
+  flags:
+  - usable
+- id: 39428
+  name: knightly chess table
+  article: a
+  flags:
+  - usable
+- id: 39429
+  name: knightly bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39430
+  name: knightly bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39431
+  name: knightly bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39432
+  name: knightly bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39433
+  name: knightly bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39434
+  name: knightly bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39435
+  name: knightly bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39436
+  name: knightly bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39437
+  name: knightly bed
+  flags:
+  - usable
+  - unpass
+- id: 39438
+  name: knightly bed
+  flags:
+  - unpass
+- id: 39439
+  name: knightly bed
+  flags:
+  - usable
+  - unpass
+- id: 39440
+  name: knightly bed
+  flags:
+  - unpass
+- id: 39443
+  name: knightly fire bowl
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39444
+  name: knightly fire bowl
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39445
+  name: knightly fire bowl
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39446
+  name: knightly wall lamp
+  article: a
+  flags:
+  - usable
+- id: 39447
+  name: knightly wall lamp
+  article: a
+  flags:
+  - usable
+- id: 39496
+  name: knightly sword lamp
+  article: a
+  flags:
+  - usable
+- id: 39497
+  name: knightly sword lamp
+  article: a
+  flags:
+  - usable
+- id: 39498
+  name: knightly candelabra
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39499
+  name: knightly candelabra
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39500
+  name: knightly candle holder
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39501
+  name: knightly candle holder
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39502
+  name: knightly decorative shield
+  article: a
+  flags: []
+- id: 39508
+  name: knightly guard
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39509
+  name: knightly guard
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 3
+      decay_to: 39668
+- id: 39510
+  name: knightly guard
+  article: a
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 8
+      decay_to: 39508
+- id: 39517
+  name: knightly bench
+  article: a
+  flags: []
+- id: 39518
+  name: knightly bench
+  article: a
+  flags: []
+- id: 39519
+  name: knightly bench
+  article: a
+  flags: []
+- id: 39520
+  name: knightly bench
+  article: a
+  flags: []
+- id: 39521
+  name: knightly bench
+  article: a
+  flags: []
+- id: 39522
+  name: knightly bench
+  article: a
+  flags: []
+- id: 39523
+  name: knightly bench
+  article: a
+  flags: []
+- id: 39524
+  name: knightly bench
+  article: a
+  flags: []
+- id: 39525
+  name: knightly bench
+  article: a
+  flags: []
+- id: 39526
+  name: knightly bench
+  article: a
+  flags: []
+- id: 39668
+  name: knightly guard
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39669
+  name: purple 25 years balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 39670
+  name: blue 25 years balloon
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 39671
+  name: balloon no.0
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 39672
+  name: balloon no.1
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 39673
+  name: balloon no.2
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 39674
+  name: balloon no.3
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 39675
+  name: balloon no.4
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 39676
+  name: balloon no.5
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 39677
+  name: balloon no.6
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 39678
+  name: balloon no.7
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 39679
+  name: balloon no.8
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 39680
+  name: balloon no.9
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15
+- id: 39681
+  name: purple 25 years balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39682
+  name: blue 25 years balloon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39683
+  name: balloon no.0
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39684
+  name: balloon no.1
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39685
+  name: balloon no.2
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39686
+  name: balloon no.3
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39687
+  name: balloon no.4
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39688
+  name: balloon no.5
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39689
+  name: balloon no.6
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39690
+  name: balloon no.7
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39691
+  name: balloon no.8
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39692
+  name: balloon no.9
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39694
+  name: lucky dragon
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39695
+  name: lucky dragon kit
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2500
+- id: 39704
+  name: small reward box
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 3090
+- id: 39705
+  name: reward box
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 13910
+- id: 39706
+  name: box full of balloons
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 160
+- id: 39710
+  name: big reward box
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - take
+  attributes:
+    weight: 15610
+- id: 39767
+  name: gilded warlord sword
+  article: a
+  flags: []
+- id: 39768
+  name: flower chair
+  article: a
+  flags: []
+- id: 39769
+  name: flower chair
+  article: a
+  flags: []
+- id: 39770
+  name: flower chair
+  article: a
+  flags: []
+- id: 39771
+  name: flower chair
+  article: a
+  flags: []
+- id: 39772
+  name: flower table
+  article: a
+  flags:
+  - usable
+- id: 39773
+  name: flower table
+  article: a
+  flags:
+  - usable
+- id: 39774
+  name: flower table
+  article: a
+  flags:
+  - usable
+- id: 39781
+  name: flower bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39782
+  name: flower bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39783
+  name: flower bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39784
+  name: flower bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39785
+  name: flower bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39786
+  name: flower bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39787
+  name: flower bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39788
+  name: flower bed
+  flags:
+  - usable
+  - unpass
+- id: 39789
+  name: flower bed
+  flags:
+  - unpass
+- id: 39790
+  name: flower bed
+  flags:
+  - usable
+  - unpass
+- id: 39791
+  name: flower bed
+  flags:
+  - unpass
+- id: 39792
+  name: flower bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39793
+  name: turquoise flower lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39794
+  name: turquoise flower lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39795
+  name: purple flower lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39796
+  name: purple flower lamp
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 39797
+  name: flowery grass
+  flags:
+  - usable
+- id: 39798
+  name: flowery grass
+  flags:
+  - usable
+  - unmove
+- id: 39799
+  name: wall flowers
+  article: a
+  flags: []
+- id: 39800
+  name: wall fern
+  article: a
+  flags: []
+- id: 39801
+  name: wall leaves
+  flags:
+  - usable
+- id: 39802
+  name: flowering wall leaves
+  flags:
+  - usable
+- id: 39803
+  name: tendrils
+  flags:
+  - usable
+- id: 39804
+  name: blooming tendrils
+  flags:
+  - usable
+- id: 39805
+  name: water nymph
+  flags:
+  - usable
+  - unpass
+- id: 39806
+  name: water nymph
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 3
+      decay_to: 39807
+- id: 39807
+  name: water nymph
+  flags:
+  - usable
+  - unpass
+- id: 39808
+  name: water nymph
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 5
+      decay_to: 39810
+- id: 39809
+  name: water nymph
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 3
+      decay_to: 39805
+- id: 39810
+  name: water nymph
+  flags:
+  - usable
+  - unpass
+- id: 42267
+  name: seafarer chair
+  flags: []
+- id: 42268
+  name: seafarer chair
+  flags: []
+- id: 42269
+  name: seafarer chair
+  flags: []
+- id: 42270
+  name: seafarer chair
+  flags: []
+- id: 42271
+  name: seafarer table
+  flags:
+  - usable
+- id: 42272
+  name: seafarer table
+  flags:
+  - usable
+- id: 42279
+  name: seafarer bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 42280
+  name: seafarer bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 42281
+  name: seafarer bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 42282
+  name: seafarer bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 42283
+  name: seafarer bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 42284
+  name: seafarer bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 42285
+  name: seafarer bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 42286
+  name: seafarer bed
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 42287
+  name: seafarer bed
+  flags:
+  - usable
+  - unpass
+- id: 42288
+  name: seafarer bed
+  flags:
+  - unpass
+- id: 42289
+  name: seafarer bed
+  flags:
+  - usable
+  - unpass
+- id: 42290
+  name: seafarer bed
+  flags:
+  - unpass
+- id: 42291
+  name: seashell lamp
+  flags:
+  - usable
+  - unpass
+- id: 42292
+  name: seashell lamp
+  flags:
+  - usable
+  - unpass
+- id: 42293
+  name: seashell lamp
+  flags:
+  - usable
+  - unpass
+- id: 42294
+  name: seashell lamp
+  flags:
+  - usable
+  - unpass
+- id: 42295
+  name: tentacle lamp
+  flags:
+  - usable
+  - unpass
+- id: 42296
+  name: tentacle lamp
+  flags:
+  - usable
+  - unpass
+- id: 42297
+  name: tentacle lamp
+  flags:
+  - usable
+  - unpass
+- id: 42298
+  name: tentacle lamp
+  flags:
+  - usable
+  - unpass
+- id: 42299
+  name: sea-devil wall lamp
+  article: a
+  flags:
+  - usable
+- id: 42300
+  name: sea-devil wall lamp
+  article: a
+  flags:
+  - usable
+- id: 42301
+  name: seafood bucket
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 42302
+  name: seafood bucket
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 42303
+  name: ship bell
+  flags: []
+- id: 42304
+  name: fish hook board
+  flags: []
+- id: 42305
+  name: life buoy
+  flags: []
+- id: 42306
+  name: captain crab
+  article: a
+  flags:
+  - usable
+  - unpass
+- id: 42307
+  name: captain crab
+  article: a
+  flags:
+  - unpass
+- id: 42308
+  name: captain crab
+  article: a
+  flags:
+  - unpass
+- id: 42320
+  name: opulent chair
+  flags: []
+- id: 42321
+  name: opulent chair
+  flags: []
+- id: 42322
+  name: opulent chair
+  flags: []
+- id: 42323
+  name: opulent chair
+  flags: []
+- id: 42324
+  name: opulent table
+  flags:
+  - usable
+- id: 42325
+  name: opulent table
+  flags:
+  - usable
+- id: 42326
+  name: opulent table
+  flags:
+  - usable
+- id: 42327
+  name: opulent table
+  flags:
+  - usable
+- id: 42336
+  name: opulent wood floor planks
+  flags:
+  - usable
+- id: 42337
+  name: opulent wood floor
+  flags:
+  - usable
+  - unmove
+- id: 42338
+  name: loose opulent floor intarsia
+  flags:
+  - usable
+- id: 42339
+  name: opulent floor intarsia
+  flags:
+  - usable
+  - unmove
+- id: 42340
+  name: rolled-up opulent carpet
+  flags:
+  - usable
+- id: 42341
+  name: opulent carpet
+  flags:
+  - usable
+  - unmove
+- id: 42342
+  name: pile of riches
+  flags: []
+- id: 42343
+  name: merchant portrait
+  flags: []
+- id: 42344
+  name: scales wall lamp
+  flags:
+  - usable
+- id: 42345
+  name: scales wall lamp
+  flags:
+  - usable
+- id: 42346
+  name: opulent floor lamp
+  flags:
+  - usable
+  - unpass
+- id: 42347
+  name: opulent floor lamp
+  flags:
+  - usable
+  - unpass
+- id: 42348
+  name: opulent floor lamp
+  flags:
+  - usable
+  - unpass
+- id: 42349
+  name: opulent floor lamp
+  flags:
+  - usable
+  - unpass
+- id: 42350
+  name: opulent item stand
+  flags: []
+- id: 42351
+  name: opulent kline
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 42352
+  name: opulent kline
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 42353
+  name: opulent kline
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 42354
+  name: opulent kline
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 42355
+  name: opulent kline
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 42356
+  name: opulent kline
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 42357
+  name: opulent kline
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 42358
+  name: opulent kline
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 42359
+  name: opulent kline
+  flags:
+  - usable
+  - unpass
+- id: 42360
+  name: opulent kline
+  flags:
+  - unpass
+- id: 42361
+  name: opulent kline
+  flags:
+  - usable
+  - unpass
+- id: 42362
+  name: opulent kline
+  flags:
+  - unpass
+- id: 42363
+  name: djinn lamp
+  flags:
+  - usable
+  - unpass
+- id: 42364
+  name: djinn lamp
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 1
+      decay_to: 42365
+- id: 42365
+  name: djinn lamp
+  flags:
+  - usable
+  - unpass
+- id: 42366
+  name: djinn lamp
+  flags:
+  - unpass
+  attributes:
+    decay:
+      duration: 2
+      decay_to: 42363
+- id: 42367
+  name: podium of tenacity
+  flags:
+  - usable
+  - unpass
+- id: 42368
+  name: podium of tenacity
+  flags:
+  - usable
+  - unpass
+- id: 43915
+  name: weretiger trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 43916
+  name: werecrocodile trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 43917
+  name: werepanther trophy
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500

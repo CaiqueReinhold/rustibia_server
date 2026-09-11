@@ -283,7 +283,7 @@ pub fn load_spells(
     load_spells_from_str(&fs::read_to_string(path)?, shapes)
 }
 
-/// Split out from `load_spells` for the same reason `load_items_from_str` is: the whole
+/// Split out from `load_spells` for the same reason `load_items_from_files` is: the whole
 /// read path over a document the caller owns.
 fn load_spells_from_str(
     contents: &str,

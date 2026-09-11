@@ -1,0 +1,357 @@
+- id: 516
+  name: carved stone tile
+  article: a
+  flags:
+  - ground
+  - unmove
+  - fullbank
+  attributes:
+    tile_friction: 100
+- id: 628
+  name: wooden floor
+  flags:
+  - unmove
+- id: 775
+  name: mystic flame
+  article: a
+  flags:
+  - bottom
+  - unmove
+- id: 878
+  name: wooden floor
+  flags:
+  - unmove
+- id: 1756
+  name: small boat
+  article: a
+  flags:
+  - bottom
+  - unmove
+- id: 1757
+  name: small boat
+  article: a
+  flags:
+  - bottom
+  - unmove
+- id: 1758
+  name: small boat
+  article: a
+  flags:
+  - bottom
+  - unmove
+- id: 1761
+  name: small boat
+  article: a
+  flags:
+  - bottom
+  - unmove
+- id: 1762
+  name: small boat
+  article: a
+  flags:
+  - bottom
+  - unmove
+- id: 1763
+  name: small boat
+  article: a
+  flags:
+  - bottom
+  - unmove
+- id: 1949
+  name: magic forcefield
+  article: a
+  flags:
+  - bottom
+  - unmove
+- id: 1959
+  name: mystic flame
+  article: a
+  flags:
+  - bottom
+  - unmove
+- id: 5022
+  name: magic forcefield
+  article: a
+  flags:
+  - bottom
+  - unmove
+- id: 5023
+  name: magic forcefield
+  article: a
+  flags:
+  - bottom
+  - unmove
+- id: 5756
+  name: turtle
+  article: a
+  flags:
+  - ground
+  - unmove
+  - fullbank
+  attributes:
+    tile_friction: 160
+- id: 8193
+  name: strange whirl
+  article: a
+  flags:
+  - ground
+  - unmove
+  attributes:
+    tile_friction: 95
+- id: 11552
+  name: magic crystal
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 140
+- id: 11553
+  name: magic portal
+  article: a
+  flags:
+  - unmove
+- id: 11554
+  name: magic portal
+  article: a
+  flags:
+  - unmove
+- id: 12796
+  name: energy portal
+  article: a
+  flags:
+  - unmove
+- id: 15320
+  name: large crystal teleporter
+  article: a
+  flags:
+  - bottom
+  - unmove
+- id: 19243
+  name: large crystal teleporter
+  article: a
+  flags:
+  - bottom
+  - unmove
+- id: 20142
+  name: ruined stairs
+  flags:
+  - bottom
+  - unmove
+- id: 20143
+  name: ruined stairs
+  flags:
+  - bottom
+  - unmove
+- id: 21739
+  name: water vortex
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 21740
+  name: water vortex
+  article: a
+  flags:
+  - bottom
+  - usable
+  - multiuse
+  - unmove
+- id: 21741
+  name: hot geyser
+  article: a
+  flags:
+  - bottom
+  - unmove
+- id: 21743
+  name: strange machine
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 22106
+  name: water vortex
+  article: a
+  flags:
+  - bottom
+  - usable
+  - multiuse
+  - unmove
+- id: 22747
+  name: water vortex
+  article: a
+  flags:
+  - unmove
+- id: 22761
+  name: vortex
+  article: a
+  flags:
+  - bottom
+  - unmove
+- id: 23482
+  name: vortex
+  flags:
+  - unmove
+- id: 23483
+  name: vortex
+  flags:
+  - unmove
+- id: 23484
+  name: vortex
+  flags:
+  - unmove
+- id: 25047
+  name: death portal
+  article: a
+  flags:
+  - unmove
+- id: 25048
+  name: death portal
+  article: a
+  flags:
+  - unmove
+- id: 25049
+  name: earth portal
+  article: an
+  flags:
+  - unmove
+- id: 25050
+  name: earth portal
+  article: an
+  flags:
+  - unmove
+- id: 25051
+  name: energy portal
+  article: an
+  flags:
+  - unmove
+- id: 25052
+  name: energy portal
+  article: an
+  flags:
+  - unmove
+- id: 25053
+  name: fire portal
+  article: a
+  flags:
+  - unmove
+- id: 25054
+  name: fire portal
+  article: a
+  flags:
+  - unmove
+- id: 25055
+  name: holy portal
+  article: a
+  flags:
+  - unmove
+- id: 25056
+  name: holy portal
+  article: a
+  flags:
+  - unmove
+- id: 25057
+  name: ice portal
+  article: a
+  flags:
+  - unmove
+- id: 25058
+  name: ice portal
+  article: a
+  flags:
+  - unmove
+- id: 27589
+  name: teleport
+  article: a
+  flags:
+  - unmove
+- id: 27590
+  name: teleport
+  article: a
+  flags:
+  - unmove
+- id: 27658
+  name: energy portal
+  article: a
+  flags:
+  - unmove
+- id: 28672
+  name: vortex
+  article: a
+  flags:
+  - unmove
+- id: 28673
+  name: vortex
+  article: a
+  flags:
+  - unmove
+- id: 29979
+  name: portal
+  article: a
+  flags:
+  - unmove
+- id: 29980
+  name: portal
+  article: a
+  flags:
+  - unmove
+- id: 32979
+  name: fog portal
+  flags:
+  - unmove
+- id: 33004
+  name: fog portal
+  flags:
+  - unmove
+- id: 33005
+  name: fog portal
+  flags:
+  - unmove
+- id: 33006
+  name: fog portal
+  flags:
+  - unmove
+- id: 33007
+  name: fog portal
+  flags:
+  - unmove
+- id: 33790
+  name: large crystal teleporter
+  article: a
+  flags:
+  - unmove
+- id: 34111
+  name: magic forcefield
+  article: a
+  flags:
+  - bottom
+  - unmove
+- id: 35502
+  name: magic portal
+  article: a
+  flags:
+  - unmove
+- id: 36973
+  name: magic forcefield
+  article: a
+  flags:
+  - bottom
+  - unmove
+- id: 37000
+  name: magic forcefield
+  article: a
+  flags:
+  - bottom
+  - unmove
+- id: 37001
+  name: magic forcefield
+  article: a
+  flags:
+  - bottom
+  - unmove
+- id: 37065
+  name: magic forcefield
+  article: a
+  flags:
+  - bottom
+  - unmove

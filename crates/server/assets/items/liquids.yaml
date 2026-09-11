@@ -1,0 +1,286 @@
+- id: 869
+  name: test-tube holder
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+  - unmove
+  - liquidcontainer
+- id: 871
+  name: potion stand
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+  - unmove
+  - liquidcontainer
+- id: 873
+  name: potion stand
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+  - unmove
+  - liquidcontainer
+- id: 2524
+  name: trough
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+  - liquidcontainer
+- id: 2886
+  name: pool
+  article: a
+  flags:
+  - bottom
+  - liquidpool
+  - unmove
+  attributes:
+    decay:
+      duration: 45
+      decay_to: 2887
+- id: 2887
+  name: pool
+  article: a
+  flags:
+  - bottom
+  - liquidpool
+  - unmove
+  attributes:
+    decay:
+      duration: 45
+      decay_to: 2888
+- id: 2888
+  name: pool
+  article: a
+  flags:
+  - bottom
+  - liquidpool
+  - unmove
+  attributes:
+    decay:
+      duration: 600
+      decay_to: 0
+- id: 2889
+  name: pool
+  article: a
+  flags:
+  - bottom
+  - liquidpool
+  - unmove
+  attributes:
+    decay:
+      duration: 45
+      decay_to: 2890
+- id: 2890
+  name: pool
+  article: a
+  flags:
+  - bottom
+  - liquidpool
+  - unmove
+  attributes:
+    decay:
+      duration: 45
+      decay_to: 2891
+- id: 2891
+  name: pool
+  article: a
+  flags:
+  - bottom
+  - liquidpool
+  - unmove
+  attributes:
+    decay:
+      duration: 60
+      decay_to: 0
+- id: 2895
+  name: pool
+  article: a
+  flags:
+  - bottom
+  - liquidpool
+  - unmove
+- id: 2896
+  name: pool
+  article: a
+  flags:
+  - bottom
+  - liquidpool
+  - unmove
+- id: 2897
+  name: pool
+  article: a
+  flags:
+  - bottom
+  - liquidpool
+  - unmove
+- id: 2898
+  name: pool
+  article: a
+  flags:
+  - bottom
+  - liquidpool
+  - unmove
+- id: 2899
+  name: pool
+  article: a
+  flags:
+  - bottom
+  - liquidpool
+  - unmove
+- id: 2900
+  name: pool
+  article: a
+  flags:
+  - bottom
+  - liquidpool
+  - unmove
+- id: 2904
+  name: large amphora
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+  - liquidcontainer
+- id: 22642
+  name: clay pot
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - liquidcontainer
+- id: 30927
+  name: amphora
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - unpass
+  - unmove
+  - liquidcontainer
+  attributes:
+    weight: 9700
+- id: 31119
+  name: small amphora
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+  - unmove
+  - liquidcontainer
+- id: 31120
+  name: small amphora
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+  - unmove
+  - liquidcontainer
+- id: 31121
+  name: small amphora
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+  - unmove
+  - liquidcontainer
+- id: 31122
+  name: small amphora
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+  - unmove
+  - liquidcontainer
+- id: 31123
+  name: small amphora
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+  - unmove
+  - liquidcontainer
+- id: 31124
+  name: small amphora
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+  - unmove
+  - liquidcontainer
+- id: 31127
+  name: unknown
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+  - unmove
+  - liquidcontainer
+- id: 39108
+  name: small amphora
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+  - unmove
+  - liquidcontainer
+- id: 39109
+  name: small amphora
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+  - unmove
+  - liquidcontainer
+- id: 39110
+  name: small amphora
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+  - unmove
+  - liquidcontainer
+- id: 39111
+  name: small amphora
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+  - unmove
+  - liquidcontainer
+- id: 39112
+  name: small amphora
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+  - unmove
+  - liquidcontainer
+- id: 39113
+  name: small amphora
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - unpass
+  - unmove
+  - liquidcontainer

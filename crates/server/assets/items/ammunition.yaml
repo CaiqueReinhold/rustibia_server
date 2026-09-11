@@ -1,0 +1,301 @@
+- id: 761
+  name: flash arrow
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+    attack: 14
+    max_hit_chance: 91
+    ammo_type: arrow
+    element_damage:
+      element: energy
+      damage: 14
+    missile_id: 33
+- id: 762
+  name: shiver arrow
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+    attack: 14
+    max_hit_chance: 91
+    ammo_type: arrow
+    element_damage:
+      element: ice
+      damage: 14
+    missile_id: 35
+- id: 763
+  name: flaming arrow
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+    attack: 14
+    max_hit_chance: 91
+    ammo_type: arrow
+    element_damage:
+      element: fire
+      damage: 14
+    missile_id: 34
+- id: 774
+  name: earth arrow
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+    attack: 14
+    max_hit_chance: 91
+    ammo_type: arrow
+    element_damage:
+      element: earth
+      damage: 14
+    missile_id: 40
+- id: 3446
+  name: bolt
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+    attack: 30
+    max_hit_chance: 87
+    ammo_type: bolt
+    missile_id: 2
+- id: 3447
+  name: arrow
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+    attack: 25
+    max_hit_chance: 91
+    ammo_type: arrow
+    missile_id: 3
+- id: 3448
+  name: poison arrow
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+    attack: 23
+    max_hit_chance: 91
+    ammo_type: arrow
+    missile_id: 6
+    element: earth
+- id: 3449
+  name: burst arrow
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 90
+    attack: 27
+    max_hit_chance: 100
+    ammo_type: arrow
+    missile_id: 7
+    element: fire
+    area:
+      shape: boxed
+      effect_id: 295
+- id: 3450
+  name: power bolt
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 90
+    attack: 40
+    max_hit_chance: 91
+    ammo_type: bolt
+    missile_id: 14
+- id: 6528
+  name: infernal bolt
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 90
+    attack: 72
+    max_hit_chance: 91
+    ammo_type: bolt
+    missile_id: 16
+- id: 7363
+  name: piercing bolt
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+    attack: 33
+    max_hit_chance: 87
+    ammo_type: bolt
+    missile_id: 24
+- id: 7364
+  name: sniper arrow
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+    attack: 28
+    max_hit_chance: 100
+    ammo_type: arrow
+    missile_id: 22
+- id: 7365
+  name: onyx arrow
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+    attack: 38
+    max_hit_chance: 94
+    ammo_type: arrow
+    missile_id: 23
+- id: 14251
+  name: tarsal arrow
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+    attack: 33
+    max_hit_chance: 94
+    ammo_type: arrow
+- id: 14252
+  name: vortex bolt
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+    attack: 36
+    max_hit_chance: 89
+    ammo_type: bolt
+- id: 15793
+  name: crystalline arrow
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 75
+    attack: 65
+    max_hit_chance: 95
+    ammo_type: arrow
+- id: 16141
+  name: prismatic bolt
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 85
+    attack: 66
+    max_hit_chance: 90
+    ammo_type: bolt
+- id: 16142
+  name: drill bolt
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+    attack: 56
+    max_hit_chance: 90
+    ammo_type: bolt
+- id: 16143
+  name: envenomed arrow
+  article: an
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 70
+    attack: 27
+    max_hit_chance: 93
+    ammo_type: arrow
+    element_damage:
+      element: earth
+      damage: 27
+- id: 21470
+  name: simple arrow
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 60
+    attack: 20
+    max_hit_chance: 40
+    ammo_type: arrow
+    missile_id: 3
+- id: 25757
+  name: diamond arrow
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+    attack: 37
+    max_hit_chance: 100
+    ammo_type: arrow
+    area:
+      shape: circle2
+      effect_id: 12
+- id: 25758
+  name: spectral bolt
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 90
+    attack: 78
+    max_hit_chance: 100
+    ammo_type: bolt
+- id: 35901
+  name: diamond arrow
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 80
+    attack: 37
+    max_hit_chance: 100
+    ammo_type: arrow
+- id: 35902
+  name: spectral bolt
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 90
+    attack: 78
+    max_hit_chance: 100
+    ammo_type: bolt

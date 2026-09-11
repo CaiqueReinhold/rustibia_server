@@ -20,6 +20,7 @@ use crate::entities::items::ItemId;
 use crate::game::TickDelta;
 use crate::persistence::areas::AREA_SHAPES;
 use crate::persistence::target_mode::{TargetModeError, parse_target_mode, take_type};
+use crate::persistence::yaml_files_in;
 
 pub static CREATURE_KINDS: Lazy<Arc<HashMap<CreatureKindId, Arc<CreatureKind>>>> =
     Lazy::new(|| {
@@ -279,28 +280,10 @@ pub fn load_creatures(
     shapes: &HashMap<AreaShapeId, Arc<AreaShape>>,
 ) -> Result<HashMap<CreatureKindId, Arc<CreatureKind>>, CreaturesLoadError> {
     let dir = dir.as_ref();
-    let mut paths: Vec<PathBuf> = fs::read_dir(dir)
-        .map_err(|source| CreaturesLoadError::ReadError {
-            path: dir.to_path_buf(),
-            source,
-        })?
-        .map(|entry| {
-            entry
-                .map(|entry| entry.path())
-                .map_err(|source| CreaturesLoadError::ReadError {
-                    path: dir.to_path_buf(),
-                    source,
-                })
-        })
-        .collect::<Result<_, _>>()?;
-    paths.retain(|path| {
-        path.is_file()
-            && matches!(
-                path.extension().and_then(|ext| ext.to_str()),
-                Some("yaml" | "yml")
-            )
-    });
-    paths.sort();
+    let paths = yaml_files_in(dir).map_err(|source| CreaturesLoadError::ReadError {
+        path: dir.to_path_buf(),
+        source,
+    })?;
 
     paths
         .into_iter()
@@ -436,7 +419,7 @@ say:
 
         assert!(
             unknown.is_empty(),
-            "ids missing from items.yaml: {unknown:?}"
+            "ids missing from assets/items: {unknown:?}"
         );
     }
 

@@ -1,0 +1,705 @@
+- id: 646
+  name: elvenhair rope
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 600
+- id: 650
+  name: watering can
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 850
+- id: 2906
+  name: watch
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 50
+- id: 2911
+  name: candelabrum
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 5000
+- id: 2932
+  name: oil lamp
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 1400
+- id: 2933
+  name: small oil lamp
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 900
+- id: 2967
+  name: magical key
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 2968
+  name: wooden key
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 2969
+  name: silver key
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 2970
+  name: copper key
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 2971
+  name: crystal key
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 2972
+  name: golden key
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 2973
+  name: bone key
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 3003
+  name: rope
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1800
+- id: 3101
+  name: spellbook
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1800
+    defense: 14
+- id: 3243
+  name: gemmed lamp
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1300
+- id: 3247
+  name: djinn's lamp
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 600
+- id: 3451
+  name: pitchfork
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2500
+- id: 3452
+  name: rake
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1500
+- id: 3454
+  name: broom
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1100
+- id: 3455
+  name: hoe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2800
+- id: 3456
+  name: pick
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 4500
+- id: 3457
+  name: shovel
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3500
+- id: 3459
+  name: wooden hammer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 600
+- id: 3460
+  name: hammer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1150
+- id: 3461
+  name: saw
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1000
+- id: 3462
+  name: small axe
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2000
+- id: 3463
+  name: mirror
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 950
+- id: 3464
+  name: baking tray
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1200
+- id: 3466
+  name: pan
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1800
+- id: 3467
+  name: fork
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 100
+- id: 3468
+  name: spoon
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 3469
+  name: kitchen knife
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 3470
+  name: wooden spoon
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 3471
+  name: cleaver
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 660
+- id: 3472
+  name: oven spatula
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 1400
+- id: 3473
+  name: rolling pin
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+- id: 3474
+  name: bowl
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 380
+- id: 3475
+  name: bowl
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 380
+- id: 3476
+  name: bowl
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 380
+- id: 3481
+  name: closed trap
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2100
+- id: 3482
+  name: trap
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 2100
+- id: 3483
+  name: fishing rod
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 850
+- id: 3509
+  name: inkwell
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 200
+- id: 4835
+  name: snake destroyer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6600
+- id: 4872
+  name: ice pick
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 7000
+- id: 5467
+  name: fire bug
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 3050
+- id: 5710
+  name: light shovel
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1500
+- id: 5865
+  name: juice squeezer
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1500
+- id: 5908
+  name: obsidian knife
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 5941
+  name: wooden stake
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 500
+- id: 5942
+  name: blessed wooden stake
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 500
+- id: 5946
+  name: comb
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 450
+- id: 6561
+  name: ceremonial ankh
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 500
+- id: 7785
+  name: bricklayers' kit
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1800
+- id: 7889
+  name: lock pick
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 85
+- id: 9234
+  name: worm punisher
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 6450
+- id: 9235
+  name: golem disassembler
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1500
+- id: 9306
+  name: mechanical fishing rod
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 919
+- id: 9594
+  name: sneaky stabber of eliteness
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 300
+- id: 9595
+  name: sneaky stabber of eliteness
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 300
+    decay:
+      duration: 60
+      decay_to: 9594
+- id: 9596
+  name: squeezing gear of girlpower
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 300
+- id: 9597
+  name: squeezing gear of girlpower
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 300
+    decay:
+      duration: 60
+      decay_to: 9596
+- id: 9598
+  name: whacking driller of fate
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 300
+- id: 9599
+  name: whacking driller of fate
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 300
+    decay:
+      duration: 60
+      decay_to: 9598
+- id: 21755
+  name: bronze gear wheel
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 5
+- id: 21757
+  name: calibrated indicator gauge
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 10
+- id: 21758
+  name: copper valve
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 20
+- id: 21766
+  name: glass tube
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1400
+- id: 21814
+  name: glooth capsule
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 150
+- id: 21816
+  name: tainted glooth capsule
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 150
+- id: 29950
+  name: acid resistant fishing rod
+  article: an
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 850
+- id: 31327
+  name: ritual scissors
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+- id: 31328
+  name: bark peeler
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1000
+- id: 31334
+  name: hand auger
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1000
+- id: 31379
+  name: wooden cage key
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 77
+- id: 31913
+  name: baking tray
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 1200
+- id: 36543
+  name: chisel
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 850
+- id: 36544
+  name: brush
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 850
+- id: 36545
+  name: marble floor
+  article: a
+  flags:
+  - cumulative
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 850

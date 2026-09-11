@@ -1,0 +1,1285 @@
+- id: 139
+  name: mining helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 700
+    slot: 1
+    armor: 1
+- id: 827
+  name: magma monocle
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+    slot: 1
+    armor: 5
+- id: 828
+  name: lightning headband
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+    slot: 1
+    armor: 5
+- id: 829
+  name: glacier mask
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+    slot: 1
+    armor: 5
+- id: 830
+  name: terra hood
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+    slot: 1
+    armor: 5
+- id: 875
+  name: mining helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 700
+    slot: 1
+    armor: 1
+- id: 894
+  name: jester hat
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+    slot: 1
+    armor: 1
+- id: 3011
+  name: crown
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1900
+    slot: 1
+- id: 3022
+  name: ancient tiara
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 820
+    slot: 1
+- id: 3210
+  name: hat of the mad
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 700
+    slot: 1
+    armor: 3
+- id: 3226
+  name: damaged helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1800
+    slot: 1
+    armor: 5
+- id: 3229
+  name: helmet of the ancients
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2760
+    slot: 1
+    armor: 8
+- id: 3230
+  name: full helmet of the ancients
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2760
+    slot: 1
+    decay:
+      duration: 1800
+      decay_to: 3229
+    armor: 11
+- id: 3351
+  name: steel helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4600
+    slot: 1
+    armor: 6
+- id: 3352
+  name: chain helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4200
+    slot: 1
+    armor: 2
+- id: 3353
+  name: iron helmet
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 3000
+    slot: 1
+    armor: 5
+- id: 3354
+  name: brass helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2700
+    slot: 1
+    armor: 3
+- id: 3355
+  name: leather helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2200
+    slot: 1
+    armor: 1
+- id: 3356
+  name: devil helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5000
+    slot: 1
+    armor: 7
+- id: 3365
+  name: golden helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3200
+    slot: 1
+    armor: 12
+- id: 3367
+  name: viking helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3900
+    slot: 1
+    armor: 4
+- id: 3368
+  name: winged helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1200
+    slot: 1
+    armor: 10
+- id: 3369
+  name: warrior helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6800
+    slot: 1
+    armor: 8
+- id: 3373
+  name: strange helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4600
+    slot: 1
+    armor: 6
+- id: 3374
+  name: legion helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3100
+    slot: 1
+    armor: 4
+- id: 3375
+  name: soldier helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3200
+    slot: 1
+    armor: 5
+- id: 3376
+  name: studded helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2450
+    slot: 1
+    armor: 2
+- id: 3384
+  name: dark helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4600
+    slot: 1
+    armor: 6
+- id: 3385
+  name: crown helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2950
+    slot: 1
+    armor: 7
+- id: 3387
+  name: demon helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2950
+    slot: 1
+    armor: 10
+- id: 3390
+  name: horned helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5100
+    slot: 1
+    armor: 11
+- id: 3391
+  name: crusader helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5200
+    slot: 1
+    armor: 8
+- id: 3392
+  name: royal helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4800
+    slot: 1
+    armor: 9
+- id: 3393
+  name: amazon helmet
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 2950
+    slot: 1
+    armor: 7
+- id: 3395
+  name: ceremonial mask
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 4000
+    slot: 1
+    armor: 9
+- id: 3396
+  name: dwarven helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4200
+    slot: 1
+    armor: 6
+- id: 3400
+  name: dragon scale helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3250
+    slot: 1
+    armor: 9
+- id: 3403
+  name: tribal mask
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 1
+    armor: 2
+- id: 3405
+  name: horseman helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4200
+    slot: 1
+    armor: 6
+- id: 3406
+  name: feather headdress
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2100
+    slot: 1
+    armor: 2
+- id: 3407
+  name: charmer's tiara
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2200
+    slot: 1
+    armor: 2
+- id: 3408
+  name: bonelord helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4600
+    slot: 1
+    armor: 7
+- id: 3573
+  name: magician hat
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 750
+    slot: 1
+    armor: 1
+- id: 3574
+  name: mystic turban
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 850
+    slot: 1
+    armor: 1
+- id: 3575
+  name: wood cape
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1100
+    slot: 1
+    armor: 3
+- id: 3576
+  name: post officer's hat
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 700
+    slot: 1
+    armor: 1
+- id: 5460
+  name: helmet of the deep
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 21000
+    slot: 1
+    armor: 2
+- id: 5741
+  name: skull helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4200
+    slot: 1
+    armor: 9
+- id: 5903
+  name: Ferumbras' hat
+  flags:
+  - take
+  attributes:
+    weight: 850
+    slot: 1
+    armor: 1
+- id: 5917
+  name: bandana
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 850
+    slot: 1
+    armor: 1
+- id: 6096
+  name: pirate hat
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1250
+    slot: 1
+    armor: 3
+- id: 6531
+  name: santa hat
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 750
+    slot: 1
+    armor: 1
+- id: 6578
+  name: party hat
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 750
+    slot: 1
+    armor: 1
+- id: 7458
+  name: fur cap
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1800
+    slot: 1
+    armor: 3
+- id: 7459
+  name: pair of earmuffs
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+    slot: 1
+- id: 7461
+  name: krimhorn helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5100
+    slot: 1
+    armor: 6
+- id: 7462
+  name: ragnir helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3100
+    slot: 1
+    armor: 6
+- id: 7992
+  name: mage hat
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 900
+    slot: 1
+    armor: 3
+- id: 8864
+  name: yalahari mask
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 1
+    armor: 5
+- id: 9013
+  name: flower wreath
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 500
+    slot: 1
+- id: 9103
+  name: batwing hat
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 600
+    slot: 1
+    armor: 3
+- id: 9221
+  name: laurel wreath
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 900
+    slot: 1
+- id: 9374
+  name: odd hat
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 700
+    slot: 1
+    armor: 5
+- id: 9381
+  name: helmet of ultimate terror
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1250
+    slot: 1
+    armor: 3
+- id: 9382
+  name: helmet of nature
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1100
+    slot: 1
+    armor: 3
+- id: 9399
+  name: mighty helm of green sparks
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4600
+    slot: 1
+    armor: 6
+- id: 9653
+  name: witch hat
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 780
+    slot: 1
+    armor: 3
+- id: 10385
+  name: Zaoan helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6600
+    slot: 1
+    armor: 9
+- id: 10451
+  name: jade hat
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 900
+    slot: 1
+    armor: 4
+- id: 11585
+  name: helmet of the deep
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 21000
+    slot: 1
+    decay:
+      duration: 21600
+      decay_to: 5460
+    armor: 2
+- id: 11674
+  name: cobra crown
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 850
+    slot: 1
+    armor: 3
+- id: 11689
+  name: elite draken helmet
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 4300
+    slot: 1
+    armor: 9
+- id: 11700
+  name: sedge hat
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1800
+    slot: 1
+    armor: 2
+- id: 12599
+  name: mage's cap
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1000
+    slot: 1
+    armor: 3
+- id: 12809
+  name: epic wisdom
+  article: the
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 805
+    slot: 1
+- id: 12810
+  name: epic wisdom
+  article: the
+  flags:
+  - take
+  attributes:
+    weight: 805
+    slot: 1
+- id: 13995
+  name: depth galea
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4600
+    slot: 1
+    armor: 8
+- id: 14258
+  name: depth galea
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4600
+    slot: 1
+    armor: 8
+- id: 16104
+  name: gill gugel
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 900
+    slot: 1
+    armor: 5
+- id: 16109
+  name: prismatic helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5600
+    slot: 1
+    armor: 9
+- id: 17852
+  name: helmet of the lost
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 1
+    armor: 7
+- id: 20184
+  name: broken visor
+  article: a
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1400
+    slot: 1
+    armor: 1
+- id: 21165
+  name: rubber cap
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 800
+    slot: 1
+    armor: 5
+- id: 21892
+  name: crest of the deep seas
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4500
+    slot: 1
+    armor: 7
+- id: 22062
+  name: werewolf helmet
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 2500
+    slot: 1
+    armor: 9
+- id: 22088
+  name: enchanted werewolf helmet
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 1
+- id: 22113
+  name: enchanted werewolf helmet
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 1
+- id: 22114
+  name: enchanted werewolf helmet
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 1
+- id: 22115
+  name: enchanted werewolf helmet
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 1
+- id: 22116
+  name: enchanted werewolf helmet
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 1
+- id: 22127
+  name: enchanted werewolf helmet
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 1
+    decay:
+      duration: 3600
+      decay_to: 22062
+    armor: 9
+- id: 22128
+  name: enchanted werewolf helmet
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 1
+    decay:
+      duration: 3600
+      decay_to: 22062
+    armor: 9
+- id: 22129
+  name: enchanted werewolf helmet
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 1
+    decay:
+      duration: 3600
+      decay_to: 22062
+    armor: 9
+- id: 22130
+  name: enchanted werewolf helmet
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 1
+    decay:
+      duration: 3600
+      decay_to: 22062
+    armor: 9
+- id: 22132
+  name: enchanted werewolf helmet
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 1
+    decay:
+      duration: 3600
+      decay_to: 22062
+    armor: 9
+- id: 22153
+  name: dark wizard's crown
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 666
+    slot: 1
+- id: 22154
+  name: dark wizard's crown
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 666
+    slot: 1
+- id: 22192
+  name: shamanic mask
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3100
+    slot: 1
+    armor: 4
+- id: 22754
+  name: visage of the end days
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3800
+    slot: 1
+    armor: 10
+- id: 22757
+  name: shroud of despair
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3400
+    slot: 1
+    armor: 7
+- id: 23474
+  name: tiara of power
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1150
+    slot: 1
+- id: 23475
+  name: tiara of power
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1150
+    slot: 1
+    decay:
+      duration: 3600
+      decay_to: 0
+    armor: 7
+- id: 24397
+  name: Ferumbras' Candy Hat
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 850
+    slot: 1
+    armor: 1
+- id: 24405
+  name: rusty winged helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1200
+    slot: 1
+    armor: 2
+- id: 24532
+  name: old tibia item
+  flags:
+  - unpass
+  - unmove
+  attributes:
+    slot: 1
+- id: 24535
+  name: old tibia item
+  flags:
+  - unpass
+  - unmove
+  attributes:
+    slot: 1
+- id: 24637
+  name: old tibia item
+  flags:
+  - unpass
+  - unmove
+  attributes:
+    slot: 1
+- id: 25088
+  name: porcelain mask
+  flags:
+  - take
+  attributes:
+    weight: 450
+    slot: 1
+    armor: 1
+- id: 26187
+  name: leaf crown
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 500
+    slot: 1
+- id: 26188
+  name: iron crown
+  article: an
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1000
+    slot: 1
+- id: 26189
+  name: incandescent crown
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1000
+    slot: 1
+- id: 26190
+  name: reflecting crown
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 500
+    slot: 1
+- id: 27522
+  name: blue spectacles
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 250
+    slot: 1
+- id: 27647
+  name: gnome helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2400
+    slot: 1
+    armor: 8
+- id: 28714
+  name: falcon circlet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1300
+    slot: 1
+    armor: 8
+- id: 28715
+  name: falcon coif
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2800
+    slot: 1
+    armor: 10
+- id: 29427
+  name: dark whispers
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3400
+    slot: 1
+    armor: 7
+- id: 30275
+  name: crown of the percht queen
+  article: the
+  flags:
+  - take
+  attributes:
+    weight: 1900
+    slot: 1
+- id: 30276
+  name: crown of the percht queen
+  article: the
+  flags:
+  - take
+  attributes:
+    weight: 1900
+    slot: 1
+- id: 30397
+  name: cobra hood
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2700
+    slot: 1
+    armor: 9
+- id: 31369
+  name: gryphon mask
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2000
+    slot: 1
+- id: 31370
+  name: silver mask
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3200
+    slot: 1
+- id: 31371
+  name: ivory mask
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 1800
+    slot: 1
+- id: 31372
+  name: mirror mask
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1600
+    slot: 1
+- id: 31577
+  name: terra helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3100
+    slot: 1
+    armor: 9
+- id: 31582
+  name: galea mortis
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2300
+    slot: 1
+    armor: 7
+- id: 32100
+  name: traditional gamsbart hat
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 250
+    slot: 1
+- id: 32630
+  name: spooky hood
+  article: a
+  flags:
+  - usable
+  - take
+  attributes:
+    weight: 1250
+    slot: 1
+- id: 32925
+  name: golden crown
+  flags:
+  - take
+  attributes:
+    weight: 2000
+    slot: 1
+- id: 34156
+  name: lion spangenhelm
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3000
+    slot: 1
+    armor: 7
+- id: 36670
+  name: eldritch cowl
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2600
+    slot: 1
+    armor: 7
+- id: 36671
+  name: eldritch hood
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2700
+    slot: 1
+    armor: 7
+- id: 37164
+  name: golden horned helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5100
+    slot: 1
+- id: 37336
+  name: bridal wreath
+  article: a
+  flags:
+  - usable
+  - multiuse
+  - take
+  attributes:
+    weight: 100
+    slot: 1
+- id: 37609
+  name: green demon helmet
+  flags:
+  - take
+  attributes:
+    weight: 2950
+    slot: 1
+    armor: 10
+- id: 39148
+  name: spiritthorn helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4400
+    slot: 1
+    armor: 12
+- id: 39149
+  name: alicorn headguard
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 3900
+    slot: 1
+    armor: 11
+- id: 39151
+  name: arcanomancer regalia
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 1500
+    slot: 1
+    armor: 9
+- id: 39153
+  name: arboreal crown
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 1200
+    slot: 1
+    armor: 9
+- id: 40532
+  name: broken Iks headpiece
+  article: the
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 900
+    slot: 1
+    armor: 1
+- id: 40588
+  name: antler-horn helmet
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2200
+    slot: 1
+    armor: 9
+- id: 44636
+  name: stoic iks casque
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 1
+    armor: 8
+- id: 44637
+  name: stoic iks headpiece
+  flags:
+  - take
+  attributes:
+    weight: 2100
+    slot: 1
+    armor: 8

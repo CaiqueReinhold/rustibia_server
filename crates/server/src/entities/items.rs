@@ -16,7 +16,7 @@ use crate::{
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub struct ItemGuid(pub String);
-/// An item's identity in the catalogue loaded from `items.yaml`. Global and stable,
+/// An item's identity in the catalogue loaded from `assets/items/`. Global and stable,
 /// unlike the session-local ids a `LocalIdMap` mints.
 #[derive(
     Copy, Clone, Eq, PartialEq, Hash, Debug, PartialOrd, Ord, serde::Serialize, serde::Deserialize,
@@ -397,6 +397,7 @@ pub struct ClientItemRef {
 #[derive(Clone, PartialEq, Eq, Hash, Debug, Copy)]
 pub enum ItemAction {
     Transform { into: ItemId },
+    Door { new: ItemId },
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]

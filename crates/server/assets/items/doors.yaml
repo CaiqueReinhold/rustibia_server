@@ -1,0 +1,4609 @@
+- id: 1628
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1629
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1630
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1631
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1632
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1633
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1638
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1639
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1640
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1641
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1642
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1643
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1644
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1645
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1646
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1647
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 1648
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1649
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 1650
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1651
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1652
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1653
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1654
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1655
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1656
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1657
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1658
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1659
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1660
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1661
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1662
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1663
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1664
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1665
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 1666
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1667
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 1668
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1669
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1670
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1671
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1672
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1673
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1674
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1675
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1676
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1677
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1678
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1679
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 1680
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1681
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 1682
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1683
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1684
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1685
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1686
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1687
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1688
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 1689
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1690
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1691
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1692
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1693
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1694
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1695
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 1696
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1697
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 1698
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 1699
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 2177
+  name: closed fence gate
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 2178
+  name: open fence gate
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 2179
+  name: closed fence gate
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 2180
+  name: open fence gate
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 2334
+  name: table
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 2335
+  name: table
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unmove
+- id: 2336
+  name: table
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 2337
+  name: table
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unmove
+- id: 2338
+  name: table
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 2339
+  name: table
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 2340
+  name: table
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 2341
+  name: table
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 4911
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 4912
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 4913
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 4914
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5006
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5007
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5082
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5083
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5084
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5085
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5097
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5098
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5099
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5100
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5101
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5102
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5103
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 5104
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5105
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5106
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5107
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5108
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5109
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5110
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5111
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5112
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 5113
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5114
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5115
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5116
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5117
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5118
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5119
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5120
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5121
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 5122
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5123
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5124
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5125
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5126
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5127
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5128
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5129
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5130
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 5131
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5132
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5133
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5134
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5135
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5136
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5137
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5138
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5139
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5140
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5141
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5142
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5143
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5144
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5277
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5278
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5279
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5280
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5281
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5282
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5283
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5284
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5285
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5286
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5287
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5288
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5289
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5290
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5291
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5292
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 5293
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5294
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 5302
+  name: white stone wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 5303
+  name: white stone wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 5514
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5515
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5516
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5517
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5732
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5733
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5734
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5735
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5736
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5737
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5745
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 5746
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5748
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 5749
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6191
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6192
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6193
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 6194
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6195
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6196
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 6197
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6198
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 6199
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6200
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 6201
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6202
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 6203
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6204
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 6205
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6206
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 6207
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6208
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 6248
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6249
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6250
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 6251
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6252
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6253
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 6254
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6255
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 6256
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6257
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 6258
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6259
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 6260
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6261
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 6262
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6263
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 6264
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6265
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 6435
+  name: framework window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6436
+  name: framework window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6437
+  name: framework window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6438
+  name: framework window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6439
+  name: brick window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6440
+  name: brick window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6441
+  name: brick window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6442
+  name: brick window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6443
+  name: stone window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6444
+  name: stone window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6445
+  name: stone window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6446
+  name: stone window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6449
+  name: tree window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6450
+  name: tree window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6451
+  name: tree window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6452
+  name: tree window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6453
+  name: sandstone window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6454
+  name: sandstone window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6455
+  name: sandstone window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6456
+  name: sandstone window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6457
+  name: bamboo window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6458
+  name: bamboo window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6459
+  name: bamboo window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6460
+  name: bamboo window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6461
+  name: sandstone window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6462
+  name: sandstone window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6463
+  name: sandstone window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6464
+  name: sandstone window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6465
+  name: stone window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6466
+  name: stone window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6467
+  name: stone window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6468
+  name: stone window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6469
+  name: wooden window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6470
+  name: wooden window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6471
+  name: wooden window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6472
+  name: wooden window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6788
+  name: fur wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6789
+  name: fur wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6790
+  name: fur wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6791
+  name: fur wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 6795
+  name: entrance
+  article: an
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6796
+  name: entrance
+  article: an
+  flags:
+  - unmove
+- id: 6797
+  name: entrance
+  article: an
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6798
+  name: entrance
+  article: an
+  flags:
+  - unmove
+- id: 6799
+  name: entrance
+  article: an
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6800
+  name: entrance
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 6801
+  name: entrance
+  article: an
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6802
+  name: entrance
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 6891
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6892
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6893
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 6894
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6895
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 6896
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6897
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 6898
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6899
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 6900
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6901
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6902
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 6903
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6904
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 6905
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6906
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 6907
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 6908
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 7025
+  name: nordic wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 7026
+  name: nordic wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 7027
+  name: nordic wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 7028
+  name: nordic wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 7029
+  name: ice wall window
+  article: an
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 7030
+  name: ice wall window
+  article: an
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 7033
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7034
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7035
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 7036
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7037
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 7038
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7039
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 7040
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7041
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 7042
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7043
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7044
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 7045
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7046
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 7047
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7048
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 7049
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7050
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 7051
+  name: ice wall window
+  article: an
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 7052
+  name: ice wall window
+  article: an
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 7054
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7055
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 7056
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7057
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 7711
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7712
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7713
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 7714
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7715
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7716
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 7717
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7718
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 7719
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7720
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 7721
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7722
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 7723
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7724
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 7725
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7726
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 7727
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 7728
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 7868
+  name: closed door
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 7869
+  name: open door
+  article: an
+  flags:
+  - unmove
+- id: 7941
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8249
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8250
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8251
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 8252
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8253
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8254
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 8255
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8256
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 8257
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8258
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 8259
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8260
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 8261
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8262
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 8263
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8264
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 8265
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8266
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 8351
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8352
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8353
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 8354
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8355
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8356
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 8357
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8358
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 8359
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8360
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 8361
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8362
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 8363
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8364
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 8365
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8366
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 8367
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 8368
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 9347
+  name: framework window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 9348
+  name: framework window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 9349
+  name: framework window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 9350
+  name: framework window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 9351
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9352
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9353
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 9354
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9355
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9356
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 9357
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9358
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 9359
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9360
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 9361
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9362
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 9363
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9364
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 9365
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9366
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 9367
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9368
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 9551
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9552
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9553
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 9554
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9555
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 9556
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9557
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 9558
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9559
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 9560
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9561
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9562
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 9563
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9564
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 9565
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9566
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 9567
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9568
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 9571
+  name: limestone window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 9572
+  name: limestone window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 9573
+  name: limestone window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 9574
+  name: limestone window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 9858
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9859
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9860
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 9863
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9864
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 9865
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9866
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 9867
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9868
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9869
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 9872
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9873
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 9874
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 9875
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 11136
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 11137
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 11138
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 11139
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 11140
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 11141
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 11142
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 11143
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 11144
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 11145
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 11146
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 11147
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 11148
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 11149
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 11232
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 11233
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 11234
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 11237
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 11238
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 11239
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 11240
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 11241
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 11242
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 11243
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 11246
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 11247
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 11248
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 11249
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 11705
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 11708
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 11714
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 11716
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 12033
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 12034
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 12035
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 12036
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 12249
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 12250
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 13135
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 13136
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 13137
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 13142
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 13143
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 13144
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 15687
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 15688
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 15890
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 15891
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 15892
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 15893
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 17383
+  name: counter
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 17386
+  name: counter
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 17560
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17561
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17562
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 17563
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17564
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 17565
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17566
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 17567
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17568
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 17569
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17570
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17571
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 17572
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17573
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 17574
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17575
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 17576
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17577
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 17700
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17701
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17702
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 17703
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17704
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 17705
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17706
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 17707
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17708
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 17709
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17710
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17711
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 17712
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17713
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 17714
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17715
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 17716
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17717
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 17993
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17994
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17995
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 17996
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17997
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 17998
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 17999
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 18000
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 18001
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 18002
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 18003
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 18004
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 18005
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 18006
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 18007
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 18008
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 18009
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 18010
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 18025
+  name: counter
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 18026
+  name: counter
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 20443
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 20444
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 20445
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 20446
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 20447
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 20448
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 20449
+  name: gate of expertise
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 20450
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 20451
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 20452
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 20453
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 20454
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 20455
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 20456
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 20457
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 20458
+  name: gate of expertise
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 20459
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 20460
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 21970
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 22502
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 22503
+  name: gate of expertise
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 22504
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 22505
+  name: gate of expertise
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 22506
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 22507
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 22508
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 22509
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 23873
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 23874
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 23875
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 23876
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 23877
+  name: open door
+  flags:
+  - usable
+  - unmove
+- id: 23878
+  name: open door
+  flags:
+  - usable
+  - unmove
+- id: 24541
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 24542
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 24543
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 24544
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 24903
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 28364
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 28365
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 28366
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 28367
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 28368
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 28369
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 28519
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 28520
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 28658
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 28659
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 28885
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 28886
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 29327
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 29987
+  name: closed door
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 30033
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30034
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30035
+  name: gate of expertise
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 30036
+  name: gate of expertise
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 30037
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30038
+  name: gate of expertise
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30039
+  name: gate of expertise
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 30040
+  name: gate of expertise
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 30041
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30042
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 30043
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30044
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 30045
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30046
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 30047
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30048
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 30049
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30050
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30051
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30052
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30057
+  name: closed door
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 30772
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30773
+  name: closed door
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 30774
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30775
+  name: closed door
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 30776
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 30777
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 30833
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30834
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30835
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30836
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30837
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 30838
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 30849
+  name: closed drawn curtain
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30850
+  name: closed drawn curtain
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30851
+  name: closed drawn curtain
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30852
+  name: closed drawn curtain
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 30853
+  name: open drawn curtain
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 30854
+  name: open drawn curtain
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 30855
+  name: open drawn curtain
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 30856
+  name: open drawn curtain
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 31494
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 31495
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 31496
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 31497
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 31568
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 31569
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 31570
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 31571
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 31663
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 31664
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 31665
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 31666
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 33271
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 33272
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 33273
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 33274
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 33335
+  name: closed door
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 33336
+  name: closed door
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 33628
+  name: wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 33629
+  name: wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 33630
+  name: wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 33631
+  name: wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 33632
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 33633
+  name: closed door
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 33634
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 33635
+  name: closed door
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 33636
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 33637
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 33638
+  name: wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 33639
+  name: wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 33640
+  name: wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 33641
+  name: wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 33642
+  name: wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 33643
+  name: wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 33644
+  name: wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 33645
+  name: wall window
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+- id: 33652
+  name: open door
+  article: an
+  flags:
+  - unmove
+- id: 33653
+  name: open door
+  article: an
+  flags:
+  - unmove
+- id: 33767
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 34221
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 34222
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 34223
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 34224
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 37981
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37982
+  name: closed door
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 37983
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 37984
+  name: closed door
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 37985
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 37986
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 38851
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39351
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39352
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39353
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 39354
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 39660
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39661
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 39666
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 39667
+  name: open door
+  article: an
+  flags:
+  - usable
+  - unmove
+- id: 42624
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 42625
+  name: closed door
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 42626
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 42627
+  name: closed door
+  article: a
+  flags:
+  - unpass
+  - unmove
+- id: 42628
+  name: open door
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 42629
+  name: open door
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 43952
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 43953
+  name: closed door
+  article: a
+  flags:
+  - usable
+  - unpass
+  - unmove
+- id: 43954
+  name: open door
+  article: a
+  flags:
+  - usable
+  - unmove
+- id: 43955
+  name: open door
+  article: a
+  flags:
+  - usable
+  - unmove

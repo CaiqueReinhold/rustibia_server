@@ -1,0 +1,497 @@
+- id: 645
+  name: blue legs
+  flags:
+  - take
+  attributes:
+    weight: 1800
+    slot: 7
+    armor: 8
+- id: 812
+  name: terra legs
+  flags:
+  - take
+  attributes:
+    weight: 1900
+    slot: 7
+    armor: 8
+- id: 821
+  name: magma legs
+  flags:
+  - take
+  attributes:
+    weight: 1900
+    slot: 7
+    armor: 8
+- id: 822
+  name: lightning legs
+  flags:
+  - take
+  attributes:
+    weight: 1900
+    slot: 7
+    armor: 8
+- id: 823
+  name: glacier kilt
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1900
+    slot: 7
+    armor: 8
+- id: 3362
+  name: studded legs
+  flags:
+  - take
+  attributes:
+    weight: 2600
+    slot: 7
+    armor: 2
+- id: 3363
+  name: dragon scale legs
+  flags:
+  - take
+  attributes:
+    weight: 4800
+    slot: 7
+    armor: 10
+- id: 3364
+  name: golden legs
+  flags:
+  - take
+  attributes:
+    weight: 5600
+    slot: 7
+    armor: 9
+- id: 3371
+  name: knight legs
+  flags:
+  - take
+  attributes:
+    weight: 7000
+    slot: 7
+    armor: 8
+- id: 3372
+  name: brass legs
+  flags:
+  - take
+  attributes:
+    weight: 3800
+    slot: 7
+    armor: 5
+- id: 3382
+  name: crown legs
+  flags:
+  - take
+  attributes:
+    weight: 6500
+    slot: 7
+    armor: 8
+- id: 3389
+  name: demon legs
+  flags:
+  - take
+  attributes:
+    weight: 7000
+    slot: 7
+    armor: 9
+- id: 3398
+  name: dwarven legs
+  flags:
+  - take
+  attributes:
+    weight: 4900
+    slot: 7
+    armor: 7
+- id: 3401
+  name: elven legs
+  flags:
+  - take
+  attributes:
+    weight: 3300
+    slot: 7
+    armor: 4
+- id: 3557
+  name: plate legs
+  flags:
+  - take
+  attributes:
+    weight: 5000
+    slot: 7
+    armor: 7
+- id: 3558
+  name: chain legs
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 7
+    armor: 3
+- id: 3559
+  name: leather legs
+  flags:
+  - take
+  attributes:
+    weight: 1800
+    slot: 7
+    armor: 1
+- id: 3560
+  name: bast skirt
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 350
+    slot: 7
+- id: 5918
+  name: pirate knee breeches
+  flags:
+  - take
+  attributes:
+    weight: 1200
+    slot: 7
+    armor: 1
+- id: 7464
+  name: mammoth fur shorts
+  flags:
+  - take
+  attributes:
+    weight: 150
+    slot: 7
+- id: 8095
+  name: ranger legs
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 7
+    armor: 4
+- id: 8863
+  name: yalahari leg piece
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6500
+    slot: 7
+    armor: 8
+- id: 9014
+  name: leaf legs
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1200
+    slot: 7
+- id: 9383
+  name: trousers of the ancients
+  flags:
+  - take
+  attributes:
+    weight: 30
+    slot: 7
+    armor: 2
+- id: 10387
+  name: Zaoan legs
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6600
+    slot: 7
+    armor: 8
+- id: 13996
+  name: depth ocrea
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 4800
+    slot: 7
+    armor: 8
+- id: 13999
+  name: ornate legs
+  article: an
+  flags:
+  - take
+  attributes:
+    weight: 7700
+    slot: 7
+    armor: 8
+- id: 14087
+  name: grasshopper legs
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3200
+    slot: 7
+    armor: 7
+- id: 16106
+  name: gill legs
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2800
+    slot: 7
+    armor: 7
+- id: 16111
+  name: prismatic legs
+  flags:
+  - take
+  attributes:
+    weight: 7100
+    slot: 7
+    armor: 8
+- id: 19366
+  name: icy culottes
+  flags:
+  - take
+  attributes:
+    weight: 1500
+    slot: 7
+    armor: 8
+- id: 21168
+  name: alloy legs
+  flags:
+  - take
+  attributes:
+    weight: 4500
+    slot: 7
+    armor: 6
+- id: 22087
+  name: wereboar loincloth
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1300
+    slot: 7
+    armor: 6
+- id: 24402
+  name: chocolatey dragon scale legs
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 1800
+    slot: 7
+    armor: 2
+- id: 24404
+  name: tatty dragon scale legs
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3800
+    slot: 7
+    armor: 2
+- id: 24514
+  name: old tibia item
+  flags:
+  - unpass
+  - unmove
+  attributes:
+    slot: 7
+- id: 24533
+  name: old tibia item
+  flags:
+  - unpass
+  - unmove
+  attributes:
+    slot: 7
+- id: 24638
+  name: old tibia item
+  flags:
+  - unpass
+  - unmove
+  attributes:
+    slot: 7
+- id: 24871
+  name: old tibia item
+  flags:
+  - unpass
+  - unmove
+  attributes:
+    slot: 7
+- id: 27649
+  name: gnome legs
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 2500
+    slot: 7
+    armor: 9
+- id: 28720
+  name: falcon greaves
+  flags:
+  - take
+  attributes:
+    weight: 3600
+    slot: 7
+    armor: 10
+- id: 32097
+  name: lederhosen
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 800
+    slot: 7
+- id: 32617
+  name: fabulous legs
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 5500
+    slot: 7
+    armor: 9
+- id: 32618
+  name: soulful legs
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3800
+    slot: 7
+    armor: 8
+- id: 34092
+  name: soulshanks
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3800
+    slot: 7
+    armor: 10
+- id: 34093
+  name: soulstrider
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3800
+    slot: 7
+    armor: 10
+- id: 35516
+  name: exotic legs
+  flags:
+  - take
+  attributes:
+    weight: 7200
+    slot: 7
+    armor: 8
+- id: 35517
+  name: bast legs
+  flags:
+  - take
+  attributes:
+    weight: 6400
+    slot: 7
+    armor: 8
+- id: 36667
+  name: eldritch breeches
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 6900
+    slot: 7
+    armor: 9
+- id: 37607
+  name: green demon legs
+  flags:
+  - take
+  attributes:
+    weight: 7000
+    slot: 7
+    armor: 9
+- id: 39166
+  name: dawnfire pantaloons
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3000
+    slot: 7
+    armor: 8
+- id: 39167
+  name: midnight sarong
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3100
+    slot: 7
+    armor: 8
+- id: 40531
+  name: broken Iks faulds
+  article: the
+  flags:
+  - cumulative
+  - take
+  attributes:
+    weight: 1500
+    slot: 7
+    armor: 1
+- id: 40589
+  name: stitched mutant hide legs
+  flags:
+  - take
+  attributes:
+    weight: 3400
+    slot: 7
+    armor: 9
+- id: 40590
+  name: mutated skin legs
+  flags:
+  - take
+  attributes:
+    weight: 5200
+    slot: 7
+    armor: 9
+- id: 40595
+  name: mutant bone kilt
+  flags:
+  - take
+  attributes:
+    weight: 3500
+    slot: 7
+    armor: 8
+- id: 43876
+  name: sanguine legs
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3800
+    slot: 7
+    armor: 12
+- id: 43881
+  name: sanguine greaves
+  article: a
+  flags:
+  - take
+  attributes:
+    weight: 3200
+    slot: 7
+    armor: 11
+- id: 44642
+  name: stoic iks culet
+  flags:
+  - take
+  attributes:
+    weight: 5100
+    slot: 7
+    armor: 9
+- id: 44643
+  name: stoic iks faulds
+  flags:
+  - take
+  attributes:
+    weight: 3400
+    slot: 7
+    armor: 8

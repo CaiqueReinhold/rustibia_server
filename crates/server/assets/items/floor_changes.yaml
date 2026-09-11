@@ -1,0 +1,2014 @@
+- id: 166
+  name: wooden coffin
+  article: a
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+- id: 167
+  name: wooden coffin
+  article: a
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+- id: 855
+  name: stone stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: southalt
+- id: 856
+  name: stone stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: eastalt
+- id: 868
+  name: hole
+  article: a
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+    decay:
+      duration: 600
+      decay_to: 867
+- id: 874
+  name: large hole
+  article: a
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+- id: 877
+  name: cave entrance
+  article: a
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+- id: 1066
+  name: mud stain
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: down
+- id: 1067
+  name: pitfall
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: down
+    decay:
+      duration: 60
+      decay_to: 1066
+- id: 1080
+  name: pitfall
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: down
+- id: 1947
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 1948
+  name: ladder
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unmove
+- id: 1950
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 1952
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 1954
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 1956
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 1958
+  name: wooden stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 1960
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 1962
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 1964
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 1966
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 1968
+  name: ladder
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unmove
+- id: 1969
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 1971
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 1973
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 1975
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 1977
+  name: stone stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 1978
+  name: stone stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 2192
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 2194
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 2196
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 2198
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 5033
+  name: roof
+  article: a
+  flags:
+  - bottom
+  - unpass
+  - unmove
+  attributes:
+    floor_change: east
+- id: 5035
+  name: roof
+  article: a
+  flags:
+  - bottom
+  - unpass
+  - unmove
+  attributes:
+    floor_change: west
+- id: 5037
+  name: roof
+  article: a
+  flags:
+  - bottom
+  - unpass
+  - unmove
+  attributes:
+    floor_change: north
+- id: 5039
+  name: roof
+  article: a
+  flags:
+  - bottom
+  - unpass
+  - unmove
+  attributes:
+    floor_change: south
+- id: 5257
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 5258
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 5259
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 5542
+  name: rope-ladder
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unmove
+- id: 6754
+  name: ice hut
+  article: an
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: down
+- id: 6755
+  name: ice hut
+  article: an
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: down
+- id: 6756
+  name: ice hut
+  article: an
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: down
+- id: 6909
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 6911
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 6913
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 6915
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 7181
+  name: cave entrance
+  article: a
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+- id: 7182
+  name: cave entrance
+  article: a
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+- id: 7476
+  name: cave entrance
+  article: a
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+- id: 7477
+  name: cave entrance
+  article: a
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+- id: 7478
+  name: cave entrance
+  article: a
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+- id: 7479
+  name: cave entrance
+  article: a
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+- id: 7515
+  name: hole
+  article: a
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+- id: 7516
+  name: hole
+  article: a
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+- id: 7517
+  name: hole
+  article: a
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+- id: 7518
+  name: hole
+  article: a
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+- id: 7520
+  name: hole
+  article: a
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+- id: 7521
+  name: hole
+  article: a
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+- id: 7522
+  name: large hole
+  article: a
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+- id: 7542
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 7544
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 7546
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 7548
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 7881
+  name: wooden stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 7887
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 7888
+  name: stone stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: southalt
+- id: 8144
+  name: large hole
+  article: a
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+- id: 8657
+  name: corkscrew stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 8830
+  name: box ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 8831
+  name: box ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 9116
+  name: ladder
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unmove
+- id: 10206
+  name: stone stairs
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 11365
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 11707
+  name: hand made stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 11709
+  name: hand made stairs
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 12236
+  name: unknown hole
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+- id: 12961
+  name: insectoid hive
+  article: an
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: down
+- id: 13341
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 13342
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 13559
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 13561
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 13564
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 13567
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 13570
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 13573
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 13576
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 13579
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 13582
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 13585
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 13588
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 13591
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 13716
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 13718
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 13720
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 13722
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 14932
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 14934
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 14936
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 14938
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 15108
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 15110
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 15112
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 15114
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 15144
+  name: mushroom corkscrew stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 16680
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 16682
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 16684
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 16686
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 16688
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 16690
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 16692
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 16694
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 17230
+  name: wooden ladder
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unpass
+  - unmove
+  attributes:
+    floor_change: west
+- id: 17394
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 17395
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 18650
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 18652
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 18654
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 18656
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 19143
+  name: hole
+  article: a
+  flags:
+  - unmove
+  attributes:
+    floor_change: down
+- id: 19590
+  name: ruined stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 19591
+  name: ruined stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 20124
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 20224
+  name: strange ruined stairs
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 20225
+  name: strange ruined stairs
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 20253
+  name: strange stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 20254
+  name: strange stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 20255
+  name: strange stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: eastalt
+- id: 20256
+  name: strange stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: southalt
+- id: 20328
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: down
+- id: 20329
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: down
+- id: 20330
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: down
+- id: 20331
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: down
+- id: 20332
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: down
+- id: 20333
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 20334
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 20335
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 20336
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 20474
+  name: ladder rung
+  flags:
+  - bottom
+  - usable
+  - unmove
+- id: 20475
+  name: ladder rung
+  flags:
+  - bottom
+  - usable
+  - unmove
+- id: 20491
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 20492
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 20494
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 20496
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 20750
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 20751
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 20753
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 20755
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 21564
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 21566
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 21568
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 21570
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 21971
+  name: pitfall
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: down
+    decay:
+      duration: 300
+      decay_to: 1080
+- id: 21972
+  name: pitfall
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: down
+    decay:
+      duration: 300
+      decay_to: 1080
+- id: 21973
+  name: some cracks
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: down
+- id: 22156
+  name: stairs
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 22517
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 22565
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 22566
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 22749
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 23858
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 23860
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 23862
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 23864
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 24806
+  name: old ramp
+  article: a
+  flags:
+  - bottom
+  - unpass
+  - unmove
+  attributes:
+    floor_change: east
+- id: 24808
+  name: old ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 24810
+  name: old ramp
+  article: a
+  flags:
+  - bottom
+  - unpass
+  - unmove
+  attributes:
+    floor_change: north
+- id: 24812
+  name: old ramp
+  article: a
+  flags:
+  - bottom
+  - unpass
+  - unmove
+  attributes:
+    floor_change: south
+- id: 25016
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 25018
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 25020
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 25022
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 27629
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 28357
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 28359
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 28361
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 28363
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 28655
+  name: hole
+  article: a
+  flags:
+  - bottom
+  - unpass
+  - unmove
+  attributes:
+    floor_change: down
+- id: 28656
+  name: ladder
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unmove
+- id: 29109
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 29111
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 29113
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 29115
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 29137
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 29139
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 29141
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 29143
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 30452
+  name: ancient sepulchre
+  article: an
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: down
+- id: 30453
+  name: ancient sepulchre
+  article: an
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: down
+- id: 30757
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 30759
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 30761
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 30763
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 30820
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 30822
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 30824
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 30826
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 30904
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 30906
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 30908
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 30910
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 30912
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 30914
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 30916
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 30918
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 31129
+  name: wooden ladder
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unmove
+  attributes:
+    floor_change: north
+- id: 31130
+  name: wooden ladder
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unmove
+  attributes:
+    floor_change: west
+- id: 31262
+  name: ladder
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unmove
+- id: 31907
+  name: strange stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 33175
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 33177
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 33179
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 33181
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 33204
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 33206
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 33208
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 33210
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 33233
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 33235
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 33237
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 33239
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 33256
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 33258
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 33260
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 33262
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 33709
+  name: pitfall
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: down
+- id: 33770
+  name: ladder
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unmove
+- id: 34165
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 34243
+  name: ladder
+  article: a
+  flags:
+  - bottom
+  - usable
+  - unmove
+- id: 36444
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 36446
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 36448
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 36450
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 37964
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 37966
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 37968
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 37970
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 39721
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 39722
+  name: ramp
+  article: a
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 39919
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 39921
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 39923
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 39925
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 40262
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 40263
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 40279
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 40281
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 40296
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 40298
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 40302
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 40428
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 40430
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 40432
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 40434
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 42619
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: north
+- id: 42621
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: west
+- id: 42623
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 42632
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: east
+- id: 43134
+  name: stairs
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: south
+- id: 43372
+  name: hole
+  flags:
+  - bottom
+  - unmove
+  attributes:
+    floor_change: down
+- id: 43374
+  name: vine
+  flags:
+  - bottom
+  - usable
+  - unmove
