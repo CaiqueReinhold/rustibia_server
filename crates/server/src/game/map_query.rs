@@ -6,7 +6,7 @@ use crate::{
     entities::{
         agent::AgentKey,
         inventory::InventorySlot,
-        items::{ClientItemRef, ContainerId, Item, ItemGuid},
+        items::{ClientItemRef, ContainerId, Item, ItemGuid, ItemId},
         map::{GameMap, MapTile},
         position::{Direction, ItemPlacement, PlacementSite, Position, Rect},
     },
@@ -209,6 +209,9 @@ pub fn retrieve_item<'a>(
     containers: &'a LocalIdMap<ItemGuid, ContainerId>,
     agent_key: AgentKey,
 ) -> Option<(&'a Item, ItemPlacement)> {
+    if cli_item.position.is_carried_search_coord() {
+        return find_carried_item(map, cli_item.item_id, agent_key);
+    }
     let placement = resolve_client_coord(cli_item.position.clone(), map, containers, agent_key)?;
     // A map coordinate names the tile; which of its items is meant comes from the stack index.
     let item = match &placement {
@@ -216,6 +219,51 @@ pub fn retrieve_item<'a>(
         other => item_at_placement(map, other)?,
     };
     (item.item_id == cli_item.item_id).then_some((item, placement))
+}
+
+/// The first item of `item_id` the agent carries: its slots in slot order, each searched
+/// depth-first through the containers inside it.
+pub fn find_carried_item(
+    map: &GameMap,
+    item_id: ItemId,
+    agent_key: AgentKey,
+) -> Option<(&Item, ItemPlacement)> {
+    let inventory = map.get_player(agent_key)?.inventory();
+    let mut slots: Vec<InventorySlot> = inventory.keys().copied().collect();
+    slots.sort_by_key(InventorySlot::as_id);
+
+    slots.into_iter().find_map(|slot| {
+        let item = inventory.get(&slot)?;
+        let site = ItemPlacement::Inventory(slot, agent_key);
+        if item.item_id == item_id {
+            return Some((item, site));
+        }
+        let (found, holder, index) = find_in_contents(item, item_id)?;
+        Some((
+            found,
+            ItemPlacement::Container {
+                guid: holder.guid.clone(),
+                within: Box::new(site),
+                index,
+            },
+        ))
+    })
+}
+
+/// The first match anywhere below `container`, with the container holding it directly.
+fn find_in_contents(container: &Item, item_id: ItemId) -> Option<(&Item, &Item, usize)> {
+    container
+        .content
+        .as_ref()?
+        .iter()
+        .enumerate()
+        .find_map(|(index, item)| {
+            if item.item_id == item_id {
+                Some((item, container, index))
+            } else {
+                find_in_contents(item, item_id)
+            }
+        })
 }
 
 fn iter_adjacent(pos: &Position) -> impl Iterator<Item = Position> {
@@ -589,5 +637,148 @@ mod tests {
 
         assert_eq!((rect.min_x(), rect.min_y()), (0, 0));
         assert_eq!((rect.max_x(), rect.max_y()), (13, 12));
+    }
+
+    fn carrying(snapshot: crate::persistence::player::PlayerSnapshot) -> (GameMap, AgentKey) {
+        use crate::entities::agent::Agent;
+        use crate::entities::map::MapTile;
+
+        let at = Position::new(10, 10, 7);
+        let mut map = GameMap::new();
+        map.insert_tile(at.clone(), MapTile::new());
+        let key = map.insert_agent(Agent::from_player(snapshot), &at).unwrap();
+        (map, key)
+    }
+
+    #[test]
+    fn a_carried_search_finds_an_equipped_item_in_its_slot() {
+        use crate::entities::items::ItemId;
+        use crate::persistence::test_fixtures::a_player_with_a_full_backpack;
+
+        let (map, key) = carrying(a_player_with_a_full_backpack(1, 1));
+
+        let (item, placement) = find_carried_item(&map, ItemId(1988), key).unwrap();
+
+        assert_eq!(item.item_id, ItemId(1988));
+        assert_eq!(
+            placement,
+            ItemPlacement::Inventory(InventorySlot::Backpack, key)
+        );
+    }
+
+    #[test]
+    fn a_carried_search_descends_through_nested_containers() {
+        use crate::entities::items::ItemId;
+        use crate::persistence::test_fixtures::a_player_with_a_full_backpack;
+
+        let (map, key) = carrying(a_player_with_a_full_backpack(1, 1));
+        let backpack = map
+            .get_player(key)
+            .unwrap()
+            .inventory()
+            .get(&InventorySlot::Backpack)
+            .unwrap();
+        let backpack_guid = backpack.guid.clone();
+        let first_pouch_guid = backpack.content.as_ref().unwrap()[0].guid.clone();
+        let in_backpack = Box::new(ItemPlacement::Inventory(InventorySlot::Backpack, key));
+
+        let (_, third_pouch) = find_carried_item(&map, ItemId(1992), key).unwrap();
+        assert_eq!(
+            third_pouch,
+            ItemPlacement::Container {
+                guid: backpack_guid,
+                within: in_backpack.clone(),
+                index: 2,
+            }
+        );
+
+        let (coin, coin_placement) = find_carried_item(&map, ItemId(2148), key).unwrap();
+        assert_eq!(
+            coin_placement,
+            ItemPlacement::Container {
+                guid: first_pouch_guid,
+                within: in_backpack,
+                index: 0,
+            }
+        );
+        assert!(
+            item_at_placement(&map, &coin_placement).is_some_and(|found| found.guid == coin.guid)
+        );
+    }
+
+    #[test]
+    fn a_carried_search_takes_the_lowest_slot_first() {
+        use crate::entities::items::ItemId;
+        use crate::persistence::test_fixtures::a_player_with_a_full_backpack;
+
+        let mut snapshot = a_player_with_a_full_backpack(1, 1);
+        let pouch = snapshot
+            .inventory
+            .get_mut(&InventorySlot::Backpack)
+            .unwrap()
+            .content
+            .as_mut()
+            .unwrap()
+            .remove(3);
+        let pouch_guid = pouch.guid.clone();
+        snapshot.inventory.insert(InventorySlot::Head, pouch);
+        let (map, key) = carrying(snapshot);
+
+        let (_, placement) = find_carried_item(&map, ItemId(2148), key).unwrap();
+
+        assert_eq!(
+            placement,
+            ItemPlacement::Container {
+                guid: pouch_guid,
+                within: Box::new(ItemPlacement::Inventory(InventorySlot::Head, key)),
+                index: 0,
+            }
+        );
+    }
+
+    #[test]
+    fn a_carried_search_for_something_not_carried_finds_nothing() {
+        use crate::entities::items::ItemId;
+        use crate::persistence::test_fixtures::a_player_with_a_full_backpack;
+
+        let (map, key) = carrying(a_player_with_a_full_backpack(1, 1));
+
+        assert!(find_carried_item(&map, ItemId(9999), key).is_none());
+    }
+
+    #[test]
+    fn retrieve_item_routes_the_search_coordinate_and_leaves_slots_alone() {
+        use crate::constants::items::{CARRIED_SEARCH_FLAG, INVENTORY_COORD_FLAG};
+        use crate::entities::items::ItemId;
+        use crate::persistence::test_fixtures::a_player_with_a_full_backpack;
+
+        let (map, key) = carrying(a_player_with_a_full_backpack(1, 1));
+        let containers: LocalIdMap<ItemGuid, ContainerId> = LocalIdMap::new();
+        let reference = |position: Position, item_id: u16| ClientItemRef {
+            position,
+            item_id: ItemId(item_id),
+            stack_index: 0,
+        };
+
+        let search = reference(
+            Position::new(INVENTORY_COORD_FLAG, CARRIED_SEARCH_FLAG, 0),
+            1991,
+        );
+        let (item, _) = retrieve_item(&map, &search, &containers, key).unwrap();
+        assert_eq!(item.item_id, ItemId(1991));
+
+        let slot = reference(
+            Position::new(
+                INVENTORY_COORD_FLAG,
+                InventorySlot::Backpack.as_id() as u16,
+                0,
+            ),
+            1988,
+        );
+        let (_, placement) = retrieve_item(&map, &slot, &containers, key).unwrap();
+        assert_eq!(
+            placement,
+            ItemPlacement::Inventory(InventorySlot::Backpack, key)
+        );
     }
 }

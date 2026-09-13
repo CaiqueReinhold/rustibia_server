@@ -20,9 +20,26 @@ pub mod movement {
 pub mod items {
     pub const CONTAINER_COORD_FLAG: u16 = 0xFFFF;
     pub const INVENTORY_COORD_FLAG: u16 = 0xFFFE;
+    pub const CARRIED_SEARCH_FLAG: u16 = 0xFFFF;
     pub const MAX_STACK_AMOUNT: u8 = 100;
 
     pub const MAX_DROP_CHANCE: u32 = 100_000;
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        /// The pin. Its twin is `carried_search_flag_matches_the_server` in the client's
+        /// `conf.rs`. If these two disagree, an action-bar item use resolves to no item and is
+        /// dropped in silence — nothing fails to compile and nothing errors at runtime.
+        #[test]
+        fn the_carried_search_flag_matches_the_client() {
+            assert_eq!(
+                CARRIED_SEARCH_FLAG, 0xFFFF,
+                "must equal conf::map::CARRIED_SEARCH_FLAG in the client"
+            );
+        }
+    }
 }
 
 pub mod combat {

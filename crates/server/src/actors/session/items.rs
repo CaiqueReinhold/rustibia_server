@@ -72,10 +72,11 @@ impl SessionActor {
 
     pub(super) async fn handle_use_item(&self, item: ClientItemRef) -> Result<()> {
         let map = self.shared_map.load();
+        let searched = item.position.is_carried_search_coord();
 
         let Some((item, placement)) = retrieve_item(&map, &item, &self.containers, self.player_key)
         else {
-            return Ok(());
+            return self.deny_unmatched_search(searched).await;
         };
 
         self.world
@@ -98,11 +99,12 @@ impl SessionActor {
         target_agent: Option<AgentId>,
     ) -> Result<()> {
         let map = self.shared_map.load();
+        let searched = source.position.is_carried_search_coord();
 
         let Some((source_item, source_placement)) =
             retrieve_item(&map, &source, &self.containers, self.player_key)
         else {
-            return Ok(());
+            return self.deny_unmatched_search(searched).await;
         };
 
         let target_item = retrieve_item(&map, &target, &self.containers, self.player_key);
@@ -124,6 +126,13 @@ impl SessionActor {
             })
             .await;
 
+        Ok(())
+    }
+
+    async fn deny_unmatched_search(&self, searched: bool) -> Result<()> {
+        if searched {
+            return self.deny("You do not have this object.").await;
+        }
         Ok(())
     }
 
@@ -370,5 +379,84 @@ mod tests {
         let sent = forwarded_tiles(Position::new(100, 100, 7), Position::new(140, 100, 7)).await;
 
         assert!(sent.is_empty(), "{sent:?}");
+    }
+
+    use crate::constants::items::{CARRIED_SEARCH_FLAG, INVENTORY_COORD_FLAG};
+    use crate::entities::agent::Agent;
+    use crate::persistence::test_fixtures::a_player_with_a_full_backpack;
+
+    fn searched(item_id: u16) -> ClientItemRef {
+        ClientItemRef {
+            position: Position::new(INVENTORY_COORD_FLAG, CARRIED_SEARCH_FLAG, 0),
+            item_id: ItemId(item_id),
+            stack_index: 0,
+        }
+    }
+
+    fn is_the_denial(command: Result<ConnectionCommand, impl std::fmt::Debug>) -> bool {
+        matches!(
+            command,
+            Ok(ConnectionCommand::SendPlayerMessage(ServerMessage::TextMessage { text, .. }))
+                if text == "You do not have this object."
+        )
+    }
+
+    #[tokio::test]
+    async fn a_search_for_an_item_not_carried_is_denied() {
+        let mut map = GameMap::new();
+        let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let (session, mut connection_rx, mut world_rx, _tick_tx) = SessionActor::for_test(me, map);
+
+        session.handle_use_item(searched(266)).await.unwrap();
+        assert!(is_the_denial(connection_rx.try_recv()));
+
+        session
+            .handle_use_item_with(searched(266), searched(266), None)
+            .await
+            .unwrap();
+        assert!(is_the_denial(connection_rx.try_recv()));
+        assert!(world_rx.try_recv().is_err());
+    }
+
+    #[tokio::test]
+    async fn a_stale_slot_reference_still_returns_silently() {
+        let mut map = GameMap::new();
+        let me = seat_player(&mut map, &Position::new(100, 100, 7), 1);
+        let (session, mut connection_rx, _world_rx, _tick_tx) = SessionActor::for_test(me, map);
+
+        session
+            .handle_use_item(ClientItemRef {
+                position: Position::new(
+                    INVENTORY_COORD_FLAG,
+                    InventorySlot::Head.as_id() as u16,
+                    0,
+                ),
+                item_id: ItemId(266),
+                stack_index: 0,
+            })
+            .await
+            .unwrap();
+
+        assert!(connection_rx.try_recv().is_err());
+    }
+
+    #[tokio::test]
+    async fn a_search_that_matches_uses_the_item_where_it_was_found() {
+        let at = Position::new(100, 100, 7);
+        let mut map = GameMap::new();
+        map.insert_tile(at.clone(), MapTile::new());
+        let me = map
+            .insert_agent(Agent::from_player(a_player_with_a_full_backpack(1, 1)), &at)
+            .unwrap();
+        let (session, _connection_rx, mut world_rx, _tick_tx) = SessionActor::for_test(me, map);
+
+        session.handle_use_item(searched(1988)).await.unwrap();
+
+        let (command, _) = world_rx.try_recv().unwrap();
+        assert!(matches!(
+            command,
+            WorldCommand::UseItem { item, .. }
+                if item.placement == ItemPlacement::Inventory(InventorySlot::Backpack, me)
+        ));
     }
 }

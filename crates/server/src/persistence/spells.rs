@@ -87,6 +87,7 @@ struct RawSpell {
     cooldown_ticks: TickDelta,
     mana: u32,
     level: u16,
+    icon: u16,
     vocations: Vec<Vocation>,
     effects: Vec<serde_yaml::Value>,
 }
@@ -265,6 +266,7 @@ impl RawSpell {
             cooldown: self.cooldown_ticks,
             mana: self.mana,
             level: self.level,
+            icon: self.icon,
             vocations: self.vocations,
             effects,
         })
@@ -285,7 +287,7 @@ pub fn load_spells(
 
 /// Split out from `load_spells` for the same reason `load_items_from_files` is: the whole
 /// read path over a document the caller owns.
-fn load_spells_from_str(
+pub(crate) fn load_spells_from_str(
     contents: &str,
     shapes: &HashMap<AreaShapeId, Arc<AreaShape>>,
 ) -> Result<HashMap<SpellId, Arc<Spell>>, SpellsLoadError> {
@@ -330,6 +332,7 @@ spells:
     cooldown_ticks: 40
     mana: 25
     level: 18
+    icon: 44
     vocations: [sorcerer]
     effects:
       - attack:
@@ -354,6 +357,7 @@ spells:
     cooldown_ticks: 40
     mana: 25
     level: 12
+    icon: 29
     vocations: [sorcerer]
     effects:
       - attack:
@@ -509,6 +513,7 @@ spells:
     cooldown_ticks: 20
     mana: 20
     level: 8
+    icon: 1
     vocations: [druid]
     effects:
       - summon:
@@ -538,6 +543,7 @@ spells:
     cooldown_ticks: 20
     mana: 20
     level: 8
+    icon: 6
     vocations: [druid]
     effects:
       - heal:
@@ -597,6 +603,10 @@ spells:
             attack(&named("Divine Caldera")).target,
             SpellTargetMode::Area { .. }
         ));
+        assert_eq!(named("Light Healing").icon, 6);
+        assert_eq!(named("Fire Wave").icon, 44);
+        assert_eq!(named("Divine Caldera").icon, 40);
+        assert_eq!(named("Energy Strike").icon, 29);
     }
 
     /// Both catalogues on the path production uses, through the `Lazy`. A failure here is
@@ -606,5 +616,39 @@ spells:
     fn both_catalogues_load_through_their_lazies() {
         assert!(!AREA_SHAPES.is_empty());
         assert!(!SPELLS.is_empty());
+    }
+
+    #[test]
+    fn a_spell_without_an_icon_is_refused() {
+        let contents = AREA_SPELL.replace("    icon: 44\n", "");
+        let error = load_spells_from_str(&contents, &shape("probe"))
+            .expect_err("a spell list entry would have nothing to draw");
+
+        assert!(
+            matches!(error, SpellsLoadError::ParseError(_)),
+            "unexpected error: {error}"
+        );
+    }
+
+    #[test]
+    fn the_icon_reaches_the_spell_as_authored() {
+        let spells = load_spells_from_str(AREA_SPELL, &shape("probe")).unwrap();
+
+        assert_eq!(only_spell(&spells).icon, 44);
+    }
+
+    #[test]
+    fn only_an_area_centred_on_a_target_is_aimable() {
+        let load = |yaml: &str| only_spell(&load_spells_from_str(yaml, &shape("probe")).unwrap());
+        let aimed = AREA_SPELL.replace("origin: self", "origin: target");
+        let aimed_after_a_heal = aimed.replace(
+            "    effects:\n",
+            "    effects:\n      - heal:\n          target:\n            type: self\n          base_power: 8\n          level_factor: 0.2\n          magic_factor: 1.4\n",
+        );
+
+        assert!(load(&aimed).is_aimable());
+        assert!(load(&aimed_after_a_heal).is_aimable());
+        assert!(!load(AREA_SPELL).is_aimable());
+        assert!(!load(TARGET_SPELL).is_aimable());
     }
 }

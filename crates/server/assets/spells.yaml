@@ -6,6 +6,7 @@ spells:
     cooldown_ticks: 20
     mana: 20
     level: 8
+    icon: 6
     vocations: [druid, sorcerer, paladin]
     effects:
       - heal:
@@ -22,6 +23,7 @@ spells:
     cooldown_ticks: 40
     mana: 25
     level: 18
+    icon: 44
     vocations: [sorcerer]
     effects:
       - attack:
@@ -42,6 +44,7 @@ spells:
     cooldown_ticks: 80
     mana: 160
     level: 50
+    icon: 40
     vocations: [paladin]
     effects:
       - attack:
@@ -62,6 +65,7 @@ spells:
     cooldown_ticks: 40
     mana: 25
     level: 12
+    icon: 29
     vocations: [sorcerer, druid]
     effects:
       - attack:

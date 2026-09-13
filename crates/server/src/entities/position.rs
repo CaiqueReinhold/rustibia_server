@@ -5,7 +5,7 @@ use std::{
 
 use crate::{
     constants::{
-        items::{CONTAINER_COORD_FLAG, INVENTORY_COORD_FLAG},
+        items::{CARRIED_SEARCH_FLAG, CONTAINER_COORD_FLAG, INVENTORY_COORD_FLAG},
         view::{PLAYER_VIEWPORT_HEIGHT, PLAYER_VIEWPORT_WIDTH},
     },
     entities::{agent::AgentKey, inventory::InventorySlot, items::ItemGuid},
@@ -29,6 +29,10 @@ impl Position {
 
     pub fn is_inventory_coord(&self) -> bool {
         self.x == INVENTORY_COORD_FLAG
+    }
+
+    pub fn is_carried_search_coord(&self) -> bool {
+        self.x == INVENTORY_COORD_FLAG && self.y == CARRIED_SEARCH_FLAG
     }
 
     /// Tiles between here and `other`, a diagonal counting as one step — tiles, not ticks: the

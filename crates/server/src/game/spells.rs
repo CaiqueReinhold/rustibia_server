@@ -194,13 +194,15 @@ fn resolve_area_origin<'a>(
 ) -> Option<&'a Position> {
     match origin {
         AreaOrigin::Caster => Some(caster_pos),
-        AreaOrigin::Target => match cast_target {
-            CastTarget::Agent(key) => map
-                .agent_position(*key)
-                .filter(|pos| can_target(caster_pos, pos) && can_throw(map, caster_pos, pos, true)),
-            CastTarget::Position(pos) => Some(pos),
-            CastTarget::None => None,
-        },
+        AreaOrigin::Target => {
+            let candidate = match cast_target {
+                CastTarget::Agent(key) => map.agent_position(*key),
+                CastTarget::Position(pos) => Some(pos),
+                CastTarget::None => None,
+            };
+            candidate
+                .filter(|pos| can_target(caster_pos, pos) && can_throw(map, caster_pos, pos, true))
+        }
     }
 }
 
@@ -308,4 +310,66 @@ fn healing_spell(
     let plan = plan_healing_spell(ctx.map, agent_key, ctx.roll, spell_healing, target)?;
     execute_healing(ctx, plan);
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use super::*;
+    use crate::entities::effects::AreaShape;
+    use crate::entities::map::MapTile;
+    use crate::persistence::test_fixtures::a_test_snapshot;
+
+    fn a_caster_at(position: &Position) -> (GameMap, AgentKey) {
+        let mut map = GameMap::new();
+        map.insert_tile(position.clone(), MapTile::new());
+        let key = map
+            .insert_agent(Agent::from_player(a_test_snapshot(1, 1)), position)
+            .unwrap();
+        (map, key)
+    }
+
+    fn aimed_area() -> SpellTargetMode {
+        SpellTargetMode::Area {
+            origin: AreaOrigin::Target,
+            shape: Arc::new(AreaShape::new(vec![(0, 0)].into_boxed_slice())),
+        }
+    }
+
+    #[test]
+    fn an_aimed_tile_within_reach_centres_the_area() {
+        let (map, caster) = a_caster_at(&Position::new(100, 100, 7));
+        let aim = Position::new(103, 101, 7);
+
+        let targets = resolve_spell_targets(
+            &map,
+            caster,
+            &aimed_area(),
+            &CastTarget::Position(aim.clone()),
+        )
+        .unwrap();
+
+        assert_eq!(targets.aim, Some(aim));
+    }
+
+    #[test]
+    fn an_aimed_tile_out_of_reach_or_on_another_floor_is_refused() {
+        let (map, caster) = a_caster_at(&Position::new(100, 100, 7));
+
+        for aim in [Position::new(140, 100, 7), Position::new(101, 100, 6)] {
+            assert!(
+                matches!(
+                    resolve_spell_targets(
+                        &map,
+                        caster,
+                        &aimed_area(),
+                        &CastTarget::Position(aim.clone())
+                    ),
+                    Err(SpellCastingDenyReason::InvalidTarget)
+                ),
+                "{aim:?} must not be a legal aim"
+            );
+        }
+    }
 }

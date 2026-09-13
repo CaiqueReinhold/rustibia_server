@@ -50,8 +50,28 @@ pub struct Spell {
     pub cooldown: TickDelta,
     pub mana: u32,
     pub level: u16,
+    pub icon: u16,
     pub vocations: Vec<Vocation>,
     pub effects: Vec<SpellEffect>,
+}
+
+impl Spell {
+    /// Whether a cast needs an agent or a tile to aim at.
+    pub fn is_aimable(&self) -> bool {
+        self.effects.iter().any(|effect| {
+            let target = match effect {
+                SpellEffect::Attack(attack) => &attack.target,
+                SpellEffect::Healing(healing) => &healing.target,
+            };
+            matches!(
+                target,
+                SpellTargetMode::Area {
+                    origin: AreaOrigin::Target,
+                    ..
+                }
+            )
+        })
+    }
 }
 
 /// `level_factor` and `magic_factor` are percentages of `base_power`; `spread` is the

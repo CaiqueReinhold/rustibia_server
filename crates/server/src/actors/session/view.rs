@@ -4,7 +4,9 @@
 use anyhow::Result;
 use tracing::error;
 
-use crate::actors::player_query::{get_agent_desc, get_player_desc, get_player_skills};
+use crate::actors::player_query::{
+    get_agent_desc, get_player_desc, get_player_skills, get_spell_list,
+};
 use crate::actors::session::{SessionActor, SessionError};
 use crate::constants::view::AGENT_DESPAWN_RADIUS;
 use crate::entities::agent::AgentKey;
@@ -41,6 +43,10 @@ impl SessionActor {
 
             if let Some(skills_msg) = get_player_skills(&map, self.player_key) {
                 self.connection.send_message(skills_msg).await?;
+            }
+
+            if let Some(spells_msg) = get_spell_list(&map, self.player_key) {
+                self.connection.send_message(spells_msg).await?;
             }
 
             Ok(())

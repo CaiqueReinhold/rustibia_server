@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+use std::sync::Arc;
+
 use crate::{
     entities::{
         agent::{Agent, AgentId, AgentKey},
@@ -5,9 +8,12 @@ use crate::{
         map::GameMap,
         position::Position,
         skills::SkillType,
+        spells::{Spell, SpellId},
+        vocation::Vocation,
     },
     game::skills::{progress_bp, total_experience},
-    messages::{ServerMessage, SkillProgress},
+    messages::{ServerMessage, SkillProgress, SpellListEntry},
+    persistence::spells::SPELLS,
 };
 
 pub fn get_player_desc(map: &GameMap, key: AgentKey, id: AgentId) -> Option<ServerMessage> {
@@ -67,6 +73,28 @@ pub fn get_player_skills(map: &GameMap, key: AgentKey) -> Option<ServerMessage> 
             .unwrap_or(0),
         skills,
     })
+}
+
+pub fn spell_list_for(vocation: Vocation, spells: &HashMap<SpellId, Arc<Spell>>) -> ServerMessage {
+    let mut entries: Vec<SpellListEntry> = spells
+        .values()
+        .filter(|spell| spell.vocations.contains(&vocation))
+        .map(|spell| SpellListEntry {
+            id: spell.id,
+            name: spell.name.clone(),
+            words: spell.words.clone(),
+            level: spell.level,
+            icon: spell.icon,
+            aimable: spell.is_aimable(),
+        })
+        .collect();
+    entries.sort_by_key(|entry| (entry.level, entry.id.0));
+    ServerMessage::SpellList { spells: entries }
+}
+
+pub fn get_spell_list(map: &GameMap, key: AgentKey) -> Option<ServerMessage> {
+    let player = map.get_player(key)?;
+    Some(spell_list_for(player.vocation(), &SPELLS))
 }
 
 pub fn get_agent_desc(agent: &Agent, agent_id: AgentId, position: Position) -> ServerMessage {
@@ -148,5 +176,53 @@ mod tests {
         };
         assert_eq!(experience, 0);
         assert!(skills.is_empty());
+    }
+
+    fn a_heal(id: u16, level: u16, vocations: &str) -> String {
+        format!(
+            r#"
+  - id: {id}
+    name: Spell {id}
+    words: words {id}
+    group: healing
+    cooldown_ticks: 20
+    mana: 20
+    level: {level}
+    icon: {id}
+    vocations: [{vocations}]
+    effects:
+      - heal:
+          target:
+            type: self
+          base_power: 8
+          level_factor: 0.2
+          magic_factor: 1.4
+"#
+        )
+    }
+
+    #[test]
+    fn a_vocation_is_listed_its_own_spells_by_level_then_id() {
+        use crate::entities::vocation::Vocation;
+        use crate::persistence::spells::load_spells_from_str;
+        use std::collections::HashMap;
+
+        let yaml = format!(
+            "spells:{}{}{}",
+            a_heal(2, 20, "druid"),
+            a_heal(5, 8, "druid, sorcerer"),
+            a_heal(1, 8, "sorcerer")
+        );
+        let spells = load_spells_from_str(&yaml, &HashMap::new()).unwrap();
+        let ids = |vocation| {
+            let ServerMessage::SpellList { spells } = spell_list_for(vocation, &spells) else {
+                panic!("expected SpellList");
+            };
+            spells.iter().map(|spell| spell.id.0).collect::<Vec<_>>()
+        };
+
+        assert_eq!(ids(Vocation::Druid), vec![5, 2]);
+        assert_eq!(ids(Vocation::Sorcerer), vec![1, 5]);
+        assert!(ids(Vocation::Knight).is_empty());
     }
 }

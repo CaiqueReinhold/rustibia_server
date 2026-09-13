@@ -135,6 +135,7 @@ const SRV_PLAYER_SKILLS: u8 = 28;
 const SRV_SKILL_CHANGED: u8 = 29;
 const SRV_EXPERIENCE_CHANGED: u8 = 30;
 const SRV_SPELL_CAST: u8 = 31;
+const SRV_SPELL_LIST: u8 = 32;
 
 #[derive(Clone, Debug)]
 pub enum TextMessageType {
@@ -152,6 +153,16 @@ pub struct SkillProgress {
 pub enum FloatingTextType {
     HitPoints,
     CreatureSay,
+}
+
+#[derive(Clone, Debug)]
+pub struct SpellListEntry {
+    pub id: SpellId,
+    pub name: String,
+    pub words: String,
+    pub level: u16,
+    pub icon: u16,
+    pub aimable: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -304,6 +315,9 @@ pub enum ServerMessage {
         spell: SpellId,
         spell_cooldown_ms: u32,
         group_cooldown_ms: u32,
+    },
+    SpellList {
+        spells: Vec<SpellListEntry>,
     },
 }
 
@@ -814,6 +828,18 @@ impl Encoder<ServerMessage> for GameMessageCodec {
                 dst.put_u16_le(spell.0);
                 dst.put_u32_le(spell_cooldown_ms);
                 dst.put_u32_le(group_cooldown_ms);
+            }
+            ServerMessage::SpellList { spells } => {
+                dst.put_u8(SRV_SPELL_LIST);
+                dst.put_u16_le(spells.len() as u16);
+                for spell in spells {
+                    dst.put_u16_le(spell.id.0);
+                    encode_string(&spell.name, dst);
+                    encode_string(&spell.words, dst);
+                    dst.put_u16_le(spell.level);
+                    dst.put_u16_le(spell.icon);
+                    dst.put_u8(u8::from(spell.aimable));
+                }
             }
         }
 
@@ -1889,6 +1915,52 @@ mod tests {
                 0,
                 0,
                 0,
+            ]
+        );
+    }
+
+    #[test]
+    fn spell_list_encodes_a_known_frame() {
+        let mut dst = BytesMut::new();
+        GameMessageCodec {}
+            .encode(
+                ServerMessage::SpellList {
+                    spells: vec![SpellListEntry {
+                        id: SpellId(4),
+                        name: "Ab".to_owned(),
+                        words: "cd".to_owned(),
+                        level: 12,
+                        icon: 29,
+                        aimable: true,
+                    }],
+                },
+                &mut dst,
+            )
+            .unwrap();
+
+        assert_eq!(
+            &dst[..],
+            &[
+                18,
+                0, // payload length
+                SRV_SPELL_LIST,
+                1,
+                0, // one spell
+                4,
+                0, // id
+                2,
+                0,
+                b'A',
+                b'b', // name
+                2,
+                0,
+                b'c',
+                b'd', // words
+                12,
+                0, // level
+                29,
+                0, // icon
+                1, // aimable
             ]
         );
     }
